@@ -2,9 +2,9 @@
 
 #include <stdio.h>
 
-int RunPseudokuNewTests()
+int RunPseudokuTests()
 {
-	Pseudoku_Ver1_1 TestGrid;
+	Pseudoku TestGrid;
 
 	printf("Before fill_grid:\n");
 	TestGrid.Print();
@@ -15,25 +15,25 @@ int RunPseudokuNewTests()
 	return 1;
 }
 
-int* Pseudoku_Ver1_1::GetRow(int RowIdx)
+int* Pseudoku::GetRow(int RowIdx)
 {
 	// returns ptr to beg of Row r (0-8)
 	return &Grid[RowIdx * 9];
 }
 
-int* Pseudoku_Ver1_1::GetCol(int ColIdx)
+int* Pseudoku::GetCol(int ColIdx)
 {
 	// returns ptr to first cell of col c (0-8)
 	return &Grid[ColIdx];
 }
 
-int* Pseudoku_Ver1_1::GetBox(int BoxIdx)
+int* Pseudoku::GetBox(int BoxIdx)
 {
 	// returns ptr to first cell of Row b (0-8)
 	return &Grid[(BoxIdx / 3 * 3 * 9) + (BoxIdx % 3 * 3)];
 }
 
-Neighbors Pseudoku_Ver1_1::GetNeighbors(int CellIdx)
+Neighbors Pseudoku::GetNeighbors(int CellIdx)
 {
 	// returns peers of cell n (0-80)
 	Neighbors Peers;
@@ -52,7 +52,7 @@ Neighbors Pseudoku_Ver1_1::GetNeighbors(int CellIdx)
 	return Peers;
 }
 
-bool Pseudoku_Ver1_1::IsSafe(int CellIdx, int Value)
+bool Pseudoku::IsSafe(int CellIdx, int Value)
 {// returns whether or not value v (1-9) in cell n (0-80) is safe
 	Neighbors Peers = GetNeighbors(CellIdx);
 	for (int i = 0; i < 9; i++)
@@ -67,7 +67,7 @@ bool Pseudoku_Ver1_1::IsSafe(int CellIdx, int Value)
 	return true;
 }
 
-PossibleVals Pseudoku_Ver1_1::GetPosVals(int CellIdx)
+PossibleVals Pseudoku::GetPosVals(int CellIdx)
 {// returns pos struct containing possible values in cell n (0-80)
 	PossibleVals PVs;
 	int i, s;
@@ -84,7 +84,7 @@ PossibleVals Pseudoku_Ver1_1::GetPosVals(int CellIdx)
 	return PVs;
 }
 
-int Pseudoku_Ver1_1::Fill(int StartIdx)
+int Pseudoku::Fill(int StartIdx)
 {
 	// fills cells StartIdx (0-80) to end of Sudoku
 	if (0 <= StartIdx && StartIdx < 81)
@@ -119,7 +119,7 @@ int Pseudoku_Ver1_1::Fill(int StartIdx)
 
 }
 
-void Pseudoku_Ver1_1::CopyFrom(const int InGrid[])
+void Pseudoku::CopyFrom(const int InGrid[])
 {
 	for (int i = 0; i < 81; i++)
 	{
@@ -127,7 +127,7 @@ void Pseudoku_Ver1_1::CopyFrom(const int InGrid[])
 	}
 }
 
-Pseudoku_Ver1_1::Pseudoku_Ver1_1()
+Pseudoku::Pseudoku()
 {
 	for (int i = 0; i < 81; i++)
 	{
@@ -135,25 +135,25 @@ Pseudoku_Ver1_1::Pseudoku_Ver1_1()
 	}
 }
 
-Pseudoku_Ver1_1::Pseudoku_Ver1_1(const int InGrid[])
+Pseudoku::Pseudoku(const int InGrid[])
 	: Grid()
 {
 	CopyFrom(InGrid);
 }
 
-Pseudoku_Ver1_1::Pseudoku_Ver1_1(const Pseudoku_Ver1_1& Other)
+Pseudoku::Pseudoku(const Pseudoku& Other)
 	: Grid()
 {
 	*this = Other;
 }
 
-Pseudoku_Ver1_1& Pseudoku_Ver1_1::operator=(const Pseudoku_Ver1_1& Other)
+Pseudoku& Pseudoku::operator=(const Pseudoku& Other)
 {
 	CopyFrom(Other.Grid);
 	return *this;
 }
 
-void Pseudoku_Ver1_1::Print() const
+void Pseudoku::Print() const
 {
 	for (int i = 0; i < 81; i++)
 	{

@@ -6,7 +6,7 @@ int main(int argc, const char* argv[])
 {
 	printf("Project Leviathan: Init\n");
 
-	int Result = RunPseudokuNewTests();
+	int Result = RunPseudokuTests();
 
 	return Result;
 }

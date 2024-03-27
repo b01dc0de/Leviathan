@@ -20,7 +20,7 @@ struct PossibleVals
     int Size;
 };
 
-struct Pseudoku_Ver1_1
+typedef struct Pseudoku
 {
     int Grid[81];
 
@@ -38,19 +38,18 @@ struct Pseudoku_Ver1_1
 
 	void CopyFrom(const int InGrid[]);
 
-	Pseudoku_Ver1_1();
-	Pseudoku_Ver1_1(const int InGrid[]);
-	Pseudoku_Ver1_1(const Pseudoku_Ver1_1& Other);
-	Pseudoku_Ver1_1& operator=(const Pseudoku_Ver1_1& Other);
-	~Pseudoku_Ver1_1() = default;
-};
+	Pseudoku();
+	Pseudoku(const int InGrid[]);
+	Pseudoku(const Pseudoku& Other);
+	Pseudoku& operator=(const Pseudoku& Other);
+	~Pseudoku() = default;
 
-using Pseudoku = Pseudoku_Ver1_1;
+	const char* sVersion = "1.1";
+} Pseudoku_Ver1_1;
 
-int RunPseudokuNewTests();
+int RunPseudokuTests();
 
 /*
-
 {
     1 2 3  4 5 6  7 8 9
 	4 5 6  7 8 9  1 2 3
@@ -106,7 +105,6 @@ int RunPseudokuNewTests();
 	.63, 64, 65,---66, 67, 68,---69, 70, 71,
 	.72, 73, 74,---75, 76, 77,---78, 79, 80
 }
-
 */
 
 #endif // SUDOKU_H
