@@ -23,7 +23,8 @@
 #define Assert(exp)	\
 	if (!(exp)) \
 	{ \
-		(int*)0 = 0; \
+		printf("Failed expression: '" #exp "'\nIn File: " __FILE__ "\n"/*":" __LINE__*/); \
+		__builtin_trap(); \
 	}
 #else
 #error "No platform defined"

@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(Leviathan VERSION 0.1)
 
-file (GLOB_RECURSE Leviathan_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
-file (GLOB_RECURSE Leviathan_HEADERS CONFIGURE_DEPENDS "src/*.h")
+set(SRC_DIR src)
 
-add_executable(Leviathan.out $Leviathan_SOURCES)
+set(SRC_FILES
+    ${SRC_DIR}/main.cpp
+    ${SRC_DIR}/Common.cpp
+    ${SRC_DIR}/Sudoku.cpp
+    ${SRC_DIR}/Pseudoku.cpp
+)
+
+add_executable(Leviathan ${SRC_FILES})
