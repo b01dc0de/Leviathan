@@ -12,9 +12,21 @@
     <ClCompile Include="src\Sudoku.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Pseudoku.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Common.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Sudoku.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pseudoku.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

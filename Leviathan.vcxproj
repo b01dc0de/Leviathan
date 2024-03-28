@@ -127,10 +127,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Common.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Pseudoku.cpp" />
     <ClCompile Include="src\Sudoku.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Common.h" />
+    <ClInclude Include="src\Pseudoku.h" />
     <ClInclude Include="src\Sudoku.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
