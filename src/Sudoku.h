@@ -17,6 +17,7 @@ struct SudokuGrid
 	int& Cell(int Idx);
 	const int& Cell(int Idx) const;
 	int& Cell(int r, int c);
+	const int& Cell(int r, int c) const;
 	int& operator[](int Idx);
 	const int& operator[](int Idx) const;
 
@@ -24,6 +25,9 @@ struct SudokuGrid
 	SudokuGrid(const SudokuGrid& Other) = default;
 	SudokuGrid& operator=(const SudokuGrid& Other) = default;
 	~SudokuGrid() = default;
+
+	bool IsValid();
+	bool IsSolved();
 };
 
 struct BaseSudokuSolver
@@ -39,6 +43,21 @@ struct BaseSudokuSolver
 	virtual float& TotalTime() = 0;
 
 	virtual bool Solve(const SudokuGrid& InGrid) = 0;
+};
+
+struct CoreSudokuSolver : BaseSudokuSolver
+{
+	static int _NumAttempts;
+	static int _NumSolves;
+	static int _NumGuesses;
+	static float _TotalTime;
+
+	virtual int& NumAttempts() override;
+	virtual int& NumSolves() override;
+	virtual int& NumGuesses() override;
+	virtual float& TotalTime() override;
+
+	virtual bool Solve(const SudokuGrid& InGrid) override;
 };
 
 #endif // SUDOKU_H
