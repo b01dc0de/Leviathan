@@ -6,32 +6,34 @@
 #define COL_OF(c) {c[0], c[9], c[18], c[27], c[36], c[45], c[54], c[63], c[72]}
 #define BOX_OF(b) {b[0], b[1], b[2], b[9], b[10], b[11], b[18], b[19], b[20]}
 
-int Pseudoku::_NumAttempts = 0;
-int Pseudoku::_NumSolves = 0;
-int Pseudoku::_NumGuesses = 0;
-float Pseudoku::_TotalTime = 0.f;
+using namespace Pseudoku;
 
-int& Pseudoku::NumAttempts()
+int PseudokuNew::_NumAttempts = 0;
+int PseudokuNew::_NumSolves = 0;
+int PseudokuNew::_NumGuesses = 0;
+float PseudokuNew::_TotalTime = 0.f;
+
+int& PseudokuNew::NumAttempts()
 {
 	return _NumAttempts;
 }
 
-int& Pseudoku::NumSolves()
+int& PseudokuNew::NumSolves()
 {
 	return _NumSolves;
 }
 
-int& Pseudoku::NumGuesses()
+int& PseudokuNew::NumGuesses()
 {
 	return _NumGuesses;
 }
 
-float& Pseudoku::TotalTime()
+float& PseudokuNew::TotalTime()
 {
 	return _TotalTime;
 }
 
-bool Pseudoku::Solve(const SudokuGrid& InGrid)
+bool PseudokuNew::Solve(const SudokuGrid& InGrid)
 {
 	UnsolvedGrid = InGrid;
 
@@ -49,14 +51,14 @@ bool Pseudoku::Solve(const SudokuGrid& InGrid)
 	return bSolved;
 }
 
-int Pseudoku::RunTests()
+int PseudokuNew::RunTests()
 {
 	int Result = 0;
 
 	printf("\nBEGIN Pseudoku::RunTests:\n");
 
 	SudokuGrid EmptyGrid;
-	Pseudoku Test;
+	PseudokuNew Test;
 
 	printf("\tBefore:\n");
 	Test.Print();
@@ -77,25 +79,25 @@ int Pseudoku::RunTests()
 	return Result;
 }
 
-int* Pseudoku::GetRowPtr(int RowIdx)
+int* PseudokuNew::GetRowPtr(int RowIdx)
 {
 	// returns ptr to beg of Row r (0-8)
 	return &LocalGrid[RowIdx * 9];
 }
 
-int* Pseudoku::GetColPtr(int ColIdx)
+int* PseudokuNew::GetColPtr(int ColIdx)
 {
 	// returns ptr to first cell of col c (0-8)
 	return &LocalGrid[ColIdx];
 }
 
-int* Pseudoku::GetBoxPtr(int BoxIdx)
+int* PseudokuNew::GetBoxPtr(int BoxIdx)
 {
 	// returns ptr to first cell of Row b (0-8)
 	return &LocalGrid[(BoxIdx / 3 * 3 * 9) + (BoxIdx % 3 * 3)];
 }
 
-Neighbors Pseudoku::GetNeighbors(int CellIdx)
+Neighbors PseudokuNew::GetNeighbors(int CellIdx)
 {
 	// returns peers of cell n (0-80)
 	Neighbors Peers;
@@ -114,7 +116,7 @@ Neighbors Pseudoku::GetNeighbors(int CellIdx)
 	return Peers;
 }
 
-bool Pseudoku::IsSafe(int CellIdx, int Value)
+bool PseudokuNew::IsSafe(int CellIdx, int Value)
 {// returns whether or not value v (1-9) in cell n (0-80) is safe
 	Neighbors Peers = GetNeighbors(CellIdx);
 	for (int i = 0; i < 9; i++)
@@ -129,7 +131,7 @@ bool Pseudoku::IsSafe(int CellIdx, int Value)
 	return true;
 }
 
-PossibleVals Pseudoku::GetPosVals(int CellIdx)
+PossibleVals PseudokuNew::GetPosVals(int CellIdx)
 {// returns pos struct containing possible values in cell n (0-80)
 	PossibleVals PVs;
 	int i, s;
@@ -146,7 +148,7 @@ PossibleVals Pseudoku::GetPosVals(int CellIdx)
 	return PVs;
 }
 
-int Pseudoku::Fill(int StartIdx)
+int PseudokuNew::Fill(int StartIdx)
 {
 	// fills cells StartIdx (0-80) to end of Sudoku
 	if (0 <= StartIdx && StartIdx < 81)
@@ -182,7 +184,7 @@ int Pseudoku::Fill(int StartIdx)
 
 }
 
-void Pseudoku::CopyFrom(const int InGrid[])
+void PseudokuNew::CopyFrom(const int InGrid[])
 {
 	for (int i = 0; i < 81; i++)
 	{
@@ -190,7 +192,7 @@ void Pseudoku::CopyFrom(const int InGrid[])
 	}
 }
 
-Pseudoku::Pseudoku()
+PseudokuNew::PseudokuNew()
 {
 	for (int i = 0; i < 81; i++)
 	{
@@ -198,25 +200,25 @@ Pseudoku::Pseudoku()
 	}
 }
 
-Pseudoku::Pseudoku(const int InGrid[])
+PseudokuNew::PseudokuNew(const int InGrid[])
 	: LocalGrid()
 {
 	CopyFrom(InGrid);
 }
 
-Pseudoku::Pseudoku(const Pseudoku& Other)
+PseudokuNew::PseudokuNew(const PseudokuNew& Other)
 	: LocalGrid()
 {
 	*this = Other;
 }
 
-Pseudoku& Pseudoku::operator=(const Pseudoku& Other)
+PseudokuNew& PseudokuNew::operator=(const PseudokuNew& Other)
 {
 	CopyFrom(Other.LocalGrid.Grid);
 	return *this;
 }
 
-void Pseudoku::Print() const
+void PseudokuNew::Print() const
 {
 	for (int i = 0; i < 81; i++)
 	{
@@ -243,3 +245,4 @@ void Pseudoku::Print() const
 	}
 	printf("\n");
 }
+

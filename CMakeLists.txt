@@ -11,3 +11,9 @@ set(SRC_FILES
 )
 
 add_executable(Leviathan ${SRC_FILES})
+
+# set_source_files_properties(<files> ...
+#                            [DIRECTORY <dirs> ...]
+#                            [TARGET_DIRECTORY <targets> ...]
+#                            PROPERTIES <prop1> <value1>
+#                            [<prop2> <value2>] ...)

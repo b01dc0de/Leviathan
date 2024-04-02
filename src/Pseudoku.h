@@ -3,6 +3,9 @@
 
 #include "Sudoku.h"
 
+namespace Pseudoku
+{
+
 // Neighbors: contains all peers (row/col/box values) of a cell
 struct Neighbors
 {
@@ -18,7 +21,7 @@ struct PossibleVals
     int Size;
 };
 
-struct Pseudoku : BaseSudokuSolver
+struct PseudokuNew : BaseSudokuSolver
 {
 	static int _NumAttempts;
 	static int _NumSolves;
@@ -50,14 +53,16 @@ struct Pseudoku : BaseSudokuSolver
 
 	void CopyFrom(const int InGrid[]);
 
-	Pseudoku();
-	Pseudoku(const int InGrid[]);
-	Pseudoku(const Pseudoku& Other);
-	Pseudoku& operator=(const Pseudoku& Other);
-	~Pseudoku() = default;
+	PseudokuNew();
+	PseudokuNew(const int InGrid[]);
+	PseudokuNew(const PseudokuNew& Other);
+	PseudokuNew& operator=(const PseudokuNew& Other);
+	~PseudokuNew() = default;
 
 	const char* sVersion = "1.1";
 };
+
+}
 
 /*
 {

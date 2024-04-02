@@ -7,7 +7,8 @@ int main(int argc, const char* argv[])
 {
 	printf("Project Leviathan: Init\n");
 
-	int Result = Pseudoku::RunTests();
+	using Pseudoku::PseudokuNew;
+	int Result = PseudokuNew::RunTests();
 
 	return Result;
 }
