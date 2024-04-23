@@ -10,5 +10,7 @@ int main(int argc, const char* argv[])
 	using Pseudoku::PseudokuNew;
 	int Result = PseudokuNew::RunTests();
 
+	Result += Sudoku::RunTests();
+
 	return Result;
 }

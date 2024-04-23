@@ -10,7 +10,7 @@ set(SRC_FILES
     ${SRC_DIR}/Pseudoku.cpp
 )
 
-add_executable(Leviathan ${SRC_FILES})
+add_executable(Leviathan.out ${SRC_FILES})
 
 # set_source_files_properties(<files> ...
 #                            [DIRECTORY <dirs> ...]

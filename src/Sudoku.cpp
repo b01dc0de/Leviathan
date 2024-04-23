@@ -2,6 +2,14 @@
 
 #include "Sudoku.h"
 
+namespace Sudoku
+{
+	int RunTests()
+	{
+		return 0;
+	}
+};
+
 struct GridContainer
 {
 	const static int ContainerLength = SudokuStride;
@@ -180,6 +188,152 @@ float& CoreSudokuSolver::TotalTime()
 	return _TotalTime;
 }
 
+namespace SudokuUtils
+{
+
+int RowOfCell(int CellIdx)
+{
+	return CellIdx / SudokuStride;
+}
+
+int ColOfCell(int CellIdx)
+{
+	return CellIdx % SudokuStride;
+}
+
+int BoxOfCell(int CellIdx)
+{
+	return (RowOfCell(CellIdx) / 3 * 3) + (ColOfCell(CellIdx) / 3);
+}
+
+int GetRandomCellIdx()
+{
+	static std::random_device rand_dev;
+	static std::mt19937 mersenne_twister_eng(rand_dev());
+	static std::uniform_int_distribution<int> uni_int_dist(0, SudokuLength - 1);
+
+	return uni_int_dist(mersenne_twister_eng);
+}
+
+int GetRandomEmptyCell(const SudokuGrid& InGrid)
+{
+	int EmptyCellIdx = -1;
+
+	do
+	{
+		EmptyCellIdx = GetRandomCellIdx();
+	}
+	while (InGrid.Grid[EmptyCellIdx] != 0);
+
+	return EmptyCellIdx;
+}
+
+}
+
+using namespace SudokuUtils;
+
+struct CellVal
+{
+	int Idx;
+	int Val;
+};
+
+struct PosVals
+{
+	int Size = 0;
+	int Vals[SudokuStride] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+	void Init(const SudokuGrid& InGrid, int CellIdx)
+	{
+		int ValidVals[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+		GridContainer CellRow(InGrid, GridContainer::Type::Row, RowOfCell(CellIdx));
+		GridContainer CellCol(InGrid, GridContainer::Type::Col, ColOfCell(CellIdx));
+		GridContainer CellBox(InGrid, GridContainer::Type::Box, BoxOfCell(CellIdx));
+
+		for (int Idx = 0; Idx < SudokuStride; Idx++)
+		{
+			int RowVal = CellRow.Vals[Idx];
+			int ColVal = CellCol.Vals[Idx];
+			int BoxVal = CellBox.Vals[Idx];
+			if (0 != RowVal) { ValidVals[RowVal - 1] = 0; }
+			if (0 != ColVal) { ValidVals[ColVal - 1] = 0; }
+			if (0 != BoxVal) { ValidVals[BoxVal - 1] = 0; }
+		}
+
+		// CKA_TODO: Shuffle
+		for (int Idx = 0; Idx < SudokuStride; Idx++)
+		{
+			if (0 != ValidVals[Idx]) { Vals[Size++] = ValidVals[Idx]; }
+		}
+	}
+
+	PosVals(const SudokuGrid& InGrid, int CellIdx)
+	{
+		Init(InGrid, CellIdx);
+	}
+	PosVals() = default;
+};
+
+struct ActiveGuess
+{
+	int Idx = -1;
+	int CurrGuess = 0;
+	PosVals Guesses;
+
+	bool HasNextGuess()
+	{
+		return CurrGuess + 1 < Guesses.Size;
+	}
+
+	int NextGuess()
+	{
+		Assert(HasNextGuess());
+		return Guesses.Vals[++CurrGuess];
+	}
+
+	int GetCurrGuess()
+	{
+		return Guesses.Vals[CurrGuess];
+	}
+
+	void Init(const SudokuGrid& InGrid, int InIdx)
+	{
+		Idx = InIdx;
+		CurrGuess = 0;
+		Guesses.Init(InGrid, InIdx);
+	}
+
+	ActiveGuess(const SudokuGrid& InGrid, int InIdx)
+	{
+		Init(InGrid, InIdx);
+	}
+	ActiveGuess() = default;
+};
+
+struct GuessList
+{
+	int LastGuess = -1;
+	ActiveGuess GuessGrid[SudokuLength];
+	const SudokuGrid& GridRef;
+
+	GuessList(const SudokuGrid& InGrid)
+		: GridRef(InGrid) { }
+
+	CellVal NewGuess()
+	{
+		int NewGuessIdx = GetRandomEmptyCell(GridRef);
+		GuessGrid[++LastGuess].Init(GridRef, NewGuessIdx);
+		return CellVal{ GuessGrid[LastGuess].Idx, GuessGrid[LastGuess].GetCurrGuess() };
+	}
+
+	CellVal NextGuess()
+	{
+		int NextGuessVal = GuessGrid[LastGuess].NextGuess();
+		return CellVal{ GuessGrid[LastGuess].Idx, NextGuessVal };
+	}
+};
+
 bool CoreSudokuSolver::Solve(const SudokuGrid& InGrid)
 {
 	UnsolvedGrid = InGrid;
@@ -188,10 +342,17 @@ bool CoreSudokuSolver::Solve(const SudokuGrid& InGrid)
 
 	SudokuGrid InProgressGrid = UnsolvedGrid;
 
+	GuessList Guesses(InProgressGrid);
+
+	// Naive solution:
+	//		- Keep track of guesses
+	//		- Choose empty cell at random
+	//		- Choose random possible value for that cell
+	//		- Check if the grid is valid
+	//			- If not, backtrack
+	//			- If yes, repeat
 	while (!InProgressGrid.IsSolved())
 	{
-		// CKA_TODO
-		break;
 	}
 
 	bSolved = true; // CKA_TODO

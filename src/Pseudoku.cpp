@@ -60,19 +60,19 @@ int PseudokuNew::RunTests()
 	SudokuGrid EmptyGrid;
 	PseudokuNew Test;
 
-	printf("\tBefore:\n");
+	printf("\t\tBefore:\n");
 	Test.Print();
 
 	Test.Solve(EmptyGrid);
 
-	printf("\tAfter:\n");
+	printf("\n\t\tAfter:\n");
 	Test.Print();
 
-	printf("\n\tSTATS:\n");
-	printf("\t\tAttempts: %d\n", _NumAttempts);
-	printf("\t\tSolves: %d\n", _NumSolves);
-	printf("\t\tGuesses: %d\n", _NumGuesses);
-	printf("\t\tTotalTime: %.2f\n", _TotalTime);
+	printf("\n\t\tSTATS:\n");
+	printf("\t\t\tAttempts: %d\n", _NumAttempts);
+	printf("\t\t\tSolves: %d\n", _NumSolves);
+	printf("\t\t\tGuesses: %d\n", _NumGuesses);
+	printf("\t\t\tTotalTime: %.2f\n", _TotalTime);
 
 	printf("END Pseudoku::RunTests\n\n");
 

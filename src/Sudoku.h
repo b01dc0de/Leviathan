@@ -10,6 +10,11 @@ constexpr int SudokuBoxSize = 3;
 
 constexpr int SudokuGodNumber = 17;
 
+namespace Sudoku
+{
+	int RunTests();
+};
+
 struct SudokuGrid
 {
 	int Grid[SudokuLength];
