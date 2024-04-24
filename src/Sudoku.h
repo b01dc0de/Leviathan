@@ -10,7 +10,7 @@ constexpr int SudokuBoxSize = 3;
 
 constexpr int SudokuGodNumber = 17;
 
-namespace Sudoku
+namespace SudokuTests
 {
 	int RunTests();
 };
@@ -26,13 +26,16 @@ struct SudokuGrid
 	int& operator[](int Idx);
 	const int& operator[](int Idx) const;
 
+	void Print() const;
+
 	SudokuGrid();
+	SudokuGrid(const int InGrid[]);
 	SudokuGrid(const SudokuGrid& Other) = default;
 	SudokuGrid& operator=(const SudokuGrid& Other) = default;
 	~SudokuGrid() = default;
 
-	bool IsValid();
-	bool IsSolved();
+	bool IsValid() const;
+	bool IsSolved() const;
 };
 
 struct BaseSudokuSolver
