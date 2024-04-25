@@ -48,7 +48,7 @@ void SimpleShuffle(T* Src, int Size)
 	}
 }
 
-#define ENABLE_DBG_PRINT() (0)
+#define ENABLE_DBG_PRINT() (1)
 #if ENABLE_DBG_PRINT()
 #define DBG_PRINT(...) printf(__VA_ARGS__)
 #else

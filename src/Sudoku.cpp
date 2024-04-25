@@ -16,13 +16,12 @@ namespace SudokuUtils
 
 	int BoxOfCell(int CellIdx)
 	{
-		return (RowOfCell(CellIdx) / 3 * 3) + (ColOfCell(CellIdx) / 3);
+		return (RowOfCell(CellIdx) / SudokuBoxSize * SudokuBoxSize) + (ColOfCell(CellIdx) / SudokuBoxSize);
 	}
 
 	int GetRandomEmptyCell(const SudokuGrid &InGrid)
 	{
 		int EmptyCellIdx = -1;
-
 		do
 		{
 			EmptyCellIdx = GenRandInRange(0, SudokuLength - 1);
@@ -44,12 +43,69 @@ namespace SudokuUtils
 		return CellsOccupied;
 	}
 
-	// CKA_NOTE: Definitions below -- require PosVal
+	struct DbgPrintTabScope
+	{
+		static int ScopeLevel;
+
+		static int GetScopeLevel()
+		{
+			return ScopeLevel;
+		}
+		DbgPrintTabScope()
+		{
+			ScopeLevel++;
+		}
+		~DbgPrintTabScope()
+		{
+			ScopeLevel--;
+		}
+	};
+
+	// CKA_NOTE: Only support up to 6 indent levels for now
+	int DbgPrintTabScope::ScopeLevel = 0;
+	constexpr int SudoDbgPrintVerboseLevel = 1;
+	// -1: Completely off, no test print
+	//  0: Debug printing off, test results only
+	//  1: Minimal debug
+	//  2: Full debug
+
+	// CKA_NOTE: Definitions at bottom -- require PosVal
 	// CKA_TODO: Figure out better organization
 	int GetRandomPosVal(const SudokuGrid &InGrid, int CellIdx);
 	void GenRandomValues(SudokuGrid &InGrid, int NumValues);
 }
 using namespace SudokuUtils;
+
+#define ENABLE_SUDO_PRINT() 1
+#if ENABLE_SUDO_PRINT()
+	#define SUDO_DBG_PRINT(VerboseLevel, ...) \
+	{ \
+		if (SudoDbgPrintVerboseLevel >= VerboseLevel) \
+		{ \
+			switch (DbgPrintTabScope::GetScopeLevel()) \
+			{ \
+				case 0: { DBG_PRINT(__VA_ARGS__); } break; \
+				case 1: { DBG_PRINT("\t" __VA_ARGS__); } break; \
+				case 2: { DBG_PRINT("\t\t" __VA_ARGS__); } break; \
+				case 3: { DBG_PRINT("\t\t\t" __VA_ARGS__); } break; \
+				case 4: { DBG_PRINT("\t\t\t\t" __VA_ARGS__); } break; \
+				case 5: { DBG_PRINT("\t\t\t\t\t" __VA_ARGS__); } break; \
+				case 6: { DBG_PRINT("\t\t\t\t\t\t" __VA_ARGS__); } break; \
+				default: { DBG_PRINT(__VA_ARGS__); } break; \
+			} \
+		} \
+	}
+	#define SUDO_TEST_PRINT(...) SUDO_DBG_PRINT(0, __VA_ARGS__)
+
+	#define SUDO_DBG_PRINT_INLINE(VerboseLevel, ...) \
+		if (SudoDbgPrintVerboseLevel >= VerboseLevel) { DBG_PRINT(__VA_ARGS__); }
+	#define SUDO_TEST_PRINT_INLINE(...) SUDO_DBG_PRINT_INLINE(0, __VA_ARGS__)
+#else
+	#define SUDO_DBG_PRINT(...) (void)0
+	#define SUDO_TEST_PRINT(...) (void)0
+	#define SUDO_DBG_PRINT(1, ...) (void)0
+	#define SUDO_DBG_PRINT(2, ...) (void)0
+#endif // ENABLE_SUDO_PRINT()
 
 namespace SudokuTests
 {
@@ -92,10 +148,49 @@ namespace SudokuTests
 		6, 7, 8, 3, 4, 5, 9, 1, 2
 	};
 
+	constexpr int NearFullGridA[SudokuLength] =
+	{
+		1, 2, 3, 4, 5, 6, 7, 0, 9,
+		0, 5, 6, 7, 0, 9, 1, 2, 3,
+		7, 0, 9, 1, 2, 3, 4, 5, 6,
+		5, 6, 7, 8, 0, 1, 0, 3, 4,
+		0, 9, 1, 2, 3, 4, 5, 0, 7,
+		2, 3, 4, 0, 6, 7, 8, 9, 1,
+		0, 0, 2, 0, 4, 5, 6, 7, 8,
+		6, 7, 8, 9, 1, 2, 3, 0, 0,
+		3, 4, 5, 0, 7, 8, 9, 1, 0,
+	};
+
+	constexpr int PartialGridA[SudokuLength] =
+	{
+		1, 0, 3, 4, 0, 6, 7, 0, 9,
+		0, 5, 0, 7, 0, 9, 0, 2, 3,
+		7, 0, 9, 1, 2, 3, 4, 0, 6,
+		5, 0, 7, 8, 0, 1, 0, 0, 4,
+		0, 0, 0, 2, 3, 4, 5, 0, 7,
+		0, 3, 4, 0, 6, 0, 0, 9, 0,
+		0, 0, 2, 0, 4, 5, 6, 0, 8,
+		6, 7, 0, 9, 1, 2, 3, 0, 0,
+		0, 4, 5, 0, 7, 0, 9, 1, 0,
+	};
+
+	constexpr int TestNearEmptyGridA[SudokuLength] =
+	{
+		1, 0, 0, 4, 0, 0, 0, 0, 9,
+		0, 5, 0, 7, 0, 9, 0, 2, 0,
+		7, 0, 0, 0, 2, 0, 4, 0, 6,
+		5, 0, 0, 0, 0, 1, 0, 0, 4,
+		0, 0, 0, 2, 0, 0, 5, 0, 0,
+		0, 0, 4, 0, 0, 0, 0, 9, 0,
+		0, 0, 0, 0, 4, 0, 6, 0, 8,
+		6, 0, 0, 0, 0, 0, 3, 0, 0,
+		0, 0, 5, 0, 7, 0, 0, 1, 0,
+	};
+
 	constexpr int GridCellNumbers[SudokuLength] =
 	{
-		0, 1, 2, /**/ 3, 4, 5, /**/ 6, 7, 8,
-		9, 10, 11, /**/ 12, 13, 14, /**/ 15, 16, 17,
+		 0,  1,  2, /**/  3,  4,  5, /**/  6,  7,  8,
+		 9, 10, 11, /**/ 12, 13, 14, /**/ 15, 16, 17,
 		18, 19, 20, /**/ 21, 22, 23, /**/ 24, 25, 26,
 		////////////////////////////////////////////
 		27, 28, 29, /**/ 30, 31, 32, /**/ 33, 34, 35,
@@ -109,114 +204,77 @@ namespace SudokuTests
 
 	int RunTests()
 	{
-		SudokuGrid TestFullA{TestFullGridA};
-		SudokuGrid TestFullB{TestFullGridB};
-		SudokuGrid TestFullC{TestFullGridC};
-
 		int Result = 0;
 
-		printf("\nBEGIN SudokuTests::RunTests:\n");
+		SUDO_TEST_PRINT("\nBEGIN SudokuTests::RunTests:\n");
+		
+		BruteForceSudokuSolver BruteForceSolver;
 
+		auto SolveTest = [&](const SudokuGrid& SudoGrid)
 		{
-			constexpr int NearFullGridA[SudokuLength] =
-			{
-				1, 2, 3, 4, 5, 6, 7, 0, 9,
-				0, 5, 6, 7, 0, 9, 1, 2, 3,
-				7, 0, 9, 1, 2, 3, 4, 5, 6,
-				5, 6, 7, 8, 0, 1, 0, 3, 4,
-				0, 9, 1, 2, 3, 4, 5, 0, 7,
-				2, 3, 4, 0, 6, 7, 8, 9, 1,
-				0, 0, 2, 0, 4, 5, 6, 7, 8,
-				6, 7, 8, 9, 1, 2, 3, 0, 0,
-				3, 4, 5, 0, 7, 8, 9, 1, 0,
-			};
+			DbgPrintTabScope();
+			BruteForceSolver.Solve(SudoGrid);
+			SUDO_TEST_PRINT("UnsolvedGrid:\n");
+			BruteForceSolver.UnsolvedGrid.Print();
+			SUDO_TEST_PRINT("SolvedGrid:\n");
+			BruteForceSolver.SolvedGrid.Print();
+		};
+
+		constexpr bool bEnablePartialTest = true;
+		if constexpr (bEnablePartialTest)
+		{
 			SudokuGrid NearFullGrid(NearFullGridA);
-			CoreSudokuSolver NearFullSolver;
-			NearFullSolver.Solve(NearFullGrid);
-			printf("UnsolvedGrid:\n");
-			NearFullSolver.UnsolvedGrid.Print();
-			printf("\nSolvedGrid:\n");
-			NearFullSolver.SolvedGrid.Print();
 
-			Result += NearFullSolver.bSolved ? 1 : 0;
+			SolveTest(NearFullGrid);
+			Result += BruteForceSolver.bSolved ? 1 : 0;
 
-			constexpr int PartialGridA[SudokuLength] =
-			{
-				1, 0, 3, 4, 0, 6, 7, 0, 9,
-				0, 5, 0, 7, 0, 9, 0, 2, 3,
-				7, 0, 9, 1, 2, 3, 4, 0, 6,
-				5, 0, 7, 8, 0, 1, 0, 0, 4,
-				0, 0, 0, 2, 3, 4, 5, 0, 7,
-				0, 3, 4, 0, 6, 0, 0, 9, 0,
-				0, 0, 2, 0, 4, 5, 6, 0, 8,
-				6, 7, 0, 9, 1, 2, 3, 0, 0,
-				0, 4, 5, 0, 7, 0, 9, 1, 0,
-			};
 			SudokuGrid PartialGrid(NearFullGridA);
-			CoreSudokuSolver PartialSolver;
-			PartialSolver.Solve(PartialGrid);
-			printf("UnsolvedGrid:\n");
-			PartialSolver.UnsolvedGrid.Print();
-			printf("\nSolvedGrid:\n");
-			PartialSolver.SolvedGrid.Print();
+			SolveTest(PartialGrid);
 
-			Result += NearFullSolver.bSolved ? 1 : 0;
+			Result += BruteForceSolver.bSolved ? 1 : 0;
 
-
-			constexpr int TestNearEmptyGridA[SudokuLength] =
-			{
-				1, 0, 0, 4, 0, 0, 0, 0, 9,
-				0, 5, 0, 7, 0, 9, 0, 2, 0,
-				7, 0, 0, 0, 2, 0, 4, 0, 6,
-				5, 0, 0, 0, 0, 1, 0, 0, 4,
-				0, 0, 0, 2, 0, 0, 5, 0, 0,
-				0, 0, 4, 0, 0, 0, 0, 9, 0,
-				0, 0, 0, 0, 4, 0, 6, 0, 8,
-				6, 0, 0, 0, 0, 0, 3, 0, 0,
-				0, 0, 5, 0, 7, 0, 0, 1, 0,
-			};
 			SudokuGrid NearEmptyGrid(TestNearEmptyGridA);
-			CoreSudokuSolver NearEmptySolver;
-			NearEmptySolver.Solve(NearEmptyGrid);
-			printf("UnsolvedGrid:\n");
-			NearEmptySolver.UnsolvedGrid.Print();
-			printf("\nSolvedGrid:\n");
-			NearEmptySolver.SolvedGrid.Print();
+			SolveTest(NearEmptyGrid);
 
-			Result += NearEmptySolver.bSolved ? 1 : 0;
+			Result += BruteForceSolver.bSolved ? 1 : 0;
 
-			printf("\n\t\tSTATS:\n");
-			printf("\t\t\tAttempts: %d\n", NearEmptySolver.NumAttempts());
-			printf("\t\t\tSolves: %d\n", NearEmptySolver.NumSolves());
-			printf("\t\t\tGuesses: %d\n", NearEmptySolver.NumGuesses());
-			printf("\t\t\tTotalTime: %.2f\n", NearEmptySolver.TotalTime());
+			DbgPrintTabScope();
+			SUDO_TEST_PRINT("\nSTATS:\n");
+			DbgPrintTabScope();
+			SUDO_TEST_PRINT("Attempts: %d\n", BruteForceSolver.NumAttempts());
+			SUDO_TEST_PRINT("Solves: %d\n", BruteForceSolver.NumSolves());
+			SUDO_TEST_PRINT("Guesses: %d\n", BruteForceSolver.NumGuesses());
+			SUDO_TEST_PRINT("TotalTime: %.2f\n", BruteForceSolver.TotalTime());
 		}
 
-/*
-		SudokuGrid StartingGrid;
-		//GenRandomValues(StartingGrid, SudokuGodNumber);
-		GenRandomValues(StartingGrid, 60);
-		Assert(StartingGrid.IsValid());
+		constexpr bool bEnableScratchTest = false;
+		if constexpr (bEnableScratchTest)
+		{
+			SudokuGrid StartingGrid;
+			GenRandomValues(StartingGrid, SudokuGodNumber);
+			Assert(StartingGrid.IsValid());
 
-		CoreSudokuSolver CoreSolver;
-		CoreSolver.Solve(StartingGrid);
+			BruteForceSudokuSolver CoreSolver;
+			CoreSolver.Solve(StartingGrid);
 
-		printf("UnsolvedGrid:\n");
-		CoreSolver.UnsolvedGrid.Print();
+			SUDO_TEST_PRINT("UnsolvedGrid:\n");
+			CoreSolver.UnsolvedGrid.Print();
 
-		printf("\nSolvedGrid:\n");
-		CoreSolver.SolvedGrid.Print();
+			SUDO_TEST_PRINT("\nSolvedGrid:\n");
+			CoreSolver.SolvedGrid.Print();
 
-		printf("\n\t\tSTATS:\n");
-		printf("\t\t\tAttempts: %d\n", CoreSolver.NumAttempts());
-		printf("\t\t\tSolves: %d\n", CoreSolver.NumSolves());
-		printf("\t\t\tGuesses: %d\n", CoreSolver.NumGuesses());
-		printf("\t\t\tTotalTime: %.2f\n", CoreSolver.TotalTime());
+			DbgPrintTabScope();
+			SUDO_TEST_PRINT("\nSTATS:\n");
+			DbgPrintTabScope();
+			SUDO_TEST_PRINT("Attempts: %d\n", CoreSolver.NumAttempts());
+			SUDO_TEST_PRINT("Solves: %d\n", CoreSolver.NumSolves());
+			SUDO_TEST_PRINT("Guesses: %d\n", CoreSolver.NumGuesses());
+			SUDO_TEST_PRINT("TotalTime: %.2f\n", CoreSolver.TotalTime());
 
-		Result += CoreSolver.bSolved ? 1 : 0;
-*/
+			Result += CoreSolver.bSolved ? 1 : 0;
+		}
 
-		printf("END SudokuTests::RunTests\n\n");
+		SUDO_TEST_PRINT("END SudokuTests::RunTests\n\n");
 
 		return Result;
 	}
@@ -340,10 +398,11 @@ const int &SudokuGrid::operator[](int Idx) const
 
 void SudokuGrid::Print() const
 {
+	DbgPrintTabScope();
 	for (int r = 0; r < SudokuStride; r++)
 	{
 		int StartIdx = r * SudokuStride;
-		printf("%d %d %d | %d %d %d | %d %d %d\n",
+		SUDO_TEST_PRINT("%d %d %d | %d %d %d | %d %d %d\n",
 			   Grid[StartIdx + 0],
 			   Grid[StartIdx + 1],
 			   Grid[StartIdx + 2],
@@ -354,31 +413,18 @@ void SudokuGrid::Print() const
 			   Grid[StartIdx + 7],
 			   Grid[StartIdx + 8]);
 
-		constexpr int FirstBoxEndRow = 2;
-		constexpr int SecondBoxEndRow = 5;
-		constexpr int ThirdBoxEndRow = 8;
+		constexpr int FirstBoxEndRow = SudokuBoxSize - 1;
+		constexpr int SecondBoxEndRow = (SudokuBoxSize * 2) - 1;
+		constexpr int ThirdBoxEndRow = (SudokuBoxSize * 3) - 1;
 		if (r == FirstBoxEndRow || r == SecondBoxEndRow)
 		{
-			printf("- - - | - - - | - - -\n");
+			SUDO_TEST_PRINT("- - - | - - - | - - -\n");
 		}
 		else if (r == ThirdBoxEndRow)
 		{
-			printf("\n\n");
+			SUDO_TEST_PRINT("\n\n");
 		}
 	}
-	/*
-	printf("%d %d %d | %d %d %d | %d %d %d\n",   grid[0],  grid[1],  grid[2],  grid[3],  grid[4],  grid[5],  grid[6],  grid[7],  grid[8]);
-	printf("%d %d %d | %d %d %d | %d %d %d\n",   grid[9],  grid[10], grid[11], grid[12], grid[13], grid[14], grid[15], grid[16], grid[17]);
-	printf("%d %d %d | %d %d %d | %d %d %d\n",   grid[18], grid[19], grid[20], grid[21], grid[22], grid[23], grid[24], grid[25], grid[26]);
-	printf("- - - | - - - | - - -\n");
-	printf("%d %d %d | %d %d %d | %d %d %d\n",   grid[27], grid[28], grid[29], grid[30], grid[31], grid[32], grid[33], grid[34], grid[35]);
-	printf("%d %d %d | %d %d %d | %d %d %d\n",   grid[36], grid[37], grid[38], grid[39], grid[40], grid[41], grid[42], grid[43], grid[44]);
-	printf("%d %d %d | %d %d %d | %d %d %d\n",   grid[45], grid[46], grid[47], grid[48], grid[49], grid[50], grid[51], grid[52], grid[53]);
-	printf("- - - | - - - | - - -\n");
-	printf("%d %d %d | %d %d %d | %d %d %d\n",   grid[54], grid[55], grid[56], grid[57], grid[58], grid[59], grid[60], grid[61], grid[62]);
-	printf("%d %d %d | %d %d %d | %d %d %d\n",   grid[63], grid[64], grid[65], grid[66], grid[67], grid[68], grid[69], grid[70], grid[71]);
-	printf("%d %d %d | %d %d %d | %d %d %d\n\n", grid[72], grid[73], grid[74], grid[75], grid[76], grid[77], grid[78], grid[79], grid[80]);
-	*/
 }
 
 SudokuGrid::SudokuGrid()
@@ -430,27 +476,27 @@ bool SudokuGrid::IsSolved() const
 	return Result;
 }
 
-int CoreSudokuSolver::_NumAttempts = 0;
-int CoreSudokuSolver::_NumSolves = 0;
-int CoreSudokuSolver::_NumGuesses = 0;
-float CoreSudokuSolver::_TotalTime = 0.0f;
+int BruteForceSudokuSolver::_NumAttempts = 0;
+int BruteForceSudokuSolver::_NumSolves = 0;
+int BruteForceSudokuSolver::_NumGuesses = 0;
+float BruteForceSudokuSolver::_TotalTime = 0.0f;
 
-int &CoreSudokuSolver::NumAttempts()
+int &BruteForceSudokuSolver::NumAttempts()
 {
 	return _NumAttempts;
 }
 
-int &CoreSudokuSolver::NumSolves()
+int &BruteForceSudokuSolver::NumSolves()
 {
 	return _NumSolves;
 }
 
-int &CoreSudokuSolver::NumGuesses()
+int &BruteForceSudokuSolver::NumGuesses()
 {
 	return _NumGuesses;
 }
 
-float &CoreSudokuSolver::TotalTime()
+float &BruteForceSudokuSolver::TotalTime()
 {
 	return _TotalTime;
 }
@@ -560,8 +606,8 @@ struct GuessList
 
 	GuessList(const SudokuGrid& InGrid)
 		: LastGuess(-1)
-		, GridRef(InGrid),
-		MaxGuess(SudokuLength - GetNumCellsOccupied(InGrid))
+		, GridRef(InGrid)
+		, MaxGuess(SudokuLength - GetNumCellsOccupied(InGrid))
 	{
 		int NumEmpty = 0;
 		int NumFilled = 0;
@@ -589,7 +635,6 @@ struct GuessList
 
 	const ActiveGuess& NewGuess()
 	{
-		//int NewGuessIdx = GetRandomEmptyCell(GridRef);
 		Assert(LastGuess + 1 < MaxGuess);
 		int NewGuessIdx = GuessPerm[++LastGuess];
 		Guesses[LastGuess].Init(GridRef, NewGuessIdx);
@@ -610,14 +655,7 @@ struct GuessList
 	}
 };
 
-#define ENABLE_SUDO_PRINT() 1
-#if ENABLE_SUDO_PRINT()
-#define SUDO_PRINT(...) printf(__VA_ARGS__)
-#else
-#define SUDO_PRINT(...) (void)0
-#endif // ENABLE_SUDO_PRINT()
-
-bool CoreSudokuSolver::Solve(const SudokuGrid &InGrid)
+bool BruteForceSudokuSolver::Solve(const SudokuGrid &InGrid)
 {
 	UnsolvedGrid = InGrid;
 
@@ -637,46 +675,47 @@ bool CoreSudokuSolver::Solve(const SudokuGrid &InGrid)
 	//		If no, backtrack one guess
 	auto FindNextGuess = [&]() -> void
 	{
-		DBG_PRINT("\tBegin Backtracking\n");
+		DbgPrintTabScope TS_DBG_0;
+		SUDO_DBG_PRINT(2, "Begin Backtracking\n");
+		DbgPrintTabScope TS_DBG_1;
+		static int TotalBacktracked = 0;
 		int NumBacktracked = 0;
 		int GuessStartIdx = Guesses.LastGuess;
 		while (!Guesses.CurrGuess().HasNextGuess())
 		{
 			int IdxToRemove = Guesses.Backtrack();
 			InProgressGrid[IdxToRemove] = 0;
-			DBG_PRINT("\t\tEmptying cell %d\n", IdxToRemove);
+			SUDO_DBG_PRINT(2, "Emptying cell %d\n", IdxToRemove);
 			NumBacktracked++;
 		}
-		DBG_PRINT("\t\tBacktracked to guess #%d\n", Guesses.LastGuess);
+		SUDO_DBG_PRINT(2, "Backtracked to guess #%d\n", Guesses.LastGuess);
+		TotalBacktracked += NumBacktracked;
 		const ActiveGuess& NextGuess = Guesses.NextGuess();
 		InProgressGrid[NextGuess.Idx] = NextGuess.GetVal();
+		NumGuesses()++;
 
 		int GuessEndIdx = Guesses.LastGuess;
 		if (NumBacktracked > 0)
 		{
-			SUDO_PRINT("Backtracked %d guesses from [%d] to [%d]\n", NumBacktracked, GuessStartIdx, GuessEndIdx);
-			SUDO_PRINT("\t{  ");
+			SUDO_DBG_PRINT(1, "Backtracked %d guesses from [%d] to [%d]: { ", NumBacktracked, GuessStartIdx, GuessEndIdx);
+			for (int Idx = 0; Idx < NextGuess.Guesses.Size; Idx++)
+			{
+				SUDO_DBG_PRINT_INLINE(1, Idx == NextGuess.CurrGuess ? "[%d]  " : "%d  ", NextGuess.Guesses.Vals[Idx]);
+			}
+			SUDO_DBG_PRINT_INLINE(1, "}\n");
+		}
+		else
+		{
+			DbgPrintTabScope TS_DBG_2;
+			SUDO_DBG_PRINT(2, "Chose next guess: %d for cell [%d]    (", NextGuess.GetVal(), NextGuess.Idx);
+			SUDO_DBG_PRINT_INLINE(2, "Idx %d in { ", NextGuess.CurrGuess);
 			for (int i = 0; i < NextGuess.Guesses.Size; i++)
 			{
-				if (i == NextGuess.CurrGuess)
-				{
-					SUDO_PRINT(">%d<  ", NextGuess.Guesses.Vals[i]);
-				}
-				else
-				{
-					SUDO_PRINT("%d  ", NextGuess.Guesses.Vals[i]);
-				}
+				SUDO_DBG_PRINT_INLINE(2, "%d ", NextGuess.Guesses.Vals[i]);
 			}
-			SUDO_PRINT("}\n");
+			SUDO_DBG_PRINT_INLINE(2, "} )\n");
 		}
-
-		DBG_PRINT("\t\tChose next guess: %d for cell [%d]\t(", NextGuess.GetVal(), NextGuess.Idx);
-		DBG_PRINT("Idx %d in { ", NextGuess.CurrGuess);
-		for (int i = 0; i < NextGuess.Guesses.Size; i++)
-		{
-			DBG_PRINT("%d ", NextGuess.Guesses.Vals[i]);
-		}
-		DBG_PRINT("}\n\tEnd Backtracking\n");
+		SUDO_DBG_PRINT(2, "End Backtracking\n");
 	};
 
 	// Naive solution:
@@ -687,45 +726,43 @@ bool CoreSudokuSolver::Solve(const SudokuGrid &InGrid)
 	//			- If not, backtrack
 	//			- If yes, repeat
 	int LoopCount = 0;
+	DbgPrintTabScope TS_DBG_0;
 	while (!InProgressGrid.IsSolved())
 	{
 		LoopCount++;
 		Assert(Guesses.LastGuess < NumEmptyCells);
 		Assert(Guesses.LastGuess < Guesses.MaxGuess);
+		DbgPrintTabScope TS_DBG_1;
 		if (!InProgressGrid.IsValid())
 		{
-			DBG_PRINT("InProgressGrid NOT valid! Backtracking...\n");
+			SUDO_DBG_PRINT(2, "InProgressGrid NOT valid! Backtracking...\n");
 			Assert(Guesses.LastGuess >= 0);
 			FindNextGuess();
 		}
 		else
 		{
 			const ActiveGuess &NewGuess = Guesses.NewGuess();
-			DBG_PRINT("Chose new guess (%d) at cell [%d]\n", Guesses.LastGuess, NewGuess.Idx);
+			SUDO_DBG_PRINT(2, "Chose new guess (%d) at cell [%d]\n", Guesses.LastGuess, NewGuess.Idx);
 			if (NewGuess.Guesses.Size > 0)
 			{
-				DBG_PRINT("\tTrying %d in cell [%d]...\n", NewGuess.GetVal(), NewGuess.Idx);
-				DBG_PRINT("\t%d PosVals for cell [%d]: { ", NewGuess.Guesses.Size, NewGuess.Idx);
+				DbgPrintTabScope TS_DBG_2;
+				SUDO_DBG_PRINT(2, "Trying %d in cell [%d]...\n", NewGuess.GetVal(), NewGuess.Idx);
+				SUDO_DBG_PRINT(2, "%d PosVals for cell [%d]: { ", NewGuess.Guesses.Size, NewGuess.Idx);
 				for (int i = 0; i < NewGuess.Guesses.Size; i++)
 				{
-					DBG_PRINT("%d ", NewGuess.Guesses.Vals[i]);
+					SUDO_DBG_PRINT_INLINE(2, "%d ", NewGuess.Guesses.Vals[i]);
 				}
-				DBG_PRINT("}\n");
+				SUDO_DBG_PRINT_INLINE(2, "}\n");
 				InProgressGrid[NewGuess.Idx] = NewGuess.GetVal();
+				NumGuesses()++;
 			}
 			else
 			{
-				DBG_PRINT("\tNo possible values for cell %d! Backtracking...\n", NewGuess.Idx);
+				DbgPrintTabScope TS_DBG_2;
+				SUDO_DBG_PRINT(2, "No possible values for cell %d! Backtracking...\n", NewGuess.Idx);
 				FindNextGuess();
 			}
 		}
-
-/*
-		if (LoopCount == 100)
-		{
-			Assert(false);
-		}
-*/
 	}
 
 	bSolved = InProgressGrid.IsSolved();

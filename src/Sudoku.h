@@ -53,7 +53,7 @@ struct BaseSudokuSolver
 	virtual bool Solve(const SudokuGrid& InGrid) = 0;
 };
 
-struct CoreSudokuSolver : BaseSudokuSolver
+struct BruteForceSudokuSolver : BaseSudokuSolver
 {
 	static int _NumAttempts;
 	static int _NumSolves;

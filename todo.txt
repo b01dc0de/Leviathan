@@ -1,0 +1,12 @@
+TODO DOCKET:
+- [ ] Implement verbosity levels to SUDO_PRINT
+- [ ] Rename CoreSolver to BruteForceSolver
+- [ ] Finish basic SudokuSolver statkeeping
+- [ ] Make Pseudoku non-deterministic (Ver 1.2)
+- [ ] Implement better solver
+	- Use sorted grid of PosVals rather than list of guesses
+- [ ] Make sudoku partial tests non-deterministic
+	- Copy test grid, then randomly choose cells to empty
+
+DOWN THE LINE:
+- [ ] Track SudokuSolver execution time
