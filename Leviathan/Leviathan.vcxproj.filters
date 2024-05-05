@@ -9,5 +9,27 @@
     <ClCompile Include="src\Leviathan.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\LvGraphics.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LvCommon.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Leviathan.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LvGraphics.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LvCommon.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="src\BasicShader.hlsl">
+      <Filter>src</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

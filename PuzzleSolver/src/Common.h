@@ -7,29 +7,7 @@
 #include <random>
 #include <algorithm>
 
-#define PLATFORM_WINDOWS (_MSC_VER > 0)
-#define PLATFORM_OTHER (!(PLATFORM_WINDOWS))
-
-/* MSVC */
-#if PLATFORM_WINDOWS
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#define Assert(exp) \
-	if (!(exp))	\
-	{ \
-		OutputDebugStringA("Failed expression: '" #exp "'\nIn File: " __FILE__ "\n"/*":" __LINE__*/); \
-		DebugBreak(); \
-	}
-#elif PLATFORM_OTHER
-#define Assert(exp)	\
-	if (!(exp)) \
-	{ \
-		printf("Failed expression: '" #exp "'\nIn File: " __FILE__ "\n"/*":" __LINE__*/); \
-		__builtin_trap(); \
-	}
-#else
-#error "No platform defined"
-#endif // PLATFORM
+#include "LvCommon.h"
 
 int GenRandInRange(int Min, int Max);
 
