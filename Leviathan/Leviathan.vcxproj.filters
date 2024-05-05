@@ -2,17 +2,12 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="src">
-      <UniqueIdentifier>{1e6c32e5-bc90-4ba6-ae38-3b1d782a20bb}</UniqueIdentifier>
+      <UniqueIdentifier>{3f9dc756-8d9b-42f9-8686-8670b5d7ffe0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp">
+    <ClCompile Include="src\Leviathan.cpp">
       <Filter>src</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="src\SimpleShader.hlsl">
-      <Filter>src</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>
