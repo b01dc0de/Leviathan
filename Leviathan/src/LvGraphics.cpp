@@ -3,49 +3,76 @@
 #include "LvGraphics.h"
 #include "Leviathan.h"
 
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#include <dxgi.h>
-
 namespace Leviathan
 {
-	D3D_FEATURE_LEVEL UsedFeatureLevel;
+	LvGraphics* LvGraphics::PvInst = nullptr;
 
-	DXHandle<IDXGISwapChain> DX_SwapChain = nullptr;
-	DXHandle<ID3D11Device> DX_Device = nullptr;
-	DXHandle<ID3D11DeviceContext> DX_ImmediateContext = nullptr;
-
-	DXHandle<ID3D11Texture2D> DX_BackBuffer = nullptr;
-	DXHandle<ID3D11RenderTargetView> DX_RenderTargetView = nullptr;
-
-	DXHandle<IDXGIFactory1> DX_Factory = nullptr;
-	std::vector<DXHandle<IDXGIAdapter>> DX_AdapterList;
-	std::vector<DXHandle<IDXGIOutput>> DX_Outputs;
-	std::vector<DXGI_MODE_DESC*> OutputModeDescList;
-
-	DXHandle<ID3D11RasterizerState> DX_RasterizerState = nullptr;
-	DXHandle<ID3D11Texture2D> DX_DepthStencil = nullptr;
-	DXHandle<ID3D11DepthStencilView> DX_DepthStencilView = nullptr;
-	DXHandle<ID3D11BlendState> DX_BlendState = nullptr;
-
-	DXHandle<ID3D11VertexShader> DX_VertexShader = nullptr;
-	DXHandle<ID3D11PixelShader> DX_PixelShader = nullptr;
-	DXHandle<ID3D11InputLayout> DX_InputLayout = nullptr;
-
-	DXHandle<ID3D11Buffer> DX_VertexBuffer = nullptr;
-	DXHandle<ID3D11Buffer> DX_IndexBuffer = nullptr;
-
-	DXHandle<ID3D11Buffer> DX_WorldBuffer = nullptr;
-	DXHandle<ID3D11Buffer> DX_ViewProjBuffer = nullptr;
-
-	VertexColor Vertices[] =
+	const VertexColor TriangleVertices[] =
 	{
-		{{0.0f, 0.5f, 0.5f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f}},
-		{{0.5f, -0.5f, 0.5f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f}},
-		{{-0.5f, -0.5f, 0.5f, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f}}
+		{{0.0f, 0.5f, 0.5f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f}},
+		{{0.5f, -0.5f, 0.5f, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},
+		{{-0.5f, -0.5f, 0.5f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f}}
 	};
+	const UINT TriangleIndices[] = { 0, 2, 1 };
+	const VertexColor SquareVertices[] =
+	{
+		{{-0.5f, 0.5f, 0.5f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}},
+		{{0.5f, 0.5f, 0.5f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f}},
+		{{0.5f, -0.5f, 0.5f, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},
+		{{-0.5f, -0.5f, 0.5f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f}}
+	};
+	const UINT SquareIndices[] = { 0, 2, 1, 0, 3, 2 };
 
-	int CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob)
+	const float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
+
+	LvGraphics::~LvGraphics()
+	{
+		for (int Idx = 0; Idx < OutputModeDescList.size(); Idx++)
+		{
+			delete[] OutputModeDescList[Idx];
+		}
+
+		for (int Idx = 0; Idx < DX_Outputs.size(); Idx++)
+		{
+			DX_Outputs[Idx].DxSafeRelease();
+		}
+
+		for (int Idx = 0; Idx < DX_AdapterList.size(); Idx++)
+		{
+			DX_AdapterList[Idx].DxSafeRelease();
+		}
+
+		DX_VertexBuffer.DxSafeRelease();
+		DX_IndexBuffer.DxSafeRelease();
+		DX_WorldBuffer.DxSafeRelease();
+		DX_ViewProjBuffer.DxSafeRelease();
+
+		DX_VertexShader.DxSafeRelease();
+		DX_PixelShader.DxSafeRelease();
+		DX_InputLayout.DxSafeRelease();
+
+		DX_RasterizerState.DxSafeRelease();
+		DX_DepthStencil.DxSafeRelease();
+		DX_DepthStencilView.DxSafeRelease();
+		DX_BlendState.DxSafeRelease();
+
+		DX_Factory.DxSafeRelease();
+		DX_BackBuffer.DxSafeRelease();
+		DX_RenderTargetView.DxSafeRelease();
+		DX_SwapChain.DxSafeRelease();
+		DX_ImmediateContext.DxSafeRelease();
+
+	#if LV_DEBUG_BUILD()
+		DXHandle<ID3D11Debug> DebugDevice = nullptr;
+		DX_Device->QueryInterface(IID_PPV_ARGS(&DebugDevice));
+		DebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL|D3D11_RLDO_IGNORE_INTERNAL);
+		DebugDevice.DxSafeRelease();
+	#endif // LV_DEBUG_BUILD()
+
+		DX_Device.DxSafeRelease();
+	}
+
+	int LvGraphics::CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob)
 	{
 		if (SourceFileName == nullptr || EntryPointFunction == nullptr || Profile == nullptr || ShaderBlob == nullptr)
 		{
@@ -80,7 +107,7 @@ namespace Leviathan
 			EntryPointFunction,
 			Profile,
 			CompileFlags,
-			0, //UINT Flags2
+			0,
 			&OutBlob,
 			&ErrorMsgBlob
 		);
@@ -97,18 +124,17 @@ namespace Leviathan
 		return Result;
 	};
 
-	void LvInitGraphics()
+	void LvGraphics::PvInit()
 	{
 		D3D_FEATURE_LEVEL SupportedFeatureLevels[] =
 		{
 			//D3D_FEATURE_LEVEL_12_2, D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0,
 			D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0,
-			//D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0, D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL_9_2, D3D_FEATURE_LEVEL_9_1
 		};
 		UINT NumSupportedFeatureLevels = ARRAYSIZE(SupportedFeatureLevels);
 		D3D_FEATURE_LEVEL D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
 
-		DXCHECK(CreateDXGIFactory1(__uuidof(IDXGIFactory), (void**)&DX_Factory));
+		DXCHECK(CreateDXGIFactory1(IID_PPV_ARGS(&DX_Factory)));
 		IDXGIAdapter* DX_Adapter = nullptr;
 		for (UINT AdapterIdx = 0; DX_Factory->EnumAdapters(AdapterIdx, &DX_Adapter); AdapterIdx++)
 		{
@@ -118,7 +144,7 @@ namespace Leviathan
 		for (int AdapterIdx = 0; AdapterIdx < DX_AdapterList.size(); AdapterIdx++)
 		{
 			IDXGIOutput* DX_Output = nullptr;
-			for (int OutputIdx = 0; DX_AdapterList[AdapterIdx]->EnumOutputs(OutputIdx, &DX_Output) != DXGI_ERROR_NOT_FOUND; OutputIdx++)
+			for (int OutputIdx = 0; DX_AdapterList[AdapterIdx]->EnumOutputs(OutputIdx, &DX_Output); OutputIdx++)
 			{
 				DXGI_FORMAT Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 				UINT NumModes = 0;
@@ -154,21 +180,21 @@ namespace Leviathan
 	#endif
 
 		DXCHECK(D3D11CreateDeviceAndSwapChain(
-			nullptr,					//IDXGIAdapter* pAdapter
-			D3D_DRIVER_TYPE_HARDWARE,	//D3D_DRIVER_TYPE DriverType
-			nullptr,					//HMODULE Software
-			CreateDeviceFlags,							//UINT Flags
-			SupportedFeatureLevels,	//const D3D_FEATURE_LEVEL* pFeatureLevels
-			NumSupportedFeatureLevels,	//UINT FeatureLevels
-			D3D11_SDK_VERSION,			//UINT SDKVersion
-			&swapchain_desc,			//const DXGI_SWAP_CHAIN_DESC* pSwapChainDesc
+			nullptr, //IDXGIAdapter* pAdapter
+			D3D_DRIVER_TYPE_HARDWARE,
+			nullptr,
+			CreateDeviceFlags,
+			SupportedFeatureLevels,
+			NumSupportedFeatureLevels,
+			D3D11_SDK_VERSION,
+			&swapchain_desc,
 			&DX_SwapChain,
 			&DX_Device,
 			&UsedFeatureLevel,
 			&DX_ImmediateContext
 		));
 
-		DXCHECK(DX_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&DX_BackBuffer));
+		DXCHECK(DX_SwapChain->GetBuffer(0, IID_PPV_ARGS(&DX_BackBuffer)));
 
 		DXCHECK(DX_Device->CreateRenderTargetView(DX_BackBuffer, nullptr, &DX_RenderTargetView));
 
@@ -176,7 +202,6 @@ namespace Leviathan
 		RasterDesc.FillMode = D3D11_FILL_SOLID;
 		RasterDesc.CullMode = D3D11_CULL_BACK;
 		RasterDesc.FrontCounterClockwise = true;
-		RasterDesc.DepthClipEnable = true;
 		RasterDesc.DepthClipEnable = true;
 		RasterDesc.ScissorEnable = false;
 		RasterDesc.MultisampleEnable = true;
@@ -220,8 +245,6 @@ namespace Leviathan
 		RTVBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALPHA;
 
 		D3D11_BLEND_DESC BlendDesc = {};
-		BlendDesc.AlphaToCoverageEnable;
-		BlendDesc.AlphaToCoverageEnable;
 		BlendDesc.RenderTarget[0] = RTVBlendDesc;
 
 		DXCHECK(DX_Device->CreateBlendState(&BlendDesc, &DX_BlendState));
@@ -237,38 +260,36 @@ namespace Leviathan
 
 		D3D11_BUFFER_DESC VertexBufferDesc =
 		{
-			sizeof(VertexColor) * ARRAYSIZE(Vertices),
+			//sizeof(TriangleVertices),
+			sizeof(SquareVertices),
 			D3D11_USAGE_DEFAULT,
 			D3D11_BIND_VERTEX_BUFFER,
 			0,
 			0
 		};
-		D3D11_SUBRESOURCE_DATA VertexBufferInitData = { Vertices, 0, 0 };
+		D3D11_SUBRESOURCE_DATA VertexBufferInitData = { /*TriangleVertices*/ SquareVertices, 0, 0};
 		DXCHECK(DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_VertexBuffer));
 
-		UINT Indices[] = { 0, 2, 1 };
 		D3D11_BUFFER_DESC IndexBufferDesc =
 		{
-			sizeof(Indices),
+			//sizeof(TriangleIndices),
+			sizeof(SquareIndices),
 			D3D11_USAGE_DEFAULT,
 			D3D11_BIND_INDEX_BUFFER,
 			0,
 			0
 		};
-		D3D11_SUBRESOURCE_DATA IndexBufferInitData = { Indices, 0, 0 };
+		D3D11_SUBRESOURCE_DATA IndexBufferInitData = { /*TriangleIndices*/ SquareIndices, 0, 0};
 		DXCHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBuffer));
 
 		ID3DBlob* VSCodeBlob = nullptr;
 		ID3DBlob* PSCodeBlob = nullptr;
-
 		DXCHECK(CompileShader(L"src/BasicShader.hlsl", "VSMain", "vs_5_0", &VSCodeBlob));
-
 		DXCHECK(CompileShader(L"src/BasicShader.hlsl", "PSMain", "ps_5_0", &PSCodeBlob));
 
 		if (VSCodeBlob && PSCodeBlob)
 		{
 			DXCHECK(DX_Device->CreateVertexShader(VSCodeBlob->GetBufferPointer(), VSCodeBlob->GetBufferSize(), nullptr, &DX_VertexShader));
-
 			DXCHECK(DX_Device->CreatePixelShader(PSCodeBlob->GetBufferPointer(), PSCodeBlob->GetBufferSize(), nullptr, &DX_PixelShader));
 
 			D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
@@ -296,7 +317,7 @@ namespace Leviathan
 		if (PSCodeBlob) { PSCodeBlob->Release(); }
 	}
 
-	void LvUpdateGraphicsState()
+	void LvGraphics::PvUpdateState()
 	{
 		UINT Stride = sizeof(VertexColor);
 		UINT Offset = 0;
@@ -322,15 +343,15 @@ namespace Leviathan
 		DX_ImmediateContext->PSSetShader(DX_PixelShader, nullptr, 0);
 	}
 
-	void LvDraw()
+	void LvGraphics::PvDraw()
 	{
-		float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
 		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, ClearColor);
 		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-		LvUpdateGraphicsState();
+		PvUpdateState();
 
-		DX_ImmediateContext->DrawIndexed((UINT)1 * 3, 0u, 0u);
+		//DX_ImmediateContext->DrawIndexed(ARRAYSIZE(TriangleIndices), 0u, 0u);
+		DX_ImmediateContext->DrawIndexed(ARRAYSIZE(SquareIndices), 0u, 0u);
 
 		DX_SwapChain->Present(0, 0);
 	}

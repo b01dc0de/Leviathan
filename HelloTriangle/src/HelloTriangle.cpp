@@ -240,8 +240,6 @@ namespace SimpleGraphics
 		RTVBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALPHA;
 
 		D3D11_BLEND_DESC BlendDesc = {};
-		BlendDesc.AlphaToCoverageEnable;
-		BlendDesc.AlphaToCoverageEnable;
 		BlendDesc.RenderTarget[0] = RTVBlendDesc;
 
 		Result = DX_Device->CreateBlendState(&BlendDesc, &DX_BlendState);

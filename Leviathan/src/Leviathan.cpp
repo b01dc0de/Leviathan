@@ -7,17 +7,18 @@ LRESULT CALLBACK LvWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 namespace Leviathan
 {
+	extern const int ResX = 1600;
+	extern const int ResY = 900;
+	extern const WCHAR* AppName = L"Leviathan";
+
+	bool bRunning = false;
+
+	HWND LvWindow;
+
 	HINSTANCE LvInst;
 	HINSTANCE LvPrevInst;
 	PSTR LvCmdLine;
 	int LvCmdShow;
-
-	HWND LvWindow;
-
-	int ResX = 1600;
-	int ResY = 900;
-	const WCHAR* AppName = L"Leviathan";
-	bool bRunning = false;
 
 	HWND LvInitWindow(HINSTANCE hInstance)
 	{
@@ -57,42 +58,44 @@ namespace Leviathan
 	{
 		HWND hWindow = LvInitWindow(LvInst);
 		Assert(hWindow);
-
 		LvWindow = hWindow;
 
-		LvInitGraphics();
+		if (LvWindow)
+		{
+			LvGraphics::Init();
 
-		ShowWindow(hWindow, LvCmdShow);
+			ShowWindow(LvWindow, LvCmdShow);
 
-		bRunning = true;
+			bRunning = true;
+		}
 	}
 	void LvTermEngine()
 	{
+		LvGraphics::Term();
 	}
 
 	void LvMainEngineLoop()
 	{
+		auto PeekNewMessages = [&]()
+		{
+			MSG Msg;
+			BOOL MsgResult;
+			while ((MsgResult = PeekMessage(&Msg, LvWindow, 0, 0, PM_REMOVE)) > 0)
+			{
+				TranslateMessage(&Msg);
+				DispatchMessage(&Msg);
+			}
+			if (MsgResult == -1) { /*CKA_TODO*/ }
+		};
+
 		while (bRunning)
 		{
-			// Get input
-			MSG msg;
-			BOOL MsgResult;
-			while ((MsgResult = PeekMessage(&msg, LvWindow, 0, 0, PM_REMOVE)) > 0)
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-			if (MsgResult == -1)
-			{
-				// CKA_TODO: Error handling?
-				//bGlobalRunning = false;
-				break;
-			}
+			PeekNewMessages();
 
 			// Update
 			UpdateWindow(LvWindow);
 
-			LvDraw();
+			LvGraphics::Draw();
 		}
 	}
 

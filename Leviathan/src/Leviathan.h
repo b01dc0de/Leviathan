@@ -3,8 +3,8 @@
 
 namespace Leviathan
 {
-	extern int ResX;
-	extern int ResY;
+	extern const int ResX;
+	extern const int ResY;
 	extern const WCHAR* AppName;
 	extern bool bRunning;
 
