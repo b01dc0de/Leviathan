@@ -27,21 +27,6 @@ namespace Leviathan
 
 	LvGraphics::~LvGraphics()
 	{
-		for (int Idx = 0; Idx < OutputModeDescList.size(); Idx++)
-		{
-			delete[] OutputModeDescList[Idx];
-		}
-
-		for (int Idx = 0; Idx < DX_Outputs.size(); Idx++)
-		{
-			DX_Outputs[Idx].DxSafeRelease();
-		}
-
-		for (int Idx = 0; Idx < DX_AdapterList.size(); Idx++)
-		{
-			DX_AdapterList[Idx].DxSafeRelease();
-		}
-
 		DX_VertexBuffer.DxSafeRelease();
 		DX_IndexBuffer.DxSafeRelease();
 		DX_WorldBuffer.DxSafeRelease();
@@ -56,17 +41,16 @@ namespace Leviathan
 		DX_DepthStencilView.DxSafeRelease();
 		DX_BlendState.DxSafeRelease();
 
-		DX_Factory.DxSafeRelease();
 		DX_BackBuffer.DxSafeRelease();
 		DX_RenderTargetView.DxSafeRelease();
 		DX_SwapChain.DxSafeRelease();
 		DX_ImmediateContext.DxSafeRelease();
 
 	#if LV_DEBUG_BUILD()
-		DXHandle<ID3D11Debug> DebugDevice = nullptr;
-		DX_Device->QueryInterface(IID_PPV_ARGS(&DebugDevice));
-		DebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL|D3D11_RLDO_IGNORE_INTERNAL);
-		DebugDevice.DxSafeRelease();
+		DXHandle<ID3D11Debug> DX_Debug= nullptr;
+		DX_Device->QueryInterface(IID_PPV_ARGS(&DX_Debug));
+		DX_Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL|D3D11_RLDO_IGNORE_INTERNAL);
+		DX_Debug.DxSafeRelease();
 	#endif // LV_DEBUG_BUILD()
 
 		DX_Device.DxSafeRelease();
@@ -134,45 +118,25 @@ namespace Leviathan
 		UINT NumSupportedFeatureLevels = ARRAYSIZE(SupportedFeatureLevels);
 		D3D_FEATURE_LEVEL D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
 
-		DXCHECK(CreateDXGIFactory1(IID_PPV_ARGS(&DX_Factory)));
-		IDXGIAdapter* DX_Adapter = nullptr;
-		for (UINT AdapterIdx = 0; DX_Factory->EnumAdapters(AdapterIdx, &DX_Adapter); AdapterIdx++)
-		{
-			DX_AdapterList.push_back(DX_Adapter);
-		}
-
-		for (int AdapterIdx = 0; AdapterIdx < DX_AdapterList.size(); AdapterIdx++)
-		{
-			IDXGIOutput* DX_Output = nullptr;
-			for (int OutputIdx = 0; DX_AdapterList[AdapterIdx]->EnumOutputs(OutputIdx, &DX_Output); OutputIdx++)
-			{
-				DXGI_FORMAT Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-				UINT NumModes = 0;
-				DX_Output->GetDisplayModeList(Format, 0, &NumModes, nullptr);
-				if (NumModes != 0)
-				{
-					DXGI_MODE_DESC* ModeList = new DXGI_MODE_DESC[NumModes];
-					DX_Output->GetDisplayModeList(Format, 0, &NumModes, ModeList);
-					OutputModeDescList.push_back(ModeList);
-				}
-			}
-		}
-
+		DXGI_FORMAT SwapChainFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		DXGI_SAMPLE_DESC SharedSampleDesc = {};
-		SharedSampleDesc.Count = 4;
-		SharedSampleDesc.Quality = (UINT)D3D11_STANDARD_MULTISAMPLE_PATTERN;
+		SharedSampleDesc.Count = 1; // 4
+		SharedSampleDesc.Quality = 0; // (UINT)D3D11_STANDARD_MULTISAMPLE_PATTERN
 
-		DXGI_SWAP_CHAIN_DESC swapchain_desc = {};
-		swapchain_desc.BufferCount = 2;
-		swapchain_desc.BufferDesc.Width = ResX;
-		swapchain_desc.BufferDesc.Height = ResY;
-		swapchain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		swapchain_desc.BufferDesc.RefreshRate.Numerator = 60;
-		swapchain_desc.BufferDesc.RefreshRate.Denominator = 1;
-		swapchain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapchain_desc.OutputWindow = LvWindow;
-		swapchain_desc.SampleDesc = SharedSampleDesc;
-		swapchain_desc.Windowed = true;
+		DXGI_SWAP_CHAIN_DESC SwapChainDesc = {};
+		SwapChainDesc.BufferDesc.Width = ResX;
+		SwapChainDesc.BufferDesc.Height = ResY;
+		SwapChainDesc.BufferDesc.Format = SwapChainFormat;
+		SwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+		SwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+		SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		SwapChainDesc.SampleDesc = SharedSampleDesc;
+		SwapChainDesc.BufferCount = 2;
+		SwapChainDesc.OutputWindow = LvWindow;
+		SwapChainDesc.Windowed = true;
+		SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+		//SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+		SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
 		UINT CreateDeviceFlags = 0;
 	#if LV_DEBUG_BUILD()
@@ -187,15 +151,21 @@ namespace Leviathan
 			SupportedFeatureLevels,
 			NumSupportedFeatureLevels,
 			D3D11_SDK_VERSION,
-			&swapchain_desc,
+			&SwapChainDesc,
 			&DX_SwapChain,
 			&DX_Device,
 			&UsedFeatureLevel,
 			&DX_ImmediateContext
 		));
 
-		DXCHECK(DX_SwapChain->GetBuffer(0, IID_PPV_ARGS(&DX_BackBuffer)));
+		UINT NumQualityLevels = 0;
+		DXCHECK(DX_Device->CheckMultisampleQualityLevels(
+			SwapChainFormat,
+			SharedSampleDesc.Count,
+			&NumQualityLevels
+		));
 
+		DXCHECK(DX_SwapChain->GetBuffer(0, IID_PPV_ARGS(&DX_BackBuffer)));
 		DXCHECK(DX_Device->CreateRenderTargetView(DX_BackBuffer, nullptr, &DX_RenderTargetView));
 
 		D3D11_RASTERIZER_DESC RasterDesc = {};
@@ -303,14 +273,14 @@ namespace Leviathan
 			DXCHECK(DX_Device->CreateInputLayout(InputLayoutDesc, NumInputElements, VSCodeBlob->GetBufferPointer(), VSCodeBlob->GetBufferSize(), &DX_InputLayout));
 
 			D3D11_BUFFER_DESC BufferDesc = {};
-			BufferDesc.ByteWidth = sizeof(MatrixR32) * 2;
+			BufferDesc.ByteWidth = sizeof(fMatrix) * 2;
 			BufferDesc.Usage = D3D11_USAGE_DEFAULT;
 			BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 			BufferDesc.CPUAccessFlags = 0;
 
 			DXCHECK(DX_Device->CreateBuffer(&BufferDesc, nullptr, &DX_ViewProjBuffer));
 
-			BufferDesc.ByteWidth = sizeof(MatrixR32);
+			BufferDesc.ByteWidth = sizeof(fMatrix);
 			DXCHECK(DX_Device->CreateBuffer(&BufferDesc, nullptr, &DX_WorldBuffer));
 		}
 		if (VSCodeBlob) { VSCodeBlob->Release(); }
@@ -327,6 +297,11 @@ namespace Leviathan
 		CurrWVP.View.Identity();
 		CurrWVP.Proj.Identity();
 		CurrWVP.World.Identity();
+
+		// CKA_NOTE:
+		//	- This call is now necessary every time after calling SwapChain::Present
+		//	- Necessary when using DXGI flip model
+		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
 
 		DX_ImmediateContext->IASetInputLayout(DX_InputLayout);
 		DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBuffer, &Stride, &Offset);
@@ -345,15 +320,14 @@ namespace Leviathan
 
 	void LvGraphics::PvDraw()
 	{
+		PvUpdateState();
+
 		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, ClearColor);
 		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-		PvUpdateState();
+		DX_ImmediateContext->DrawIndexed(ARRAYSIZE(/*TriangleIndices*/SquareIndices), 0u, 0u);
 
-		//DX_ImmediateContext->DrawIndexed(ARRAYSIZE(TriangleIndices), 0u, 0u);
-		DX_ImmediateContext->DrawIndexed(ARRAYSIZE(SquareIndices), 0u, 0u);
-
-		DX_SwapChain->Present(0, 0);
+		DX_SwapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 	}
 
 }

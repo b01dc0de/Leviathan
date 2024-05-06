@@ -56,6 +56,8 @@ namespace Leviathan
 
 	void LvInitEngine()
 	{
+		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
 		HWND hWindow = LvInitWindow(LvInst);
 		Assert(hWindow);
 		LvWindow = hWindow;
@@ -72,6 +74,7 @@ namespace Leviathan
 	void LvTermEngine()
 	{
 		LvGraphics::Term();
+		DestroyWindow(LvWindow);
 	}
 
 	void LvMainEngineLoop()
@@ -103,21 +106,22 @@ namespace Leviathan
 
 LRESULT CALLBACK LvWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	LRESULT Result;
 	switch (uMsg)
 	{
+		case WM_QUIT:
+		case WM_CLOSE:
+		case WM_DESTROY:
+		{
+			Leviathan::bRunning = false;
+		} break;
 		case WM_LBUTTONDOWN:
 		case WM_RBUTTONDOWN:
 		case WM_KEYDOWN:
 		{
 			Leviathan::bRunning = false;
-		}
-		default:
-		{
-			Result = DefWindowProc(hwnd, uMsg, wParam, lParam);
 		} break;
 	}
-	
+	LRESULT Result = DefWindowProc(hwnd, uMsg, wParam, lParam);
 	return Result;
 }
 

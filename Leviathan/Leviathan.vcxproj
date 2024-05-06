@@ -132,11 +132,13 @@
     <ClCompile Include="src\Leviathan.cpp" />
     <ClCompile Include="src\LvCommon.cpp" />
     <ClCompile Include="src\LvGraphics.cpp" />
+    <ClCompile Include="src\LvMath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h" />
     <ClInclude Include="src\LvCommon.h" />
     <ClInclude Include="src\LvGraphics.h" />
+    <ClInclude Include="src\LvMath.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\BasicShader.hlsl">

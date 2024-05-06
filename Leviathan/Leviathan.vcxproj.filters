@@ -15,6 +15,9 @@
     <ClCompile Include="src\LvCommon.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\LvMath.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -24,6 +27,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\LvCommon.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LvMath.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

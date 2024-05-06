@@ -7,11 +7,7 @@
 #include <d3dcompiler.h>
 #include <dxgi.h>
 
-#if PLATFORM_WINDOWS()
-	#define DXCHECK(DXResult) Assert(!FAILED((DXResult)))
-#else
-	#define DXCHECK(DXResult) void(0)
-#endif
+#define DXCHECK(DXResult) Assert(!FAILED((DXResult)))
 
 namespace Leviathan
 {
@@ -29,43 +25,17 @@ namespace Leviathan
 		T** operator &() { return &Ptr; }
 	};
 
-	using R32 = float;
-
-	struct VertexR32
-	{
-		R32 X = 0.0f;
-		R32 Y = 0.0f;
-		R32 Z = 0.0f;
-		R32 W = 0.0f;
-	};
-
-	struct MatrixR32
-	{
-		VertexR32 Row0;
-		VertexR32 Row1;
-		VertexR32 Row2;
-		VertexR32 Row3;
-
-		void Identity()
-		{
-			Row0 = { 1.0f, 0.0f, 0.0f, 0.0f };
-			Row1 = { 0.0f, 1.0f, 0.0f, 0.0f };
-			Row2 = { 0.0f, 0.0f, 1.0f, 0.0f };
-			Row3 = { 0.0f, 0.0f, 0.0f, 1.0f };
-		}
-	};
-
 	struct WorldViewProjData
 	{
-		MatrixR32 World;
-		MatrixR32 View;
-		MatrixR32 Proj;
+		fMatrix World;
+		fMatrix View;
+		fMatrix Proj;
 	};
 
 	struct VertexColor
 	{
-		VertexR32 Position;
-		VertexR32 Color;
+		fVertex Position;
+		fVertex Color;
 	};
 
 	struct LvGraphics
@@ -78,11 +48,6 @@ namespace Leviathan
 
 		DXHandle<ID3D11Texture2D> DX_BackBuffer = nullptr;
 		DXHandle<ID3D11RenderTargetView> DX_RenderTargetView = nullptr;
-
-		DXHandle<IDXGIFactory1> DX_Factory = nullptr;
-		std::vector<DXHandle<IDXGIAdapter>> DX_AdapterList;
-		std::vector<DXHandle<IDXGIOutput>> DX_Outputs;
-		std::vector<DXGI_MODE_DESC*> OutputModeDescList;
 
 		DXHandle<ID3D11RasterizerState> DX_RasterizerState = nullptr;
 		DXHandle<ID3D11Texture2D> DX_DepthStencil = nullptr;
