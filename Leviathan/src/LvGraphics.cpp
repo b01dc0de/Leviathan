@@ -118,19 +118,15 @@ namespace Leviathan
 		UINT NumSupportedFeatureLevels = ARRAYSIZE(SupportedFeatureLevels);
 		D3D_FEATURE_LEVEL D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
 
-		DXGI_FORMAT SwapChainFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-		DXGI_SAMPLE_DESC SharedSampleDesc = {};
-		SharedSampleDesc.Count = 1; // 4
-		SharedSampleDesc.Quality = 0; // (UINT)D3D11_STANDARD_MULTISAMPLE_PATTERN
-
 		DXGI_SWAP_CHAIN_DESC SwapChainDesc = {};
 		SwapChainDesc.BufferDesc.Width = ResX;
 		SwapChainDesc.BufferDesc.Height = ResY;
-		SwapChainDesc.BufferDesc.Format = SwapChainFormat;
+		SwapChainDesc.BufferDesc.Format = RenderTargetFormat;
 		SwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
 		SwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 		SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		SwapChainDesc.SampleDesc = SharedSampleDesc;
+		SwapChainDesc.SampleDesc.Count = 1;
+		SwapChainDesc.SampleDesc.Quality = 0;
 		SwapChainDesc.BufferCount = 2;
 		SwapChainDesc.OutputWindow = LvWindow;
 		SwapChainDesc.Windowed = true;
@@ -158,15 +154,31 @@ namespace Leviathan
 			&DX_ImmediateContext
 		));
 
-		UINT NumQualityLevels = 0;
-		DXCHECK(DX_Device->CheckMultisampleQualityLevels(
-			SwapChainFormat,
-			SharedSampleDesc.Count,
-			&NumQualityLevels
-		));
-
 		DXCHECK(DX_SwapChain->GetBuffer(0, IID_PPV_ARGS(&DX_BackBuffer)));
-		DXCHECK(DX_Device->CreateRenderTargetView(DX_BackBuffer, nullptr, &DX_RenderTargetView));
+
+		DXGI_SAMPLE_DESC Shared_RT_SampleDesc = {};
+		Shared_RT_SampleDesc.Count = 4;
+		Shared_RT_SampleDesc.Quality = D3D11_STANDARD_MULTISAMPLE_PATTERN;
+
+		D3D11_TEXTURE2D_DESC RTT_Desc;
+		RTT_Desc.Width = ResX;
+		RTT_Desc.Height = ResY;
+		RTT_Desc.MipLevels = 1;
+		RTT_Desc.ArraySize = 1;
+		RTT_Desc.Format = RenderTargetFormat;
+		RTT_Desc.SampleDesc = Shared_RT_SampleDesc;
+		RTT_Desc.Usage = D3D11_USAGE_DEFAULT;
+		RTT_Desc.BindFlags = D3D11_BIND_RENDER_TARGET;
+		RTT_Desc.CPUAccessFlags = 0;
+		RTT_Desc.MiscFlags = 0;
+		DX_Device->CreateTexture2D(&RTT_Desc, nullptr, &DX_RenderTargetTexture);
+		D3D11_RENDER_TARGET_VIEW_DESC RTV_Desc = {};
+		RTV_Desc.Format = RenderTargetFormat;
+		RTV_Desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+		RTV_Desc.Texture2D.MipSlice = 0;
+		//DXCHECK(DX_Device->CreateRenderTargetView(DX_BackBuffer, nullptr, &DX_RenderTargetView));
+		//DXCHECK(DX_Device->CreateRenderTargetView(DX_RenderTargetTexture, &RTV_Desc, &DX_RenderTargetView));
+		DXCHECK(DX_Device->CreateRenderTargetView(DX_RenderTargetTexture, nullptr, &DX_RenderTargetView));
 
 		D3D11_RASTERIZER_DESC RasterDesc = {};
 		RasterDesc.FillMode = D3D11_FILL_SOLID;
@@ -187,7 +199,7 @@ namespace Leviathan
 		DepthDesc.MipLevels = 1;
 		DepthDesc.ArraySize = 1;
 		DepthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		DepthDesc.SampleDesc = SharedSampleDesc;
+		DepthDesc.SampleDesc = Shared_RT_SampleDesc;
 		DepthDesc.Usage = D3D11_USAGE_DEFAULT;
 		DepthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 		DepthDesc.CPUAccessFlags = 0;
@@ -326,6 +338,9 @@ namespace Leviathan
 		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 		DX_ImmediateContext->DrawIndexed(ARRAYSIZE(/*TriangleIndices*/SquareIndices), 0u, 0u);
+
+		// CKA_TODO: Perform an MSAA resolve here
+		DX_ImmediateContext->ResolveSubresource(DX_BackBuffer, 0, DX_RenderTargetTexture, 0, RenderTargetFormat);
 
 		DX_SwapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 	}

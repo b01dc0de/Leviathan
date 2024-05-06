@@ -41,12 +41,14 @@ namespace Leviathan
 	struct LvGraphics
 	{
 		D3D_FEATURE_LEVEL UsedFeatureLevel = D3D_FEATURE_LEVEL_11_0;
+		DXGI_FORMAT RenderTargetFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-		DXHandle<IDXGISwapChain> DX_SwapChain = nullptr;
 		DXHandle<ID3D11Device> DX_Device = nullptr;
 		DXHandle<ID3D11DeviceContext> DX_ImmediateContext = nullptr;
 
+		DXHandle<IDXGISwapChain> DX_SwapChain = nullptr;
 		DXHandle<ID3D11Texture2D> DX_BackBuffer = nullptr;
+		DXHandle<ID3D11Texture2D> DX_RenderTargetTexture = nullptr;
 		DXHandle<ID3D11RenderTargetView> DX_RenderTargetView = nullptr;
 
 		DXHandle<ID3D11RasterizerState> DX_RasterizerState = nullptr;
