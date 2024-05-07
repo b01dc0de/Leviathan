@@ -95,9 +95,6 @@ namespace Leviathan
 		{
 			PeekNewMessages();
 
-			// Update
-			UpdateWindow(LvWindow);
-
 			LvGraphics::Draw();
 		}
 	}

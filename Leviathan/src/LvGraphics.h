@@ -4,8 +4,11 @@
 #include "LvCommon.h"
 
 #include <d3d11.h>
+//#include <d3d11_4.h>
+#include <d3dcommon.h>
 #include <d3dcompiler.h>
 #include <dxgi.h>
+#include <dxgidebug.h>
 
 #define DXCHECK(DXResult) Assert(!FAILED((DXResult)))
 
@@ -16,9 +19,16 @@ namespace Leviathan
 	{
 		T* Ptr = nullptr;
 
-		void DxSafeRelease() { if (Ptr) { Ptr->Release(); Ptr = nullptr; } }
+		void SafeRelease() { if (Ptr) { Ptr->Release(); Ptr = nullptr; } }
 		DXHandle(T* InPtr) : Ptr(InPtr) {}
-		~DXHandle() { DxSafeRelease(); }
+		~DXHandle()
+		{ 
+			// CKA_TODO: We don't want to SafeRelase here so we can control our COM references
+			// - Instead for now just assert that the handle has been cleared
+			Assert(nullptr == Ptr);
+			//SafeRelease();
+		}
+
 		operator T*() { return Ptr; }
 		T* operator ->() { return Ptr; }
 		T* operator *() { return Ptr; }
@@ -50,10 +60,10 @@ namespace Leviathan
 		DXHandle<ID3D11Texture2D> DX_BackBuffer = nullptr;
 		DXHandle<ID3D11Texture2D> DX_RenderTargetTexture = nullptr;
 		DXHandle<ID3D11RenderTargetView> DX_RenderTargetView = nullptr;
-
-		DXHandle<ID3D11RasterizerState> DX_RasterizerState = nullptr;
-		DXHandle<ID3D11Texture2D> DX_DepthStencil = nullptr;
+		DXHandle<ID3D11DepthStencilState> DX_DepthStencilState = nullptr;
+		DXHandle<ID3D11Texture2D> DX_DepthStencilTexture = nullptr;
 		DXHandle<ID3D11DepthStencilView> DX_DepthStencilView = nullptr;
+		DXHandle<ID3D11RasterizerState> DX_RasterizerState = nullptr;
 		DXHandle<ID3D11BlendState> DX_BlendState = nullptr;
 
 		DXHandle<ID3D11VertexShader> DX_VertexShader = nullptr;
@@ -84,6 +94,7 @@ namespace Leviathan
 		void PvInit();
 		void PvUpdateState();
 		void PvDraw();
+		void PvSetDXDBGNames();
 
 		static void Init() { Inst()->PvInit(); }
 		static void Term() { Assert(PvInst); delete PvInst; PvInst = nullptr; }

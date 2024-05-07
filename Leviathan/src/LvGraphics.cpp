@@ -27,33 +27,70 @@ namespace Leviathan
 
 	LvGraphics::~LvGraphics()
 	{
-		DX_VertexBuffer.DxSafeRelease();
-		DX_IndexBuffer.DxSafeRelease();
-		DX_WorldBuffer.DxSafeRelease();
-		DX_ViewProjBuffer.DxSafeRelease();
 
-		DX_VertexShader.DxSafeRelease();
-		DX_PixelShader.DxSafeRelease();
-		DX_InputLayout.DxSafeRelease();
+		/*
+			- CKA_NOTE: Order of DX initialization, last updated 5/6/24
+			- Only care because it's generally considered good practice to
+			- release these handles in reverse order of initialization
+				Device related:
+				- SwapChain, Device, ImmediateContext (D3D11CreateDeviceAndSwapChain)
+				- BackBuffer (SwapChain::GetBuffer)
+				- RenderTargetTexture (Device::CreateTexture2D)
+				- RenderTargetView (Device::CreateRenderTargetView)
+				- DepthStencil (Device::CreateTexture2D)
 
-		DX_RasterizerState.DxSafeRelease();
-		DX_DepthStencil.DxSafeRelease();
-		DX_DepthStencilView.DxSafeRelease();
-		DX_BlendState.DxSafeRelease();
+				- RasterizerState (Device::CreateRasterizerState)
+				- BlendState (Device::CreateBlendState)
 
-		DX_BackBuffer.DxSafeRelease();
-		DX_RenderTargetView.DxSafeRelease();
-		DX_SwapChain.DxSafeRelease();
-		DX_ImmediateContext.DxSafeRelease();
+				Draw Pipeline related:
+				Shader/IA:
+					- VertexShader (Device::CreateVertexShaer)
+					- PixelShader (Device::CreatePixelShader)
+					- InputLayout (Device::CreateInputLayout)
+				CBuffers+PrimitiveData:
+					- VertexBuffer (Device::CreateBuffer)
+					- IndexBuffer (Device::CreateBuffer)
+					- ViewProjBuffer (Device::CreateBuffer)
+					- WorldBuffer (Device::CreateBuffer)
+		*/
+
+		// Release resources in (generally) reverse init order
+		DX_VertexBuffer.SafeRelease();
+		DX_IndexBuffer.SafeRelease();
+		DX_ViewProjBuffer.SafeRelease();
+		DX_WorldBuffer.SafeRelease();
+
+		DX_VertexShader.SafeRelease();
+		DX_PixelShader.SafeRelease();
+		DX_InputLayout.SafeRelease();
+
+		DX_RasterizerState.SafeRelease();
+		DX_BlendState.SafeRelease();
+		DX_DepthStencilState.SafeRelease();
+		DX_DepthStencilView.SafeRelease();
+		DX_DepthStencilTexture.SafeRelease();
+		DX_RenderTargetView.SafeRelease();
+		DX_RenderTargetTexture.SafeRelease();
+		DX_BackBuffer.SafeRelease();
+
+		DX_ImmediateContext->ClearState();
+		DX_ImmediateContext.SafeRelease();
+		DX_SwapChain.SafeRelease();
 
 	#if LV_DEBUG_BUILD()
-		DXHandle<ID3D11Debug> DX_Debug= nullptr;
-		DX_Device->QueryInterface(IID_PPV_ARGS(&DX_Debug));
+		DXHandle<ID3D11Debug> DX_Debug = nullptr;
+		DXCHECK(DX_Device->QueryInterface(IID_PPV_ARGS(&DX_Debug)));
 		DX_Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL|D3D11_RLDO_IGNORE_INTERNAL);
-		DX_Debug.DxSafeRelease();
+		DX_Debug.SafeRelease();
 	#endif // LV_DEBUG_BUILD()
 
-		DX_Device.DxSafeRelease();
+		// CKA_TODO: Don't SafeRelease the ID3D11Device for now. Throws exception on following line:
+		//DX_Device.SafeRelease();
+		//		Exception thrown at 0x00007FFCE1C953AC in Leviathan.exe: Microsoft C++ exception : MONZA::DdiThreadingContext<MONZA::AdapterTraits_Gen12LP>::msg_end at memory location 0x000000AE3A2FFBF0.
+		//		Symbols not loaded for igd10um64xe.pdb/dll
+		// Don't care enough to solve this now but should investigate in future
+		//DX_Device.SafeRelease();
+		DX_Device = nullptr;
 	}
 
 	int LvGraphics::CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob)
@@ -99,7 +136,7 @@ namespace Leviathan
 
 		if (ErrorMsgBlob)
 		{
-			OutputDebugStringA((char*)ErrorMsgBlob->GetBufferPointer());
+			Outf("%s\n", (char*)ErrorMsgBlob->GetBufferPointer());
 			ErrorMsgBlob->Release();
 		}
 
@@ -116,7 +153,6 @@ namespace Leviathan
 			D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0,
 		};
 		UINT NumSupportedFeatureLevels = ARRAYSIZE(SupportedFeatureLevels);
-		D3D_FEATURE_LEVEL D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
 
 		DXGI_SWAP_CHAIN_DESC SwapChainDesc = {};
 		SwapChainDesc.BufferDesc.Width = ResX;
@@ -131,7 +167,6 @@ namespace Leviathan
 		SwapChainDesc.OutputWindow = LvWindow;
 		SwapChainDesc.Windowed = true;
 		SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		//SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
 		SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
 		UINT CreateDeviceFlags = 0;
@@ -171,14 +206,51 @@ namespace Leviathan
 		RTT_Desc.BindFlags = D3D11_BIND_RENDER_TARGET;
 		RTT_Desc.CPUAccessFlags = 0;
 		RTT_Desc.MiscFlags = 0;
-		DX_Device->CreateTexture2D(&RTT_Desc, nullptr, &DX_RenderTargetTexture);
+		DXCHECK(DX_Device->CreateTexture2D(&RTT_Desc, nullptr, &DX_RenderTargetTexture));
 		D3D11_RENDER_TARGET_VIEW_DESC RTV_Desc = {};
 		RTV_Desc.Format = RenderTargetFormat;
 		RTV_Desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
 		RTV_Desc.Texture2D.MipSlice = 0;
-		//DXCHECK(DX_Device->CreateRenderTargetView(DX_BackBuffer, nullptr, &DX_RenderTargetView));
 		//DXCHECK(DX_Device->CreateRenderTargetView(DX_RenderTargetTexture, &RTV_Desc, &DX_RenderTargetView));
 		DXCHECK(DX_Device->CreateRenderTargetView(DX_RenderTargetTexture, nullptr, &DX_RenderTargetView));
+
+		// CKA_NOTE: Use the default values for now
+		// See: https://learn.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_depth_stencil_desc
+		D3D11_DEPTH_STENCIL_DESC DepthStencilStateDesc = {};
+		DepthStencilStateDesc.DepthEnable = TRUE;
+		DepthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		DepthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS;
+		DepthStencilStateDesc.StencilEnable = FALSE;
+		DepthStencilStateDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+		DepthStencilStateDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+		D3D11_DEPTH_STENCILOP_DESC DefaultStencilOpDesc = {};
+		DefaultStencilOpDesc.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		DefaultStencilOpDesc.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+		DefaultStencilOpDesc.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		DefaultStencilOpDesc.StencilFunc = D3D11_COMPARISON_ALWAYS;
+		DepthStencilStateDesc.FrontFace = DefaultStencilOpDesc;
+		DepthStencilStateDesc.BackFace = DefaultStencilOpDesc;
+		DXCHECK(DX_Device->CreateDepthStencilState(&DepthStencilStateDesc, &DX_DepthStencilState));
+
+		D3D11_TEXTURE2D_DESC DepthStenctilTextureDesc = {};
+		DepthStenctilTextureDesc.Width = ResX;
+		DepthStenctilTextureDesc.Height = ResY;
+		DepthStenctilTextureDesc.MipLevels = 1;
+		DepthStenctilTextureDesc.ArraySize = 1;
+		DepthStenctilTextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		DepthStenctilTextureDesc.SampleDesc = Shared_RT_SampleDesc;
+		DepthStenctilTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+		DepthStenctilTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		DepthStenctilTextureDesc.CPUAccessFlags = 0;
+		DepthStenctilTextureDesc.MiscFlags = 0;
+		DXCHECK(DX_Device->CreateTexture2D(&DepthStenctilTextureDesc, nullptr, &DX_DepthStencilTexture));
+
+		D3D11_DEPTH_STENCIL_VIEW_DESC DepthStencilViewDesc = {};
+		DepthStencilViewDesc.Format = DepthStencilViewDesc.Format;
+		DepthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+		DepthStencilViewDesc.Texture2D.MipSlice = 0;
+		DXCHECK(DX_Device->CreateDepthStencilView(DX_DepthStencilTexture, &DepthStencilViewDesc, &DX_DepthStencilView));
+		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
 
 		D3D11_RASTERIZER_DESC RasterDesc = {};
 		RasterDesc.FillMode = D3D11_FILL_SOLID;
@@ -193,29 +265,6 @@ namespace Leviathan
 
 		DX_ImmediateContext->RSSetState(DX_RasterizerState);
 
-		D3D11_TEXTURE2D_DESC DepthDesc = {};
-		DepthDesc.Width = ResX;
-		DepthDesc.Height = ResY;
-		DepthDesc.MipLevels = 1;
-		DepthDesc.ArraySize = 1;
-		DepthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		DepthDesc.SampleDesc = Shared_RT_SampleDesc;
-		DepthDesc.Usage = D3D11_USAGE_DEFAULT;
-		DepthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-		DepthDesc.CPUAccessFlags = 0;
-		DepthDesc.MiscFlags = 0;
-
-		DXCHECK(DX_Device->CreateTexture2D(&DepthDesc, nullptr, &DX_DepthStencil));
-
-		D3D11_DEPTH_STENCIL_VIEW_DESC DepthStencilViewDesc = {};
-		DepthStencilViewDesc.Format = DepthStencilViewDesc.Format;
-		DepthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
-		DepthStencilViewDesc.Texture2D.MipSlice = 0;
-
-		DXCHECK(DX_Device->CreateDepthStencilView(DX_DepthStencil, &DepthStencilViewDesc, &DX_DepthStencilView));
-
-		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
-
 		D3D11_RENDER_TARGET_BLEND_DESC RTVBlendDesc = {};
 		RTVBlendDesc.BlendEnable = true;
 		RTVBlendDesc.SrcBlend = D3D11_BLEND_SRC_ALPHA;
@@ -227,6 +276,8 @@ namespace Leviathan
 		RTVBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALPHA;
 
 		D3D11_BLEND_DESC BlendDesc = {};
+		BlendDesc.AlphaToCoverageEnable = false;
+		BlendDesc.IndependentBlendEnable = false;
 		BlendDesc.RenderTarget[0] = RTVBlendDesc;
 
 		DXCHECK(DX_Device->CreateBlendState(&BlendDesc, &DX_BlendState));
@@ -239,30 +290,6 @@ namespace Leviathan
 		Viewport_Desc.TopLeftX = 0;
 		Viewport_Desc.TopLeftY = 0;
 		DX_ImmediateContext->RSSetViewports(1, &Viewport_Desc);
-
-		D3D11_BUFFER_DESC VertexBufferDesc =
-		{
-			//sizeof(TriangleVertices),
-			sizeof(SquareVertices),
-			D3D11_USAGE_DEFAULT,
-			D3D11_BIND_VERTEX_BUFFER,
-			0,
-			0
-		};
-		D3D11_SUBRESOURCE_DATA VertexBufferInitData = { /*TriangleVertices*/ SquareVertices, 0, 0};
-		DXCHECK(DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_VertexBuffer));
-
-		D3D11_BUFFER_DESC IndexBufferDesc =
-		{
-			//sizeof(TriangleIndices),
-			sizeof(SquareIndices),
-			D3D11_USAGE_DEFAULT,
-			D3D11_BIND_INDEX_BUFFER,
-			0,
-			0
-		};
-		D3D11_SUBRESOURCE_DATA IndexBufferInitData = { /*TriangleIndices*/ SquareIndices, 0, 0};
-		DXCHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBuffer));
 
 		ID3DBlob* VSCodeBlob = nullptr;
 		ID3DBlob* PSCodeBlob = nullptr;
@@ -281,53 +308,128 @@ namespace Leviathan
 				{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			};
 			UINT NumInputElements = ARRAYSIZE(InputLayoutDesc);
-
 			DXCHECK(DX_Device->CreateInputLayout(InputLayoutDesc, NumInputElements, VSCodeBlob->GetBufferPointer(), VSCodeBlob->GetBufferSize(), &DX_InputLayout));
 
-			D3D11_BUFFER_DESC BufferDesc = {};
-			BufferDesc.ByteWidth = sizeof(fMatrix) * 2;
-			BufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-			BufferDesc.CPUAccessFlags = 0;
+			D3D11_BUFFER_DESC VertexBufferDesc =
+			{
+				//sizeof(TriangleVertices),
+				sizeof(SquareVertices),
+				D3D11_USAGE_DEFAULT,
+				D3D11_BIND_VERTEX_BUFFER,
+				0,
+				0
+			};
+			D3D11_SUBRESOURCE_DATA VertexBufferInitData = { /*TriangleVertices*/ SquareVertices, 0, 0 };
+			DXCHECK(DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_VertexBuffer));
 
-			DXCHECK(DX_Device->CreateBuffer(&BufferDesc, nullptr, &DX_ViewProjBuffer));
+			D3D11_BUFFER_DESC IndexBufferDesc =
+			{
+				//sizeof(TriangleIndices),
+				sizeof(SquareIndices),
+				D3D11_USAGE_DEFAULT,
+				D3D11_BIND_INDEX_BUFFER,
+				0,
+				0
+			};
+			D3D11_SUBRESOURCE_DATA IndexBufferInitData = { /*TriangleIndices*/ SquareIndices, 0, 0 };
+			DXCHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBuffer));
 
-			BufferDesc.ByteWidth = sizeof(fMatrix);
-			DXCHECK(DX_Device->CreateBuffer(&BufferDesc, nullptr, &DX_WorldBuffer));
+			// CKA_TODO: Likely want to combine ViewProj and World buffers
+			D3D11_BUFFER_DESC ViewProjBufferDesc = {};
+			ViewProjBufferDesc.ByteWidth = sizeof(fMatrix) * 2;
+			ViewProjBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			ViewProjBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			ViewProjBufferDesc.CPUAccessFlags = 0;
+			DXCHECK(DX_Device->CreateBuffer(&ViewProjBufferDesc, nullptr, &DX_ViewProjBuffer));
+
+			D3D11_BUFFER_DESC WorldBufferDesc = {};
+			WorldBufferDesc.ByteWidth = sizeof(fMatrix);
+			WorldBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			WorldBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			WorldBufferDesc.CPUAccessFlags = 0;
+			DXCHECK(DX_Device->CreateBuffer(&WorldBufferDesc, nullptr, &DX_WorldBuffer));
 		}
 		if (VSCodeBlob) { VSCodeBlob->Release(); }
 		if (PSCodeBlob) { PSCodeBlob->Release(); }
+
+		PvSetDXDBGNames();
+	}
+
+#define DXDBG_SETDBGNAMEHELPER(DX_Handle) \
+	const char* DBGNAME##DX_Handle = #DX_Handle; \
+	DX_Handle->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(DBGNAME##DX_Handle) - 1, DX_Handle)
+
+	void LvGraphics::PvSetDXDBGNames()
+	{
+		/*
+		const char* DBGName_Device = "DX_Device";
+		const char* DBGName_ImmediateContext = "DX_ImmediateContext";
+		const char* DBGName_SwapChain = "DX_SwapChain";
+		const char* DBGName_BackBuffer = "DX_BackBuffer ";
+		const char* DBGName_RenderTargetTexture = "DX_RenderTargetTexture";
+		const char* DBGName_RenderTargetView = "DX_RenderTargetView";
+		const char* DBGName_DepthStencilState = "DX_DepthStencilState";
+		const char* DBGName_DepthStencilTexture = "DX_DepthStencilTexture";
+		const char* DBGName_DepthStencilView = "DX_DepthStencilView";
+		const char* DBGName_RasterizerState = "DX_RasterizerState";
+		const char* DBGName_BlendState = "DX_BlendState";
+		const char* DBGName_VertexShader = "DX_VertexShader"; 
+		const char* DBGName_PixelShader = "DX_PixelShader";
+		const char* DBGName_InputLayout = "DX_InputLayout";
+		const char* DBGName_VertexBuffer = "DX_VertexBuffer";
+		const char* DBGName_IndexBuffer = "DX_IndexBuffer";
+		const char* DBGName_WorldBuffer = "DX_WorldBuffer";
+		const char* DBGName_ViewProjBuffer = "DX_ViewProjBuffer";
+		*/
+
+		DXDBG_SETDBGNAMEHELPER(DX_Device);
+		DXDBG_SETDBGNAMEHELPER(DX_ImmediateContext);
+		DXDBG_SETDBGNAMEHELPER(DX_SwapChain);
+		DXDBG_SETDBGNAMEHELPER(DX_BackBuffer);
+		DXDBG_SETDBGNAMEHELPER(DX_RenderTargetTexture);
+		DXDBG_SETDBGNAMEHELPER(DX_RenderTargetView);
+		DXDBG_SETDBGNAMEHELPER(DX_DepthStencilState);
+		DXDBG_SETDBGNAMEHELPER(DX_DepthStencilTexture);
+		DXDBG_SETDBGNAMEHELPER(DX_DepthStencilView);
+		DXDBG_SETDBGNAMEHELPER(DX_RasterizerState);
+		DXDBG_SETDBGNAMEHELPER(DX_BlendState);
+		DXDBG_SETDBGNAMEHELPER(DX_VertexShader);
+		DXDBG_SETDBGNAMEHELPER(DX_PixelShader);
+		DXDBG_SETDBGNAMEHELPER(DX_InputLayout);
+		DXDBG_SETDBGNAMEHELPER(DX_VertexBuffer);
+		DXDBG_SETDBGNAMEHELPER(DX_IndexBuffer);
+		DXDBG_SETDBGNAMEHELPER(DX_WorldBuffer);
+		DXDBG_SETDBGNAMEHELPER(DX_ViewProjBuffer);
 	}
 
 	void LvGraphics::PvUpdateState()
 	{
-		UINT Stride = sizeof(VertexColor);
-		UINT Offset = 0;
-		float fDepth = 1.0f;
-
 		WorldViewProjData CurrWVP;
 		CurrWVP.View.Identity();
 		CurrWVP.Proj.Identity();
 		CurrWVP.World.Identity();
 
-		// CKA_NOTE:
-		//	- This call is now necessary every time after calling SwapChain::Present
-		//	- Necessary when using DXGI flip model
-		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
-
+		UINT Stride = sizeof(VertexColor);
+		UINT Offset = 0;
 		DX_ImmediateContext->IASetInputLayout(DX_InputLayout);
 		DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBuffer, &Stride, &Offset);
 		DX_ImmediateContext->IASetIndexBuffer(DX_IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+		DX_ImmediateContext->VSSetShader(DX_VertexShader, nullptr, 0);
+		DX_ImmediateContext->PSSetShader(DX_PixelShader, nullptr, 0);
+
 		DX_ImmediateContext->VSSetConstantBuffers(0, 1, &DX_ViewProjBuffer);
 		DX_ImmediateContext->VSSetConstantBuffers(1, 1, &DX_WorldBuffer);
 
-		DX_ImmediateContext->UpdateSubresource(DX_ViewProjBuffer, 0, nullptr, &CurrWVP.View, 0, 0);
-		DX_ImmediateContext->UpdateSubresource(DX_WorldBuffer, 0, nullptr, &CurrWVP.World, 0, 0);
+		DX_ImmediateContext->UpdateSubresource(DX_ViewProjBuffer, 0, nullptr, &CurrWVP.View, sizeof(fMatrix) * 2, 0);
+		DX_ImmediateContext->UpdateSubresource(DX_WorldBuffer, 0, nullptr, &CurrWVP.World, sizeof(fMatrix), 0);
 
-		DX_ImmediateContext->VSSetShader(DX_VertexShader, nullptr, 0);
-		DX_ImmediateContext->PSSetShader(DX_PixelShader, nullptr, 0);
+		// CKA_NOTE:
+		//	- This call is now necessary every time after calling SwapChain::Present
+		//	- Necessary when using DXGI flip model
+		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
+		DX_ImmediateContext->OMSetDepthStencilState(DX_DepthStencilState, 0);
 	}
 
 	void LvGraphics::PvDraw()
@@ -339,11 +441,9 @@ namespace Leviathan
 
 		DX_ImmediateContext->DrawIndexed(ARRAYSIZE(/*TriangleIndices*/SquareIndices), 0u, 0u);
 
-		// CKA_TODO: Perform an MSAA resolve here
+		// CKA_NOTE: Resolve from 4xMSAA RenderTargetTexture to single-sample BackBuffer
 		DX_ImmediateContext->ResolveSubresource(DX_BackBuffer, 0, DX_RenderTargetTexture, 0, RenderTargetFormat);
-
 		DX_SwapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 	}
-
 }
 
