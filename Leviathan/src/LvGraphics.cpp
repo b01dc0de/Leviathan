@@ -25,6 +25,16 @@ namespace Leviathan
 
 	const float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
 
+	void ReportLiveObjects(ID3D11Device* pDXDevice)
+	{
+	#if LV_DEBUG_BUILD()
+		DXHandle<ID3D11Debug> DX_Debug = nullptr;
+		DXCHECK(pDXDevice->QueryInterface(IID_PPV_ARGS(&DX_Debug)));
+		DX_Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL|D3D11_RLDO_IGNORE_INTERNAL);
+		DX_Debug.SafeRelease();
+	#endif // LV_DEBUG_BUILD()
+	}
+
 	LvGraphics::~LvGraphics()
 	{
 		/*
@@ -52,6 +62,9 @@ namespace Leviathan
 					- WorldViewProjBuffer (Device::CreateBuffer)
 		*/
 
+		Outf("Before SafeReleasing DXHandles:\n");
+		ReportLiveObjects(DX_Device);
+
 		// Release resources in (generally) reverse init order
 		DX_VertexBuffer.SafeRelease();
 		DX_IndexBuffer.SafeRelease();
@@ -74,12 +87,8 @@ namespace Leviathan
 		DX_ImmediateContext.SafeRelease();
 		DX_SwapChain.SafeRelease();
 
-	#if LV_DEBUG_BUILD()
-		DXHandle<ID3D11Debug> DX_Debug = nullptr;
-		DXCHECK(DX_Device->QueryInterface(IID_PPV_ARGS(&DX_Debug)));
-		DX_Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL|D3D11_RLDO_IGNORE_INTERNAL);
-		DX_Debug.SafeRelease();
-	#endif // LV_DEBUG_BUILD()
+		Outf("After SafeReleasing DXHandles (all except ID3D11Device):\n");
+		ReportLiveObjects(DX_Device);
 
 		// CKA_TODO: Don't SafeRelease the ID3D11Device for now. Throws exception on following line:
 		//DX_Device.SafeRelease();
@@ -346,7 +355,7 @@ namespace Leviathan
 	}
 
 #define DXDBG_SETDBGNAMEHELPER(DX_Handle) \
-	const char* DBGNAME##DX_Handle = #DX_Handle; \
+	static const char* DBGNAME##DX_Handle = #DX_Handle; \
 	DX_Handle->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(DBGNAME##DX_Handle) - 1, DX_Handle)
 
 	void LvGraphics::PvSetDXDBGNames()

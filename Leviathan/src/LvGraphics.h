@@ -50,8 +50,8 @@ namespace Leviathan
 
 	struct VertexColor
 	{
-		fVertex Position;
-		fVertex Color;
+		fVector Position;
+		fVector Color;
 	};
 
 	struct LvGraphics
