@@ -4,6 +4,9 @@
     <Filter Include="src">
       <UniqueIdentifier>{3f9dc756-8d9b-42f9-8686-8670b5d7ffe0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="HLSL">
+      <UniqueIdentifier>{6383315a-871d-44dd-ad2a-e683ce206cb7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Leviathan.cpp">
@@ -34,8 +37,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="src\BasicShader.hlsl">
-      <Filter>src</Filter>
+    <FxCompile Include="src\HLSL\BasicShader.hlsl">
+      <Filter>HLSL</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

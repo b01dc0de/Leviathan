@@ -299,8 +299,8 @@ namespace Leviathan
 
 		ID3DBlob* VSCodeBlob = nullptr;
 		ID3DBlob* PSCodeBlob = nullptr;
-		DXCHECK(CompileShader(L"src/BasicShader.hlsl", "VSMain", "vs_5_0", &VSCodeBlob));
-		DXCHECK(CompileShader(L"src/BasicShader.hlsl", "PSMain", "ps_5_0", &PSCodeBlob));
+		DXCHECK(CompileShader(L"src/HLSL/BasicShader.hlsl", "VSMain", "vs_5_0", &VSCodeBlob));
+		DXCHECK(CompileShader(L"src/HLSL/BasicShader.hlsl", "PSMain", "ps_5_0", &PSCodeBlob));
 
 		if (VSCodeBlob && PSCodeBlob)
 		{
