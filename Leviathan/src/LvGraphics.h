@@ -40,6 +40,12 @@ namespace Leviathan
 		fMatrix World;
 		fMatrix View;
 		fMatrix Proj;
+
+		WorldViewProjData()
+		{
+			World.Identity();
+			View.Identity();
+		}
 	};
 
 	struct VertexColor
@@ -73,8 +79,7 @@ namespace Leviathan
 		DXHandle<ID3D11Buffer> DX_VertexBuffer = nullptr;
 		DXHandle<ID3D11Buffer> DX_IndexBuffer = nullptr;
 
-		DXHandle<ID3D11Buffer> DX_WorldBuffer = nullptr;
-		DXHandle<ID3D11Buffer> DX_ViewProjBuffer = nullptr;
+		DXHandle<ID3D11Buffer> DX_WorldViewProjBuffer = nullptr;
 
 		static LvGraphics* PvInst;
 

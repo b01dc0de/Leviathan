@@ -27,9 +27,8 @@ namespace Leviathan
 
 	LvGraphics::~LvGraphics()
 	{
-
 		/*
-			- CKA_NOTE: Order of DX initialization, last updated 5/6/24
+			- CKA_NOTE: Order of DX initialization, last updated 5/7/24
 			- Only care because it's generally considered good practice to
 			- release these handles in reverse order of initialization
 				Device related:
@@ -50,15 +49,13 @@ namespace Leviathan
 				CBuffers+PrimitiveData:
 					- VertexBuffer (Device::CreateBuffer)
 					- IndexBuffer (Device::CreateBuffer)
-					- ViewProjBuffer (Device::CreateBuffer)
-					- WorldBuffer (Device::CreateBuffer)
+					- WorldViewProjBuffer (Device::CreateBuffer)
 		*/
 
 		// Release resources in (generally) reverse init order
 		DX_VertexBuffer.SafeRelease();
 		DX_IndexBuffer.SafeRelease();
-		DX_ViewProjBuffer.SafeRelease();
-		DX_WorldBuffer.SafeRelease();
+		DX_WorldViewProjBuffer.SafeRelease();
 
 		DX_VertexShader.SafeRelease();
 		DX_PixelShader.SafeRelease();
@@ -111,7 +108,7 @@ namespace Leviathan
 		D3D_SHADER_MACRO PoundDefines[] =
 		{
 			"ENABLE_WVP_TRANSFORM", "0",
-			"COMBINED_WVP_BUFFER", "0",
+			"COMBINED_WVP_BUFFER", "1",
 			"ENABLE_VERTEX_TEXTURE", "0",
 			"ENABLE_VERTEX_COLOR", "1",
 			NULL, NULL
@@ -335,19 +332,12 @@ namespace Leviathan
 			DXCHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBuffer));
 
 			// CKA_TODO: Likely want to combine ViewProj and World buffers
-			D3D11_BUFFER_DESC ViewProjBufferDesc = {};
-			ViewProjBufferDesc.ByteWidth = sizeof(fMatrix) * 2;
-			ViewProjBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			ViewProjBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-			ViewProjBufferDesc.CPUAccessFlags = 0;
-			DXCHECK(DX_Device->CreateBuffer(&ViewProjBufferDesc, nullptr, &DX_ViewProjBuffer));
-
-			D3D11_BUFFER_DESC WorldBufferDesc = {};
-			WorldBufferDesc.ByteWidth = sizeof(fMatrix);
-			WorldBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			WorldBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-			WorldBufferDesc.CPUAccessFlags = 0;
-			DXCHECK(DX_Device->CreateBuffer(&WorldBufferDesc, nullptr, &DX_WorldBuffer));
+			D3D11_BUFFER_DESC WorldViewProjBufferDesc = {};
+			WorldViewProjBufferDesc.ByteWidth = sizeof(WorldViewProjData);
+			WorldViewProjBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			WorldViewProjBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			WorldViewProjBufferDesc.CPUAccessFlags = 0;
+			DXCHECK(DX_Device->CreateBuffer(&WorldViewProjBufferDesc, nullptr, &DX_WorldViewProjBuffer));
 		}
 		if (VSCodeBlob) { VSCodeBlob->Release(); }
 		if (PSCodeBlob) { PSCodeBlob->Release(); }
@@ -361,27 +351,6 @@ namespace Leviathan
 
 	void LvGraphics::PvSetDXDBGNames()
 	{
-		/*
-		const char* DBGName_Device = "DX_Device";
-		const char* DBGName_ImmediateContext = "DX_ImmediateContext";
-		const char* DBGName_SwapChain = "DX_SwapChain";
-		const char* DBGName_BackBuffer = "DX_BackBuffer ";
-		const char* DBGName_RenderTargetTexture = "DX_RenderTargetTexture";
-		const char* DBGName_RenderTargetView = "DX_RenderTargetView";
-		const char* DBGName_DepthStencilState = "DX_DepthStencilState";
-		const char* DBGName_DepthStencilTexture = "DX_DepthStencilTexture";
-		const char* DBGName_DepthStencilView = "DX_DepthStencilView";
-		const char* DBGName_RasterizerState = "DX_RasterizerState";
-		const char* DBGName_BlendState = "DX_BlendState";
-		const char* DBGName_VertexShader = "DX_VertexShader"; 
-		const char* DBGName_PixelShader = "DX_PixelShader";
-		const char* DBGName_InputLayout = "DX_InputLayout";
-		const char* DBGName_VertexBuffer = "DX_VertexBuffer";
-		const char* DBGName_IndexBuffer = "DX_IndexBuffer";
-		const char* DBGName_WorldBuffer = "DX_WorldBuffer";
-		const char* DBGName_ViewProjBuffer = "DX_ViewProjBuffer";
-		*/
-
 		DXDBG_SETDBGNAMEHELPER(DX_Device);
 		DXDBG_SETDBGNAMEHELPER(DX_ImmediateContext);
 		DXDBG_SETDBGNAMEHELPER(DX_SwapChain);
@@ -398,16 +367,12 @@ namespace Leviathan
 		DXDBG_SETDBGNAMEHELPER(DX_InputLayout);
 		DXDBG_SETDBGNAMEHELPER(DX_VertexBuffer);
 		DXDBG_SETDBGNAMEHELPER(DX_IndexBuffer);
-		DXDBG_SETDBGNAMEHELPER(DX_WorldBuffer);
-		DXDBG_SETDBGNAMEHELPER(DX_ViewProjBuffer);
+		DXDBG_SETDBGNAMEHELPER(DX_WorldViewProjBuffer);
 	}
 
 	void LvGraphics::PvUpdateState()
 	{
 		WorldViewProjData CurrWVP;
-		CurrWVP.View.Identity();
-		CurrWVP.Proj.Identity();
-		CurrWVP.World.Identity();
 
 		UINT Stride = sizeof(VertexColor);
 		UINT Offset = 0;
@@ -419,11 +384,9 @@ namespace Leviathan
 		DX_ImmediateContext->VSSetShader(DX_VertexShader, nullptr, 0);
 		DX_ImmediateContext->PSSetShader(DX_PixelShader, nullptr, 0);
 
-		DX_ImmediateContext->VSSetConstantBuffers(0, 1, &DX_ViewProjBuffer);
-		DX_ImmediateContext->VSSetConstantBuffers(1, 1, &DX_WorldBuffer);
+		DX_ImmediateContext->VSSetConstantBuffers(0, 1, &DX_WorldViewProjBuffer);
 
-		DX_ImmediateContext->UpdateSubresource(DX_ViewProjBuffer, 0, nullptr, &CurrWVP.View, sizeof(fMatrix) * 2, 0);
-		DX_ImmediateContext->UpdateSubresource(DX_WorldBuffer, 0, nullptr, &CurrWVP.World, sizeof(fMatrix), 0);
+		DX_ImmediateContext->UpdateSubresource(DX_WorldViewProjBuffer, 0, nullptr, &CurrWVP.World, sizeof(WorldViewProjData), 0);
 
 		// CKA_NOTE:
 		//	- This call is now necessary every time after calling SwapChain::Present

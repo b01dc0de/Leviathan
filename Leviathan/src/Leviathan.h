@@ -6,7 +6,8 @@ namespace Leviathan
 	extern const int ResX;
 	extern const int ResY;
 	extern const WCHAR* AppName;
-	extern bool bRunning;
+
+	extern bool bLvRunning;
 
 	extern HWND LvWindow;
 

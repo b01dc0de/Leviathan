@@ -11,7 +11,7 @@ namespace Leviathan
 	extern const int ResY = 900;
 	extern const WCHAR* AppName = L"Leviathan";
 
-	bool bRunning = false;
+	bool bLvRunning = false;
 
 	HWND LvWindow;
 
@@ -68,7 +68,7 @@ namespace Leviathan
 
 			ShowWindow(LvWindow, LvCmdShow);
 
-			bRunning = true;
+			bLvRunning = true;
 		}
 	}
 	void LvTermEngine()
@@ -91,7 +91,7 @@ namespace Leviathan
 			if (MsgResult == -1) { /*CKA_TODO*/ }
 		};
 
-		while (bRunning)
+		while (bLvRunning)
 		{
 			PeekNewMessages();
 
@@ -109,13 +109,13 @@ LRESULT CALLBACK LvWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		case WM_CLOSE:
 		case WM_DESTROY:
 		{
-			Leviathan::bRunning = false;
+			Leviathan::bLvRunning = false;
 		} break;
 		case WM_LBUTTONDOWN:
 		case WM_RBUTTONDOWN:
 		case WM_KEYDOWN:
 		{
-			Leviathan::bRunning = false;
+			Leviathan::bLvRunning = false;
 		} break;
 	}
 	LRESULT Result = DefWindowProc(hwnd, uMsg, wParam, lParam);

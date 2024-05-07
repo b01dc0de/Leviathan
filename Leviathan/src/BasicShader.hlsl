@@ -25,11 +25,11 @@
 #pragma pack_matrix( row_major )
 
 #if COMBINED_WVP_BUFFER
-    cbuffer ViewProjWorldBuffer : register(b0)
+    cbuffer WorldViewProjBuffer : register(b0)
     {
+        matrix World;
         matrix View;
         matrix Proj;
-        matrix World;
     }
 #else
     cbuffer ViewProjBuffer : register(b0)
