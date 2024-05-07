@@ -356,7 +356,7 @@ namespace Leviathan
 
 #define DXDBG_SETDBGNAMEHELPER(DX_Handle) \
 	static const char* DBGNAME##DX_Handle = #DX_Handle; \
-	DX_Handle->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(DBGNAME##DX_Handle) - 1, DX_Handle)
+	DX_Handle->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(#DX_Handle) - 1, DBGNAME##DX_Handle)
 
 	void LvGraphics::PvSetDXDBGNames()
 	{
