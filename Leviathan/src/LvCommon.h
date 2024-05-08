@@ -39,8 +39,14 @@ void Outf(const char* fmt, ...);
 	#error "No platform defined"
 #endif // PLATFORM
 
-#include <cstdio>
-#include <vector>
+namespace Leviathan
+{
+	extern const int ResX;
+	extern const int ResY;
+	extern const WCHAR* AppName;
+}
+
+#include <cmath>
 
 #include "LvMath.h"
 

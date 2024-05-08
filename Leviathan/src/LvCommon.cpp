@@ -1,5 +1,7 @@
 #include "LvCommon.h"
 
+#include <cstdio>
+
 void Outf(const char* Fmt, ...)
 {
 	constexpr size_t OutfBufferSize = 1024;
@@ -12,3 +14,9 @@ void Outf(const char* Fmt, ...)
 	OutputDebugStringA(OutfBuffer);
 }
 
+namespace Leviathan
+{
+	extern const int ResX = 1600;
+	extern const int ResY = 900;
+	extern const WCHAR* AppName = L"Leviathan";
+}

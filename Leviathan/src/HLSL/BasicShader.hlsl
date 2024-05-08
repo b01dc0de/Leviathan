@@ -29,14 +29,14 @@
         matrix Proj;
     }
 #else
-    cbuffer ViewProjBuffer : register(b0)
+    cbuffer WorldBuffer : register(b0)
+    {
+        matrix World;
+    }
+    cbuffer ViewProjBuffer : register(b1)
     {
         matrix View;
         matrix Proj;
-    }
-    cbuffer WorldBuffer : register(b1)
-    {
-        matrix World;
     }
 #endif
 

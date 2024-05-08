@@ -21,6 +21,15 @@
     <ClCompile Include="src\LvMath.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\LvCamera.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LvMesh.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LvEngine.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -33,6 +42,15 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\LvMath.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LvCamera.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LvMesh.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LvEngine.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

@@ -7,10 +7,6 @@ LRESULT CALLBACK LvWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 namespace Leviathan
 {
-	extern const int ResX = 1600;
-	extern const int ResY = 900;
-	extern const WCHAR* AppName = L"Leviathan";
-
 	bool bLvRunning = false;
 
 	HWND LvWindow;

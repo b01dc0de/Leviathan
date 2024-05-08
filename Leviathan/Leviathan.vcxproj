@@ -76,15 +76,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Leviathan.cpp" />
+    <ClCompile Include="src\LvCamera.cpp" />
     <ClCompile Include="src\LvCommon.cpp" />
+    <ClCompile Include="src\LvEngine.cpp" />
     <ClCompile Include="src\LvGraphics.cpp" />
     <ClCompile Include="src\LvMath.cpp" />
+    <ClCompile Include="src\LvMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h" />
+    <ClInclude Include="src\LvCamera.h" />
     <ClInclude Include="src\LvCommon.h" />
+    <ClInclude Include="src\LvEngine.h" />
     <ClInclude Include="src\LvGraphics.h" />
     <ClInclude Include="src\LvMath.h" />
+    <ClInclude Include="src\LvMesh.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\HLSL\BasicShader.hlsl">
