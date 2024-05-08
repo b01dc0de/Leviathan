@@ -66,13 +66,13 @@ namespace Leviathan
 		ReportLiveObjects(DX_Device);
 
 		// Release resources in (generally) reverse init order
+		DX_WorldViewProjBuffer.SafeRelease();
 		DX_VertexBuffer.SafeRelease();
 		DX_IndexBuffer.SafeRelease();
-		DX_WorldViewProjBuffer.SafeRelease();
 
+		DX_InputLayout.SafeRelease();
 		DX_VertexShader.SafeRelease();
 		DX_PixelShader.SafeRelease();
-		DX_InputLayout.SafeRelease();
 
 		DX_RasterizerState.SafeRelease();
 		DX_BlendState.SafeRelease();
@@ -81,11 +81,10 @@ namespace Leviathan
 		DX_DepthStencilTexture.SafeRelease();
 		DX_RenderTargetView.SafeRelease();
 		DX_RenderTargetTexture.SafeRelease();
-		DX_BackBuffer.SafeRelease();
 
-		DX_ImmediateContext->ClearState();
+		DX_BackBuffer.SafeRelease();
 		DX_ImmediateContext.SafeRelease();
-		DX_SwapChain.SafeRelease();
+		DX_SwapChain1.SafeRelease();
 
 		Outf("After SafeReleasing DXHandles (all except ID3D11Device):\n");
 		ReportLiveObjects(DX_Device);
@@ -95,7 +94,6 @@ namespace Leviathan
 		//		Exception thrown at 0x00007FFCE1C953AC in Leviathan.exe: Microsoft C++ exception : MONZA::DdiThreadingContext<MONZA::AdapterTraits_Gen12LP>::msg_end at memory location 0x000000AE3A2FFBF0.
 		//		Symbols not loaded for igd10um64xe.pdb/dll
 		// Don't care enough to solve this now but should investigate in future
-		//DX_Device.SafeRelease();
 		DX_Device = nullptr;
 	}
 
@@ -160,42 +158,53 @@ namespace Leviathan
 		};
 		UINT NumSupportedFeatureLevels = ARRAYSIZE(SupportedFeatureLevels);
 
-		DXGI_SWAP_CHAIN_DESC SwapChainDesc = {};
-		SwapChainDesc.BufferDesc.Width = ResX;
-		SwapChainDesc.BufferDesc.Height = ResY;
-		SwapChainDesc.BufferDesc.Format = RenderTargetFormat;
-		SwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-		SwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-		SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		SwapChainDesc.SampleDesc.Count = 1;
-		SwapChainDesc.SampleDesc.Quality = 0;
-		SwapChainDesc.BufferCount = 2;
-		SwapChainDesc.OutputWindow = LvWindow;
-		SwapChainDesc.Windowed = true;
-		SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-
 		UINT CreateDeviceFlags = 0;
 	#if LV_DEBUG_BUILD()
 		CreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 	#endif
 
-		DXCHECK(D3D11CreateDeviceAndSwapChain(
-			nullptr, //IDXGIAdapter* pAdapter
+		DXCHECK(D3D11CreateDevice(
+			nullptr,
 			D3D_DRIVER_TYPE_HARDWARE,
 			nullptr,
 			CreateDeviceFlags,
 			SupportedFeatureLevels,
 			NumSupportedFeatureLevels,
 			D3D11_SDK_VERSION,
-			&SwapChainDesc,
-			&DX_SwapChain,
 			&DX_Device,
 			&UsedFeatureLevel,
 			&DX_ImmediateContext
 		));
+		Assert(UsedFeatureLevel == D3D_FEATURE_LEVEL_11_1);
 
-		DXCHECK(DX_SwapChain->GetBuffer(0, IID_PPV_ARGS(&DX_BackBuffer)));
+		DXHandle<IDXGIFactory2> DXGI_Factory2 = nullptr;
+		DXCHECK(CreateDXGIFactory1(IID_PPV_ARGS(&DXGI_Factory2)));
+
+		DXGI_SWAP_CHAIN_DESC1 SwapChainDesc1 = {};
+		SwapChainDesc1.Width = ResX;
+		SwapChainDesc1.Height = ResY;
+		SwapChainDesc1.Format = RenderTargetFormat;
+		SwapChainDesc1.Stereo = FALSE;
+		SwapChainDesc1.SampleDesc.Count = 1;
+		SwapChainDesc1.SampleDesc.Quality = 0;
+		SwapChainDesc1.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		SwapChainDesc1.BufferCount = 2;
+		SwapChainDesc1.Scaling = DXGI_SCALING_STRETCH;
+		SwapChainDesc1.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+		SwapChainDesc1.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+		SwapChainDesc1.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+
+		DXCHECK(DXGI_Factory2->CreateSwapChainForHwnd(
+			DX_Device,
+			LvWindow,
+			&SwapChainDesc1,
+			nullptr,
+			nullptr,
+			&DX_SwapChain1
+		));
+		DXGI_Factory2.SafeRelease();
+
+		DXCHECK(DX_SwapChain1->GetBuffer(0, IID_PPV_ARGS(&DX_BackBuffer)));
 
 		DXGI_SAMPLE_DESC Shared_RT_SampleDesc = {};
 		Shared_RT_SampleDesc.Count = 4;
@@ -362,7 +371,7 @@ namespace Leviathan
 	{
 		DXDBG_SETDBGNAMEHELPER(DX_Device);
 		DXDBG_SETDBGNAMEHELPER(DX_ImmediateContext);
-		DXDBG_SETDBGNAMEHELPER(DX_SwapChain);
+		DXDBG_SETDBGNAMEHELPER(DX_SwapChain1);
 		DXDBG_SETDBGNAMEHELPER(DX_BackBuffer);
 		DXDBG_SETDBGNAMEHELPER(DX_RenderTargetTexture);
 		DXDBG_SETDBGNAMEHELPER(DX_RenderTargetView);
@@ -415,7 +424,8 @@ namespace Leviathan
 
 		// CKA_NOTE: Resolve from 4xMSAA RenderTargetTexture to single-sample BackBuffer
 		DX_ImmediateContext->ResolveSubresource(DX_BackBuffer, 0, DX_RenderTargetTexture, 0, RenderTargetFormat);
-		DX_SwapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
+		const DXGI_PRESENT_PARAMETERS PresentParams = {};
+		DX_SwapChain1->Present1(0, DXGI_PRESENT_ALLOW_TEARING, &PresentParams);
 	}
 }
 

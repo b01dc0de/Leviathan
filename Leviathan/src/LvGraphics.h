@@ -4,10 +4,14 @@
 #include "LvCommon.h"
 
 #include <d3d11.h>
+#include <d3d11_1.h>
+//#include <d3d11_2.h>
+//#include <d3d11_3.h>
 //#include <d3d11_4.h>
 #include <d3dcommon.h>
 #include <d3dcompiler.h>
 #include <dxgi.h>
+#include <dxgi1_2.h>
 #include <dxgidebug.h>
 
 #define DXCHECK(DXResult) Assert(!FAILED((DXResult)))
@@ -61,9 +65,9 @@ namespace Leviathan
 
 		DXHandle<ID3D11Device> DX_Device = nullptr;
 		DXHandle<ID3D11DeviceContext> DX_ImmediateContext = nullptr;
-
-		DXHandle<IDXGISwapChain> DX_SwapChain = nullptr;
+		DXHandle<IDXGISwapChain1> DX_SwapChain1 = nullptr;
 		DXHandle<ID3D11Texture2D> DX_BackBuffer = nullptr;
+
 		DXHandle<ID3D11Texture2D> DX_RenderTargetTexture = nullptr;
 		DXHandle<ID3D11RenderTargetView> DX_RenderTargetView = nullptr;
 		DXHandle<ID3D11DepthStencilState> DX_DepthStencilState = nullptr;

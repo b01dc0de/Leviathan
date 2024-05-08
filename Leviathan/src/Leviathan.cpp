@@ -131,7 +131,11 @@ int WINAPI WinMain(HINSTANCE Inst, HINSTANCE PrevInst, PSTR CmdLine, int CmdShow
 	LvCmdLine = CmdLine;
 	LvCmdShow = CmdShow;
 
+	int Result = 1;
+
 	LvInitEngine();
 	LvMainEngineLoop();
 	LvTermEngine();
+
+	return Result;
 }

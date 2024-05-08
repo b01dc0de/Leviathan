@@ -2,16 +2,6 @@
 
 namespace Leviathan
 {
-	/*
-	void fMatrix::Identity()
-	{
-		Row0 = { 1.0f, 0.0f, 0.0f, 0.0f };
-		Row1 = { 0.0f, 1.0f, 0.0f, 0.0f };
-		Row2 = { 0.0f, 0.0f, 1.0f, 0.0f };
-		Row3 = { 0.0f, 0.0f, 0.0f, 1.0f };
-	}
-	*/
-
 	const float PI = 3.14159265359f;
 
 	float Clamp(float C, float A, float B)
