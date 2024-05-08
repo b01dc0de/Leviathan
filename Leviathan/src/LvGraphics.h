@@ -39,18 +39,68 @@ namespace Leviathan
 		T** operator &() { return &Ptr; }
 	};
 
-	struct WorldViewProjData
+	struct ObjectToWorldTrans
 	{
 		fMatrix World;
+	};
+
+	struct CameraSpaceTrans
+	{
 		fMatrix View;
 		fMatrix Proj;
 
-		WorldViewProjData()
-		{
-			World.Identity();
-			View.Identity();
-			Proj.Identity();
-		}
+		static CameraSpaceTrans Perspective
+		(
+			float InFOV_Y,
+			float InAspectRatio,
+			float InNearDist,
+			float InFarDist,
+			const fVector& InPos,
+			const fVector& InUp,
+			const fVector& InForward,
+			const fVector& InRight,
+			const fMatrix& InNDC
+		);
+
+		static CameraSpaceTrans Orthographic(float InWidth, float InHeight, float InDepth);
+	};
+
+	struct LvCameraPerspective
+	{
+		CameraSpaceTrans CamTrans;
+
+		const float Width;
+		const float Height;
+		//const float Depth;
+
+		float FOV_Y;
+		float AspectRatio;
+		float NearDist;
+		float FarDist;
+
+		fVector vUp;
+		fVector vForward;
+		fVector vRight;
+
+		fVector WorldPos;
+		fVector LookAtPos;
+
+		fMatrix NDC;
+
+		void Orient(const fVector& InWorldPos, const fVector& InLookAtPos, const fVector& InAbsUp);
+		LvCameraPerspective(const fVector& InWorldPos, const fVector& InLookAtPos, const fVector& InAbsUp);
+	};
+
+	struct LvCameraOrthographic
+	{
+		const CameraSpaceTrans CamTrans;
+
+		const float Width;
+		const float Height;
+		const float Depth;
+
+		// LvCameraOrthographic(float InWidth = ResX, float InHeight = ResY, float InDepth = 1.0f)
+		LvCameraOrthographic();
 	};
 
 	struct VertexColor
@@ -61,7 +111,7 @@ namespace Leviathan
 
 	struct LvGraphics
 	{
-		D3D_FEATURE_LEVEL UsedFeatureLevel = D3D_FEATURE_LEVEL_11_0;
+		D3D_FEATURE_LEVEL UsedFeatureLevel = D3D_FEATURE_LEVEL_11_1;
 		DXGI_FORMAT RenderTargetFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 		DXHandle<ID3D11Device> DX_Device = nullptr;

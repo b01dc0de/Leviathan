@@ -5,6 +5,208 @@
 
 namespace Leviathan
 {
+	CameraSpaceTrans CameraSpaceTrans::Perspective
+	(
+		float InFOV_Y,
+		float InAspectRatio,
+		float InNearDist,
+		float InFarDist,
+		const fVector& InPos,
+		const fVector& InUp,
+		const fVector& InForward,
+		const fVector& InRight,
+		const fMatrix& InNDC
+	)
+	{
+		CameraSpaceTrans OutCamera;
+		OutCamera.Proj.Zero();
+		OutCamera.View.Zero();
+
+		float fD = 1.0f / tanf(InFOV_Y / 2.0f);
+		float fDistDelta = InFarDist - InNearDist;
+
+		/*
+		OutCamera.Proj.Row0 = { 0.0f, 0.0f, 0.0f, 0.0f };
+		OutCamera.Proj.Row1 = { 0.0f, 0.0f, 0.0f, 0.0f };
+		OutCamera.Proj.Row2 = { 0.0f, 0.0f, 0.0f, 0.0f };
+		OutCamera.Proj.Row3 = { 0.0f, 0.0f, 0.0f, 0.0f };
+		*/
+		OutCamera.Proj.Row0.X = fD / InAspectRatio;
+		OutCamera.Proj.Row1.Y = fD;
+		OutCamera.Proj.Row2.Z = -(InFarDist + InNearDist) / fDistDelta;
+		OutCamera.Proj.Row2.W = -1.0f;
+		OutCamera.Proj.Row3.Z = (-2.0f * InFarDist * InNearDist) / fDistDelta;
+		OutCamera.Proj *= InNDC;
+
+		OutCamera.View.Row0 = { InRight.X, InUp.X, InForward.X, 0.0f };
+		OutCamera.View.Row1 = { InRight.Y, InUp.Y, InForward.Y, 0.0f };
+		OutCamera.View.Row2 = { InRight.Z, InUp.Z, InForward.Z, 0.0f };
+		OutCamera.View.Row3.X = -Dot(InPos, InRight);
+		OutCamera.View.Row3.Y = -Dot(InPos, InUp);
+		OutCamera.View.Row3.Z = -Dot(InPos, InForward);
+		OutCamera.View.Row3.W = 1.0f;
+
+		return OutCamera;
+	}
+
+	CameraSpaceTrans CameraSpaceTrans::Orthographic(float InWidth, float InHeight, float InDepth)
+	{
+		CameraSpaceTrans OutCamera;
+
+		OutCamera.View.Identity();
+		OutCamera.Proj.Identity();
+
+		OutCamera.Proj.Row0.X = +2.0f / InWidth;
+		OutCamera.Proj.Row1.Y = +2.0f / InHeight;
+		OutCamera.View.Row2.Z = -2.0f / InDepth;
+
+		return OutCamera;
+	}
+
+	void LvCameraPerspective::Orient(const fVector& InWorldPos, const fVector& InLookAtPos, const fVector& InAbsUp)
+	{
+		WorldPos = InWorldPos;
+		LookAtPos = InLookAtPos;
+
+		vForward = -(LookAtPos - WorldPos);
+		vForward.Norm();
+
+		vRight = Cross(InAbsUp, vForward);
+		vRight.Norm();
+
+		vUp = Cross(vForward, vRight);
+		vUp.Norm();
+
+		CamTrans = CameraSpaceTrans::Perspective
+		(
+			FOV_Y,
+			AspectRatio,
+			NearDist,
+			FarDist,
+			WorldPos,
+			vUp,
+			vForward,
+			vRight,
+			NDC
+		);
+	}
+
+
+	LvCameraPerspective::LvCameraPerspective(const fVector& InWorldPos, const fVector& InLookAtPos, const fVector& InAbsUp)
+		: Width((float)ResX)
+		, Height((float)ResY)
+		//, Depth(1.0f)
+		, FOV_Y(45.0f)
+		, AspectRatio((float)ResX / (float)ResY)
+		, NearDist(1.0f)
+		, FarDist(1000.0f)
+		, NDC(Mult(Matrix(TRANS, fVector(0.0f, 0.0f, 1.0f, 1.0f)), Matrix(SCALE, 1.0f, 1.0f, 0.5f)))
+	{
+		Orient(InWorldPos, InLookAtPos, InAbsUp);
+	}
+
+	LvCameraOrthographic::LvCameraOrthographic()
+		: CamTrans(CameraSpaceTrans::Orthographic((float)ResX, (float)ResY, 1.0f))
+		, Width((float)ResX)
+		, Height((float)ResY)
+		, Depth(1.0f)
+	{
+	}
+
+	struct TriPrim
+	{
+		unsigned int v0;
+		unsigned int v1;
+		unsigned int v2;
+	};
+
+	int NumCubeVerts = 0;
+	int NumCubePrims = 0;
+	VertexColor* CubeVerts = nullptr;
+	TriPrim* CubePrims = nullptr;
+
+	void InitCube()
+	{
+		int num_verts = 24;
+		int num_prims = 12;
+
+		VertexColor* verts = new VertexColor[(size_t)num_verts];
+		TriPrim * prims = new TriPrim[(size_t)num_prims];
+
+		fVector ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
+		fVector ColorBlue{ 0.0f, 0.0f, 1.0f, 1.0f };
+		fVector ColorGreen{ 0.0f, 1.0f, 0.0f, 1.0f };
+		fVector ColorRed{ 1.0f, 0.0f, 0.0f, 1.0f };
+
+		using uint = unsigned int;
+
+		// Setting up per-face
+		// Forward
+		uint v_ind = 0;
+		uint t_ind = 0;
+		verts[v_ind + 0] = { Vector{ 0.5f, 0.5f, 0.5f }, ColorWhite };
+		verts[v_ind + 1] = { Vector{ -0.5f, 0.5f, 0.5f }, ColorBlue };
+		verts[v_ind + 2] = { Vector{ -0.5f, -0.5f, 0.5f }, ColorGreen };
+		verts[v_ind + 3] = { Vector{ 0.5f, -0.5f, 0.5f }, ColorRed };
+		prims[t_ind + 0] = { v_ind, v_ind + 1, v_ind + 2 };
+		prims[t_ind + 1] = { v_ind, v_ind + 2, v_ind + 3 };
+
+		// Back
+		v_ind += 4;
+		t_ind += 2;
+		verts[v_ind + 0] = { Vector(0.5f, 0.5f, -0.5f), ColorWhite };
+		verts[v_ind + 1] = { Vector(-0.5f, 0.5f, -0.5f), ColorBlue };
+		verts[v_ind + 2] = { Vector(-0.5f, -0.5f, -0.5f), ColorGreen };
+		verts[v_ind + 3] = { Vector(0.5f, -0.5f, -0.5f), ColorRed };
+		prims[t_ind + 0] = { v_ind + 2, v_ind + 1, v_ind };
+		prims[t_ind + 1] = { v_ind + 3, v_ind + 2, v_ind };
+
+		// Left
+		v_ind += 4;
+		t_ind += 2;
+		verts[v_ind + 0] = { Vector(0.5f, 0.5f, -0.5f), ColorWhite };
+		verts[v_ind + 1] = { Vector(0.5f, 0.5f, 0.5f), ColorBlue };
+		verts[v_ind + 2] = { Vector(0.5f, -0.5f, 0.5f), ColorGreen };
+		verts[v_ind + 3] = { Vector(0.5f, -0.5f, -0.5f), ColorRed };
+		prims[t_ind + 0] = { v_ind, v_ind + 1, v_ind + 2 };
+		prims[t_ind + 1] = { v_ind, v_ind + 2, v_ind + 3 };
+
+		// Right
+		v_ind += 4;
+		t_ind += 2;
+		verts[v_ind + 0] = { Vector(-0.5f, 0.5f, 0.5f), ColorWhite };
+		verts[v_ind + 1] = { Vector(-0.5f, 0.5f, -0.5f), ColorBlue };
+		verts[v_ind + 2] = { Vector(-0.5f, -0.5f, -0.5f), ColorGreen };
+		verts[v_ind + 3] = { Vector(-0.5f, -0.5f, 0.5f), ColorRed };
+		prims[t_ind + 0] = { v_ind, v_ind + 1, v_ind + 2 };
+		prims[t_ind + 1] = { v_ind, v_ind + 2, v_ind + 3 };
+
+		// Top
+		v_ind += 4;
+		t_ind += 2;
+		verts[v_ind + 0] = { Vector(0.5f, 0.5f, -0.5f), ColorWhite };
+		verts[v_ind + 1] = { Vector(-0.5f, 0.5f, -0.5f), ColorBlue };
+		verts[v_ind + 2] = { Vector(-0.5f, 0.5f, 0.5f), ColorGreen };
+		verts[v_ind + 3] = { Vector(0.5f, 0.5f, 0.5f), ColorRed };
+		prims[t_ind + 0] = { v_ind, v_ind + 1, v_ind + 2 };
+		prims[t_ind + 1] = { v_ind, v_ind + 2, v_ind + 3 };
+
+		// Bottom
+		v_ind += 4;
+		t_ind += 2;
+		verts[v_ind + 0] = { Vector(0.5f, -0.5f, 0.5f), ColorWhite };
+		verts[v_ind + 1] = { Vector(-0.5f, -0.5f, 0.5f), ColorBlue };
+		verts[v_ind + 2] = { Vector(-0.5f, -0.5f, -0.5f), ColorGreen };
+		verts[v_ind + 3] = { Vector(0.5f, -0.5f, -0.5f), ColorRed };
+		prims[t_ind + 0] = { v_ind, v_ind + 1, v_ind + 2 };
+		prims[t_ind + 1] = { v_ind, v_ind + 2, v_ind + 3 };
+
+		NumCubeVerts = num_verts;
+		NumCubePrims = num_prims;
+		CubeVerts = verts;
+		CubePrims = prims;
+	}
+
 	LvGraphics* LvGraphics::PvInst = nullptr;
 
 	const VertexColor TriangleVertices[] =
@@ -88,8 +290,10 @@ namespace Leviathan
 		DX_ImmediateContext->Flush();
 		DX_ImmediateContext.SafeRelease();
 
+	#if LV_DEBUG_BUILD()
 		Outf("ReportLiveObjects -- After SafeReleasing DXHandles (except ID3D11Device):\n");
 		ReportLiveObjects(DX_Device);
+	#endif // LV_DEBUG
 
 		// CKA_NOTE: Disabled the exception detailed below in VS. Throws exceptions on following line:
 		DX_Device.SafeRelease();
@@ -156,6 +360,8 @@ namespace Leviathan
 
 	void LvGraphics::PvInit()
 	{
+		InitCube();
+
 		D3D_FEATURE_LEVEL SupportedFeatureLevels[] =
 		{
 			//D3D_FEATURE_LEVEL_12_2, D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0,
@@ -333,33 +539,35 @@ namespace Leviathan
 			UINT NumInputElements = ARRAYSIZE(InputLayoutDesc);
 			DXCHECK(DX_Device->CreateInputLayout(InputLayoutDesc, NumInputElements, VSCodeBlob->GetBufferPointer(), VSCodeBlob->GetBufferSize(), &DX_InputLayout));
 
+
 			D3D11_BUFFER_DESC VertexBufferDesc =
 			{
 				//sizeof(TriangleVertices),
-				sizeof(SquareVertices),
+				//sizeof(SquareVertices),
+				sizeof(VertexColor) * NumCubeVerts,
 				D3D11_USAGE_DEFAULT,
 				D3D11_BIND_VERTEX_BUFFER,
 				0,
 				0
 			};
-			D3D11_SUBRESOURCE_DATA VertexBufferInitData = { /*TriangleVertices*/ SquareVertices, 0, 0 };
+			D3D11_SUBRESOURCE_DATA VertexBufferInitData = { /*TriangleVertices SquareVertices*/CubeVerts, 0, 0 };
 			DXCHECK(DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_VertexBuffer));
 
 			D3D11_BUFFER_DESC IndexBufferDesc =
 			{
 				//sizeof(TriangleIndices),
-				sizeof(SquareIndices),
+				sizeof(TriPrim) * NumCubePrims,
 				D3D11_USAGE_DEFAULT,
 				D3D11_BIND_INDEX_BUFFER,
 				0,
 				0
 			};
-			D3D11_SUBRESOURCE_DATA IndexBufferInitData = { /*TriangleIndices*/ SquareIndices, 0, 0 };
+			D3D11_SUBRESOURCE_DATA IndexBufferInitData = { /*TriangleIndices SquareIndices*/CubePrims, 0, 0 };
 			DXCHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBuffer));
 
 			// CKA_TODO: Likely want to combine ViewProj and World buffers
 			D3D11_BUFFER_DESC WorldViewProjBufferDesc = {};
-			WorldViewProjBufferDesc.ByteWidth = sizeof(WorldViewProjData);
+			WorldViewProjBufferDesc.ByteWidth = sizeof(fMatrix) * 3;
 			WorldViewProjBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 			WorldViewProjBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 			WorldViewProjBufferDesc.CPUAccessFlags = 0;
@@ -368,7 +576,9 @@ namespace Leviathan
 		if (VSCodeBlob) { VSCodeBlob->Release(); }
 		if (PSCodeBlob) { PSCodeBlob->Release(); }
 
+	#if LV_DEBUG_BUILD()
 		PvSetDXDBGNames();
+	#endif // LV_DEBUG
 	}
 
 #define DXDBG_SETDBGNAMEHELPER(DX_Handle) \
@@ -377,6 +587,7 @@ namespace Leviathan
 
 	void LvGraphics::PvSetDXDBGNames()
 	{
+	#if LV_DEBUG_BUILD()
 		DXDBG_SETDBGNAMEHELPER(DX_Device);
 		DXDBG_SETDBGNAMEHELPER(DX_ImmediateContext);
 		DXDBG_SETDBGNAMEHELPER(DX_SwapChain1);
@@ -394,11 +605,28 @@ namespace Leviathan
 		DXDBG_SETDBGNAMEHELPER(DX_VertexBuffer);
 		DXDBG_SETDBGNAMEHELPER(DX_IndexBuffer);
 		DXDBG_SETDBGNAMEHELPER(DX_WorldViewProjBuffer);
+	#endif // LV_DEBUG
 	}
 
 	void LvGraphics::PvUpdateState()
 	{
-		WorldViewProjData CurrWVP;
+		LvCameraOrthographic Cam2D;
+		const fVector WorldPos(10.0f, 15.0f, -10.0f);
+		const fVector LookAt(0.0f, 0.0f, 0.0f);
+		const fVector AbsUp(0.0f, 1.0f, 0.0f, 0.0f);
+		LvCameraPerspective Cam3D(WorldPos, LookAt, AbsUp);
+
+		struct 
+		{
+			fMatrix World;
+			fMatrix View;
+			fMatrix Proj;
+		} WVPData;
+
+		WVPData.World.Scale(10.0f);
+		WVPData.View = Cam3D.CamTrans.View;
+		WVPData.Proj = Cam3D.CamTrans.Proj;
+
 
 		UINT Stride = sizeof(VertexColor);
 		UINT Offset = 0;
@@ -412,7 +640,7 @@ namespace Leviathan
 
 		DX_ImmediateContext->VSSetConstantBuffers(0, 1, &DX_WorldViewProjBuffer);
 
-		DX_ImmediateContext->UpdateSubresource(DX_WorldViewProjBuffer, 0, nullptr, &CurrWVP.World, sizeof(WorldViewProjData), 0);
+		DX_ImmediateContext->UpdateSubresource(DX_WorldViewProjBuffer, 0, nullptr, &WVPData.World, sizeof(WVPData), 0);
 
 		// CKA_NOTE:
 		//	- This call is now necessary every time after calling SwapChain::Present
@@ -428,7 +656,13 @@ namespace Leviathan
 		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, ClearColor);
 		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-		DX_ImmediateContext->DrawIndexed(ARRAYSIZE(/*TriangleIndices*/SquareIndices), 0u, 0u);
+
+		//int NumCubeVerts = 0;
+		//int NumCubePrims = 0;
+		//VertexColor* CubeVerts = nullptr;
+		//TriPrim* CubePrims = nullptr;
+
+		DX_ImmediateContext->DrawIndexed(NumCubePrims * 3/*ARRAYSIZE(TriangleIndices SquareIndices)*/, 0u, 0u);
 
 		// CKA_NOTE: Resolve from 4xMSAA RenderTargetTexture to single-sample BackBuffer
 		DX_ImmediateContext->ResolveSubresource(DX_BackBuffer, 0, DX_RenderTargetTexture, 0, RenderTargetFormat);
