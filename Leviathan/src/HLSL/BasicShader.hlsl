@@ -59,7 +59,7 @@ struct VS_OUTPUT
 {
     float4 Pos : SV_POSITION;
 #if ENABLE_VERTEX_TEXTURE
-    float2 TexUV : TEXCOORD
+    float2 TexUV : TEXCOORD;
 #elif ENABLE_VERTEX_COLOR
     float4 RGBA : COLOR;
 #endif
@@ -68,13 +68,12 @@ struct VS_OUTPUT
 VS_OUTPUT VSMain(VS_INPUT Input)
 {
     VS_OUTPUT Output;
-    Output.Pos = Input.Pos;
 #if ENABLE_WVP_TRANSFORM
-    Output.Pos = mul(Output.Pos, World);
+    Output.Pos = mul(Input.Pos, World);
     Output.Pos = mul(Output.Pos, View);
     Output.Pos = mul(Output.Pos, Proj);
 #else
-    // ...
+    Output.Pos = Input.Pos;
 #endif // WVP_TRANSFORM
 #if ENABLE_VERTEX_TEXTURE
     Output.Tex = Input.Tex;

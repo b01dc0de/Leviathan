@@ -119,7 +119,7 @@ namespace Leviathan
 
 		D3D_SHADER_MACRO PoundDefines[] =
 		{
-			"ENABLE_WVP_TRANSFORM", "0",
+			"ENABLE_WVP_TRANSFORM", "1",
 			"COMBINED_WVP_BUFFER", "1",
 			"ENABLE_VERTEX_TEXTURE", "0",
 			"ENABLE_VERTEX_COLOR", "1",

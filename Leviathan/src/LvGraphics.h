@@ -49,6 +49,7 @@ namespace Leviathan
 		{
 			World.Identity();
 			View.Identity();
+			Proj.Identity();
 		}
 	};
 
