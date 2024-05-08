@@ -7,6 +7,8 @@
 	#define LV_DEBUG_BUILD() (0)
 #endif
 
+#define UNUSED_VAR(var) (void)var
+
 #define PLATFORM_WINDOWS() (_MSC_VER > 0)
 #define PLATFORM_OTHER() (!(PLATFORM_WINDOWS()))
 

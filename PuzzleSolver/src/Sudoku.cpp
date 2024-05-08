@@ -2,6 +2,19 @@
 
 #include "Sudoku.h"
 
+// CKA_NOTE: Only stub this in temporarily to get this to compile on Windows
+//		Don't want to fiddle with making LVCommon a shared library right now
+#if (_MSC_VER > 0)
+#include <Windows.h>
+#define Assert(exp) \
+		if (!(exp))	\
+		{ \
+			DebugBreak(); \
+		}
+#else
+#define Assert(exp) (void)0
+#endif
+
 namespace SudokuUtils
 {
 	int RowOfCell(int CellIdx)

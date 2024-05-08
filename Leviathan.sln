@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloTriangle", "HelloTriangle\HelloTriangle.vcxproj", "{ABA0494D-8AAB-46DA-B68E-31A6B3669EEE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PuzzleSolver", "PuzzleSolver\PuzzleSolver.vcxproj", "{307B3957-4D16-4EBC-8FB0-E099BB8A7919}"
+	ProjectSection(ProjectDependencies) = postProject
+		{221C7C4E-2D4F-46BC-A953-CA0BC3F577D0} = {221C7C4E-2D4F-46BC-A953-CA0BC3F577D0}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Leviathan", "Leviathan\Leviathan.vcxproj", "{221C7C4E-2D4F-46BC-A953-CA0BC3F577D0}"
 EndProject
@@ -35,12 +38,10 @@ Global
 		{307B3957-4D16-4EBC-8FB0-E099BB8A7919}.Release|x86.Build.0 = Release|x64
 		{221C7C4E-2D4F-46BC-A953-CA0BC3F577D0}.Debug|x64.ActiveCfg = Debug|x64
 		{221C7C4E-2D4F-46BC-A953-CA0BC3F577D0}.Debug|x64.Build.0 = Debug|x64
-		{221C7C4E-2D4F-46BC-A953-CA0BC3F577D0}.Debug|x86.ActiveCfg = Debug|Win32
-		{221C7C4E-2D4F-46BC-A953-CA0BC3F577D0}.Debug|x86.Build.0 = Debug|Win32
+		{221C7C4E-2D4F-46BC-A953-CA0BC3F577D0}.Debug|x86.ActiveCfg = Debug|x64
 		{221C7C4E-2D4F-46BC-A953-CA0BC3F577D0}.Release|x64.ActiveCfg = Release|x64
 		{221C7C4E-2D4F-46BC-A953-CA0BC3F577D0}.Release|x64.Build.0 = Release|x64
-		{221C7C4E-2D4F-46BC-A953-CA0BC3F577D0}.Release|x86.ActiveCfg = Release|Win32
-		{221C7C4E-2D4F-46BC-A953-CA0BC3F577D0}.Release|x86.Build.0 = Release|Win32
+		{221C7C4E-2D4F-46BC-A953-CA0BC3F577D0}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

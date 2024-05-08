@@ -61,9 +61,8 @@ namespace Leviathan
 					- IndexBuffer (Device::CreateBuffer)
 					- WorldViewProjBuffer (Device::CreateBuffer)
 		*/
-
-		Outf("Before SafeReleasing DXHandles:\n");
-		ReportLiveObjects(DX_Device);
+		//Outf("ReportLiveObjects -- Before SafeReleasing DXHandles:\n");
+		//ReportLiveObjects(DX_Device);
 
 		// Release resources in (generally) reverse init order
 		DX_WorldViewProjBuffer.SafeRelease();
@@ -83,16 +82,21 @@ namespace Leviathan
 		DX_RenderTargetTexture.SafeRelease();
 
 		DX_BackBuffer.SafeRelease();
-		DX_ImmediateContext.SafeRelease();
 		DX_SwapChain1.SafeRelease();
 
-		Outf("After SafeReleasing DXHandles (all except ID3D11Device):\n");
+		DX_ImmediateContext->ClearState();
+		DX_ImmediateContext->Flush();
+		DX_ImmediateContext.SafeRelease();
+
+		Outf("ReportLiveObjects -- After SafeReleasing DXHandles (except ID3D11Device):\n");
 		ReportLiveObjects(DX_Device);
 
-		// CKA_TODO: Don't SafeRelease the ID3D11Device for now. Throws exception on following line:
-		//DX_Device.SafeRelease();
-		//		Exception thrown at 0x00007FFCE1C953AC in Leviathan.exe: Microsoft C++ exception : MONZA::DdiThreadingContext<MONZA::AdapterTraits_Gen12LP>::msg_end at memory location 0x000000AE3A2FFBF0.
-		//		Symbols not loaded for igd10um64xe.pdb/dll
+		// CKA_NOTE: Disabled the exception detailed below in VS. Throws exceptions on following line:
+		DX_Device.SafeRelease();
+		//		Microsoft C++ exception thrown: MONZA::DdiThreadingContext<MONZA::AdapterTraits_Gen12LP>::msg_end at memory... 
+		//		Microsoft C++ exception thrown: MONZA::IgcThreadingContext<MONZA::AdapterTraits_Gen12LP>::msg_end at memory...
+		//		In module: igd10um64xe.dll
+		//		^ Above DLL looks to be Intel Graphics related
 		// Don't care enough to solve this now but should investigate in future
 		DX_Device = nullptr;
 	}
@@ -106,8 +110,9 @@ namespace Leviathan
 
 		*ShaderBlob = nullptr;
 
-		UINT CompileFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+		UINT CompileFlags = D3DCOMPILE_ENABLE_STRICTNESS|D3DCOMPILE_IEEE_STRICTNESS|D3DCOMPILE_PACK_MATRIX_ROW_MAJOR;
 	#if LV_DEBUG_BUILD()
+		CompileFlags |= D3DCOMPILE_WARNINGS_ARE_ERRORS;
 		CompileFlags |= D3DCOMPILE_DEBUG;
 		CompileFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
 	#endif
@@ -163,6 +168,11 @@ namespace Leviathan
 		CreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 	#endif
 
+		// CKA_NOTE: After updating graphics drivers on my laptop, the following
+		//	CreateDevice call started to throw an exception:
+		//		Microsoft C++ exception: Poco::NotFoundException
+		// The exception also fires when calling Release on the ID3D11Device handle at program termination
+		// Disabled the exception breakpoint for now :shrug:
 		DXCHECK(D3D11CreateDevice(
 			nullptr,
 			D3D_DRIVER_TYPE_HARDWARE,
@@ -177,9 +187,6 @@ namespace Leviathan
 		));
 		Assert(UsedFeatureLevel == D3D_FEATURE_LEVEL_11_1);
 
-		DXHandle<IDXGIFactory2> DXGI_Factory2 = nullptr;
-		DXCHECK(CreateDXGIFactory1(IID_PPV_ARGS(&DXGI_Factory2)));
-
 		DXGI_SWAP_CHAIN_DESC1 SwapChainDesc1 = {};
 		SwapChainDesc1.Width = ResX;
 		SwapChainDesc1.Height = ResY;
@@ -193,7 +200,9 @@ namespace Leviathan
 		SwapChainDesc1.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		SwapChainDesc1.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 		SwapChainDesc1.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-
+		
+		DXHandle<IDXGIFactory2> DXGI_Factory2 = nullptr;
+		DXCHECK(CreateDXGIFactory1(IID_PPV_ARGS(&DXGI_Factory2)));
 		DXCHECK(DXGI_Factory2->CreateSwapChainForHwnd(
 			DX_Device,
 			LvWindow,
@@ -208,7 +217,7 @@ namespace Leviathan
 
 		DXGI_SAMPLE_DESC Shared_RT_SampleDesc = {};
 		Shared_RT_SampleDesc.Count = 4;
-		Shared_RT_SampleDesc.Quality = D3D11_STANDARD_MULTISAMPLE_PATTERN;
+		Shared_RT_SampleDesc.Quality = (UINT)D3D11_STANDARD_MULTISAMPLE_PATTERN;
 
 		D3D11_TEXTURE2D_DESC RTT_Desc;
 		RTT_Desc.Width = ResX;
@@ -226,7 +235,6 @@ namespace Leviathan
 		RTV_Desc.Format = RenderTargetFormat;
 		RTV_Desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
 		RTV_Desc.Texture2D.MipSlice = 0;
-		//DXCHECK(DX_Device->CreateRenderTargetView(DX_RenderTargetTexture, &RTV_Desc, &DX_RenderTargetView));
 		DXCHECK(DX_Device->CreateRenderTargetView(DX_RenderTargetTexture, nullptr, &DX_RenderTargetView));
 
 		// CKA_NOTE: Use the default values for now
@@ -426,6 +434,25 @@ namespace Leviathan
 		DX_ImmediateContext->ResolveSubresource(DX_BackBuffer, 0, DX_RenderTargetTexture, 0, RenderTargetFormat);
 		const DXGI_PRESENT_PARAMETERS PresentParams = {};
 		DX_SwapChain1->Present1(0, DXGI_PRESENT_ALLOW_TEARING, &PresentParams);
+	}
+
+	void LvGraphics::Init()
+	{
+		Outf("LvGraphics::Init -- BEGIN\n");
+		Inst()->PvInit();
+		Outf("LvGraphics::Init -- END\n");
+	}
+	void LvGraphics::Term()
+	{
+		Outf("LvGraphics::Term -- BEGIN\n");
+		Assert(PvInst);
+		delete PvInst;
+		PvInst = nullptr;
+		Outf("LvGraphics::Term -- END\n");
+	}
+	void LvGraphics::Draw()
+	{
+		Inst()->PvDraw();
 	}
 }
 

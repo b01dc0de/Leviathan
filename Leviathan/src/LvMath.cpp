@@ -451,6 +451,7 @@ namespace Leviathan
 	}
 	fMatrix& fMatrix::Rot(MatrixRotationAxis _Rot, const fVector& Axis, float Angle)
 	{
+		UNUSED_VAR(_Rot);
 		/*
 		float C = cosf(Angle);
 		float s = sinf(Angle);
@@ -528,6 +529,7 @@ namespace Leviathan
 	}
 	fMatrix& fMatrix::Rot(MatrixRotationOrient _Rot, const fVector& Dir, const fVector& Up)
 	{
+		UNUSED_VAR(_Rot);
 		Row2 = Dir.GetNorm();
 		Row0 = Cross(Up, Row2).GetNorm();
 		Row1 = Cross(Row2, Row0).GetNorm();
@@ -553,18 +555,22 @@ namespace Leviathan
 
 	fMatrix::fMatrix(MatrixZero _Zero)
 	{
+		UNUSED_VAR(_Zero);
 		Zero();
 	}
 	fMatrix::fMatrix(MatrixIdentity _Identity)
 	{
+		UNUSED_VAR(_Identity);
 		Identity();
 	}
 	fMatrix::fMatrix(MatrixTranslate _Trans, float X, float Y, float Z)
 	{
+		UNUSED_VAR(_Trans);
 		Trans(X, Y, Z);
 	}
 	fMatrix::fMatrix(MatrixTranslate _Trans, const fVector& T)
 	{
+		UNUSED_VAR(_Trans);
 		Trans(T);
 	}
 	fMatrix::fMatrix(MatrixRotation _Rot, float Angle)
@@ -581,10 +587,12 @@ namespace Leviathan
 	}
 	fMatrix::fMatrix(MatrixScale _Scale, float S)
 	{
+		UNUSED_VAR(_Scale);
 		Scale(S);
 	}
-	fMatrix::fMatrix(MatrixScale scale, float SX, float SY, float SZ)
+	fMatrix::fMatrix(MatrixScale _Scale, float SX, float SY, float SZ)
 	{
+		UNUSED_VAR(_Scale);
 		Scale(SX, SY, SZ);
 	}
 }

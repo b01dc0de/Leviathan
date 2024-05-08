@@ -1,13 +1,14 @@
 //////////////////////
 // BasicShader.hlsl //
 //////////////////////
+#pragma pack_matrix( row_major )
 
 // Defines:
 #ifndef ENABLE_WVP_TRANSFORM
     #define ENABLE_WVP_TRANSFORM 1
 #endif
 #ifndef COMBINED_WVP_BUFFER
-    #define COMBINED_WVP_BUFFER 0
+    #define COMBINED_WVP_BUFFER 1
 #endif
 #ifndef ENABLE_VERTEX_TEXTURE
     #define ENABLE_VERTEX_TEXTURE 0
@@ -19,10 +20,6 @@
 #if !ENABLE_VERTEX_COLOR && !ENABLE_VERTEX_TEXTURE
     #error "Either VertexTexture or VertexColor must be enabled"
 #endif
-
-
-// Vertex data
-#pragma pack_matrix( row_major )
 
 #if COMBINED_WVP_BUFFER
     cbuffer WorldViewProjBuffer : register(b0)
@@ -71,12 +68,13 @@ struct VS_OUTPUT
 VS_OUTPUT VSMain(VS_INPUT Input)
 {
     VS_OUTPUT Output;
+    Output.Pos = Input.Pos;
 #if ENABLE_WVP_TRANSFORM
-    Output.Pos = mul(Input.Pos, World);
+    Output.Pos = mul(Output.Pos, World);
     Output.Pos = mul(Output.Pos, View);
     Output.Pos = mul(Output.Pos, Proj);
 #else
-    Output.Pos = Input.Pos;
+    // ...
 #endif // WVP_TRANSFORM
 #if ENABLE_VERTEX_TEXTURE
     Output.Tex = Input.Tex;

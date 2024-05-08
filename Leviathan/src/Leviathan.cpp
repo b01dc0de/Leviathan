@@ -29,11 +29,11 @@ namespace Leviathan
 		WndClass.hInstance = hInstance;
 		WndClass.lpszClassName = AppName;
 
-		ATOM RegClassResult = RegisterClassEx(&WndClass);
+		RegisterClassEx(&WndClass);
 
 		RECT WndRect = { 0, 0, (LONG)ResX, (LONG)ResY };
-		UINT WndStyle = WS_CAPTION;
-		UINT WndExStyle = WS_EX_OVERLAPPEDWINDOW;
+		DWORD WndStyle = WS_CAPTION;
+		DWORD WndExStyle = WS_EX_OVERLAPPEDWINDOW;
 		AdjustWindowRectEx(&WndRect, WndStyle, FALSE, WndExStyle);
 
 		HWND hWindow = CreateWindowEx(
@@ -56,6 +56,7 @@ namespace Leviathan
 
 	void LvInitEngine()
 	{
+		Outf("LvInitEngine -- BEGIN\n");
 		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 		HWND hWindow = LvInitWindow(LvInst);
@@ -70,15 +71,18 @@ namespace Leviathan
 
 			bLvRunning = true;
 		}
+		Outf("LvInitEngine -- END\n");
 	}
 	void LvTermEngine()
 	{
+		Outf("LvTermEngine -- BEGIN\n");
 		LvGraphics::Term();
-		DestroyWindow(LvWindow);
+		Outf("LvTermEngine -- END\n");
 	}
 
 	void LvMainEngineLoop()
 	{
+		Outf("LvMainEngineLoop -- BEGIN\n");
 		auto PeekNewMessages = [&]()
 		{
 			MSG Msg;
@@ -97,12 +101,14 @@ namespace Leviathan
 
 			LvGraphics::Draw();
 		}
+		Outf("LvMainEngineLoop -- END\n");
 	}
 
 } // namepace Leviathan
 
 LRESULT CALLBACK LvWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	LRESULT Result = 0;
 	switch (uMsg)
 	{
 		case WM_QUIT:
@@ -117,8 +123,11 @@ LRESULT CALLBACK LvWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		{
 			Leviathan::bLvRunning = false;
 		} break;
+		default:
+		{
+			Result = DefWindowProc(hwnd, uMsg, wParam, lParam);
+		} break;
 	}
-	LRESULT Result = DefWindowProc(hwnd, uMsg, wParam, lParam);
 	return Result;
 }
 

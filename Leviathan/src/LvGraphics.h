@@ -105,9 +105,9 @@ namespace Leviathan
 		void PvDraw();
 		void PvSetDXDBGNames();
 
-		static void Init() { Inst()->PvInit(); }
-		static void Term() { Assert(PvInst); delete PvInst; PvInst = nullptr; }
-		static void Draw() { Inst()->PvDraw(); }
+		static void Init();
+		static void Term();
+		static void Draw();
 	};
 }
 
