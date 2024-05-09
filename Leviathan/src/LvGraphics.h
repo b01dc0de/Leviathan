@@ -40,6 +40,7 @@ namespace Leviathan
 	};
 
 	struct BasicMeshColor;
+	struct BasicMeshUV;
 
 	struct LvGraphics
 	{
@@ -49,6 +50,7 @@ namespace Leviathan
 		BasicMeshColor* pCubeMesh;
 		BasicMeshColor* pTriangleMesh;
 		BasicMeshColor* pRectMesh;
+		BasicMeshUV* pRectUVMesh;
 
 		DXHandle<ID3D11Device> DX_Device = nullptr;
 		DXHandle<ID3D11DeviceContext> DX_ImmediateContext = nullptr;
@@ -63,18 +65,28 @@ namespace Leviathan
 		DXHandle<ID3D11RasterizerState> DX_RasterizerState = nullptr;
 		DXHandle<ID3D11BlendState> DX_BlendState = nullptr;
 
-		DXHandle<ID3D11VertexShader> DX_VertexShader = nullptr;
-		DXHandle<ID3D11PixelShader> DX_PixelShader = nullptr;
-		DXHandle<ID3D11InputLayout> DX_InputLayout = nullptr;
+		DXHandle<ID3D11VertexShader> DX_VSColor = nullptr;
+		DXHandle<ID3D11PixelShader> DX_PSColor = nullptr;
+		DXHandle<ID3D11InputLayout> DX_InputLayoutColor = nullptr;
 
-		DXHandle<ID3D11Buffer> DX_VertexBuffer = nullptr;
-		DXHandle<ID3D11Buffer> DX_IndexBuffer = nullptr;
+		DXHandle<ID3D11Buffer> DX_CubeVertexBuffer = nullptr;
+		DXHandle<ID3D11Buffer> DX_CubeIndexBuffer = nullptr;
+
+		DXHandle<ID3D11VertexShader> DX_VSTexture = nullptr;
+		DXHandle<ID3D11PixelShader> DX_PSTexture = nullptr;
+		DXHandle<ID3D11InputLayout> DX_InputLayoutTexture = nullptr;
+
+		DXHandle<ID3D11Buffer> DX_RectVertexBuffer = nullptr;
+		DXHandle<ID3D11Buffer> DX_RectIndexBuffer = nullptr;
 
 		DXHandle<ID3D11Buffer> DX_WorldBuffer = nullptr;
 		DXHandle<ID3D11Buffer> DX_ViewProjBuffer = nullptr;
 
-		static LvGraphics* PvInst;
+		DXHandle<ID3D11Texture2D> DX_DefaultTexture = nullptr;
+		DXHandle<ID3D11ShaderResourceView> DX_DefaultTexture_SRV = nullptr;
+		DXHandle<ID3D11SamplerState> DX_DefaultSamplerState = nullptr;
 
+		static LvGraphics* PvInst;
 		static LvGraphics* Inst()
 		{
 			if (!PvInst)
@@ -86,7 +98,8 @@ namespace Leviathan
 		LvGraphics() = default;
 		~LvGraphics();
 
-		int CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob);
+		//int CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob);
+		int CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob, D3D_SHADER_MACRO* pOptDefines = nullptr);
 
 		void PvInit();
 		void PvUpdateState();

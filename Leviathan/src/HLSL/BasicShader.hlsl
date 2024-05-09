@@ -42,7 +42,7 @@
 
 #if ENABLE_VERTEX_TEXTURE
     Texture2D MainTexture : register(t0);
-    SamplerState MainSampler : register(s0)
+    SamplerState MainSampler : register(s0);
 #endif
 
 struct VS_INPUT
@@ -76,7 +76,7 @@ VS_OUTPUT VSMain(VS_INPUT Input)
     Output.Pos = Input.Pos;
 #endif // WVP_TRANSFORM
 #if ENABLE_VERTEX_TEXTURE
-    Output.Tex = Input.Tex;
+    Output.TexUV = Input.TexUV;
 #elif ENABLE_VERTEX_COLOR
     Output.RGBA = Input.RGBA;
 #endif
@@ -86,7 +86,7 @@ VS_OUTPUT VSMain(VS_INPUT Input)
 float4 PSMain(VS_OUTPUT Input) : SV_Target
 {
 #if ENABLE_VERTEX_TEXTURE
-    return MainTexture.Sample(MainSampler, Input.Tex);
+    return MainTexture.Sample(MainSampler, Input.TexUV);
 #elif ENABLE_VERTEX_COLOR
     return Input.RGBA;
 #else

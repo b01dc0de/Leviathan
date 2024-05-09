@@ -9,6 +9,13 @@ namespace Leviathan
 		fVector Color;
 	};
 
+	struct VertexUV
+	{
+		fVector Position;
+		float fU = 0.0f;
+		float fV = 0.0f;
+	};
+
 	struct TriPrim
 	{
 		unsigned int v0;
@@ -33,9 +40,27 @@ namespace Leviathan
 		BasicMeshColor& operator=(const BasicMeshColor&) = delete;
 	};
 
+	struct BasicMeshUV
+	{
+		int NumVerts = 0;
+		int NumPrims = 0;
+		VertexUV* Verts = nullptr;
+		TriPrim* Prims = nullptr;
+
+		void Init(int InNumVerts, int InNumPrims, VertexUV* InVerts, TriPrim* InPrims);
+		BasicMeshUV(int InNumVerts, int InNumPrims, VertexUV* InVerts, TriPrim* InPrims);
+		BasicMeshUV() = default;
+		~BasicMeshUV();
+		BasicMeshUV(BasicMeshUV&& rValueMesh);
+		BasicMeshUV& operator=(BasicMeshUV&& rValueMesh);
+		BasicMeshUV(const BasicMeshUV&) = delete;
+		BasicMeshUV& operator=(const BasicMeshUV&) = delete;
+	};
+
 	BasicMeshColor* InitCube();
 	BasicMeshColor* InitTriangle();
 	BasicMeshColor* InitRect();
+	BasicMeshUV* InitTextureRect();
 }
 
 #endif // LVMESH_H

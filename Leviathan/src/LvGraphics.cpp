@@ -58,12 +58,12 @@ namespace Leviathan
 		// Release resources in (generally) reverse init order
 		DX_WorldBuffer.SafeRelease();
 		DX_ViewProjBuffer.SafeRelease();
-		DX_VertexBuffer.SafeRelease();
-		DX_IndexBuffer.SafeRelease();
+		DX_CubeVertexBuffer.SafeRelease();
+		DX_CubeIndexBuffer.SafeRelease();
 
-		DX_InputLayout.SafeRelease();
-		DX_VertexShader.SafeRelease();
-		DX_PixelShader.SafeRelease();
+		DX_InputLayoutColor.SafeRelease();
+		DX_VSColor.SafeRelease();
+		DX_PSColor.SafeRelease();
 
 		DX_RasterizerState.SafeRelease();
 		DX_BlendState.SafeRelease();
@@ -95,7 +95,7 @@ namespace Leviathan
 		DX_Device = nullptr;
 	}
 
-	int LvGraphics::CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob)
+	int LvGraphics::CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob, D3D_SHADER_MACRO* pOptDefines)
 	{
 		if (SourceFileName == nullptr || EntryPointFunction == nullptr || Profile == nullptr || ShaderBlob == nullptr)
 		{
@@ -111,22 +111,13 @@ namespace Leviathan
 		CompileFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
 	#endif
 
-		D3D_SHADER_MACRO PoundDefines[] =
-		{
-			"ENABLE_WVP_TRANSFORM", "1",
-			"COMBINED_WVP_BUFFER", "0",
-			"ENABLE_VERTEX_TEXTURE", "0",
-			"ENABLE_VERTEX_COLOR", "1",
-			NULL, NULL
-		};
-
 		ID3DBlob* OutBlob = nullptr;
 		ID3DBlob* ErrorMsgBlob = nullptr;
 
 		HRESULT Result = D3DCompileFromFile
 		(
 			SourceFileName,
-			PoundDefines,
+			pOptDefines,
 			D3D_COMPILE_STANDARD_FILE_INCLUDE,
 			EntryPointFunction,
 			Profile,
@@ -308,19 +299,36 @@ namespace Leviathan
 		Viewport_Desc.TopLeftY = 0;
 		DX_ImmediateContext->RSSetViewports(1, &Viewport_Desc);
 
-		ID3DBlob* VSCodeBlob = nullptr;
-		ID3DBlob* PSCodeBlob = nullptr;
-		DXCHECK(CompileShader(L"src/HLSL/BasicShader.hlsl", "VSMain", "vs_5_0", &VSCodeBlob));
-		DXCHECK(CompileShader(L"src/HLSL/BasicShader.hlsl", "PSMain", "ps_5_0", &PSCodeBlob));
+		D3D_SHADER_MACRO ShaderColorPoundDefines[] =
+		{
+			"ENABLE_WVP_TRANSFORM", "1",
+			"COMBINED_WVP_BUFFER", "0",
+			"ENABLE_VERTEX_TEXTURE", "0",
+			"ENABLE_VERTEX_COLOR", "1",
+			NULL, NULL
+		};
+		D3D_SHADER_MACRO ShaderTexturePoundDefines[] =
+		{
+			"ENABLE_WVP_TRANSFORM", "1",
+			"COMBINED_WVP_BUFFER", "0",
+			"ENABLE_VERTEX_TEXTURE", "1",
+			"ENABLE_VERTEX_COLOR", "0",
+			NULL, NULL
+		};
 
 		pCubeMesh = InitCube();
 		pTriangleMesh = InitTriangle();
 		pRectMesh = InitRect();
+		pRectUVMesh = InitTextureRect();
 
-		if (VSCodeBlob && PSCodeBlob)
+		ID3DBlob* VSColorCodeBlob = nullptr;
+		ID3DBlob* PSColorCodeBlob = nullptr;
+		DXCHECK(CompileShader(L"src/HLSL/BasicShader.hlsl", "VSMain", "vs_5_0", &VSColorCodeBlob, &ShaderColorPoundDefines[0]));
+		DXCHECK(CompileShader(L"src/HLSL/BasicShader.hlsl", "PSMain", "ps_5_0", &PSColorCodeBlob, &ShaderColorPoundDefines[0]));
+		if (VSColorCodeBlob && PSColorCodeBlob)
 		{
-			DXCHECK(DX_Device->CreateVertexShader(VSCodeBlob->GetBufferPointer(), VSCodeBlob->GetBufferSize(), nullptr, &DX_VertexShader));
-			DXCHECK(DX_Device->CreatePixelShader(PSCodeBlob->GetBufferPointer(), PSCodeBlob->GetBufferSize(), nullptr, &DX_PixelShader));
+			DXCHECK(DX_Device->CreateVertexShader(VSColorCodeBlob->GetBufferPointer(), VSColorCodeBlob->GetBufferSize(), nullptr, &DX_VSColor));
+			DXCHECK(DX_Device->CreatePixelShader(PSColorCodeBlob->GetBufferPointer(), PSColorCodeBlob->GetBufferSize(), nullptr, &DX_PSColor));
 
 			D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
 			{
@@ -329,7 +337,7 @@ namespace Leviathan
 				{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			};
 			UINT NumInputElements = ARRAYSIZE(InputLayoutDesc);
-			DXCHECK(DX_Device->CreateInputLayout(InputLayoutDesc, NumInputElements, VSCodeBlob->GetBufferPointer(), VSCodeBlob->GetBufferSize(), &DX_InputLayout));
+			DXCHECK(DX_Device->CreateInputLayout(InputLayoutDesc, NumInputElements, VSColorCodeBlob->GetBufferPointer(), VSColorCodeBlob->GetBufferSize(), &DX_InputLayoutColor));
 
 
 			D3D11_BUFFER_DESC VertexBufferDesc =
@@ -341,7 +349,7 @@ namespace Leviathan
 				0
 			};
 			D3D11_SUBRESOURCE_DATA VertexBufferInitData = { pCubeMesh->Verts, 0, 0 };
-			DXCHECK(DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_VertexBuffer));
+			DXCHECK(DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_CubeVertexBuffer));
 
 			D3D11_BUFFER_DESC IndexBufferDesc =
 			{
@@ -352,7 +360,7 @@ namespace Leviathan
 				0
 			};
 			D3D11_SUBRESOURCE_DATA IndexBufferInitData = { pCubeMesh->Prims, 0, 0 };
-			DXCHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBuffer));
+			DXCHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_CubeIndexBuffer));
 
 			D3D11_BUFFER_DESC WorldBufferDesc = {};
 			WorldBufferDesc.ByteWidth = sizeof(fMatrix);
@@ -368,8 +376,124 @@ namespace Leviathan
 			ViewProjBufferDesc.CPUAccessFlags = 0;
 			DXCHECK(DX_Device->CreateBuffer(&ViewProjBufferDesc, nullptr, &DX_ViewProjBuffer));
 		}
-		if (VSCodeBlob) { VSCodeBlob->Release(); }
-		if (PSCodeBlob) { PSCodeBlob->Release(); }
+		if (VSColorCodeBlob) { VSColorCodeBlob->Release(); }
+		if (PSColorCodeBlob) { PSColorCodeBlob->Release(); }
+
+		ID3DBlob* VSTextureCodeBlob = nullptr;
+		ID3DBlob* PSTextureCodeBlob = nullptr;
+		DXCHECK(CompileShader(L"src/HLSL/BasicShader.hlsl", "VSMain", "vs_5_0", &VSTextureCodeBlob, &ShaderTexturePoundDefines[0]));
+		DXCHECK(CompileShader(L"src/HLSL/BasicShader.hlsl", "PSMain", "ps_5_0", &PSTextureCodeBlob, &ShaderTexturePoundDefines[0]));
+		if (VSTextureCodeBlob && PSTextureCodeBlob)
+		{
+			DXCHECK(DX_Device->CreateVertexShader(VSTextureCodeBlob->GetBufferPointer(), VSTextureCodeBlob->GetBufferSize(), nullptr, &DX_VSTexture));
+			DXCHECK(DX_Device->CreatePixelShader(PSTextureCodeBlob->GetBufferPointer(), PSTextureCodeBlob->GetBufferSize(), nullptr, &DX_PSTexture));
+
+			D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
+			{
+				{"POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				//{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			};
+			UINT NumInputElements = ARRAYSIZE(InputLayoutDesc);
+			DXCHECK(DX_Device->CreateInputLayout(InputLayoutDesc, NumInputElements, VSTextureCodeBlob->GetBufferPointer(), VSTextureCodeBlob->GetBufferSize(), &DX_InputLayoutTexture));
+
+			D3D11_BUFFER_DESC VertexBufferDesc =
+			{
+				sizeof(VertexUV) * pRectUVMesh->NumVerts,
+				D3D11_USAGE_DEFAULT,
+				D3D11_BIND_VERTEX_BUFFER,
+				0,
+				0
+			};
+			D3D11_SUBRESOURCE_DATA VertexBufferInitData = { pRectUVMesh->Verts, 0, 0 };
+			DXCHECK(DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_RectVertexBuffer));
+
+			D3D11_BUFFER_DESC IndexBufferDesc =
+			{
+				sizeof(TriPrim) * pRectMesh->NumPrims,
+				D3D11_USAGE_DEFAULT,
+				D3D11_BIND_INDEX_BUFFER,
+				0,
+				0
+			};
+			D3D11_SUBRESOURCE_DATA IndexBufferInitData = { pRectUVMesh->Prims, 0, 0 };
+			DXCHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_RectIndexBuffer));
+		}
+		if (VSTextureCodeBlob) { VSTextureCodeBlob->Release(); }
+		if (PSTextureCodeBlob) { PSTextureCodeBlob->Release(); }
+
+		{ // Create default texture
+			struct Color32FRGBA
+			{
+				float R;
+				float G;
+				float B;
+				float A;
+			};
+			const Color32FRGBA Pink{ 1.0f, 73.0f / 255.0f, 173.0f / 255.0f, 1.0f};
+			const Color32FRGBA Black{ 0.0f, 0.0f, 0.0f, 1.0f};
+
+			constexpr UINT Size = 512;
+			constexpr UINT MipLevels = 9;
+			UINT CellSize = Size / 16;
+			Color32FRGBA* DefaultTextureData = new Color32FRGBA[Size*Size];
+			for (UINT RowIdx = 0; RowIdx < Size; RowIdx++)
+			{
+				for (UINT ColIdx = 0; ColIdx < Size; ColIdx++)
+				{
+					int CellRow = RowIdx / CellSize;
+					int CellCol = ColIdx / CellSize;
+					DefaultTextureData[RowIdx * Size + ColIdx] = ((CellRow + CellCol) % 2 == 0) ? Pink : Black;
+				}
+			}
+
+			D3D11_SUBRESOURCE_DATA TexDataDesc[MipLevels] = { {}, {}, {}, {}, {}, {}, {}, {}, {} };
+			TexDataDesc[0].pSysMem = DefaultTextureData;
+			TexDataDesc[0].SysMemPitch = sizeof(Color32FRGBA) * Size;
+			TexDataDesc[0].SysMemSlicePitch = sizeof(Color32FRGBA) * Size * Size;
+			/*
+				D3D11 ERROR: ID3D11DeviceContext::DrawIndexed: The resource return type for component 0 declared in the shader code (FLOAT) is not compatible with the Shader Resource View format bound to slot 0 of the Pixel Shader unit (UINT).  This mismatch is invalid if the shader actually uses the view (e.g. it is not skipped due to shader code branching). [ EXECUTION ERROR #361: DEVICE_DRAW_RESOURCE_RETURN_TYPE_MISMATCH]
+				D3D11 ERROR: ID3D11DeviceContext::DrawIndexed: The Shader Resource View in slot 0 of the Pixel Shader unit is using the Format (R8G8B8A8_UINT). This format does not support 'Sample', 'SampleLevel', 'SampleBias' or 'SampleGrad', at least one of which may being used on the Resource by the shader. This mismatch is invalid if the shader actually uses the view (e.g. it is not skipped due to shader code branching). [ EXECUTION ERROR #371: DEVICE_DRAW_RESOURCE_FORMAT_SAMPLE_UNSUPPORTED]
+			*/
+			DXGI_FORMAT DefaultTextureFormat = DXGI_FORMAT_R32G32B32A32_FLOAT; //DXGI_FORMAT_R8G8B8A8_UINT;
+
+			D3D11_TEXTURE2D_DESC DefaultTextureDesc = {};
+			DefaultTextureDesc.Width = Size;
+			DefaultTextureDesc.Height = Size;
+			DefaultTextureDesc.MipLevels = 1;
+			DefaultTextureDesc.ArraySize = 1;
+			DefaultTextureDesc.Format = DefaultTextureFormat;
+			DefaultTextureDesc.SampleDesc.Count = 1;
+			DefaultTextureDesc.SampleDesc.Quality = 0;
+			DefaultTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+			DefaultTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+			DefaultTextureDesc.CPUAccessFlags = 0;
+			DefaultTextureDesc.MiscFlags = 0;
+			DXCHECK(DX_Device->CreateTexture2D(&DefaultTextureDesc, &TexDataDesc[0], &DX_DefaultTexture));
+
+			/*
+			D3D11_SHADER_RESOURCE_VIEW_DESC SRV_Desc = {};
+			SRV_Desc.Format = DefaultTextureFormat;
+			SRV_Desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+			SRV_Desc.Texture2D.MostDetailedMip = 0;
+			SRV_Desc.Texture2D.MipLevels = (UINT)1;
+			*/
+
+			DXCHECK(DX_Device->CreateShaderResourceView(DX_DefaultTexture, /*&SRV_Desc*/nullptr, &DX_DefaultTexture_SRV));
+
+			D3D11_SAMPLER_DESC DefaultTextureSamplerDesc = {};
+			DefaultTextureSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; // D3D11_FILTER_MIN_MAG_MIP_POINT;
+			DefaultTextureSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+			DefaultTextureSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+			DefaultTextureSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+			DefaultTextureSamplerDesc.MipLODBias = 0.0f;
+			DefaultTextureSamplerDesc.MaxAnisotropy = 1;
+			DefaultTextureSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+			//DefaultTextureSamplerDesc.BorderColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+			DefaultTextureSamplerDesc.MinLOD = 0;
+			DefaultTextureSamplerDesc.MaxLOD = 0;//D3D11_FLOAT32_MAX;
+			DXCHECK(DX_Device->CreateSamplerState(&DefaultTextureSamplerDesc, &DX_DefaultSamplerState));
+		}
 
 	#if LV_DEBUG_BUILD()
 		PvSetDXDBGNames();
@@ -394,13 +518,16 @@ namespace Leviathan
 		DXDBG_SETDBGNAMEHELPER(DX_DepthStencilView);
 		DXDBG_SETDBGNAMEHELPER(DX_RasterizerState);
 		DXDBG_SETDBGNAMEHELPER(DX_BlendState);
-		DXDBG_SETDBGNAMEHELPER(DX_VertexShader);
-		DXDBG_SETDBGNAMEHELPER(DX_PixelShader);
-		DXDBG_SETDBGNAMEHELPER(DX_InputLayout);
-		DXDBG_SETDBGNAMEHELPER(DX_VertexBuffer);
-		DXDBG_SETDBGNAMEHELPER(DX_IndexBuffer);
+		DXDBG_SETDBGNAMEHELPER(DX_VSColor);
+		DXDBG_SETDBGNAMEHELPER(DX_PSColor);
+		DXDBG_SETDBGNAMEHELPER(DX_InputLayoutColor);
+		DXDBG_SETDBGNAMEHELPER(DX_CubeVertexBuffer);
+		DXDBG_SETDBGNAMEHELPER(DX_CubeIndexBuffer);
 		DXDBG_SETDBGNAMEHELPER(DX_WorldBuffer);
 		DXDBG_SETDBGNAMEHELPER(DX_ViewProjBuffer);
+		DXDBG_SETDBGNAMEHELPER(DX_DefaultTexture);
+		DXDBG_SETDBGNAMEHELPER(DX_DefaultTexture_SRV);
+		DXDBG_SETDBGNAMEHELPER(DX_DefaultSamplerState);
 	#endif // LV_DEBUG
 	}
 
@@ -409,42 +536,69 @@ namespace Leviathan
 	const fVector LookAt(0.0f, 0.0f, 0.0f);
 	const fVector AbsUp(0.0f, 1.0f, 0.0f, 0.0f);
 	LvCameraPerspective Cam3D(WorldPos, LookAt, AbsUp);
-	fMatrix World(SCALE, 10.0f);
 
 	void LvGraphics::PvUpdateState()
 	{
+	}
 
-		UINT Stride = sizeof(VertexColor);
-		UINT Offset = 0;
-		DX_ImmediateContext->IASetInputLayout(DX_InputLayout);
-		DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBuffer, &Stride, &Offset);
-		DX_ImmediateContext->IASetIndexBuffer(DX_IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		DX_ImmediateContext->VSSetShader(DX_VertexShader, nullptr, 0);
-		DX_ImmediateContext->PSSetShader(DX_PixelShader, nullptr, 0);
-
-		DX_ImmediateContext->VSSetConstantBuffers(0, 1, &DX_WorldBuffer);
-		DX_ImmediateContext->VSSetConstantBuffers(1, 1, &DX_ViewProjBuffer);
-
-		DX_ImmediateContext->UpdateSubresource(DX_WorldBuffer, 0, nullptr, &World, sizeof(World), 0);
-		DX_ImmediateContext->UpdateSubresource(DX_ViewProjBuffer, 0, nullptr, &Cam3D.CamTrans.View, sizeof(Cam3D.CamTrans), 0);
-
+	void LvGraphics::PvDraw()
+	{
 		// CKA_NOTE:
 		//	- This call is now necessary every time after calling SwapChain::Present
 		//	- Necessary when using DXGI flip model
 		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
 		DX_ImmediateContext->OMSetDepthStencilState(DX_DepthStencilState, 0);
-	}
-
-	void LvGraphics::PvDraw()
-	{
-		PvUpdateState();
 
 		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, ClearColor);
 		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-		DX_ImmediateContext->DrawIndexed(pCubeMesh->NumPrims * 3, 0u, 0u);
+		{
+			fMatrix World(SCALE, 10.0f);
+
+			UINT Stride = sizeof(VertexColor);
+			UINT Offset = 0;
+			DX_ImmediateContext->IASetInputLayout(DX_InputLayoutColor);
+			DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_CubeVertexBuffer, &Stride, &Offset);
+			DX_ImmediateContext->IASetIndexBuffer(DX_CubeIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+			DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			DX_ImmediateContext->VSSetShader(DX_VSColor, nullptr, 0);
+			DX_ImmediateContext->PSSetShader(DX_PSColor, nullptr, 0);
+
+			DX_ImmediateContext->VSSetConstantBuffers(0, 1, &DX_WorldBuffer);
+			DX_ImmediateContext->VSSetConstantBuffers(1, 1, &DX_ViewProjBuffer);
+
+			DX_ImmediateContext->UpdateSubresource(DX_WorldBuffer, 0, nullptr, &World, sizeof(World), 0);
+			DX_ImmediateContext->UpdateSubresource(DX_ViewProjBuffer, 0, nullptr, &Cam3D.CamTrans.View, sizeof(Cam3D.CamTrans), 0);
+
+			DX_ImmediateContext->DrawIndexed(pCubeMesh->NumPrims * 3, 0u, 0u);
+		}
+
+		{
+			fMatrix World = Mult(Matrix(SCALE, 512.0f), Matrix(TRANS, fVector(-256.0f, 256.0f, 0.0f)));
+
+			UINT Stride = sizeof(VertexUV);
+			UINT Offset = 0;
+			DX_ImmediateContext->IASetInputLayout(DX_InputLayoutTexture);
+			DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_RectVertexBuffer, &Stride, &Offset);
+			DX_ImmediateContext->IASetIndexBuffer(DX_RectIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+			DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			DX_ImmediateContext->VSSetShader(DX_VSTexture, nullptr, 0);
+			DX_ImmediateContext->PSSetShader(DX_PSTexture, nullptr, 0);
+
+			DX_ImmediateContext->VSSetConstantBuffers(0, 1, &DX_WorldBuffer);
+			DX_ImmediateContext->VSSetConstantBuffers(1, 1, &DX_ViewProjBuffer);
+
+			DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_DefaultTexture_SRV);
+			DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
+
+			DX_ImmediateContext->UpdateSubresource(DX_WorldBuffer, 0, nullptr, &World, sizeof(World), 0);
+			DX_ImmediateContext->UpdateSubresource(DX_ViewProjBuffer, 0, nullptr, &Cam2D.CamTrans.View, sizeof(Cam2D.CamTrans), 0);
+
+			DX_ImmediateContext->DrawIndexed(pRectUVMesh->NumPrims * 3, 0u, 0u);
+		}
+
 
 		DX_ImmediateContext->ResolveSubresource(DX_BackBuffer, 0, DX_RenderTargetTexture, 0, RenderTargetFormat);
 		const DXGI_PRESENT_PARAMETERS PresentParams = {};

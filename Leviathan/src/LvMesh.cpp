@@ -47,6 +47,46 @@ namespace Leviathan
 		return *this;
 	}
 
+	void BasicMeshUV::Init(int InNumVerts, int InNumPrims, VertexUV* InVerts, TriPrim* InPrims)
+	{
+		NumVerts = InNumVerts;
+		NumPrims = InNumPrims;
+		Verts = InVerts;
+		Prims = InPrims;
+	}
+	BasicMeshUV::BasicMeshUV(int InNumVerts, int InNumPrims, VertexUV* InVerts, TriPrim* InPrims)
+	{
+		Init(InNumVerts, InNumPrims, InVerts, InPrims);
+	}
+	BasicMeshUV::~BasicMeshUV()
+	{
+		if (Verts) { delete[] Verts; Verts = nullptr; }
+		if (Prims) { delete[] Prims; Prims = nullptr; }
+	}
+	BasicMeshUV::BasicMeshUV(BasicMeshUV&& rValueMesh)
+		: NumVerts(rValueMesh.NumVerts)
+		, NumPrims(rValueMesh.NumPrims)
+		, Verts(rValueMesh.Verts)
+		, Prims(rValueMesh.Prims)
+	{
+		rValueMesh.Verts = nullptr;
+		rValueMesh.Prims = nullptr;
+
+	}
+	BasicMeshUV& BasicMeshUV::operator=(BasicMeshUV&& rValueMesh)
+	{
+		NumVerts = rValueMesh.NumVerts;
+		NumPrims = rValueMesh.NumPrims;
+		Verts = rValueMesh.Verts;
+		Prims = rValueMesh.Prims;
+
+		rValueMesh.NumVerts = 0;
+		rValueMesh.NumPrims = 0;
+		rValueMesh.Verts = nullptr;
+		rValueMesh.Prims = nullptr;
+		return *this;
+	}
+
 	const fVector ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
 	const fVector ColorBlue{ 0.0f, 0.0f, 1.0f, 1.0f };
 	const fVector ColorGreen{ 0.0f, 1.0f, 0.0f, 1.0f };
@@ -159,5 +199,23 @@ namespace Leviathan
 		Prims[1] = { 0, 3, 2 };
 
 		return new BasicMeshColor{ NumVerts, NumPrims, Verts, Prims };
+	}
+
+	BasicMeshUV* InitTextureRect()
+	{
+		int NumVerts = 4;
+		int NumPrims = 2;
+		VertexUV* Verts = new VertexUV[(size_t)NumVerts];
+		TriPrim * Prims = new TriPrim[(size_t)NumPrims];
+
+		Verts[0] = {fVector{-0.5f, 0.5f, 0.0f}, 0.0f, 0.0f};
+		Verts[1] = {fVector{0.5f, 0.5f, 0.0f}, 1.0f, 0.0f};
+		Verts[2] = {fVector{0.5f, -0.5f, 0.0f}, 0.0f, 1.0f};
+		Verts[3] = {fVector{-0.5f, -0.5f, 0.0f}, 1.0f, 1.0f};
+
+		Prims[0] = { 0, 2, 1 };
+		Prims[1] = { 0, 3, 2 };
+
+		return new BasicMeshUV{ NumVerts, NumPrims, Verts, Prims };
 	}
 }
