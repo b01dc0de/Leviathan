@@ -53,6 +53,10 @@ namespace Leviathan
 	void LvInitEngine()
 	{
 		Outf("LvInitEngine -- BEGIN\n");
+
+		HRESULT Result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+		Assert(!FAILED(Result));
+
 		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 		HWND hWindow = LvInitWindow(LvInst);
@@ -73,6 +77,9 @@ namespace Leviathan
 	{
 		Outf("LvTermEngine -- BEGIN\n");
 		LvGraphics::Term();
+
+		CoUninitialize();
+
 		Outf("LvTermEngine -- END\n");
 	}
 

@@ -208,13 +208,13 @@ namespace Leviathan
 		VertexUV* Verts = new VertexUV[(size_t)NumVerts];
 		TriPrim * Prims = new TriPrim[(size_t)NumPrims];
 
-		Verts[0] = {fVector{-0.5f, 0.5f, 0.0f}, 0.0f, 0.0f};
-		Verts[1] = {fVector{0.5f, 0.5f, 0.0f}, 1.0f, 0.0f};
-		Verts[2] = {fVector{0.5f, -0.5f, 0.0f}, 0.0f, 1.0f};
-		Verts[3] = {fVector{-0.5f, -0.5f, 0.0f}, 1.0f, 1.0f};
+		Verts[0] = { fVector{-0.5f, -0.5f, 0.0f}, 0.0f, 0.0f };
+		Verts[1] = { fVector{+0.5f, -0.5f, 0.0f}, 1.0f, 0.0f };
+		Verts[2] = { fVector{-0.5f, +0.5f, 0.0f}, 0.0f, 1.0f };
+		Verts[3] = { fVector{+0.5f, +0.5f, 0.0f}, 1.0f, 1.0f };
 
-		Prims[0] = { 0, 2, 1 };
-		Prims[1] = { 0, 3, 2 };
+		Prims[0] = { 0, 3, 2 };
+		Prims[1] = { 0, 1, 3 };
 
 		return new BasicMeshUV{ NumVerts, NumPrims, Verts, Prims };
 	}

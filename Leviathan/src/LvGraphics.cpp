@@ -181,11 +181,7 @@ namespace Leviathan
 		TexDataDesc[0].pSysMem = DefaultTextureData;
 		TexDataDesc[0].SysMemPitch = sizeof(Color32FRGBA) * Size;
 		TexDataDesc[0].SysMemSlicePitch = sizeof(Color32FRGBA) * Size * Size;
-		/*
-			D3D11 ERROR: ID3D11DeviceContext::DrawIndexed: The resource return type for component 0 declared in the shader code (FLOAT) is not compatible with the Shader Resource View format bound to slot 0 of the Pixel Shader unit (UINT).  This mismatch is invalid if the shader actually uses the view (e.g. it is not skipped due to shader code branching). [ EXECUTION ERROR #361: DEVICE_DRAW_RESOURCE_RETURN_TYPE_MISMATCH]
-			D3D11 ERROR: ID3D11DeviceContext::DrawIndexed: The Shader Resource View in slot 0 of the Pixel Shader unit is using the Format (R8G8B8A8_UINT). This format does not support 'Sample', 'SampleLevel', 'SampleBias' or 'SampleGrad', at least one of which may being used on the Resource by the shader. This mismatch is invalid if the shader actually uses the view (e.g. it is not skipped due to shader code branching). [ EXECUTION ERROR #371: DEVICE_DRAW_RESOURCE_FORMAT_SAMPLE_UNSUPPORTED]
-		*/
-		DXGI_FORMAT DefaultTextureFormat = DXGI_FORMAT_R32G32B32A32_FLOAT; //DXGI_FORMAT_R8G8B8A8_UINT;
+		DXGI_FORMAT DefaultTextureFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
 
 		D3D11_TEXTURE2D_DESC DefaultTextureDesc = {};
 		DefaultTextureDesc.Width = Size;
@@ -212,12 +208,12 @@ namespace Leviathan
 		DXCHECK(DX_Device->CreateShaderResourceView(DX_DefaultTexture, /*&SRV_Desc*/nullptr, &DX_DefaultTexture_SRV));
 
 		D3D11_SAMPLER_DESC DefaultTextureSamplerDesc = {};
-		DefaultTextureSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+		DefaultTextureSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_POINT_MIP_LINEAR; // D3D11_FILTER_MIN_MAG_MIP_LINEAR D3D11_FILTER_MIN_MAG_MIP_POINT;
 		DefaultTextureSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 		DefaultTextureSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 		DefaultTextureSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 		DefaultTextureSamplerDesc.MipLODBias = 0.0f;
-		DefaultTextureSamplerDesc.MaxAnisotropy = 1;
+		DefaultTextureSamplerDesc.MaxAnisotropy = 0; //4;
 		DefaultTextureSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 		//DefaultTextureSamplerDesc.BorderColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 		DefaultTextureSamplerDesc.MinLOD = 0;
@@ -328,21 +324,21 @@ namespace Leviathan
 		DepthStencilStateDesc.BackFace = DefaultStencilOpDesc;
 		DXCHECK(DX_Device->CreateDepthStencilState(&DepthStencilStateDesc, &DX_DepthStencilState));
 
-		D3D11_TEXTURE2D_DESC DepthStenctilTextureDesc = {};
-		DepthStenctilTextureDesc.Width = ResX;
-		DepthStenctilTextureDesc.Height = ResY;
-		DepthStenctilTextureDesc.MipLevels = 1;
-		DepthStenctilTextureDesc.ArraySize = 1;
-		DepthStenctilTextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		DepthStenctilTextureDesc.SampleDesc = Shared_RT_SampleDesc;
-		DepthStenctilTextureDesc.Usage = D3D11_USAGE_DEFAULT;
-		DepthStenctilTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-		DepthStenctilTextureDesc.CPUAccessFlags = 0;
-		DepthStenctilTextureDesc.MiscFlags = 0;
-		DXCHECK(DX_Device->CreateTexture2D(&DepthStenctilTextureDesc, nullptr, &DX_DepthStencilTexture));
+		D3D11_TEXTURE2D_DESC DepthStencilTextureDesc = {};
+		DepthStencilTextureDesc.Width = ResX;
+		DepthStencilTextureDesc.Height = ResY;
+		DepthStencilTextureDesc.MipLevels = 1;
+		DepthStencilTextureDesc.ArraySize = 1;
+		DepthStencilTextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		DepthStencilTextureDesc.SampleDesc = Shared_RT_SampleDesc;
+		DepthStencilTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+		DepthStencilTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		DepthStencilTextureDesc.CPUAccessFlags = 0;
+		DepthStencilTextureDesc.MiscFlags = 0;
+		DXCHECK(DX_Device->CreateTexture2D(&DepthStencilTextureDesc, nullptr, &DX_DepthStencilTexture));
 
 		D3D11_DEPTH_STENCIL_VIEW_DESC DepthStencilViewDesc = {};
-		DepthStencilViewDesc.Format = DepthStencilViewDesc.Format;
+		DepthStencilViewDesc.Format = DepthStencilTextureDesc.Format;
 		DepthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
 		DepthStencilViewDesc.Texture2D.MipSlice = 0;
 		DXCHECK(DX_Device->CreateDepthStencilView(DX_DepthStencilTexture, &DepthStencilViewDesc, &DX_DepthStencilView));
@@ -548,11 +544,11 @@ namespace Leviathan
 	#endif // LV_DEBUG
 	}
 
-	LvCameraOrthographic Cam2D;
 	const fVector WorldPos(10.0f, 15.0f, -10.0f);
 	const fVector LookAt(0.0f, 0.0f, 0.0f);
 	const fVector AbsUp(0.0f, 1.0f, 0.0f, 0.0f);
 	LvCameraPerspective Cam3D(WorldPos, LookAt, AbsUp);
+	LvCameraOrthographic Cam2D;
 
 	void LvGraphics::PvUpdateAndDraw()
 	{
@@ -588,7 +584,17 @@ namespace Leviathan
 		}
 
 		{
-			fMatrix World = Mult(Matrix(SCALE, 512.0f), Matrix(TRANS, fVector(-384.0f, 128.0f, 0.0f)));
+			float X = -128.0f;
+			float Y = 128.0f;
+			float fAngle = 0.0f;
+			float ImgSize = 512.0f;
+			float Scale = 1.0f;
+			fMatrix TransMat(TRANS, X, Y, 0.0f);
+			fMatrix RotMat(ROT_Z, fAngle);
+			fMatrix ScaleMat(SCALE, Scale * ImgSize, Scale * ImgSize, 1.0f);
+			fMatrix WorldMat = Mult(ScaleMat, RotMat, TransMat);
+
+			fMatrix World = Mult(Matrix(SCALE, 256.0f), Matrix(TRANS, fVector(-384.0f, 128.0f, 0.0f)));
 
 			UINT Stride = sizeof(VertexUV);
 			UINT Offset = 0;
@@ -606,7 +612,7 @@ namespace Leviathan
 			DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_DefaultTexture_SRV);
 			DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
 
-			DX_ImmediateContext->UpdateSubresource(DX_WorldBuffer, 0, nullptr, &World, sizeof(World), 0);
+			DX_ImmediateContext->UpdateSubresource(DX_WorldBuffer, 0, nullptr, &WorldMat, sizeof(WorldMat), 0);
 			DX_ImmediateContext->UpdateSubresource(DX_ViewProjBuffer, 0, nullptr, &Cam2D.CamTrans.View, sizeof(Cam2D.CamTrans), 0);
 
 			DX_ImmediateContext->DrawIndexed(pRectUVMesh->NumPrims * 3, 0u, 0u);

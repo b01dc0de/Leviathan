@@ -67,12 +67,14 @@ void WriteBMP(const char* FileName, Image32 Image)
 
 int main(int argc, const char* argv[])
 {
+    u32 ImgSize = 512;
+
 	Image32 ImgData = {};
-	ImgData.Width = 512;
-	ImgData.Height = 512;
+	ImgData.Width = ImgSize;
+	ImgData.Height = ImgSize;
 	ImgData.PxCount = ImgData.Width * ImgData.Height;
 	ImgData.PxBytes = ImgData.PxCount * sizeof(RGBA32);
-	ImgData.PixelBuffer = (RGBA32*)malloc(ImgData.PxBytes);
+	ImgData.PixelBuffer = new RGBA32[ImgSize * ImgSize];
 
 	const RGBA32 Pink{ 255, 73, 173, 255 };
 	const RGBA32 Black{ 0, 0, 0, 255 };
@@ -85,11 +87,9 @@ int main(int argc, const char* argv[])
 		{
 			int CellRow = RowIdx / CellSize;
 			int CellCol = ColIdx / CellSize;
-
 			bool bEvenCell = ((CellRow + CellCol) % 2 == 0);
             RGBA32 SelectedColor = bEvenCell ? Pink : Black;
-            RGBA32 SwizzledColor = { SelectedColor.B, SelectedColor.G, SelectedColor.R, SelectedColor.A};
-            ImgData.PixelBuffer[(RowIdx * Size) + ColIdx] = SwizzledColor;
+            ImgData.PixelBuffer[(RowIdx * Size) + ColIdx] = { SelectedColor.B, SelectedColor.G, SelectedColor.R, SelectedColor.A};
 		}
 	}
 
