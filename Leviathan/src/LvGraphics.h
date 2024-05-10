@@ -47,10 +47,10 @@ namespace Leviathan
 		D3D_FEATURE_LEVEL UsedFeatureLevel = D3D_FEATURE_LEVEL_11_1;
 		DXGI_FORMAT RenderTargetFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-		BasicMeshColor* pCubeMesh;
-		BasicMeshColor* pTriangleMesh;
-		BasicMeshColor* pRectMesh;
-		BasicMeshUV* pRectUVMesh;
+		BasicMeshColor* pCubeMesh = nullptr;
+		BasicMeshColor* pTriangleMesh = nullptr;
+		BasicMeshColor* pRectMesh = nullptr;
+		BasicMeshUV* pRectUVMesh = nullptr;
 
 		DXHandle<ID3D11Device> DX_Device = nullptr;
 		DXHandle<ID3D11DeviceContext> DX_ImmediateContext = nullptr;
@@ -103,12 +103,13 @@ namespace Leviathan
 
 		void PvInit();
 		void PvUpdateState();
-		void PvDraw();
+		void PvUpdateAndDraw();
 		void PvSetDXDBGNames();
+		void PvInitFallbackTexture();
 
 		static void Init();
 		static void Term();
-		static void Draw();
+		static void UpdateAndDraw();
 	};
 }
 

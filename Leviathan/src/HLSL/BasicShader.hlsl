@@ -86,7 +86,7 @@ VS_OUTPUT VSMain(VS_INPUT Input)
 float4 PSMain(VS_OUTPUT Input) : SV_Target
 {
 #if ENABLE_VERTEX_TEXTURE
-    return MainTexture.Sample(MainSampler, Input.TexUV);
+    return MainTexture.SampleLevel(MainSampler, Input.TexUV, 0);
 #elif ENABLE_VERTEX_COLOR
     return Input.RGBA;
 #else

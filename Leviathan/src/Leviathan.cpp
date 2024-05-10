@@ -95,7 +95,7 @@ namespace Leviathan
 		{
 			PeekNewMessages();
 
-			LvGraphics::Draw();
+			LvGraphics::UpdateAndDraw();
 		}
 		Outf("LvMainEngineLoop -- END\n");
 	}

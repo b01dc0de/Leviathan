@@ -5,7 +5,7 @@
 
 int main(int argc, const char* argv[])
 {
-	printf("Project Leviathan: Init\n");
+	printf("PuzzleSolver: Init\n");
 
 	using Pseudoku::PseudokuNew;
 	int Result = PseudokuNew::RunTests();

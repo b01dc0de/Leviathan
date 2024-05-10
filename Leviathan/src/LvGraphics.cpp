@@ -54,13 +54,23 @@ namespace Leviathan
 		delete pCubeMesh;
 		delete pTriangleMesh;
 		delete pRectMesh;
+		delete pRectUVMesh;
 
 		// Release resources in (generally) reverse init order
+		DX_DefaultTexture.SafeRelease();
+		DX_DefaultTexture_SRV.SafeRelease();
+		DX_DefaultSamplerState.SafeRelease();
 		DX_WorldBuffer.SafeRelease();
 		DX_ViewProjBuffer.SafeRelease();
+
+		DX_RectVertexBuffer.SafeRelease();
+		DX_RectIndexBuffer.SafeRelease();
 		DX_CubeVertexBuffer.SafeRelease();
 		DX_CubeIndexBuffer.SafeRelease();
 
+		DX_InputLayoutTexture.SafeRelease();
+		DX_VSTexture.SafeRelease();
+		DX_PSTexture.SafeRelease();
 		DX_InputLayoutColor.SafeRelease();
 		DX_VSColor.SafeRelease();
 		DX_PSColor.SafeRelease();
@@ -137,6 +147,84 @@ namespace Leviathan
 		*ShaderBlob = OutBlob;
 
 		return Result;
+	}
+
+	void LvGraphics::PvInitFallbackTexture()
+	{
+		struct Color32FRGBA
+		{
+			float R;
+			float G;
+			float B;
+			float A;
+		};
+		const Color32FRGBA Pink{ 1.0f, 73.0f / 255.0f, 173.0f / 255.0f, 1.0f};
+		const Color32FRGBA Black{ 0.0f, 0.0f, 0.0f, 1.0f};
+
+		constexpr UINT Size = 512;
+		constexpr UINT MipLevels = 9;
+		UINT CellSize = Size / 16;
+		Color32FRGBA* DefaultTextureData = new Color32FRGBA[Size*Size];
+		for (UINT RowIdx = 0; RowIdx < Size; RowIdx++)
+		{
+			for (UINT ColIdx = 0; ColIdx < Size; ColIdx++)
+			{
+				int CellRow = RowIdx / CellSize;
+				int CellCol = ColIdx / CellSize;
+
+				bool bEvenCell = ((CellRow + CellCol) % 2 == 0);
+				DefaultTextureData[(RowIdx * Size) + ColIdx] = bEvenCell ? Pink : Black;
+			}
+		}
+
+		D3D11_SUBRESOURCE_DATA TexDataDesc[MipLevels] = { {}, {}, {}, {}, {}, {}, {}, {}, {} };
+		TexDataDesc[0].pSysMem = DefaultTextureData;
+		TexDataDesc[0].SysMemPitch = sizeof(Color32FRGBA) * Size;
+		TexDataDesc[0].SysMemSlicePitch = sizeof(Color32FRGBA) * Size * Size;
+		/*
+			D3D11 ERROR: ID3D11DeviceContext::DrawIndexed: The resource return type for component 0 declared in the shader code (FLOAT) is not compatible with the Shader Resource View format bound to slot 0 of the Pixel Shader unit (UINT).  This mismatch is invalid if the shader actually uses the view (e.g. it is not skipped due to shader code branching). [ EXECUTION ERROR #361: DEVICE_DRAW_RESOURCE_RETURN_TYPE_MISMATCH]
+			D3D11 ERROR: ID3D11DeviceContext::DrawIndexed: The Shader Resource View in slot 0 of the Pixel Shader unit is using the Format (R8G8B8A8_UINT). This format does not support 'Sample', 'SampleLevel', 'SampleBias' or 'SampleGrad', at least one of which may being used on the Resource by the shader. This mismatch is invalid if the shader actually uses the view (e.g. it is not skipped due to shader code branching). [ EXECUTION ERROR #371: DEVICE_DRAW_RESOURCE_FORMAT_SAMPLE_UNSUPPORTED]
+		*/
+		DXGI_FORMAT DefaultTextureFormat = DXGI_FORMAT_R32G32B32A32_FLOAT; //DXGI_FORMAT_R8G8B8A8_UINT;
+
+		D3D11_TEXTURE2D_DESC DefaultTextureDesc = {};
+		DefaultTextureDesc.Width = Size;
+		DefaultTextureDesc.Height = Size;
+		DefaultTextureDesc.MipLevels = 1;
+		DefaultTextureDesc.ArraySize = 1;
+		DefaultTextureDesc.Format = DefaultTextureFormat;
+		DefaultTextureDesc.SampleDesc.Count = 1;
+		DefaultTextureDesc.SampleDesc.Quality = 0;
+		DefaultTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+		DefaultTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		DefaultTextureDesc.CPUAccessFlags = 0;
+		DefaultTextureDesc.MiscFlags = 0;
+		DXCHECK(DX_Device->CreateTexture2D(&DefaultTextureDesc, &TexDataDesc[0], &DX_DefaultTexture));
+
+		/*
+		D3D11_SHADER_RESOURCE_VIEW_DESC SRV_Desc = {};
+		SRV_Desc.Format = DefaultTextureFormat;
+		SRV_Desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		SRV_Desc.Texture2D.MostDetailedMip = 0;
+		SRV_Desc.Texture2D.MipLevels = (UINT)1;
+		*/
+
+		DXCHECK(DX_Device->CreateShaderResourceView(DX_DefaultTexture, /*&SRV_Desc*/nullptr, &DX_DefaultTexture_SRV));
+
+		D3D11_SAMPLER_DESC DefaultTextureSamplerDesc = {};
+		DefaultTextureSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+		DefaultTextureSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		DefaultTextureSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		DefaultTextureSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		DefaultTextureSamplerDesc.MipLODBias = 0.0f;
+		DefaultTextureSamplerDesc.MaxAnisotropy = 1;
+		DefaultTextureSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		//DefaultTextureSamplerDesc.BorderColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+		DefaultTextureSamplerDesc.MinLOD = 0;
+		DefaultTextureSamplerDesc.MaxLOD = 0;//D3D11_FLOAT32_MAX;
+		DXCHECK(DX_Device->CreateSamplerState(&DefaultTextureSamplerDesc, &DX_DefaultSamplerState));
+
+		delete[] DefaultTextureData;
 	}
 
 	void LvGraphics::PvInit()
@@ -422,78 +510,7 @@ namespace Leviathan
 		if (VSTextureCodeBlob) { VSTextureCodeBlob->Release(); }
 		if (PSTextureCodeBlob) { PSTextureCodeBlob->Release(); }
 
-		{ // Create default texture
-			struct Color32FRGBA
-			{
-				float R;
-				float G;
-				float B;
-				float A;
-			};
-			const Color32FRGBA Pink{ 1.0f, 73.0f / 255.0f, 173.0f / 255.0f, 1.0f};
-			const Color32FRGBA Black{ 0.0f, 0.0f, 0.0f, 1.0f};
-
-			constexpr UINT Size = 512;
-			constexpr UINT MipLevels = 9;
-			UINT CellSize = Size / 16;
-			Color32FRGBA* DefaultTextureData = new Color32FRGBA[Size*Size];
-			for (UINT RowIdx = 0; RowIdx < Size; RowIdx++)
-			{
-				for (UINT ColIdx = 0; ColIdx < Size; ColIdx++)
-				{
-					int CellRow = RowIdx / CellSize;
-					int CellCol = ColIdx / CellSize;
-					DefaultTextureData[RowIdx * Size + ColIdx] = ((CellRow + CellCol) % 2 == 0) ? Pink : Black;
-				}
-			}
-
-			D3D11_SUBRESOURCE_DATA TexDataDesc[MipLevels] = { {}, {}, {}, {}, {}, {}, {}, {}, {} };
-			TexDataDesc[0].pSysMem = DefaultTextureData;
-			TexDataDesc[0].SysMemPitch = sizeof(Color32FRGBA) * Size;
-			TexDataDesc[0].SysMemSlicePitch = sizeof(Color32FRGBA) * Size * Size;
-			/*
-				D3D11 ERROR: ID3D11DeviceContext::DrawIndexed: The resource return type for component 0 declared in the shader code (FLOAT) is not compatible with the Shader Resource View format bound to slot 0 of the Pixel Shader unit (UINT).  This mismatch is invalid if the shader actually uses the view (e.g. it is not skipped due to shader code branching). [ EXECUTION ERROR #361: DEVICE_DRAW_RESOURCE_RETURN_TYPE_MISMATCH]
-				D3D11 ERROR: ID3D11DeviceContext::DrawIndexed: The Shader Resource View in slot 0 of the Pixel Shader unit is using the Format (R8G8B8A8_UINT). This format does not support 'Sample', 'SampleLevel', 'SampleBias' or 'SampleGrad', at least one of which may being used on the Resource by the shader. This mismatch is invalid if the shader actually uses the view (e.g. it is not skipped due to shader code branching). [ EXECUTION ERROR #371: DEVICE_DRAW_RESOURCE_FORMAT_SAMPLE_UNSUPPORTED]
-			*/
-			DXGI_FORMAT DefaultTextureFormat = DXGI_FORMAT_R32G32B32A32_FLOAT; //DXGI_FORMAT_R8G8B8A8_UINT;
-
-			D3D11_TEXTURE2D_DESC DefaultTextureDesc = {};
-			DefaultTextureDesc.Width = Size;
-			DefaultTextureDesc.Height = Size;
-			DefaultTextureDesc.MipLevels = 1;
-			DefaultTextureDesc.ArraySize = 1;
-			DefaultTextureDesc.Format = DefaultTextureFormat;
-			DefaultTextureDesc.SampleDesc.Count = 1;
-			DefaultTextureDesc.SampleDesc.Quality = 0;
-			DefaultTextureDesc.Usage = D3D11_USAGE_DEFAULT;
-			DefaultTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-			DefaultTextureDesc.CPUAccessFlags = 0;
-			DefaultTextureDesc.MiscFlags = 0;
-			DXCHECK(DX_Device->CreateTexture2D(&DefaultTextureDesc, &TexDataDesc[0], &DX_DefaultTexture));
-
-			/*
-			D3D11_SHADER_RESOURCE_VIEW_DESC SRV_Desc = {};
-			SRV_Desc.Format = DefaultTextureFormat;
-			SRV_Desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-			SRV_Desc.Texture2D.MostDetailedMip = 0;
-			SRV_Desc.Texture2D.MipLevels = (UINT)1;
-			*/
-
-			DXCHECK(DX_Device->CreateShaderResourceView(DX_DefaultTexture, /*&SRV_Desc*/nullptr, &DX_DefaultTexture_SRV));
-
-			D3D11_SAMPLER_DESC DefaultTextureSamplerDesc = {};
-			DefaultTextureSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; // D3D11_FILTER_MIN_MAG_MIP_POINT;
-			DefaultTextureSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-			DefaultTextureSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-			DefaultTextureSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-			DefaultTextureSamplerDesc.MipLODBias = 0.0f;
-			DefaultTextureSamplerDesc.MaxAnisotropy = 1;
-			DefaultTextureSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-			//DefaultTextureSamplerDesc.BorderColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-			DefaultTextureSamplerDesc.MinLOD = 0;
-			DefaultTextureSamplerDesc.MaxLOD = 0;//D3D11_FLOAT32_MAX;
-			DXCHECK(DX_Device->CreateSamplerState(&DefaultTextureSamplerDesc, &DX_DefaultSamplerState));
-		}
+		PvInitFallbackTexture();
 
 	#if LV_DEBUG_BUILD()
 		PvSetDXDBGNames();
@@ -537,11 +554,7 @@ namespace Leviathan
 	const fVector AbsUp(0.0f, 1.0f, 0.0f, 0.0f);
 	LvCameraPerspective Cam3D(WorldPos, LookAt, AbsUp);
 
-	void LvGraphics::PvUpdateState()
-	{
-	}
-
-	void LvGraphics::PvDraw()
+	void LvGraphics::PvUpdateAndDraw()
 	{
 		// CKA_NOTE:
 		//	- This call is now necessary every time after calling SwapChain::Present
@@ -575,7 +588,7 @@ namespace Leviathan
 		}
 
 		{
-			fMatrix World = Mult(Matrix(SCALE, 512.0f), Matrix(TRANS, fVector(-256.0f, 256.0f, 0.0f)));
+			fMatrix World = Mult(Matrix(SCALE, 512.0f), Matrix(TRANS, fVector(-384.0f, 128.0f, 0.0f)));
 
 			UINT Stride = sizeof(VertexUV);
 			UINT Offset = 0;
@@ -619,9 +632,9 @@ namespace Leviathan
 		PvInst = nullptr;
 		Outf("LvGraphics::Term -- END\n");
 	}
-	void LvGraphics::Draw()
+	void LvGraphics::UpdateAndDraw()
 	{
-		Inst()->PvDraw();
+		Inst()->PvUpdateAndDraw();
 	}
 }
 
