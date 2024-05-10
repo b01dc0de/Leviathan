@@ -49,7 +49,6 @@ namespace Leviathan
 
 		BasicMeshColor* pCubeMesh = nullptr;
 		BasicMeshColor* pTriangleMesh = nullptr;
-		BasicMeshColor* pRectMesh = nullptr;
 		BasicMeshUV* pRectUVMesh = nullptr;
 
 		DXHandle<ID3D11Device> DX_Device = nullptr;

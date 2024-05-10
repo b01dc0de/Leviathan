@@ -183,24 +183,6 @@ namespace Leviathan
 		return new BasicMeshColor{ NumVerts, NumPrims, Verts, Prims };
 	}
 
-	BasicMeshColor* InitRect()
-	{
-		int NumVerts = 4;
-		int NumPrims = 2;
-		VertexColor* Verts = new VertexColor[(size_t)NumVerts];
-		TriPrim * Prims = new TriPrim[(size_t)NumPrims];
-
-		Verts[0] = {fVector{-0.5f, 0.5f, 0.5f}, ColorWhite};
-		Verts[1] = {fVector{0.5f, 0.5f, 0.5f}, ColorRed};
-		Verts[2] = {fVector{0.5f, -0.5f, 0.5f}, ColorGreen};
-		Verts[3] = {fVector{-0.5f, -0.5f, 0.5f}, ColorBlue};
-
-		Prims[0] = { 0, 2, 1 };
-		Prims[1] = { 0, 3, 2 };
-
-		return new BasicMeshColor{ NumVerts, NumPrims, Verts, Prims };
-	}
-
 	BasicMeshUV* InitTextureRect()
 	{
 		int NumVerts = 4;

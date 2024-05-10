@@ -53,7 +53,6 @@ namespace Leviathan
 
 		delete pCubeMesh;
 		delete pTriangleMesh;
-		delete pRectMesh;
 		delete pRectUVMesh;
 
 		// Release resources in (generally) reverse init order
@@ -429,7 +428,6 @@ namespace Leviathan
 
 		pCubeMesh = InitCube();
 		pTriangleMesh = InitTriangle();
-		pRectMesh = InitRect();
 		pRectUVMesh = InitTextureRect();
 
 		ID3DBlob* VSColorCodeBlob = nullptr;
@@ -521,7 +519,7 @@ namespace Leviathan
 
 			D3D11_BUFFER_DESC IndexBufferDesc =
 			{
-				sizeof(TriPrim) * pRectMesh->NumPrims,
+				sizeof(TriPrim) * pRectUVMesh->NumPrims,
 				D3D11_USAGE_DEFAULT,
 				D3D11_BIND_INDEX_BUFFER,
 				0,
@@ -571,29 +569,31 @@ namespace Leviathan
 	#endif // LV_DEBUG
 	}
 
-	const fVector WorldPos(10.0f, 15.0f, -10.0f);
+
+	const fVector WorldPos(10.0f, 10.0f, -10.0f);
 	const fVector LookAt(0.0f, 0.0f, 0.0f);
 	const fVector AbsUp(0.0f, 1.0f, 0.0f, 0.0f);
 	LvCameraPerspective Cam3D(WorldPos, LookAt, AbsUp);
 	LvCameraOrthographic Cam2D;
 
+	constexpr float FrameStep = 0.0166666666666667f;
+	constexpr float fPI = 3.14159265359f;
+
 	void LvGraphics::PvUpdateAndDraw()
 	{
 		static int RenderIdx = 0;
+		float FakeTime = FrameStep * RenderIdx++;
+		float CurrRad = FakeTime * fPI * 2.0f;
 
 		// Update Cam3D's world position
 		{
-			constexpr float FrameStep = 0.0166666666666667f;
-			constexpr float Radius = 10.0f;
-			constexpr float SecondsForFullRotation = 25.0f;
-			constexpr float fPI = 3.14159265359f;
 			constexpr float CamY = 10.0f;
-			float FakeTime = FrameStep * RenderIdx++;
-			// When FakeTime == SecondsForFullRotation, then CurrRad == 2 * PI
-			float CurrRad = (FakeTime / SecondsForFullRotation) * fPI * 2.0f;
-			fVector CurrCamPos = {cosf(CurrRad) * Radius, CamY, sinf(CurrRad) * Radius * 2.0f};
+			constexpr float SecondsForFullRotation = 25.0f;
+			constexpr float CameraPathRadius = 10.0f;
+			float CamT = CurrRad / SecondsForFullRotation;
+			// When FakeTime == SecondsForFullRotation, then CamT == 2 * PI
+			fVector CurrCamPos = {cosf(CamT) * CameraPathRadius, CamY, sinf(CamT) * CameraPathRadius * 2.0f};
 			Cam3D.Orient(CurrCamPos, LookAt, AbsUp);
-
 		}
 
 		// CKA_NOTE:
@@ -628,14 +628,19 @@ namespace Leviathan
 		}
 
 		{
-			float X = -640.0f;
-			float Y = 256.0f;
-			float fAngle = 0.0f;
 			float ImgSize = 512.0f;
 			float Scale = 0.25f;
-			fMatrix TransMat(TRANS, X, Y, 0.0f);
-			fMatrix RotMat(ROT_Z, fAngle);
-			fMatrix ScaleMat(SCALE, Scale * ImgSize, Scale * ImgSize, 1.0f);
+			fVector CenterPos{ -512.0f, 256.0f, 0.0f };
+			constexpr float ImgPathRadius = 64.0f;
+
+			float Cam2DT = CurrRad / 5.0f;
+
+			fVector ImgPos{CenterPos.X + (cosf(Cam2DT) * ImgPathRadius), CenterPos.Y + (sinf(Cam2DT) * ImgPathRadius), 0.0f};
+			float CurrScale = Scale + ((Scale/2.0f) * cosf(CurrRad / 6.0f));
+			float CurrAngle = -CurrRad / 3.0f;
+			fMatrix TransMat(TRANS, ImgPos);
+			fMatrix RotMat(ROT_Z, CurrAngle);
+			fMatrix ScaleMat(SCALE, CurrScale * ImgSize, CurrScale * ImgSize, 1.0f);
 			fMatrix World = Mult(ScaleMat, RotMat, TransMat);
 
 			UINT Stride = sizeof(VertexUV);
