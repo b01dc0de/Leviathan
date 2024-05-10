@@ -161,9 +161,15 @@ namespace Leviathan
 		const Color32FRGBA Pink{ 1.0f, 73.0f / 255.0f, 173.0f / 255.0f, 1.0f};
 		const Color32FRGBA Black{ 0.0f, 0.0f, 0.0f, 1.0f};
 
+		const Color32FRGBA Red{ 1.0f, 0.0f, 0.0f, 1.0f };
+		const Color32FRGBA Green{ 0.0f, 1.0f, 0.0f, 1.0f };
+		const Color32FRGBA Blue{ 0.0f, 0.0f, 1.0f, 1.0f };
+		const Color32FRGBA White{ 1.0f, 1.0f, 1.0f, 1.0f };
+
 		constexpr UINT Size = 512;
 		constexpr UINT MipLevels = 9;
 		UINT CellSize = Size / 16;
+		int MaxCell = (Size - 1) / CellSize;
 		Color32FRGBA* DefaultTextureData = new Color32FRGBA[Size*Size];
 		for (UINT RowIdx = 0; RowIdx < Size; RowIdx++)
 		{
@@ -171,6 +177,27 @@ namespace Leviathan
 			{
 				int CellRow = RowIdx / CellSize;
 				int CellCol = ColIdx / CellSize;
+
+				if (CellRow == 0 && CellCol == 0)
+				{
+					DefaultTextureData[(RowIdx * Size) + ColIdx] = Red;
+					continue;
+				}
+				else if (CellRow == 0 && CellCol == MaxCell)
+				{
+					DefaultTextureData[(RowIdx * Size) + ColIdx] = Green;
+					continue;
+				}
+				else if (CellRow == MaxCell && CellCol == 0)
+				{
+					DefaultTextureData[(RowIdx * Size) + ColIdx] = Blue;
+					continue;
+				}
+				else if (CellRow == MaxCell && CellCol == MaxCell)
+				{
+					DefaultTextureData[(RowIdx * Size) + ColIdx] = White;
+					continue;
+				}
 
 				bool bEvenCell = ((CellRow + CellCol) % 2 == 0);
 				DefaultTextureData[(RowIdx * Size) + ColIdx] = bEvenCell ? Pink : Black;
@@ -552,6 +579,23 @@ namespace Leviathan
 
 	void LvGraphics::PvUpdateAndDraw()
 	{
+		static int RenderIdx = 0;
+
+		// Update Cam3D's world position
+		{
+			constexpr float FrameStep = 0.0166666666666667f;
+			constexpr float Radius = 10.0f;
+			constexpr float SecondsForFullRotation = 25.0f;
+			constexpr float fPI = 3.14159265359f;
+			constexpr float CamY = 10.0f;
+			float FakeTime = FrameStep * RenderIdx++;
+			// When FakeTime == SecondsForFullRotation, then CurrRad == 2 * PI
+			float CurrRad = (FakeTime / SecondsForFullRotation) * fPI * 2.0f;
+			fVector CurrCamPos = {cosf(CurrRad) * Radius, CamY, sinf(CurrRad) * Radius * 2.0f};
+			Cam3D.Orient(CurrCamPos, LookAt, AbsUp);
+
+		}
+
 		// CKA_NOTE:
 		//	- This call is now necessary every time after calling SwapChain::Present
 		//	- Necessary when using DXGI flip model
@@ -562,7 +606,7 @@ namespace Leviathan
 		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 		{
-			fMatrix World(SCALE, 10.0f);
+			fMatrix World(SCALE, 7.5f);
 
 			UINT Stride = sizeof(VertexColor);
 			UINT Offset = 0;
@@ -584,17 +628,15 @@ namespace Leviathan
 		}
 
 		{
-			float X = -128.0f;
-			float Y = 128.0f;
+			float X = -640.0f;
+			float Y = 256.0f;
 			float fAngle = 0.0f;
 			float ImgSize = 512.0f;
-			float Scale = 1.0f;
+			float Scale = 0.25f;
 			fMatrix TransMat(TRANS, X, Y, 0.0f);
 			fMatrix RotMat(ROT_Z, fAngle);
 			fMatrix ScaleMat(SCALE, Scale * ImgSize, Scale * ImgSize, 1.0f);
-			fMatrix WorldMat = Mult(ScaleMat, RotMat, TransMat);
-
-			fMatrix World = Mult(Matrix(SCALE, 256.0f), Matrix(TRANS, fVector(-384.0f, 128.0f, 0.0f)));
+			fMatrix World = Mult(ScaleMat, RotMat, TransMat);
 
 			UINT Stride = sizeof(VertexUV);
 			UINT Offset = 0;
@@ -612,7 +654,7 @@ namespace Leviathan
 			DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_DefaultTexture_SRV);
 			DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
 
-			DX_ImmediateContext->UpdateSubresource(DX_WorldBuffer, 0, nullptr, &WorldMat, sizeof(WorldMat), 0);
+			DX_ImmediateContext->UpdateSubresource(DX_WorldBuffer, 0, nullptr, &World, sizeof(World), 0);
 			DX_ImmediateContext->UpdateSubresource(DX_ViewProjBuffer, 0, nullptr, &Cam2D.CamTrans.View, sizeof(Cam2D.CamTrans), 0);
 
 			DX_ImmediateContext->DrawIndexed(pRectUVMesh->NumPrims * 3, 0u, 0u);

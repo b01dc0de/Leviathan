@@ -68,7 +68,6 @@ void WriteBMP(const char* FileName, Image32 Image)
 int main(int argc, const char* argv[])
 {
     u32 ImgSize = 512;
-
 	Image32 ImgData = {};
 	ImgData.Width = ImgSize;
 	ImgData.Height = ImgSize;

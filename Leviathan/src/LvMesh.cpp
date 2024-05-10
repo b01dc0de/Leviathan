@@ -208,10 +208,25 @@ namespace Leviathan
 		VertexUV* Verts = new VertexUV[(size_t)NumVerts];
 		TriPrim * Prims = new TriPrim[(size_t)NumPrims];
 
-		Verts[0] = { fVector{-0.5f, -0.5f, 0.0f}, 0.0f, 0.0f };
-		Verts[1] = { fVector{+0.5f, -0.5f, 0.0f}, 1.0f, 0.0f };
-		Verts[2] = { fVector{-0.5f, +0.5f, 0.0f}, 0.0f, 1.0f };
-		Verts[3] = { fVector{+0.5f, +0.5f, 0.0f}, 1.0f, 1.0f };
+		/*
+			CKA_NOTE:
+			  2	+------+ 3
+				|      |
+				|      |
+			  0	+------+ 1
+
+					 ^
+			  Y AXIS |
+					 |
+
+			  X AXIS ----->
+
+		*/
+
+		Verts[0] = { fVector{-0.5f, -0.5f, 0.0f}, 0.0f, 1.0f };
+		Verts[1] = { fVector{+0.5f, -0.5f, 0.0f}, 1.0f, 1.0f };
+		Verts[2] = { fVector{-0.5f, +0.5f, 0.0f}, 0.0f, 0.0f };
+		Verts[3] = { fVector{+0.5f, +0.5f, 0.0f}, 1.0f, 0.0f };
 
 		Prims[0] = { 0, 3, 2 };
 		Prims[1] = { 0, 1, 3 };
