@@ -97,7 +97,6 @@ namespace Leviathan
 		LvGraphics() = default;
 		~LvGraphics();
 
-		//int CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob);
 		int CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob, D3D_SHADER_MACRO* pOptDefines = nullptr);
 
 		void PvInit();

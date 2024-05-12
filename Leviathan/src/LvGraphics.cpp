@@ -591,7 +591,7 @@ namespace Leviathan
 			constexpr float SecondsForFullRotation = 25.0f;
 			constexpr float CameraPathRadius = 10.0f;
 			float CamT = CurrRad / SecondsForFullRotation;
-			// When FakeTime == SecondsForFullRotation, then CamT == 2 * PI
+			// When FakeTime == SecondsForFullRotation, CamT == 2 * PI
 			fVector CurrCamPos = {cosf(CamT) * CameraPathRadius, CamY, sinf(CamT) * CameraPathRadius * 2.0f};
 			Cam3D.Orient(CurrCamPos, LookAt, AbsUp);
 		}
@@ -664,7 +664,6 @@ namespace Leviathan
 
 			DX_ImmediateContext->DrawIndexed(pRectUVMesh->NumPrims * 3, 0u, 0u);
 		}
-
 
 		DX_ImmediateContext->ResolveSubresource(DX_BackBuffer, 0, DX_RenderTargetTexture, 0, RenderTargetFormat);
 		const DXGI_PRESENT_PARAMETERS PresentParams = {};

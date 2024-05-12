@@ -31,6 +31,7 @@ namespace Leviathan
 		TriPrim* Prims = nullptr;
 
 		void Init(int InNumVerts, int InNumPrims, VertexColor* InVerts, TriPrim* InPrims);
+
 		BasicMeshColor(int InNumVerts, int InNumPrims, VertexColor* InVerts, TriPrim* InPrims);
 		BasicMeshColor() = default;
 		~BasicMeshColor();
@@ -48,6 +49,7 @@ namespace Leviathan
 		TriPrim* Prims = nullptr;
 
 		void Init(int InNumVerts, int InNumPrims, VertexUV* InVerts, TriPrim* InPrims);
+
 		BasicMeshUV(int InNumVerts, int InNumPrims, VertexUV* InVerts, TriPrim* InPrims);
 		BasicMeshUV() = default;
 		~BasicMeshUV();
@@ -59,7 +61,6 @@ namespace Leviathan
 
 	BasicMeshColor* InitCube();
 	BasicMeshColor* InitTriangle();
-	BasicMeshColor* InitRect();
 	BasicMeshUV* InitTextureRect();
 }
 

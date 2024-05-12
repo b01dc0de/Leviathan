@@ -54,15 +54,18 @@ namespace Leviathan
 		Verts = InVerts;
 		Prims = InPrims;
 	}
+
 	BasicMeshUV::BasicMeshUV(int InNumVerts, int InNumPrims, VertexUV* InVerts, TriPrim* InPrims)
 	{
 		Init(InNumVerts, InNumPrims, InVerts, InPrims);
 	}
+
 	BasicMeshUV::~BasicMeshUV()
 	{
 		if (Verts) { delete[] Verts; Verts = nullptr; }
 		if (Prims) { delete[] Prims; Prims = nullptr; }
 	}
+
 	BasicMeshUV::BasicMeshUV(BasicMeshUV&& rValueMesh)
 		: NumVerts(rValueMesh.NumVerts)
 		, NumPrims(rValueMesh.NumPrims)
@@ -73,6 +76,7 @@ namespace Leviathan
 		rValueMesh.Prims = nullptr;
 
 	}
+
 	BasicMeshUV& BasicMeshUV::operator=(BasicMeshUV&& rValueMesh)
 	{
 		NumVerts = rValueMesh.NumVerts;
@@ -192,17 +196,10 @@ namespace Leviathan
 
 		/*
 			CKA_NOTE:
-			  2	+------+ 3
-				|      |
-				|      |
+			  2	+------+ 3		Y ^
+				|      |		  |
+				|      |		X --->
 			  0	+------+ 1
-
-					 ^
-			  Y AXIS |
-					 |
-
-			  X AXIS ----->
-
 		*/
 
 		Verts[0] = { fVector{-0.5f, -0.5f, 0.0f}, 0.0f, 1.0f };
