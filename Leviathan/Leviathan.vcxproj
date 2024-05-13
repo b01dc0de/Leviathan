@@ -44,12 +44,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)Out\$(ProjectName)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Out\$ProjectName)\Misc\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)Output\$(ProjectName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Output\$(ProjectName)\Misc\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)Out\$(ProjectName)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Out\$ProjectName)\Misc\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)Output\$(ProjectName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Output\$(ProjectName)\Misc\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -90,6 +90,7 @@
     <ClCompile Include="src\LvGraphics.cpp" />
     <ClCompile Include="src\LvMath.cpp" />
     <ClCompile Include="src\LvMesh.cpp" />
+    <ClCompile Include="src\LvTime.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h" />
@@ -99,6 +100,7 @@
     <ClInclude Include="src\LvGraphics.h" />
     <ClInclude Include="src\LvMath.h" />
     <ClInclude Include="src\LvMesh.h" />
+    <ClInclude Include="src\LvTime.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\HLSL\BasicShader.hlsl">

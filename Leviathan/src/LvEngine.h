@@ -3,8 +3,20 @@
 
 namespace Leviathan
 {
-	struct LVEngine
+	extern bool bLvRunning;
+
+	extern HWND LvWindow;
+
+	extern HINSTANCE LvInst;
+	extern HINSTANCE LvPrevInst;
+	extern PSTR LvCmdLine;
+	extern int LvCmdShow;
+
+	struct LvEngine
 	{
+		static void Init();
+		static void Term();
+		static void MainLoop();
 	};
 }
 

@@ -30,6 +30,9 @@
     <ClCompile Include="src\LvEngine.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\LvTime.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -51,6 +54,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\LvEngine.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LvTime.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

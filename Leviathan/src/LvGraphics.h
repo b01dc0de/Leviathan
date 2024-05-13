@@ -39,6 +39,8 @@ namespace Leviathan
 		T** operator &() { return &Ptr; }
 	};
 
+	int CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob, D3D_SHADER_MACRO* pOptDefines = nullptr);
+
 	struct BasicMeshColor;
 	struct BasicMeshUV;
 
@@ -96,8 +98,6 @@ namespace Leviathan
 		}
 		LvGraphics() = default;
 		~LvGraphics();
-
-		int CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob, D3D_SHADER_MACRO* pOptDefines = nullptr);
 
 		void PvInit();
 		void PvUpdateState();

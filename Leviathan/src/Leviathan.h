@@ -3,14 +3,7 @@
 
 namespace Leviathan
 {
-	extern bool bLvRunning;
-
-	extern HWND LvWindow;
-
-	void LvInitEngine();
-	void LvTermEngine();
-
-	void LvMainEngineLoop();
+	LRESULT CALLBACK LvWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 }
 
 #endif // LEVIATHAN_H
