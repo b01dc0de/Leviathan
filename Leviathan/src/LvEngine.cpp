@@ -3,25 +3,58 @@
 #include "LvEngine.h"
 #include "Leviathan.h"
 #include "LvGraphics.h"
+#include "LvTime.h"
 
 namespace Leviathan
 {
 	bool bLvRunning = false;
 
-	HWND LvWindow;
+	HINSTANCE Lv_Inst;
+	HINSTANCE Lv_PrevInst;
+	PSTR Lv_CmdLine;
+	int Lv_CmdShow;
 
-	HINSTANCE LvInst;
-	HINSTANCE LvPrevInst;
-	PSTR LvCmdLine;
-	int LvCmdShow;
-
-	HWND LvInitWindow(HINSTANCE hInstance)
+	struct LvEngineInstance
 	{
+		HWND LvWindow;
+
+		LvTime EngineTime;
+
+		void PrivLvInitWindow();
+
+		void Init();
+		void Term();
+		void MainLoop();
+
+		LvEngineInstance() = default;
+		~LvEngineInstance() = default;
+		LvEngineInstance(const LvEngineInstance&) = delete;
+		LvEngineInstance& operator=(const LvEngineInstance&) = delete;
+	};
+
+	static LvEngineInstance* LvPrvEngInst = nullptr;
+
+	HWND Lv_GetWindowHandle()
+	{
+		Assert(nullptr != LvPrvEngInst);
+		return LvPrvEngInst->LvWindow;
+	}
+
+	void LvEngineInstance::PrivLvInitWindow()
+	{
+		// Unreleated to actual window initialization
+		{
+			HRESULT Result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+			Assert(!FAILED(Result));
+
+			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+		}
+
 		WNDCLASSEX WndClass = {};
 		WndClass.cbSize = sizeof(WNDCLASSEX);
 		WndClass.style = CS_GLOBALCLASS | CS_HREDRAW | CS_VREDRAW;
 		WndClass.lpfnWndProc = LvWindowProc;
-		WndClass.hInstance = hInstance;
+		WndClass.hInstance = Lv_Inst;
 		WndClass.lpszClassName = AppName;
 
 		RegisterClassEx(&WndClass);
@@ -42,38 +75,29 @@ namespace Leviathan
 			WndRect.bottom - WndRect.top,
 			nullptr,
 			nullptr,
-			hInstance,
+			Lv_Inst,
 			nullptr // CKA_NOTE: Might want to use this in the future
 		);
 
-		return hWindow;
-	}
-
-	void LvEngine::Init()
-	{
-		Outf("LvInitEngine -- BEGIN\n");
-
-		HRESULT Result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-		Assert(!FAILED(Result));
-
-		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
-		HWND hWindow = LvInitWindow(LvInst);
 		Assert(hWindow);
 		LvWindow = hWindow;
+	}
 
+	void LvEngineInstance::Init()
+	{
+		Outf("LvInitEngine -- BEGIN\n");
+		PrivLvInitWindow();
 		if (LvWindow)
 		{
 			LvGraphics::Init();
 
-			ShowWindow(LvWindow, LvCmdShow);
-
+			ShowWindow(LvWindow, Lv_CmdShow);
 			bLvRunning = true;
 		}
 		Outf("LvInitEngine -- END\n");
 	}
 
-	void LvEngine::Term()
+	void LvEngineInstance::Term()
 	{
 		Outf("LvTermEngine -- BEGIN\n");
 		LvGraphics::Term();
@@ -83,9 +107,8 @@ namespace Leviathan
 		Outf("LvTermEngine -- END\n");
 	}
 
-	void LvEngine::MainLoop()
+	void LvEngineInstance::MainLoop()
 	{
-		Outf("LvMainEngineLoop -- BEGIN\n");
 		auto PeekNewMessages = [&]()
 		{
 			MSG Msg;
@@ -104,6 +127,26 @@ namespace Leviathan
 
 			LvGraphics::UpdateAndDraw();
 		}
-		Outf("LvMainEngineLoop -- END\n");
+	}
+
+	void LvEngine::Init()
+	{
+		Assert(nullptr == LvPrvEngInst);
+		LvPrvEngInst = new LvEngineInstance;
+		LvPrvEngInst->Init();
+	}
+
+	void LvEngine::Term()
+	{
+		Assert(LvPrvEngInst);
+		LvPrvEngInst->Term();
+		delete LvPrvEngInst;
+		LvPrvEngInst = nullptr;
+	}
+
+	void LvEngine::MainLoop()
+	{
+		Assert(LvPrvEngInst);
+		LvPrvEngInst->MainLoop();
 	}
 }

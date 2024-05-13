@@ -301,7 +301,7 @@ namespace Leviathan
 		DXCHECK(CreateDXGIFactory1(IID_PPV_ARGS(&DXGI_Factory2)));
 		DXCHECK(DXGI_Factory2->CreateSwapChainForHwnd(
 			DX_Device,
-			LvWindow,
+			Lv_GetWindowHandle(),
 			&SwapChainDesc1,
 			nullptr,
 			nullptr,

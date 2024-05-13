@@ -5,12 +5,12 @@ namespace Leviathan
 {
 	extern bool bLvRunning;
 
-	extern HWND LvWindow;
+	extern HINSTANCE Lv_Inst;
+	extern HINSTANCE Lv_PrevInst;
+	extern PSTR Lv_CmdLine;
+	extern int Lv_CmdShow;
 
-	extern HINSTANCE LvInst;
-	extern HINSTANCE LvPrevInst;
-	extern PSTR LvCmdLine;
-	extern int LvCmdShow;
+	HWND Lv_GetWindowHandle();
 
 	struct LvEngine
 	{

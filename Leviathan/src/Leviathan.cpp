@@ -31,14 +31,14 @@ namespace Leviathan
 	}
 } // namepace Leviathan
 
-int WINAPI WinMain(HINSTANCE Inst, HINSTANCE PrevInst, PSTR CmdLine, int CmdShow)
+static int WINAPI WinMain(HINSTANCE Inst, HINSTANCE PrevInst, PSTR CmdLine, int CmdShow)
 {
 	using namespace Leviathan;
 
-	LvInst = Inst;
-	LvPrevInst = PrevInst;
-	LvCmdLine = CmdLine;
-	LvCmdShow = CmdShow;
+	Lv_Inst = Inst;
+	Lv_PrevInst = PrevInst;
+	Lv_CmdLine = CmdLine;
+	Lv_CmdShow = CmdShow;
 
 	int Result = 1;
 
