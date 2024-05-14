@@ -47,14 +47,22 @@
 #if LV_CONFIG_DEBUG()
 	#define LV_OUTF(...) Outf(__VA_ARGS__)
 	#define LV_DBGOUTF(...) Outf(__VA_ARGS__)
-	#define LV_DBGTRACESCOPE() \
-		struct __LvDbgTraceScopeStruct \
-		{ \
+	#define LV_DBGTRACESCOPE_STRUCTDEF() \
+		struct __LvDbgTraceScopeStruct { \
 			const char* __ContainingFuncName; \
 			inline __LvDbgTraceScopeStruct(const char* InFuncName) \
 				: __ContainingFuncName(InFuncName) { LV_DBGOUTF("%s -- BEGIN\n", __ContainingFuncName); } \
 			inline ~__LvDbgTraceScopeStruct() { LV_DBGOUTF("%s -- END\n", __ContainingFuncName); } \
-		} __FuncLocalStruct(__func__);
+		}
+#if LV_PLATFORM_WINDOWS()
+	#define LV_DBGTRACESCOPE() \
+		LV_DBGTRACESCOPE_STRUCTDEF() \
+		__FuncLocalStruct(__FUNCSIG__)
+#elif LV_PLATFORM_LINUX()
+	#define LV_DBGTRACESCOPE() \
+		LV_DBGTRACESCOPE_STRUCTDEF() \
+		__FuncLocalStruct(__PRETTY_FUNCTION__)
+#endif
 	#define LV_ASSERT(exp) \
 		if (!(exp))	\
 		{ \

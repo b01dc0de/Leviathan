@@ -5,6 +5,7 @@
 
 namespace Leviathan
 {
+#if LV_PLATFORM_WINDOWS()
 	LRESULT CALLBACK LvWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		LRESULT Result = 0;
@@ -29,22 +30,27 @@ namespace Leviathan
 		}
 		return Result;
 	}
+#endif // LV_PLATFORM_WINDOWS
 } // namepace Leviathan
 
+#if LV_PLATFORM_WINDOWS()
 int WINAPI WinMain(HINSTANCE Inst, HINSTANCE PrevInst, PSTR CmdLine, int CmdShow)
+#elif LV_PLATFORM_LINUX()
+int main(int argc, const char* argv[])
+#endif // LV_PLATFORM
 {
 	using namespace Leviathan;
 
+#if LV_PLATFORM_WINDOWS()
 	Lv_Inst = Inst;
 	Lv_PrevInst = PrevInst;
 	Lv_CmdLine = CmdLine;
 	Lv_CmdShow = CmdShow;
+#endif // LV_PLATFORM_WINDOWS
 
 	int Result = 1;
-
 	LvEngine::Init();
 	LvEngine::MainLoop();
 	LvEngine::Term();
-
 	return Result;
 }

@@ -125,27 +125,23 @@ namespace Leviathan
 			if (MsgResult == -1) { /*CKA_TODO*/ }
 		};
 
-		__int64 LvEngineFrameID = 0;
+		__int64 LvEngineFrameID = 1;
 		// Lv misc perf stats:
-		double LvTimeElapsed = 0.0;
-		double LvAvgFrameCost = 0.0;
 		constexpr int EnginePrintStatFreq = 600; // Every 10 seconds (@ 60 FPS)
 		auto UpdateEngineFrameTimings = [&]()
 		{
 			EngineTime.Measure_EngineFrame();
 
-			LvTimeElapsed = EngineTime.CurrTime();
-			LvAvgFrameCost = LvTimeElapsed / ((double)LvEngineFrameID + 1);
-
 			if (LvEngineFrameID % EnginePrintStatFreq == 0)
 			{
+				double LvTimeElapsed = EngineTime.CurrTime();
+				double LvAvgFrameCost = LvTimeElapsed / ((double)LvEngineFrameID + 1);
+
 				LV_DBGOUTF("Leviathan misc perf stats:\n");
 				LV_DBGOUTF("\tFrameID: %d\n", LvEngineFrameID);
 				LV_DBGOUTF("\tTime Elapsed (s): %.04F\n", LvTimeElapsed);
 				LV_DBGOUTF("\tAverage Frame Cost (ms): %.02F\n", LvAvgFrameCost * 1000.0);
 			}
-
-			LvEngineFrameID++;
 		};
 
 		while (bLvRunning)
@@ -155,6 +151,7 @@ namespace Leviathan
 			LvGraphics::UpdateAndDraw();
 
 			UpdateEngineFrameTimings();
+			LvEngineFrameID++;
 		}
 	}
 
