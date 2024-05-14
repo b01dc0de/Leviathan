@@ -1,5 +1,9 @@
 #include "LvCommon.h"
 
+// CKA_NOTE: I was previously only including stdio.h here
+//		Per MSDN: srdarg.h and varargs.h are supposedly 'required'
+//		for vsprintf_s. I don't believe them, but I'll leave these
+//		superfluous includes for now until I can verify that
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>

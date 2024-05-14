@@ -94,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h" />
+    <ClInclude Include="src\LvBuildDefines.h" />
     <ClInclude Include="src\LvCamera.h" />
     <ClInclude Include="src\LvCommon.h" />
     <ClInclude Include="src\LvEngine.h" />

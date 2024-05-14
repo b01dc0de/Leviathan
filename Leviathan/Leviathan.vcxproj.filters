@@ -59,6 +59,9 @@
     <ClInclude Include="src\LvTime.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\LvBuildDefines.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\HLSL\BasicShader.hlsl">
