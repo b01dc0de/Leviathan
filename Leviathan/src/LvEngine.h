@@ -10,9 +10,9 @@ namespace Leviathan
 	extern HINSTANCE Lv_PrevInst;
 	extern PSTR Lv_CmdLine;
 	extern int Lv_CmdShow;
-#endif // LV_PLATFORM_WINDOWS()
 
 	HWND Lv_GetWindowHandle();
+#endif // LV_PLATFORM_WINDOWS()
 
 	struct LvEngine
 	{

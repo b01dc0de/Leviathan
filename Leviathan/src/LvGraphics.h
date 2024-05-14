@@ -5,16 +5,12 @@
 
 #include <d3d11.h>
 #include <d3d11_1.h>
-//#include <d3d11_2.h>
-//#include <d3d11_3.h>
-//#include <d3d11_4.h>
 #include <d3dcommon.h>
 #include <d3dcompiler.h>
 #include <dxgi.h>
 #include <dxgi1_2.h>
 #include <dxgidebug.h>
-
-#define DXCHECK(DXResult) Assert(!FAILED((DXResult)))
+#include "LvGraphicsUtils.h"
 
 namespace Leviathan
 {
@@ -39,19 +35,9 @@ namespace Leviathan
 		T** operator &() { return &Ptr; }
 	};
 
-	int CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob, D3D_SHADER_MACRO* pOptDefines = nullptr);
-
-	struct BasicMeshColor;
-	struct BasicMeshUV;
-
 	struct LvGraphics
 	{
-		D3D_FEATURE_LEVEL UsedFeatureLevel = D3D_FEATURE_LEVEL_11_1;
-		DXGI_FORMAT RenderTargetFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-
-		BasicMeshColor* pCubeMesh = nullptr;
-		BasicMeshColor* pTriangleMesh = nullptr;
-		BasicMeshUV* pRectUVMesh = nullptr;
+		LvArray<IUnknown*> DX_ObjRefs;
 
 		DXHandle<ID3D11Device> DX_Device = nullptr;
 		DXHandle<ID3D11DeviceContext> DX_ImmediateContext = nullptr;

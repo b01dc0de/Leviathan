@@ -33,6 +33,12 @@
     <ClCompile Include="src\LvTime.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\LvGraphicsUtils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LvPredefGraphics.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -62,10 +68,21 @@
     <ClInclude Include="src\LvBuildDefines.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\LvGraphicsUtils.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LvPredefGraphics.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\HLSL\BasicShader.hlsl">
       <Filter>HLSL</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\LvUtils.inl">
+      <Filter>src</Filter>
+    </None>
   </ItemGroup>
 </Project>

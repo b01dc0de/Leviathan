@@ -100,6 +100,18 @@ namespace Leviathan
 		int Min(int a, int b);
 		int Max(int a, int b);
 
+		// Templated utils
+		template <typename N_t>
+		N_t Min(N_t A, N_t B)
+		{
+			return A < B ? A : B;
+		}
+		template <typename N_t>
+		N_t Max(N_t A, N_t B)
+		{
+			return A > B ? A : B;
+		}
+
 		// Common vector operations
 		float Lerp(float a, float b, float t);
 		fVector Lerp(fVector a, fVector b, float t);

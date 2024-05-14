@@ -9,13 +9,6 @@ namespace Leviathan
 {
 	bool bLvRunning = false;
 
-#if LV_PLATFORM_WINDOWS()
-	HINSTANCE Lv_Inst;
-	HINSTANCE Lv_PrevInst;
-	PSTR Lv_CmdLine;
-	int Lv_CmdShow;
-#endif // LV_PLATFORM_WINDOWS()
-
 	struct LvEngineInstance
 	{
 		HWND LvWindow{};
@@ -36,11 +29,18 @@ namespace Leviathan
 
 	static LvEngineInstance* LvPrvEngInst = nullptr;
 
+#if LV_PLATFORM_WINDOWS()
+	HINSTANCE Lv_Inst;
+	HINSTANCE Lv_PrevInst;
+	PSTR Lv_CmdLine;
+	int Lv_CmdShow;
+
 	HWND Lv_GetWindowHandle()
 	{
 		Assert(nullptr != LvPrvEngInst);
 		return LV_SAFE_DEREF(LvPrvEngInst, LvWindow);
 	}
+#endif // LV_PLATFORM_WINDOWS
 
 	void LvEngineInstance::PrivLvInitWindow()
 	{

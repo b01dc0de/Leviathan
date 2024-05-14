@@ -17,5 +17,6 @@ namespace Leviathan
 
 // LV SHARED COMMON INCLUDES
 #include "LvMath.h"
+#include "LvUtils.inl"
 
 #endif // LVCOMMON_H

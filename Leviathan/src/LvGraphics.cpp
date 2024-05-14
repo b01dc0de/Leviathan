@@ -7,55 +7,72 @@
 
 namespace Leviathan
 {
-
 	LvGraphics* LvGraphics::PvInst = nullptr;
 
-	const float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
-
-	int CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob, D3D_SHADER_MACRO* pOptDefines)
+	struct LvPredefGraphicsState
 	{
-		if (SourceFileName == nullptr || EntryPointFunction == nullptr || Profile == nullptr || ShaderBlob == nullptr)
+		static constexpr D3D11_PRIMITIVE_TOPOLOGY LvDefault_Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		static constexpr DXGI_FORMAT LvDefault_IndexFormat = DXGI_FORMAT_R32_UINT;
+		static constexpr int LvDefault_WorldCBufferIdx = 0;
+		static constexpr int LvDefault_ViewProjCBufferIdx = 1;
+		static constexpr float LvDefault_ClearColor[4] = { 0.1f, 0.2f, 0.3f, 1.0f };
+		static constexpr D3D_FEATURE_LEVEL LvDefault_FeatureLevel = D3D_FEATURE_LEVEL_11_1;
+		static constexpr DXGI_FORMAT LvDefault_RenderTargetFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+	};
+
+	template <typename VxType>
+	struct LvDrawState
+	{
+		ID3D11InputLayout* InputDataFormat = nullptr;
+		ID3D11VertexShader* VertexShader = nullptr;
+		ID3D11PixelShader* PixelShader = nullptr;
+		ID3D11Buffer* VertexBuffer = nullptr;
+		ID3D11Buffer* IndexBuffer = nullptr;
+		ID3D11Buffer* WorldBuffer = nullptr;
+		ID3D11Buffer* ViewProjBuffer = nullptr;
+
+		void Draw(ID3D11DeviceContext* InDeviceContext, int NumPrims, Matrix* pWorld = nullptr, Matrix* pViewProj = nullptr)
 		{
-			return E_INVALIDARG;
+			Assert(InDeviceContext);
+			UINT Stride = sizeof(VxType);
+			UINT Offset = 0;
+			InDeviceContext->IASetPrimitiveTopology(LvPredefGraphicsState::LvDefault_Topology);
+			InDeviceContext->IASetInputLayout(InputDataFormat);
+			InDeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &Offset);
+			InDeviceContext->IASetIndexBuffer(IndexBuffer, LvPredefGraphicsState::LvDefault_IndexFormat, 0);
+
+			InDeviceContext->VSSetShader(VertexShader, nullptr, 0);
+			InDeviceContext->PSSetShader(PixelShader, nullptr, 0);
+
+			InDeviceContext->VSSetConstantBuffers(LvPredefGraphicsState::LvDefault_WorldCBufferIdx, 1, &WorldBuffer);
+			InDeviceContext->VSSetConstantBuffers(LvPredefGraphicsState::LvDefault_ViewProjCBufferIdx, 1, &ViewProjBuffer);
+
+			if (pWorld) { InDeviceContext->UpdateSubresource(WorldBuffer, 0, nullptr, pWorld, sizeof(Matrix), 0); }
+			if (pViewProj) { InDeviceContext->UpdateSubresource(ViewProjBuffer, 0, nullptr, pViewProj, sizeof(Matrix) * 2, 0); }
+
+			InDeviceContext->DrawIndexed(NumPrims * 3, 0u, 0u);
 		}
 
-		*ShaderBlob = nullptr;
-
-		UINT CompileFlags = D3DCOMPILE_ENABLE_STRICTNESS|D3DCOMPILE_IEEE_STRICTNESS|D3DCOMPILE_PACK_MATRIX_ROW_MAJOR;
-	#if LV_CONFIG_DEBUG()
-		CompileFlags |= D3DCOMPILE_WARNINGS_ARE_ERRORS;
-		CompileFlags |= D3DCOMPILE_DEBUG;
-		CompileFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
-	#endif
-
-		ID3DBlob* OutBlob = nullptr;
-		ID3DBlob* ErrorMsgBlob = nullptr;
-
-		HRESULT Result = D3DCompileFromFile
+		LvDrawState
 		(
-			SourceFileName,
-			pOptDefines,
-			D3D_COMPILE_STANDARD_FILE_INCLUDE,
-			EntryPointFunction,
-			Profile,
-			CompileFlags,
-			0,
-			&OutBlob,
-			&ErrorMsgBlob
-		);
-		DXCHECK(Result);
-
-		if (ErrorMsgBlob)
+			ID3D11InputLayout* InIAFmt,
+			ID3D11VertexShader* InVS,
+			ID3D11PixelShader* InPS,
+			ID3D11Buffer* InVxBuffer,
+			ID3D11Buffer* InIxBuffer,
+			ID3D11Buffer* InWCbuffer,
+			ID3D11Buffer* InVPCbuffer
+		)
+			: InputDataFormat(InIAFmt)
+			, VertexShader(InVS)
+			, PixelShader(InPS)
+			, VertexBuffer(InVxBuffer)
+			, IndexBuffer(InIxBuffer)
+			, WorldBuffer(InWCbuffer)
+			, ViewProjBuffer(InVPCbuffer)
 		{
-			Outf("%s\n", (char*)ErrorMsgBlob->GetBufferPointer());
-			ErrorMsgBlob->Release();
 		}
-
-		*ShaderBlob = OutBlob;
-
-		return Result;
-	}
-
+	};
 
 	void ReportLiveObjects(ID3D11Device* pDXDevice)
 	{
@@ -68,6 +85,10 @@ namespace Leviathan
 		LV_UNUSED_VAR(pDXDevice);
 	#endif // LV_CONFIG_DEBUG()
 	}
+
+	BasicMeshColor* pCubeMesh = nullptr;
+	BasicMeshColor* pTriangleMesh = nullptr;
+	BasicMeshUV* pRectUVMesh = nullptr;
 
 	LvGraphics::~LvGraphics()
 	{
@@ -254,6 +275,8 @@ namespace Leviathan
 
 	void LvGraphics::PvInit()
 	{
+		using LvGraphicsUtils::CompileShader;
+
 		D3D_FEATURE_LEVEL SupportedFeatureLevels[] =
 		{
 			//D3D_FEATURE_LEVEL_12_2, D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0,
@@ -265,6 +288,7 @@ namespace Leviathan
 	#if LV_CONFIG_DEBUG()
 		CreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 	#endif
+		D3D_FEATURE_LEVEL DXFeatureLevel;
 
 		// CKA_NOTE: After updating graphics drivers on my laptop, the following
 		//	CreateDevice call started to throw an exception:
@@ -280,15 +304,15 @@ namespace Leviathan
 			NumSupportedFeatureLevels,
 			D3D11_SDK_VERSION,
 			&DX_Device,
-			&UsedFeatureLevel,
+			&DXFeatureLevel,
 			&DX_ImmediateContext
 		));
-		Assert(UsedFeatureLevel == D3D_FEATURE_LEVEL_11_1);
+		Assert(DXFeatureLevel == D3D_FEATURE_LEVEL_11_1);
 
 		DXGI_SWAP_CHAIN_DESC1 SwapChainDesc1 = {};
 		SwapChainDesc1.Width = ResX;
 		SwapChainDesc1.Height = ResY;
-		SwapChainDesc1.Format = RenderTargetFormat;
+		SwapChainDesc1.Format = LvPredefGraphicsState::LvDefault_RenderTargetFormat;
 		SwapChainDesc1.Stereo = FALSE;
 		SwapChainDesc1.SampleDesc.Count = 1;
 		SwapChainDesc1.SampleDesc.Quality = 0;
@@ -322,7 +346,7 @@ namespace Leviathan
 		RTT_Desc.Height = ResY;
 		RTT_Desc.MipLevels = 1;
 		RTT_Desc.ArraySize = 1;
-		RTT_Desc.Format = RenderTargetFormat;
+		RTT_Desc.Format = LvPredefGraphicsState::LvDefault_RenderTargetFormat;
 		RTT_Desc.SampleDesc = Shared_RT_SampleDesc;
 		RTT_Desc.Usage = D3D11_USAGE_DEFAULT;
 		RTT_Desc.BindFlags = D3D11_BIND_RENDER_TARGET;
@@ -330,7 +354,7 @@ namespace Leviathan
 		RTT_Desc.MiscFlags = 0;
 		DXCHECK(DX_Device->CreateTexture2D(&RTT_Desc, nullptr, &DX_RenderTargetTexture));
 		D3D11_RENDER_TARGET_VIEW_DESC RTV_Desc = {};
-		RTV_Desc.Format = RenderTargetFormat;
+		RTV_Desc.Format = LvPredefGraphicsState::LvDefault_RenderTargetFormat;
 		RTV_Desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
 		RTV_Desc.Texture2D.MipSlice = 0;
 		DXCHECK(DX_Device->CreateRenderTargetView(DX_RenderTargetTexture, nullptr, &DX_RenderTargetView));
@@ -536,6 +560,29 @@ namespace Leviathan
 
 		PvInitFallbackTexture();
 
+		/*
+		pVxColorDrawState = new LvDrawState<VertexColor>(
+			DX_InputLayoutColor,
+			DX_VSColor,
+			DX_PSColor,
+			DX_CubeVertexBuffer,
+			DX_CubeIndexBuffer,
+			DX_WorldBuffer,
+			DX_ViewProjBuffer
+		);
+		//VxColorDrawState.Draw(ID3D11DeviceContext* InDeviceContext, __int32 NumPrims, Matrix* pWorld, Matrix* pViewProj)
+
+		pVxTextureDrawState = new LvDrawState<VertexUV>(
+			DX_InputLayoutTexture,
+			DX_VSTexture,
+			DX_PSTexture,
+			DX_RectVertexBuffer,
+			DX_RectIndexBuffer,
+			DX_WorldBuffer,
+			DX_ViewProjBuffer
+		);
+		*/
+
 	#if LV_CONFIG_DEBUG()
 		PvSetDXDBGNames();
 	#endif // LV_DEBUG
@@ -581,6 +628,8 @@ namespace Leviathan
 	constexpr float FrameStep = 0.0166666666666667f;
 	constexpr float fPI = 3.14159265359f;
 
+
+
 	void LvGraphics::PvUpdateAndDraw()
 	{
 		static int RenderIdx = 0;
@@ -604,7 +653,7 @@ namespace Leviathan
 		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
 		DX_ImmediateContext->OMSetDepthStencilState(DX_DepthStencilState, 0);
 
-		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, ClearColor);
+		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, LvPredefGraphicsState::LvDefault_ClearColor);
 		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 		{
@@ -667,7 +716,7 @@ namespace Leviathan
 			DX_ImmediateContext->DrawIndexed(pRectUVMesh->NumPrims * 3, 0u, 0u);
 		}
 
-		DX_ImmediateContext->ResolveSubresource(DX_BackBuffer, 0, DX_RenderTargetTexture, 0, RenderTargetFormat);
+		DX_ImmediateContext->ResolveSubresource(DX_BackBuffer, 0, DX_RenderTargetTexture, 0, LvPredefGraphicsState::LvDefault_RenderTargetFormat);
 		const DXGI_PRESENT_PARAMETERS PresentParams = {};
 		DX_SwapChain1->Present1(0, DXGI_PRESENT_ALLOW_TEARING, &PresentParams);
 	}
@@ -678,6 +727,7 @@ namespace Leviathan
 
 		Inst()->PvInit();
 	}
+
 	void LvGraphics::Term()
 	{
 		LV_DBGTRACESCOPE();
@@ -685,6 +735,7 @@ namespace Leviathan
 		delete PvInst;
 		PvInst = nullptr;
 	}
+
 	void LvGraphics::UpdateAndDraw()
 	{
 		Inst()->PvUpdateAndDraw();
