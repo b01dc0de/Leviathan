@@ -36,9 +36,11 @@
 #if LV_PLATFORM_WINDOWS()
 	#define LV_DBG_BREAK() DebugBreak()
 	#define LV_PLATFORM_DBGPRINT(STR) OutputDebugStringA(STR)
+	#define LV_PLATFORM_FUNCNAME() __FUNCSIG__
 #elif LV_PLATFORM_LINUX()
 	#define LV_DBG_BREAK() __builtin_trap()
 	#define LV_PLATFORM_DBGPRINT(STR) printf(STR) // CKA_TODO: Find out correct Linux debug print call here
+	#define LV_PLATFORM_FUNCNAME() __PRETTY_FUNCTION
 #else
 	#error "LV ERROR: NO BUILD PLATFORM DEFINED"
 #endif /* LV BUILD PLATFORM DEFINITIONS */
@@ -54,15 +56,9 @@
 				: __ContainingFuncName(InFuncName) { LV_DBGOUTF("%s -- BEGIN\n", __ContainingFuncName); } \
 			inline ~__LvDbgTraceScopeStruct() { LV_DBGOUTF("%s -- END\n", __ContainingFuncName); } \
 		}
-#if LV_PLATFORM_WINDOWS()
 	#define LV_DBGTRACESCOPE() \
-		LV_DBGTRACESCOPE_STRUCTDEF() \
-		__FuncLocalStruct(__FUNCSIG__)
-#elif LV_PLATFORM_LINUX()
-	#define LV_DBGTRACESCOPE() \
-		LV_DBGTRACESCOPE_STRUCTDEF() \
-		__FuncLocalStruct(__PRETTY_FUNCTION__)
-#endif
+			LV_DBGTRACESCOPE_STRUCTDEF() \
+			__FuncLocalStruct(LV_PLATFORM_FUNCNAME())
 	#define LV_ASSERT(exp) \
 		if (!(exp))	\
 		{ \
