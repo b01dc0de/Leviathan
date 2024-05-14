@@ -22,7 +22,7 @@ namespace Leviathan
 		*ShaderBlob = nullptr;
 
 		UINT CompileFlags = D3DCOMPILE_ENABLE_STRICTNESS|D3DCOMPILE_IEEE_STRICTNESS|D3DCOMPILE_PACK_MATRIX_ROW_MAJOR;
-	#if LV_DEBUG_BUILD()
+	#if LV_CONFIG_DEBUG()
 		CompileFlags |= D3DCOMPILE_WARNINGS_ARE_ERRORS;
 		CompileFlags |= D3DCOMPILE_DEBUG;
 		CompileFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
@@ -59,12 +59,14 @@ namespace Leviathan
 
 	void ReportLiveObjects(ID3D11Device* pDXDevice)
 	{
-	#if LV_DEBUG_BUILD()
+	#if LV_CONFIG_DEBUG()
 		DXHandle<ID3D11Debug> DX_Debug = nullptr;
 		DXCHECK(pDXDevice->QueryInterface(IID_PPV_ARGS(&DX_Debug)));
 		DX_Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL|D3D11_RLDO_IGNORE_INTERNAL);
 		DX_Debug.SafeRelease();
-	#endif // LV_DEBUG_BUILD()
+	#else
+		LV_UNUSED_VAR(pDXDevice);
+	#endif // LV_CONFIG_DEBUG()
 	}
 
 	LvGraphics::~LvGraphics()
@@ -134,10 +136,10 @@ namespace Leviathan
 		DX_ImmediateContext->Flush();
 		DX_ImmediateContext.SafeRelease();
 
-	#if LV_DEBUG_BUILD()
+	#if LV_CONFIG_DEBUG()
 		Outf("ReportLiveObjects -- After SafeReleasing DXHandles (except ID3D11Device):\n");
 		ReportLiveObjects(DX_Device);
-	#endif // LV_DEBUG
+	#endif // LV_CONFIG_DEBUG
 
 		// CKA_NOTE: Disabled the exception detailed below in VS. Throws exceptions on following line:
 		DX_Device.SafeRelease();
@@ -260,7 +262,7 @@ namespace Leviathan
 		UINT NumSupportedFeatureLevels = ARRAYSIZE(SupportedFeatureLevels);
 
 		UINT CreateDeviceFlags = 0;
-	#if LV_DEBUG_BUILD()
+	#if LV_CONFIG_DEBUG()
 		CreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 	#endif
 
@@ -534,7 +536,7 @@ namespace Leviathan
 
 		PvInitFallbackTexture();
 
-	#if LV_DEBUG_BUILD()
+	#if LV_CONFIG_DEBUG()
 		PvSetDXDBGNames();
 	#endif // LV_DEBUG
 	}
@@ -545,7 +547,7 @@ namespace Leviathan
 
 	void LvGraphics::PvSetDXDBGNames()
 	{
-	#if LV_DEBUG_BUILD()
+	#if LV_CONFIG_DEBUG()
 		DXDBG_SETDBGNAMEHELPER(DX_Device);
 		DXDBG_SETDBGNAMEHELPER(DX_ImmediateContext);
 		DXDBG_SETDBGNAMEHELPER(DX_SwapChain1);
@@ -570,7 +572,6 @@ namespace Leviathan
 	#endif // LV_DEBUG
 	}
 
-
 	const fVector WorldPos(10.0f, 10.0f, -10.0f);
 	const fVector LookAt(0.0f, 0.0f, 0.0f);
 	const fVector AbsUp(0.0f, 1.0f, 0.0f, 0.0f);
@@ -593,7 +594,7 @@ namespace Leviathan
 			constexpr float CameraPathRadius = 10.0f;
 			float CamT = CurrRad / SecondsForFullRotation;
 			// When FakeTime == SecondsForFullRotation, CamT == 2 * PI
-			fVector CurrCamPos = {cosf(CamT) * CameraPathRadius, CamY, sinf(CamT) * CameraPathRadius * 2.0f};
+			fVector CurrCamPos = {LvMath::Cosf(CamT) * CameraPathRadius, CamY, LvMath::Sinf(CamT) * CameraPathRadius * 2.0f};
 			Cam3D.Orient(CurrCamPos, LookAt, AbsUp);
 		}
 
@@ -636,13 +637,13 @@ namespace Leviathan
 
 			float Cam2DT = CurrRad / 5.0f;
 
-			fVector ImgPos{CenterPos.X + (cosf(Cam2DT) * ImgPathRadius), CenterPos.Y + (sinf(Cam2DT) * ImgPathRadius), 0.0f};
-			float CurrScale = Scale + ((Scale/2.0f) * cosf(CurrRad / 6.0f));
+			fVector ImgPos{CenterPos.X + (LvMath::Cosf(Cam2DT) * ImgPathRadius), CenterPos.Y + (LvMath::Sinf(Cam2DT) * ImgPathRadius), 0.0f};
+			float CurrScale = Scale + ((Scale/2.0f) * LvMath::Cosf(CurrRad / 6.0f));
 			float CurrAngle = -CurrRad / 3.0f;
 			fMatrix TransMat(TRANS, ImgPos);
 			fMatrix RotMat(ROT_Z, CurrAngle);
 			fMatrix ScaleMat(SCALE, CurrScale * ImgSize, CurrScale * ImgSize, 1.0f);
-			fMatrix World = Mult(ScaleMat, RotMat, TransMat);
+			fMatrix World = LvMath::Mult(ScaleMat, RotMat, TransMat);
 
 			UINT Stride = sizeof(VertexUV);
 			UINT Offset = 0;
@@ -673,17 +674,16 @@ namespace Leviathan
 
 	void LvGraphics::Init()
 	{
-		Outf("LvGraphics::Init -- BEGIN\n");
+		LV_DBGTRACESCOPE();
+
 		Inst()->PvInit();
-		Outf("LvGraphics::Init -- END\n");
 	}
 	void LvGraphics::Term()
 	{
-		Outf("LvGraphics::Term -- BEGIN\n");
+		LV_DBGTRACESCOPE();
 		Assert(PvInst);
 		delete PvInst;
 		PvInst = nullptr;
-		Outf("LvGraphics::Term -- END\n");
 	}
 	void LvGraphics::UpdateAndDraw()
 	{

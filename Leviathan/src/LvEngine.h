@@ -5,10 +5,12 @@ namespace Leviathan
 {
 	extern bool bLvRunning;
 
+#if LV_PLATFORM_WINDOWS()
 	extern HINSTANCE Lv_Inst;
 	extern HINSTANCE Lv_PrevInst;
 	extern PSTR Lv_CmdLine;
 	extern int Lv_CmdShow;
+#endif // LV_PLATFORM_WINDOWS()
 
 	HWND Lv_GetWindowHandle();
 

@@ -1,115 +1,207 @@
 #include "LvCommon.h"
 
+#include <cmath>
+
 namespace Leviathan
 {
-	const float PI = 3.14159265359f;
-
-	float Clamp(float C, float A, float B)
+	namespace LvMath
 	{
-		Assert(A <= B);
-		if (C < A)
+		float Sinf(float Rad)
 		{
-			C = A;
+			return sinf(Rad);
 		}
-		else if (C > B)
+
+		float Cosf(float Rad)
 		{
-			C = B;
+			return cosf(Rad);
 		}
-		return C;
-	}
 
-	int Clamp(int C, int A, int B)
-	{
-		Assert(A <= B);
-		if (C < A)
+		float Tanf(float Rad)
 		{
-			C = A;
+			return tanf(Rad);
 		}
-		else if (C > B)
+
+		float Clamp(float C, float A, float B)
 		{
-			C = B;
+			Assert(A <= B);
+			if (C < A)
+			{
+				C = A;
+			}
+			else if (C > B)
+			{
+				C = B;
+			}
+			return C;
 		}
-		return C;
-	}
 
-	float ClampToUnit(float C)
-	{
-		if (C < 0.0f)
+		int Clamp(int C, int A, int B)
 		{
-			C = 0.0f;
+			Assert(A <= B);
+			if (C < A)
+			{
+				C = A;
+			}
+			else if (C > B)
+			{
+				C = B;
+			}
+			return C;
 		}
-		else if (C > 1.0f)
+
+		float ClampToUnit(float C)
 		{
-			C = 1.0f;
+			if (C < 0.0f)
+			{
+				C = 0.0f;
+			}
+			else if (C > 1.0f)
+			{
+				C = 1.0f;
+			}
+			return C;
 		}
-		return C;
+
+		float Min(float A, float B)
+		{
+			return A < B ? A : B;
+		}
+
+		float Max(float A, float B)
+		{
+			return A > B ? A : B;
+		}
+
+		int Min(int A, int B)
+		{
+			return A < B ? A : B;
+		}
+
+		int Max(int A, int B)
+		{
+			return A > B ? A : B;
+		}
+
+		float Lerp(float A, float B, float T)
+		{
+			return A + (B - A) * T;
+		}
+
+		fVector Lerp(fVector A, fVector B, float T)
+		{
+			return A + (B - A) * T;
+		}
+
+		float Dot(const fVector& A, const fVector& B)
+		{
+			return A.X * B.X + A.Y * B.Y + A.Z * B.Z;
+		}
+
+		fVector Cross(const fVector& A, const fVector& B)
+		{
+			fVector Result;
+
+			Result.X = A.Y * B.Z - A.Z * B.Y;
+			Result.Y = A.Z * B.X - A.X * B.Z;
+			Result.Z = A.X * B.Y - B.X * A.Y;
+			Result.W = 0.0f;
+
+			return Result;
+		}
+
+		float Proj(const fVector& A, const fVector& B)
+		{
+			return Dot(A, B.GetNorm());
+		}
+
+		float Dist(const fVector& A, const fVector& B)
+		{
+			return sqrtf(DistSq(A, B));
+		}
+
+		float DistSq(const fVector& A, const fVector& B)
+		{
+			float DiffX = B.X - A.X;
+			float DiffY = B.Y - A.Y;
+			float DiffZ = B.Z - A.Z;
+
+			return DiffX * DiffX + DiffY * DiffY + DiffZ * DiffZ;
+		}
+
+		fMatrix Mult(const fMatrix& A, const fMatrix& B)
+		{
+			fMatrix Result;
+
+			Result.Row0.X = (A.Row0.X * B.Row0.X) + (A.Row0.Y * B.Row1.X) + (A.Row0.Z * B.Row2.X) + (A.Row0.W * B.Row3.X);
+			Result.Row0.Y = (A.Row0.X * B.Row0.Y) + (A.Row0.Y * B.Row1.Y) + (A.Row0.Z * B.Row2.Y) + (A.Row0.W * B.Row3.Y);
+			Result.Row0.Z = (A.Row0.X * B.Row0.Z) + (A.Row0.Y * B.Row1.Z) + (A.Row0.Z * B.Row2.Z) + (A.Row0.W * B.Row3.Z);
+			Result.Row0.W = (A.Row0.X * B.Row0.W) + (A.Row0.Y * B.Row1.W) + (A.Row0.Z * B.Row2.W) + (A.Row0.W * B.Row3.W);
+
+			Result.Row1.X = (A.Row1.X * B.Row0.X) + (A.Row1.Y * B.Row1.X) + (A.Row1.Z * B.Row2.X) + (A.Row1.W * B.Row3.X);
+			Result.Row1.Y = (A.Row1.X * B.Row0.Y) + (A.Row1.Y * B.Row1.Y) + (A.Row1.Z * B.Row2.Y) + (A.Row1.W * B.Row3.Y);
+			Result.Row1.Z = (A.Row1.X * B.Row0.Z) + (A.Row1.Y * B.Row1.Z) + (A.Row1.Z * B.Row2.Z) + (A.Row1.W * B.Row3.Z);
+			Result.Row1.W = (A.Row1.X * B.Row0.W) + (A.Row1.Y * B.Row1.W) + (A.Row1.Z * B.Row2.W) + (A.Row1.W * B.Row3.W);
+
+			Result.Row2.X = (A.Row2.X * B.Row0.X) + (A.Row2.Y * B.Row1.X) + (A.Row2.Z * B.Row2.X) + (A.Row2.W * B.Row3.X);
+			Result.Row2.Y = (A.Row2.X * B.Row0.Y) + (A.Row2.Y * B.Row1.Y) + (A.Row2.Z * B.Row2.Y) + (A.Row2.W * B.Row3.Y);
+			Result.Row2.Z = (A.Row2.X * B.Row0.Z) + (A.Row2.Y * B.Row1.Z) + (A.Row2.Z * B.Row2.Z) + (A.Row2.W * B.Row3.Z);
+			Result.Row2.W = (A.Row2.X * B.Row0.W) + (A.Row2.Y * B.Row1.W) + (A.Row2.Z * B.Row2.W) + (A.Row2.W * B.Row3.W);
+
+			Result.Row3.X = (A.Row3.X * B.Row0.X) + (A.Row3.Y * B.Row1.X) + (A.Row3.Z * B.Row2.X) + (A.Row3.W * B.Row3.X);
+			Result.Row3.Y = (A.Row3.X * B.Row0.Y) + (A.Row3.Y * B.Row1.Y) + (A.Row3.Z * B.Row2.Y) + (A.Row3.W * B.Row3.Y);
+			Result.Row3.Z = (A.Row3.X * B.Row0.Z) + (A.Row3.Y * B.Row1.Z) + (A.Row3.Z * B.Row2.Z) + (A.Row3.W * B.Row3.Z);
+			Result.Row3.W = (A.Row3.X * B.Row0.W) + (A.Row3.Y * B.Row1.W) + (A.Row3.Z * B.Row2.W) + (A.Row3.W * B.Row3.W);
+
+			return Result;
+		}
+		fMatrix Mult(const fMatrix& A, const fMatrix& B, const fMatrix& C)
+		{
+			return Mult(Mult(A, B), C);
+		}
+		fMatrix Mult(const fMatrix& A, const fMatrix& B, const fMatrix& C, const fMatrix& D)
+		{
+			return Mult(Mult(Mult(A, B), C), D);
+		}
+		fVector Mult(const fVector& fV, const fMatrix& fM)
+		{
+			fVector Result;
+
+			// row major
+			Result.X = fV.X * fM.Row0.X + fV.Y * fM.Row1.X + fV.Z * fM.Row2.X + fV.W * fM.Row3.X;
+			Result.Y = fV.X * fM.Row0.Y + fV.Y * fM.Row1.Y + fV.Z * fM.Row2.Y + fV.W * fM.Row3.Y;
+			Result.Z = fV.X * fM.Row0.Z + fV.Y * fM.Row1.Z + fV.Z * fM.Row2.Z + fV.W * fM.Row3.Z;
+			Result.W = fV.X * fM.Row0.W + fV.Y * fM.Row1.W + fV.Z * fM.Row2.W + fV.W * fM.Row3.W;
+
+			/*
+			// column major
+			Result.X = fM.Row0.X*fV.X + fM.Row0.Y*fV.Y + fM.Row0.Z*fV.Z + fM.Row0.W*fV.W;
+			Result.Y = fM.Row1.X*fV.X + fM.Row1.Y*fV.Y + fM.Row1.Z*fV.Z + fM.Row1.W*fV.W;
+			Result.Z = fM.Row2.X*fV.X + fM.Row2.Y*fV.Y + fM.Row2.Z*fV.Z + fM.Row2.W*fV.W;
+			Result.W = fM.Row3.X*fV.X + fM.Row3.Y*fV.Y + fM.Row3.Z*fV.Z + fM.Row3.W*fV.W;
+			*/
+
+			return Result;
+		}
+
+		fVector operator*(const fVector& fV, const fMatrix& fM)
+		{
+			return Mult(fV, fM);
+		}
+		fVector& operator*=(fVector& fV, const fMatrix& fM)
+		{
+			return fV = Mult(fV, fM);
+		}
+		fMatrix operator*(const fMatrix& A, const fMatrix& B)
+		{
+			return Mult(A, B);
+		}
+		fMatrix& operator*=(fMatrix& A, const fMatrix& B)
+		{
+			return A = Mult(A, B);
+		}
 	}
 
-	float Min(float A, float B)
-	{
-		return A < B ? A : B;
-	}
-
-	float Max(float A, float B)
-	{
-		return A > B ? A : B;
-	}
-
-	int Min(int A, int B)
-	{
-		return A < B ? A : B;
-	}
-
-	int Max(int A, int B)
-	{
-		return A > B ? A : B;
-	}
-
-	float Lerp(float A, float B, float T)
-	{
-		return A + (B - A) * T;
-	}
-
-	fVector Lerp(fVector A, fVector B, float T)
-	{
-		return A + (B - A) * T;
-	}
-
-	float Dot(const fVector& A, const fVector& B)
-	{
-		return A.X * B.X + A.Y * B.Y + A.Z * B.Z;
-	}
-
-	fVector Cross(const fVector& A, const fVector& B)
-	{
-		fVector Result;
-
-		Result.X = A.Y * B.Z - A.Z * B.Y;
-		Result.Y = A.Z * B.X - A.X * B.Z;
-		Result.Z = A.X * B.Y - B.X * A.Y;
-		Result.W = 0.0f;
-
-		return Result;
-	}
-
-	float Proj(const fVector& A, const fVector& B)
-	{
-		return Dot(A, B.GetNorm());
-	}
-
-	float Dist(const fVector& A, const fVector& B)
-	{
-		return sqrtf(DistSq(A, B));
-	}
-
-	float DistSq(const fVector& A, const fVector& B)
-	{
-		float DiffX = B.X - A.X;
-		float DiffY = B.Y - A.Y;
-		float DiffZ = B.Z - A.Z;
-
-		return DiffX * DiffX + DiffY * DiffY + DiffZ * DiffZ;
-	}
+	using namespace LvMath;
 
 	fVector& fVector::Norm()
 	{
@@ -237,78 +329,6 @@ namespace Leviathan
 		return *this;
 	}
 
-	fMatrix Mult(const fMatrix& A, const fMatrix& B)
-	{
-		fMatrix Result;
-
-		Result.Row0.X = (A.Row0.X * B.Row0.X) + (A.Row0.Y * B.Row1.X) + (A.Row0.Z * B.Row2.X) + (A.Row0.W * B.Row3.X);
-		Result.Row0.Y = (A.Row0.X * B.Row0.Y) + (A.Row0.Y * B.Row1.Y) + (A.Row0.Z * B.Row2.Y) + (A.Row0.W * B.Row3.Y);
-		Result.Row0.Z = (A.Row0.X * B.Row0.Z) + (A.Row0.Y * B.Row1.Z) + (A.Row0.Z * B.Row2.Z) + (A.Row0.W * B.Row3.Z);
-		Result.Row0.W = (A.Row0.X * B.Row0.W) + (A.Row0.Y * B.Row1.W) + (A.Row0.Z * B.Row2.W) + (A.Row0.W * B.Row3.W);
-
-		Result.Row1.X = (A.Row1.X * B.Row0.X) + (A.Row1.Y * B.Row1.X) + (A.Row1.Z * B.Row2.X) + (A.Row1.W * B.Row3.X);
-		Result.Row1.Y = (A.Row1.X * B.Row0.Y) + (A.Row1.Y * B.Row1.Y) + (A.Row1.Z * B.Row2.Y) + (A.Row1.W * B.Row3.Y);
-		Result.Row1.Z = (A.Row1.X * B.Row0.Z) + (A.Row1.Y * B.Row1.Z) + (A.Row1.Z * B.Row2.Z) + (A.Row1.W * B.Row3.Z);
-		Result.Row1.W = (A.Row1.X * B.Row0.W) + (A.Row1.Y * B.Row1.W) + (A.Row1.Z * B.Row2.W) + (A.Row1.W * B.Row3.W);
-
-		Result.Row2.X = (A.Row2.X * B.Row0.X) + (A.Row2.Y * B.Row1.X) + (A.Row2.Z * B.Row2.X) + (A.Row2.W * B.Row3.X);
-		Result.Row2.Y = (A.Row2.X * B.Row0.Y) + (A.Row2.Y * B.Row1.Y) + (A.Row2.Z * B.Row2.Y) + (A.Row2.W * B.Row3.Y);
-		Result.Row2.Z = (A.Row2.X * B.Row0.Z) + (A.Row2.Y * B.Row1.Z) + (A.Row2.Z * B.Row2.Z) + (A.Row2.W * B.Row3.Z);
-		Result.Row2.W = (A.Row2.X * B.Row0.W) + (A.Row2.Y * B.Row1.W) + (A.Row2.Z * B.Row2.W) + (A.Row2.W * B.Row3.W);
-
-		Result.Row3.X = (A.Row3.X * B.Row0.X) + (A.Row3.Y * B.Row1.X) + (A.Row3.Z * B.Row2.X) + (A.Row3.W * B.Row3.X);
-		Result.Row3.Y = (A.Row3.X * B.Row0.Y) + (A.Row3.Y * B.Row1.Y) + (A.Row3.Z * B.Row2.Y) + (A.Row3.W * B.Row3.Y);
-		Result.Row3.Z = (A.Row3.X * B.Row0.Z) + (A.Row3.Y * B.Row1.Z) + (A.Row3.Z * B.Row2.Z) + (A.Row3.W * B.Row3.Z);
-		Result.Row3.W = (A.Row3.X * B.Row0.W) + (A.Row3.Y * B.Row1.W) + (A.Row3.Z * B.Row2.W) + (A.Row3.W * B.Row3.W);
-
-		return Result;
-	}
-	fMatrix Mult(const fMatrix& A, const fMatrix& B, const fMatrix& C)
-	{
-		return Mult(Mult(A, B), C);
-	}
-	fMatrix Mult(const fMatrix& A, const fMatrix& B, const fMatrix& C, const fMatrix& D)
-	{
-		return Mult(Mult(Mult(A, B), C), D);
-	}
-	fVector Mult(const fVector& fV, const fMatrix& fM)
-	{
-		fVector Result;
-
-		// row major
-		Result.X = fV.X * fM.Row0.X + fV.Y * fM.Row1.X + fV.Z * fM.Row2.X + fV.W * fM.Row3.X;
-		Result.Y = fV.X * fM.Row0.Y + fV.Y * fM.Row1.Y + fV.Z * fM.Row2.Y + fV.W * fM.Row3.Y;
-		Result.Z = fV.X * fM.Row0.Z + fV.Y * fM.Row1.Z + fV.Z * fM.Row2.Z + fV.W * fM.Row3.Z;
-		Result.W = fV.X * fM.Row0.W + fV.Y * fM.Row1.W + fV.Z * fM.Row2.W + fV.W * fM.Row3.W;
-
-		/*
-		// column major
-		Result.X = fM.Row0.X*fV.X + fM.Row0.Y*fV.Y + fM.Row0.Z*fV.Z + fM.Row0.W*fV.W;
-		Result.Y = fM.Row1.X*fV.X + fM.Row1.Y*fV.Y + fM.Row1.Z*fV.Z + fM.Row1.W*fV.W;
-		Result.Z = fM.Row2.X*fV.X + fM.Row2.Y*fV.Y + fM.Row2.Z*fV.Z + fM.Row2.W*fV.W;
-		Result.W = fM.Row3.X*fV.X + fM.Row3.Y*fV.Y + fM.Row3.Z*fV.Z + fM.Row3.W*fV.W;
-		*/
-
-		return Result;
-	}
-
-	fVector operator*(const fVector& fV, const fMatrix& fM)
-	{
-		return Mult(fV, fM);
-	}
-	fVector& operator*=(fVector& fV, const fMatrix& fM)
-	{
-		return fV = Mult(fV, fM);
-	}
-	fMatrix operator*(const fMatrix& A, const fMatrix& B)
-	{
-		return Mult(A, B);
-	}
-	fMatrix& operator*=(fMatrix& A, const fMatrix& B)
-	{
-		return A = Mult(A, B);
-	}
-
 	fMatrix& fMatrix::Zero()
 	{
 		Row0 = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -419,26 +439,26 @@ namespace Leviathan
 	fMatrix& fMatrix::Rot(MatrixRotation _Rot, float Angle)
 	{
 		Identity();
-		float Cos = cosf(Angle);
-		float Sin = sinf(Angle);
+		const float fCos = cosf(Angle);
+		const float fSin = sinf(Angle);
 		switch (_Rot)
 		{
 			case ROT_X:
 			{
 				Row0 = { 1.0f, 0.0f, 0.0f, 0.0f };
-				Row1 = { 0.0f,  Cos, -Sin, 0.0f };
-				Row2 = { 0.0f,  Sin,  Cos, 0.0f };
+				Row1 = { 0.0f,  fCos, -fSin, 0.0f };
+				Row2 = { 0.0f,  fSin,  fCos, 0.0f };
 			} break;
 			case ROT_Y:
 			{
-				Row0 = {  Cos, 0.0f,  Sin, 0.0f };
+				Row0 = {  fCos, 0.0f,  fSin, 0.0f };
 				Row1 = { 0.0f, 1.0f, 0.0f, 0.0f };
-				Row2 = { -Sin, 0.0f,  Cos, 0.0f };
+				Row2 = { -fSin, 0.0f,  fCos, 0.0f };
 			} break;
 			case ROT_Z:
 			{
-				Row0 = { Cos,  -Sin, 0.0f, 0.0f };
-				Row1 = { Sin,   Cos, 0.0f, 0.0f };
+				Row0 = { fCos,  -fSin, 0.0f, 0.0f };
+				Row1 = { fSin,   fCos, 0.0f, 0.0f };
 				Row2 = { 0.0f, 0.0f, 1.0f, 0.0f };
 			} break;
 			default:
@@ -451,7 +471,7 @@ namespace Leviathan
 	}
 	fMatrix& fMatrix::Rot(MatrixRotationAxis _Rot, const fVector& Axis, float Angle)
 	{
-		UNUSED_VAR(_Rot);
+		LV_UNUSED_VAR(_Rot);
 		/*
 		float C = cosf(Angle);
 		float s = sinf(Angle);
@@ -529,7 +549,7 @@ namespace Leviathan
 	}
 	fMatrix& fMatrix::Rot(MatrixRotationOrient _Rot, const fVector& Dir, const fVector& Up)
 	{
-		UNUSED_VAR(_Rot);
+		LV_UNUSED_VAR(_Rot);
 		Row2 = Dir.GetNorm();
 		Row0 = Cross(Up, Row2).GetNorm();
 		Row1 = Cross(Row2, Row0).GetNorm();
@@ -555,22 +575,22 @@ namespace Leviathan
 
 	fMatrix::fMatrix(MatrixZero _Zero)
 	{
-		UNUSED_VAR(_Zero);
+		LV_UNUSED_VAR(_Zero);
 		Zero();
 	}
 	fMatrix::fMatrix(MatrixIdentity _Identity)
 	{
-		UNUSED_VAR(_Identity);
+		LV_UNUSED_VAR(_Identity);
 		Identity();
 	}
 	fMatrix::fMatrix(MatrixTranslate _Trans, float X, float Y, float Z)
 	{
-		UNUSED_VAR(_Trans);
+		LV_UNUSED_VAR(_Trans);
 		Trans(X, Y, Z);
 	}
 	fMatrix::fMatrix(MatrixTranslate _Trans, const fVector& T)
 	{
-		UNUSED_VAR(_Trans);
+		LV_UNUSED_VAR(_Trans);
 		Trans(T);
 	}
 	fMatrix::fMatrix(MatrixRotation _Rot, float Angle)
@@ -587,12 +607,12 @@ namespace Leviathan
 	}
 	fMatrix::fMatrix(MatrixScale _Scale, float S)
 	{
-		UNUSED_VAR(_Scale);
+		LV_UNUSED_VAR(_Scale);
 		Scale(S);
 	}
 	fMatrix::fMatrix(MatrixScale _Scale, float SX, float SY, float SZ)
 	{
-		UNUSED_VAR(_Scale);
+		LV_UNUSED_VAR(_Scale);
 		Scale(SX, SY, SZ);
 	}
 }

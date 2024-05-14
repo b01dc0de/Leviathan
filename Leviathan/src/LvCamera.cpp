@@ -4,6 +4,8 @@
 
 namespace Leviathan
 {
+	using namespace LvMath;
+
 	CameraSpaceTrans CameraSpaceTrans::Perspective
 	(
 		float InFOV_Y,
@@ -21,7 +23,7 @@ namespace Leviathan
 		OutCamera.Proj.Zero();
 		OutCamera.View.Zero();
 
-		float fD = 1.0f / tanf(InFOV_Y / 2.0f);
+		float fD = 1.0f / Tanf(InFOV_Y / 2.0f);
 		float fDistDelta = InFarDist - InNearDist;
 
 		OutCamera.Proj.Row0.X = fD / InAspectRatio;

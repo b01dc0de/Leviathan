@@ -9,16 +9,18 @@ namespace Leviathan
 {
 	bool bLvRunning = false;
 
+#if LV_PLATFORM_WINDOWS()
 	HINSTANCE Lv_Inst;
 	HINSTANCE Lv_PrevInst;
 	PSTR Lv_CmdLine;
 	int Lv_CmdShow;
+#endif // LV_PLATFORM_WINDOWS()
 
 	struct LvEngineInstance
 	{
-		HWND LvWindow;
+		HWND LvWindow{};
 
-		LvTime EngineTime;
+		LvTime EngineTime{};
 
 		void PrivLvInitWindow();
 
@@ -37,17 +39,17 @@ namespace Leviathan
 	HWND Lv_GetWindowHandle()
 	{
 		Assert(nullptr != LvPrvEngInst);
-		return LvPrvEngInst->LvWindow;
+		return LV_SAFE_DEREF(LvPrvEngInst, LvWindow);
 	}
 
 	void LvEngineInstance::PrivLvInitWindow()
 	{
 		// Unreleated to actual window initialization
 		{
-			HRESULT Result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-			Assert(!FAILED(Result));
-
+		#if LV_CONFIG_DEBUG() && LV_PLATFORM_WINDOWS()
+			Assert(!FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED)));
 			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+		#endif // LV_PLATFORM_WINDOWS()
 		}
 
 		WNDCLASSEX WndClass = {};
@@ -85,30 +87,32 @@ namespace Leviathan
 
 	void LvEngineInstance::Init()
 	{
-		Outf("LvInitEngine -- BEGIN\n");
+		LV_DBGTRACESCOPE();
 		PrivLvInitWindow();
 		if (LvWindow)
 		{
 			LvGraphics::Init();
 
+			EngineTime.Init();
+
 			ShowWindow(LvWindow, Lv_CmdShow);
+
 			bLvRunning = true;
 		}
-		Outf("LvInitEngine -- END\n");
 	}
 
 	void LvEngineInstance::Term()
 	{
-		Outf("LvTermEngine -- BEGIN\n");
+		LV_DBGTRACESCOPE();
 		LvGraphics::Term();
-
+	#if LV_PLATFORM_WINDOWS()
 		CoUninitialize();
-
-		Outf("LvTermEngine -- END\n");
+	#endif // LV_PLATFORM_WINDOWS()
 	}
 
 	void LvEngineInstance::MainLoop()
 	{
+		LV_DBGTRACESCOPE();
 		auto PeekNewMessages = [&]()
 		{
 			MSG Msg;
@@ -121,11 +125,43 @@ namespace Leviathan
 			if (MsgResult == -1) { /*CKA_TODO*/ }
 		};
 
+		__int64 LvEngineFrameID = 0;
+		// Lv misc perf stats:
+		double LvTimeElapsed = 0.0;
+		double LvDeltaSum = 0.0;
+		double LvAvgFrameCost = 0.0;
+		double LvAvgDelta = 0.0;
+		constexpr int EnginePrintStatFreq = 600; // Every 10 seconds (@ 60 FPS)
+		auto UpdateEngineFrameTimings = [&]()
+		{
+			EngineTime.Measure_EngineFrame();
+
+			LvTimeElapsed = EngineTime.CurrTime();
+			LvDeltaSum += EngineTime.Delta();
+			LvAvgFrameCost = LvTimeElapsed / ((double)LvEngineFrameID + 1);
+			LvAvgDelta = LvDeltaSum / ((double)LvEngineFrameID + 1);
+
+			if (LvEngineFrameID % EnginePrintStatFreq == 0)
+			{
+				// CKA_TODO: What's the conceptual difference between average delta and average frame cost?
+				// 
+				LV_DBGOUTF("Leviathan misc perf stats:\n");
+				LV_DBGOUTF("\tFrameID: %d\n", LvEngineFrameID);
+				LV_DBGOUTF("\tTime Elapsed: %F\n", LvTimeElapsed);
+				LV_DBGOUTF("\tAverage Frame Cost: %F\n", LvAvgFrameCost);
+				LV_DBGOUTF("\tAverage Delta: %F\n", LvAvgDelta);
+			}
+
+			LvEngineFrameID++;
+		};
+
 		while (bLvRunning)
 		{
 			PeekNewMessages();
 
 			LvGraphics::UpdateAndDraw();
+
+			UpdateEngineFrameTimings();
 		}
 	}
 
@@ -140,6 +176,7 @@ namespace Leviathan
 	{
 		Assert(LvPrvEngInst);
 		LvPrvEngInst->Term();
+
 		delete LvPrvEngInst;
 		LvPrvEngInst = nullptr;
 	}

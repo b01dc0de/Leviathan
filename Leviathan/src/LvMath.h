@@ -3,16 +3,6 @@
 
 namespace Leviathan
 {
-	// General math utils
-	float Clamp(float c, float a, float b);
-	int Clamp(int c, int a, int b);
-	float ClampToUnit(float c);
-
-	float Min(float a, float b);
-	float Max(float a, float b);
-	int Min(int a, int b);
-	int Max(int a, int b);
-
 	struct fVector
 	{
 		float X;
@@ -91,25 +81,45 @@ namespace Leviathan
 		fMatrix(MatrixScale Scale, float SX, float SY, float SZ);
 	};
 
-	// Common Vector operations
-	float Lerp(float a, float b, float t);
-	fVector Lerp(fVector a, fVector b, float t);
+	namespace LvMath
+	{
+		static constexpr float PI = 3.14159265359f;
 
-	float Dot(const fVector& a, const fVector& b);
-	fVector Cross(const fVector& a, const fVector& b);
-	float Proj(const fVector& a, const fVector& b);
-	float Dist(const fVector& a, const fVector& b);
-	float DistSq(const fVector& a, const fVector& b);
+		// Trig
+		float Sinf(float Rad);
+		float Cosf(float Rad);
+		float Tanf(float Rad);
 
-	fMatrix Mult(const fMatrix& a, const fMatrix& b);
-	fMatrix Mult(const fMatrix& a, const fMatrix& b, const fMatrix& c);
-	fMatrix Mult(const fMatrix& a, const fMatrix& b, const fMatrix& c, const fMatrix& d);
-	fVector Mult(const fVector& v, const fMatrix& m);
+		// General utils
+		float Clamp(float c, float a, float b);
+		int Clamp(int c, int a, int b);
+		float ClampToUnit(float c);
 
-	fVector operator*(const fVector& v, const fMatrix& m);
-	fVector& operator*=(const fVector& v, const fMatrix& m);
-	fMatrix operator*(const fMatrix& a, const fMatrix& b);
-	fMatrix& operator*=(fMatrix& a, const fMatrix& b);
+		float Min(float a, float b);
+		float Max(float a, float b);
+		int Min(int a, int b);
+		int Max(int a, int b);
+
+		// Common vector operations
+		float Lerp(float a, float b, float t);
+		fVector Lerp(fVector a, fVector b, float t);
+
+		float Dot(const fVector& a, const fVector& b);
+		fVector Cross(const fVector& a, const fVector& b);
+		float Proj(const fVector& a, const fVector& b);
+		float Dist(const fVector& a, const fVector& b);
+		float DistSq(const fVector& a, const fVector& b);
+
+		fMatrix Mult(const fMatrix& a, const fMatrix& b);
+		fMatrix Mult(const fMatrix& a, const fMatrix& b, const fMatrix& c);
+		fMatrix Mult(const fMatrix& a, const fMatrix& b, const fMatrix& c, const fMatrix& d);
+		fVector Mult(const fVector& v, const fMatrix& m);
+
+		fVector operator*(const fVector& v, const fMatrix& m);
+		fVector& operator*=(const fVector& v, const fMatrix& m);
+		fMatrix operator*(const fMatrix& a, const fMatrix& b);
+		fMatrix& operator*=(fMatrix& a, const fMatrix& b);
+	}
 
 	using Vector = fVector;
 	using V4 = fVector;
