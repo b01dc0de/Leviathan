@@ -4,43 +4,37 @@
 
 namespace Leviathan
 {
-	double LvTime::ToDouble(__int64 Timestamp)
-	{
-		return (double)(Timestamp / _Freq);
-	}
-
 	double LvTime::Delta()
 	{
-		return ToDouble(_LatestDelta);
+		return fDelta;
 	}
 
 	double LvTime::CurrTime()
 	{
-		return ToDouble(_LatestFrameTime - _EngineProcessEpoch);
+		return fCurrTime;
 	}
 
 	void LvTime::Init()
 	{
-		LARGE_INTEGER TmpFreq = {};
-		LARGE_INTEGER InitTime = {};
+		LARGE_INTEGER TmpFreq, TmpEpoch;
 		QueryPerformanceFrequency(&TmpFreq);
-		QueryPerformanceCounter(&InitTime);
+		QueryPerformanceCounter(&TmpEpoch);
 
-		_Freq = TmpFreq.QuadPart;
-		_EngineProcessEpoch = InitTime.QuadPart;
-		Assert(0 != _Freq);
+		QP_Freq = TmpFreq.QuadPart;
+		QP_Epoch = TmpEpoch.QuadPart;
 
-		_LatestFrameTime = _EngineProcessEpoch;
-		_LatestDelta = 0;
+		fCurrTime = 0.0;
+		fPrevTime = 0.0;
+		fDelta = 0.0;
 	}
 
 	void LvTime::Measure_EngineFrame()
 	{
-		LARGE_INTEGER TmpTimestamp = {};
-		QueryPerformanceCounter(&TmpTimestamp);
-		__int64 NewTime = TmpTimestamp.QuadPart;
+		LARGE_INTEGER TmpNewTime;
+		QueryPerformanceCounter(&TmpNewTime);
 
-		_LatestDelta = NewTime - _LatestFrameTime;
-		_LatestFrameTime = NewTime;
+		fPrevTime = fCurrTime;
+		fCurrTime = ((double)TmpNewTime.QuadPart - (double)QP_Epoch) / (double)QP_Freq;;
+		fDelta = fCurrTime - fPrevTime;
 	}
 }

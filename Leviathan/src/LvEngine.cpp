@@ -128,28 +128,21 @@ namespace Leviathan
 		__int64 LvEngineFrameID = 0;
 		// Lv misc perf stats:
 		double LvTimeElapsed = 0.0;
-		double LvDeltaSum = 0.0;
 		double LvAvgFrameCost = 0.0;
-		double LvAvgDelta = 0.0;
 		constexpr int EnginePrintStatFreq = 600; // Every 10 seconds (@ 60 FPS)
 		auto UpdateEngineFrameTimings = [&]()
 		{
 			EngineTime.Measure_EngineFrame();
 
 			LvTimeElapsed = EngineTime.CurrTime();
-			LvDeltaSum += EngineTime.Delta();
 			LvAvgFrameCost = LvTimeElapsed / ((double)LvEngineFrameID + 1);
-			LvAvgDelta = LvDeltaSum / ((double)LvEngineFrameID + 1);
 
 			if (LvEngineFrameID % EnginePrintStatFreq == 0)
 			{
-				// CKA_TODO: What's the conceptual difference between average delta and average frame cost?
-				// 
 				LV_DBGOUTF("Leviathan misc perf stats:\n");
 				LV_DBGOUTF("\tFrameID: %d\n", LvEngineFrameID);
-				LV_DBGOUTF("\tTime Elapsed: %F\n", LvTimeElapsed);
-				LV_DBGOUTF("\tAverage Frame Cost: %F\n", LvAvgFrameCost);
-				LV_DBGOUTF("\tAverage Delta: %F\n", LvAvgDelta);
+				LV_DBGOUTF("\tTime Elapsed (s): %.04F\n", LvTimeElapsed);
+				LV_DBGOUTF("\tAverage Frame Cost (ms): %.02F\n", LvAvgFrameCost * 1000.0);
 			}
 
 			LvEngineFrameID++;

@@ -5,14 +5,13 @@ namespace Leviathan
 {
 	struct LvTime
 	{
-		__int64 _Freq = 0;
-		__int64 _EngineProcessEpoch = 0;
+		__int64 QP_Freq;
+		__int64 QP_Epoch;
 
-		__int64 _LatestDelta = 0;
-		__int64 _LatestFrameTime = 0;
+		double fCurrTime;
+		double fPrevTime;
+		double fDelta;
 
-		double ToDouble(__int64 Timestamp);
-		double Epoch();
 		double Delta();
 		double CurrTime();
 
