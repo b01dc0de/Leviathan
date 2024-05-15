@@ -91,7 +91,6 @@
     <ClCompile Include="src\LvGraphicsUtils.cpp" />
     <ClCompile Include="src\LvMath.cpp" />
     <ClCompile Include="src\LvMesh.cpp" />
-    <ClCompile Include="src\LvPredefGraphics.cpp" />
     <ClCompile Include="src\LvTime.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -101,10 +100,10 @@
     <ClInclude Include="src\LvCommon.h" />
     <ClInclude Include="src\LvEngine.h" />
     <ClInclude Include="src\LvGraphics.h" />
+    <ClInclude Include="src\LvGraphicsTypes.h" />
     <ClInclude Include="src\LvGraphicsUtils.h" />
     <ClInclude Include="src\LvMath.h" />
     <ClInclude Include="src\LvMesh.h" />
-    <ClInclude Include="src\LvPredefGraphics.h" />
     <ClInclude Include="src\LvTime.h" />
   </ItemGroup>
   <ItemGroup>
@@ -114,6 +113,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\LvPredefGraphics.inl" />
     <None Include="src\LvUtils.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

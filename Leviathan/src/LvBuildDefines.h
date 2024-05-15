@@ -85,5 +85,6 @@
 #define LV_NOOP() (void)0
 #define LV_UNUSED_VAR(var) (void)var
 #define LV_SAFE_DEREF(ptr, member) (ptr == nullptr) ? nullptr : ptr->member // To stop MSVC from complaining
+#define LV_ARRAYSIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
 #endif // LVBUILDDEFINES_H

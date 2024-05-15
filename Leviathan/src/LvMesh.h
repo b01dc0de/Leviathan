@@ -1,63 +1,55 @@
 #ifndef LVMESH_H
 #define LVMESH_H
 
+#include "LvGraphicsTypes.h"
+
 namespace Leviathan
 {
-	struct VertexColor
+	template <typename Vx_T>
+	struct LvMeshBase
 	{
-		fVector Position;
-		fVector Color;
-	};
-
-	struct VertexUV
-	{
-		fVector Position;
-		float fU = 0.0f;
-		float fV = 0.0f;
-	};
-
-	struct TriPrim
-	{
-		unsigned int v0;
-		unsigned int v1;
-		unsigned int v2;
-	};
-
-	struct BasicMeshColor
-	{
+		using VxType = Vx_T;
 		int NumVerts = 0;
 		int NumPrims = 0;
-		VertexColor* Verts = nullptr;
-		TriPrim* Prims = nullptr;
+		VxType* VxData = nullptr;
+		PrimType* IxData = nullptr;
 
-		void Init(int InNumVerts, int InNumPrims, VertexColor* InVerts, TriPrim* InPrims);
+		unsigned int SzVxDataBytes() { return sizeof(VxType) * NumVerts; }
+		unsigned int SzIxDataBytes() { return sizeof(PrimType) * NumPrims; }
+		void Init(int InNumVs, int InNumPs, VxType* InVxData, PrimType* InIxData)
+		{
+			NumVerts = InNumVs;
+			NumPrims = InNumPs;
+			VxData = InVxData;
+			IxData = InIxData;
+		}
 
-		BasicMeshColor(int InNumVerts, int InNumPrims, VertexColor* InVerts, TriPrim* InPrims);
-		BasicMeshColor() = default;
-		~BasicMeshColor();
-		BasicMeshColor(BasicMeshColor&& rValueMesh);
-		BasicMeshColor& operator=(BasicMeshColor&& rValueMesh);
-		BasicMeshColor(const BasicMeshColor&) = delete;
-		BasicMeshColor& operator=(const BasicMeshColor&) = delete;
+		LvMeshBase(int InNumVs, int InNumPs, VxType* InVxData, PrimType* InIxData)
+		{
+			Init(InNumVs, InNumPs, InVxData, InIxData);
+		}
+		~LvMeshBase()
+		{
+			if (VxData) { delete[] VxData; VxData = nullptr; }
+			if (IxData) { delete[] IxData; IxData = nullptr; }
+		}
+		LvMeshBase& operator=(LvMeshBase&& rVMesh)
+		{
+			Init(rVMesh.NumVerts, rVMesh.NumPrims, rVMesh.VxData, rVMesh.IxData);
+			rVMesh.NumVerts = 0;
+			rVMesh.NumPrims = 0;
+			rVMesh.VxData = nullptr;
+			rVMesh.IxData = nullptr;
+			return *this;
+		}
+		LvMeshBase(LvMeshBase&& rVMesh)
+		{
+			(void)operator=(rVMesh);
+		}
 	};
 
-	struct BasicMeshUV
-	{
-		int NumVerts = 0;
-		int NumPrims = 0;
-		VertexUV* Verts = nullptr;
-		TriPrim* Prims = nullptr;
-
-		void Init(int InNumVerts, int InNumPrims, VertexUV* InVerts, TriPrim* InPrims);
-
-		BasicMeshUV(int InNumVerts, int InNumPrims, VertexUV* InVerts, TriPrim* InPrims);
-		BasicMeshUV() = default;
-		~BasicMeshUV();
-		BasicMeshUV(BasicMeshUV&& rValueMesh);
-		BasicMeshUV& operator=(BasicMeshUV&& rValueMesh);
-		BasicMeshUV(const BasicMeshUV&) = delete;
-		BasicMeshUV& operator=(const BasicMeshUV&) = delete;
-	};
+	using BasicMeshColor = LvMeshBase<VertexColor>;
+	using BasicMeshUV = LvMeshBase<VertexUV>;
 
 	BasicMeshColor* InitCube();
 	BasicMeshColor* InitTriangle();

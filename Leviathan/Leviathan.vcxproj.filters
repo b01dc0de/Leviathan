@@ -7,15 +7,15 @@
     <Filter Include="HLSL">
       <UniqueIdentifier>{6383315a-871d-44dd-ad2a-e683ce206cb7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Graphics">
+      <UniqueIdentifier>{620bf756-85f5-46ae-afff-84968a4eccd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\LvLib">
+      <UniqueIdentifier>{74fa6283-ed30-4c1c-a06e-37d9a2302575}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Leviathan.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\LvGraphics.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\LvCommon.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\LvMath.cpp">
@@ -33,21 +33,18 @@
     <ClCompile Include="src\LvTime.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\LvGraphicsUtils.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="src\LvGraphics.cpp">
+      <Filter>src\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="src\LvPredefGraphics.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="src\LvGraphicsUtils.cpp">
+      <Filter>src\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LvCommon.cpp">
+      <Filter>src\LvLib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\LvGraphics.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\LvCommon.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\LvMath.h">
@@ -65,14 +62,20 @@
     <ClInclude Include="src\LvTime.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\LvBuildDefines.h">
-      <Filter>src</Filter>
+    <ClInclude Include="src\LvGraphics.h">
+      <Filter>src\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LvGraphicsTypes.h">
+      <Filter>src\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="src\LvGraphicsUtils.h">
-      <Filter>src</Filter>
+      <Filter>src\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="src\LvPredefGraphics.h">
-      <Filter>src</Filter>
+    <ClInclude Include="src\LvBuildDefines.h">
+      <Filter>src\LvLib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LvCommon.h">
+      <Filter>src\LvLib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -81,8 +84,11 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\LvPredefGraphics.inl">
+      <Filter>src\Graphics</Filter>
+    </None>
     <None Include="src\LvUtils.inl">
-      <Filter>src</Filter>
+      <Filter>src\LvLib</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -4,93 +4,6 @@
 
 namespace Leviathan
 {
-	void BasicMeshColor::Init(int InNumVerts, int InNumPrims, VertexColor* InVerts, TriPrim* InPrims)
-	{
-		NumVerts = InNumVerts;
-		NumPrims = InNumPrims;
-		Verts = InVerts;
-		Prims = InPrims;
-	}
-
-	BasicMeshColor::BasicMeshColor(int InNumVerts, int InNumPrims, VertexColor* InVerts, TriPrim* InPrims)
-	{
-		Init(InNumVerts, InNumPrims, InVerts, InPrims);
-	}
-
-	BasicMeshColor::~BasicMeshColor()
-	{
-		if (Verts) { delete[] Verts; Verts = nullptr; }
-		if (Prims) { delete[] Prims; Prims = nullptr; }
-	}
-
-	BasicMeshColor::BasicMeshColor(BasicMeshColor&& rValueMesh)
-		: NumVerts(rValueMesh.NumVerts)
-		, NumPrims(rValueMesh.NumPrims)
-		, Verts(rValueMesh.Verts)
-		, Prims(rValueMesh.Prims)
-	{
-		rValueMesh.Verts = nullptr;
-		rValueMesh.Prims = nullptr;
-	}
-
-	BasicMeshColor& BasicMeshColor::operator=(BasicMeshColor&& rValueMesh)
-	{
-		NumVerts = rValueMesh.NumVerts;
-		NumPrims = rValueMesh.NumPrims;
-		Verts = rValueMesh.Verts;
-		Prims = rValueMesh.Prims;
-
-		rValueMesh.NumVerts = 0;
-		rValueMesh.NumPrims = 0;
-		rValueMesh.Verts = nullptr;
-		rValueMesh.Prims = nullptr;
-		return *this;
-	}
-
-	void BasicMeshUV::Init(int InNumVerts, int InNumPrims, VertexUV* InVerts, TriPrim* InPrims)
-	{
-		NumVerts = InNumVerts;
-		NumPrims = InNumPrims;
-		Verts = InVerts;
-		Prims = InPrims;
-	}
-
-	BasicMeshUV::BasicMeshUV(int InNumVerts, int InNumPrims, VertexUV* InVerts, TriPrim* InPrims)
-	{
-		Init(InNumVerts, InNumPrims, InVerts, InPrims);
-	}
-
-	BasicMeshUV::~BasicMeshUV()
-	{
-		if (Verts) { delete[] Verts; Verts = nullptr; }
-		if (Prims) { delete[] Prims; Prims = nullptr; }
-	}
-
-	BasicMeshUV::BasicMeshUV(BasicMeshUV&& rValueMesh)
-		: NumVerts(rValueMesh.NumVerts)
-		, NumPrims(rValueMesh.NumPrims)
-		, Verts(rValueMesh.Verts)
-		, Prims(rValueMesh.Prims)
-	{
-		rValueMesh.Verts = nullptr;
-		rValueMesh.Prims = nullptr;
-
-	}
-
-	BasicMeshUV& BasicMeshUV::operator=(BasicMeshUV&& rValueMesh)
-	{
-		NumVerts = rValueMesh.NumVerts;
-		NumPrims = rValueMesh.NumPrims;
-		Verts = rValueMesh.Verts;
-		Prims = rValueMesh.Prims;
-
-		rValueMesh.NumVerts = 0;
-		rValueMesh.NumPrims = 0;
-		rValueMesh.Verts = nullptr;
-		rValueMesh.Prims = nullptr;
-		return *this;
-	}
-
 	const fVector ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
 	const fVector ColorBlue{ 0.0f, 0.0f, 1.0f, 1.0f };
 	const fVector ColorGreen{ 0.0f, 1.0f, 0.0f, 1.0f };
@@ -101,17 +14,15 @@ namespace Leviathan
 		int NumVerts = 24;
 		int NumPrims = 12;
 		VertexColor* Verts = new VertexColor[(size_t)NumVerts];
-		TriPrim * Prims = new TriPrim[(size_t)NumPrims];
+		PrimType* Prims = new PrimType[(size_t)NumPrims];
 
-		using uint = unsigned int;
-
-		uint vStride = 4;
-		uint tStride = 2;
+		IxType vStride = 4;
+		IxType tStride = 2;
 
 		// Setting up per-face
 		// Forward
-		uint vIdx = 0;
-		uint tIdx = 0;
+		IxType vIdx = 0;
+		IxType tIdx = 0;
 		Verts[vIdx + 0] = { Vector{ 0.5f, 0.5f, 0.5f }, ColorWhite };
 		Verts[vIdx + 1] = { Vector{ -0.5f, 0.5f, 0.5f }, ColorBlue };
 		Verts[vIdx + 2] = { Vector{ -0.5f, -0.5f, 0.5f }, ColorGreen };
@@ -177,7 +88,7 @@ namespace Leviathan
 		int NumVerts = 3;
 		int NumPrims = 1;
 		VertexColor* Verts = new VertexColor[(size_t)NumVerts];
-		TriPrim * Prims = new TriPrim[(size_t)NumPrims];
+		PrimType* Prims = new PrimType[(size_t)NumPrims];
 
 		Verts[0] = {fVector{0.0f, 0.5f, 0.5f}, ColorRed};
 		Verts[1] = {fVector{0.5f, -0.5f, 0.5f}, ColorBlue};
@@ -192,7 +103,7 @@ namespace Leviathan
 		int NumVerts = 4;
 		int NumPrims = 2;
 		VertexUV* Verts = new VertexUV[(size_t)NumVerts];
-		TriPrim * Prims = new TriPrim[(size_t)NumPrims];
+		PrimType* Prims = new PrimType[(size_t)NumPrims];
 
 		/*
 			CKA_NOTE:
