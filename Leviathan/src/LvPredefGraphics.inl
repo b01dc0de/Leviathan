@@ -1,4 +1,4 @@
-#ifdef LVPREDEFGRAPHICS_INL
+#if defined(LVPREDEFGRAPHICS_INL) || !defined(LVGRAPHICS_H)
 	#error "Should only be included (once) in LvGraphics.cpp"
 #else
 #define LVPREDEFGRAPHICS_INL
@@ -121,6 +121,7 @@ namespace Leviathan
 			if (bEnableRGBAEdges)
 			{
 				constexpr int CellPxSize = CellSize * CellSize;
+
 				constexpr int RedCellStartPx = 0;
 				constexpr int GreenCellStartPx = MaxCell * CellSize;
 				constexpr int BlueCellStartPx = NumCells * MaxCell * CellSize;
@@ -173,5 +174,69 @@ namespace Leviathan
 		DefaultTextureSamplerDesc.MaxLOD = 0;
 		DXCHECK(DXDevice->CreateSamplerState(&DefaultTextureSamplerDesc, &FallbackSamplerState));
 	}
+
+	template <typename VxType>
+	struct LvDrawState
+	{
+		ID3D11InputLayout* InputDataFormat = nullptr;
+		ID3D11VertexShader* VertexShader = nullptr;
+		ID3D11PixelShader* PixelShader = nullptr;
+		ID3D11Buffer* VertexBuffer = nullptr;
+		ID3D11Buffer* IndexBuffer = nullptr;
+		ID3D11Buffer* WorldBuffer = nullptr;
+		ID3D11Buffer* ViewProjBuffer = nullptr;
+		ID3D11ShaderResourceView* OptFallbackTextureSRV = nullptr;
+		ID3D11SamplerState* OptFallbackSampler = nullptr;
+
+
+		void Draw(ID3D11DeviceContext* InDeviceContext, int NumPrims, const Matrix* pWorld = nullptr, const Matrix* pViewProj = nullptr)
+		{
+			Assert(InDeviceContext);
+			UINT Stride = sizeof(VxType);
+			UINT Offset = 0;
+			InDeviceContext->IASetPrimitiveTopology(LvDefault_Topology);
+			InDeviceContext->IASetInputLayout(InputDataFormat);
+			InDeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &Offset);
+			InDeviceContext->IASetIndexBuffer(IndexBuffer, LvDefault_IndexFormat, 0);
+
+			InDeviceContext->VSSetShader(VertexShader, nullptr, 0);
+			InDeviceContext->PSSetShader(PixelShader, nullptr, 0);
+			if (OptFallbackTextureSRV) { InDeviceContext->PSSetShaderResources(0, 1, &OptFallbackTextureSRV); }
+			if (OptFallbackSampler) { InDeviceContext->PSSetSamplers(0, 1, &OptFallbackSampler); }
+
+			InDeviceContext->VSSetConstantBuffers(LvDefault_WorldCBufferIdx, 1, &WorldBuffer);
+			InDeviceContext->VSSetConstantBuffers(LvDefault_ViewProjCBufferIdx, 1, &ViewProjBuffer);
+
+			if (pWorld) { InDeviceContext->UpdateSubresource(WorldBuffer, 0, nullptr, pWorld, sizeof(Matrix), 0); }
+			if (pViewProj) { InDeviceContext->UpdateSubresource(ViewProjBuffer, 0, nullptr, pViewProj, sizeof(Matrix) * 2, 0); }
+
+			InDeviceContext->DrawIndexed(NumPrims * 3, 0u, 0u);
+		}
+
+		void Init
+		(
+			ID3D11InputLayout* InIAFmt,
+			ID3D11VertexShader* InVS,
+			ID3D11PixelShader* InPS,
+			ID3D11Buffer* InVxBuffer,
+			ID3D11Buffer* InIxBuffer,
+			ID3D11Buffer* InWCbuffer,
+			ID3D11Buffer* InVPCbuffer,
+			ID3D11ShaderResourceView* InOptFallbackTextureSRV = nullptr,
+			ID3D11SamplerState* InOptFallbackSampler = nullptr
+		)
+		{
+			InputDataFormat = InIAFmt;
+			VertexShader = InVS;
+			PixelShader = InPS;
+			VertexBuffer = InVxBuffer;
+			IndexBuffer = InIxBuffer;
+			WorldBuffer = InWCbuffer;
+			ViewProjBuffer = InVPCbuffer;
+			OptFallbackTextureSRV = InOptFallbackTextureSRV;
+			OptFallbackSampler = InOptFallbackSampler;
+		}
+	};
+
 }
 #endif // LVPREDEFGRAPHICS_INL

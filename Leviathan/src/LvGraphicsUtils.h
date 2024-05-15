@@ -34,6 +34,28 @@ namespace Leviathan
 
 		D3D11_BUFFER_DESC GetDefaultBufferDesc(unsigned int SizeBytes);
 		void CreateWVPBuffers(ID3D11Device* DXDevice, ID3D11Buffer** Out_WBuffer, ID3D11Buffer** Out_VPBuffer);
+		void CreateDefaultSwapChainRenderTarget
+		(
+			ID3D11Device* DXDevice,
+			HWND WindowHandle,
+			IDXGISwapChain1** Out_SwapChain1,
+			ID3D11Texture2D** Out_BackBuffer,
+			ID3D11Texture2D** Out_RenderTargetTexture,
+			ID3D11RenderTargetView** Out_RenderTargetView
+		);
+		void CreateDefaultDepthStencilState
+		(
+			ID3D11Device* DXDevice,
+			ID3D11DepthStencilState** Out_DepthStencilState,
+			ID3D11Texture2D** Out_DepthStencilTexture,
+			ID3D11DepthStencilView** Out_DepthStencilView
+		);
+		void CreateDefaultRasterizerBlendState
+		(
+			ID3D11Device* DXDevice,
+			ID3D11RasterizerState** Out_RasterizerState,
+			ID3D11BlendState** Out_BlendState
+		);
 		void ReportLiveObjects(ID3D11Device* DXDevice);
 
 		int CompileShader(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob, const D3D_SHADER_MACRO* pOptDefines = nullptr);

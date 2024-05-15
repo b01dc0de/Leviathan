@@ -16,6 +16,7 @@ namespace Leviathan
 
 		unsigned int SzVxDataBytes() { return sizeof(VxType) * NumVerts; }
 		unsigned int SzIxDataBytes() { return sizeof(PrimType) * NumPrims; }
+		unsigned int NumIx() { return NumPrims * 3; }
 		void Init(int InNumVs, int InNumPs, VxType* InVxData, PrimType* InIxData)
 		{
 			NumVerts = InNumVs;
