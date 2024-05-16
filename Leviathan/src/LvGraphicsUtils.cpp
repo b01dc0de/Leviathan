@@ -28,7 +28,7 @@ namespace Leviathan
 		void OwnedDxRefs::ReleaseList()
 		{
 			// CKA_NOTE: Release in reverse allocation order
-			for (int RefIdx = DxRefsList.NumItems - 1; RefIdx >= 0; RefIdx--)
+			for (u64 RefIdx = DxRefsList.NumItems - 1; RefIdx >= 0; RefIdx--)
 			{
 				DXSAFERELEASE(DxRefsList[RefIdx]);
 			}
