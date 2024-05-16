@@ -87,6 +87,7 @@
     <ClCompile Include="src\LvCamera.cpp" />
     <ClCompile Include="src\LvCommon.cpp" />
     <ClCompile Include="src\LvEngine.cpp" />
+    <ClCompile Include="src\LvGameSandbox.cpp" />
     <ClCompile Include="src\LvGraphics.cpp" />
     <ClCompile Include="src\LvGraphicsUtils.cpp" />
     <ClCompile Include="src\LvMath.cpp" />
@@ -99,12 +100,14 @@
     <ClInclude Include="src\LvCamera.h" />
     <ClInclude Include="src\LvCommon.h" />
     <ClInclude Include="src\LvEngine.h" />
+    <ClInclude Include="src\LvGameSandbox.h" />
     <ClInclude Include="src\LvGraphics.h" />
     <ClInclude Include="src\LvGraphicsTypes.h" />
     <ClInclude Include="src\LvGraphicsUtils.h" />
     <ClInclude Include="src\LvMath.h" />
     <ClInclude Include="src\LvMesh.h" />
     <ClInclude Include="src\LvTime.h" />
+    <ClInclude Include="src\LvTypes.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\HLSL\BasicShader.hlsl">

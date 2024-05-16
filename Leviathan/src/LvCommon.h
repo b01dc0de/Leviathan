@@ -1,6 +1,8 @@
 #ifndef LVCOMMON_H
 #define LVCOMMON_H
 
+// LV COMMON TYPES
+#include "LvTypes.h"
 // LV MACRO DEFINITIONS
 #include "LvBuildDefines.h"
 

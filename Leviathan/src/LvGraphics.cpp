@@ -15,8 +15,6 @@ namespace Leviathan
 	{
 		LvPredefGraphics PredefGFX;
 
-		LvArray<IUnknown*> DX_ObjRefs;
-
 		LvDrawState<VertexColor> VxColorCube_DrawState;
 		LvDrawState<VertexUV> VxUVRect_DrawState;
 
@@ -56,6 +54,8 @@ namespace Leviathan
 		BasicMeshColor* pMeshTriangle = nullptr;
 		BasicMeshUV* pMeshRect = nullptr;
 
+		u64 RenderFrameID = 0;
+
 		static LvGraphicsInstance* PvInst;
 		static LvGraphicsInstance* Inst()
 		{
@@ -70,6 +70,8 @@ namespace Leviathan
 
 		void PvInit();
 		void PvUpdateAndDraw();
+		void PvBeginDraw();
+		void PvEndDraw();
 	};
 
 	LvGraphicsInstance* LvGraphicsInstance::PvInst = nullptr;
@@ -166,11 +168,6 @@ namespace Leviathan
 
 	void LvGraphicsInstance::PvInit()
 	{
-		auto AddDXRef = [&](IUnknown* DXPtr) -> void
-		{
-			DX_ObjRefs.AddItem(DXPtr);
-		};
-
 		UINT CreateDeviceFlags = 0;
 	#if LV_CONFIG_DEBUG()
 		CreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -224,17 +221,6 @@ namespace Leviathan
 		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
 		DX_ImmediateContext->RSSetState(DX_RasterizerState);
 		DX_ImmediateContext->RSSetViewports(1, &Viewport_Desc);
-
-		AddDXRef(DX_Device);
-		AddDXRef(DX_SwapChain1);
-		AddDXRef(DX_BackBuffer);
-		AddDXRef(DX_RenderTargetTexture);
-		AddDXRef(DX_RenderTargetView);
-		AddDXRef(DX_DepthStencilState);
-		AddDXRef(DX_DepthStencilTexture);
-		AddDXRef(DX_DepthStencilView);
-		AddDXRef(DX_RasterizerState);
-		AddDXRef(DX_BlendState);
 
 		pMeshCube = InitCube();
 		pMeshTriangle = InitTriangle();
@@ -306,29 +292,37 @@ namespace Leviathan
 			PredefGFX.FallbackSamplerState
 		);
 
+		RenderFrameID = 0;
+
 	#if LV_CONFIG_DEBUG()
-		DXDBG_SETDBGNAMEHELPER(DX_Device);
-		DXDBG_SETDBGNAMEHELPER(DX_ImmediateContext);
-		DXDBG_SETDBGNAMEHELPER(DX_SwapChain1);
-		DXDBG_SETDBGNAMEHELPER(DX_BackBuffer);
-		DXDBG_SETDBGNAMEHELPER(DX_RenderTargetTexture);
-		DXDBG_SETDBGNAMEHELPER(DX_RenderTargetView);
-		DXDBG_SETDBGNAMEHELPER(DX_DepthStencilState);
-		DXDBG_SETDBGNAMEHELPER(DX_DepthStencilTexture);
-		DXDBG_SETDBGNAMEHELPER(DX_DepthStencilView);
-		DXDBG_SETDBGNAMEHELPER(DX_RasterizerState);
-		DXDBG_SETDBGNAMEHELPER(DX_BlendState);
-		DXDBG_SETDBGNAMEHELPER(DX_VSColor);
-		DXDBG_SETDBGNAMEHELPER(DX_PSColor);
-		DXDBG_SETDBGNAMEHELPER(DX_InputLayoutColor);
-		DXDBG_SETDBGNAMEHELPER(DX_CubeVertexBuffer);
-		DXDBG_SETDBGNAMEHELPER(DX_CubeIndexBuffer);
-		DXDBG_SETDBGNAMEHELPER(DX_WorldBuffer);
-		DXDBG_SETDBGNAMEHELPER(DX_ViewProjBuffer);
-		//DXDBG_SETDBGNAMEHELPER(DX_DefaultTexture);
-		//DXDBG_SETDBGNAMEHELPER(DX_DefaultTexture_SRV);
-		//DXDBG_SETDBGNAMEHELPER(DX_DefaultSamplerState);
-	#endif // LV_DEBUG
+		{
+			// Only here to avoid syntax errors from SETDBGNAMEHELPER
+			ID3D11Texture2D* PredefGFX_FallbackTexture = PredefGFX.FallbackTexture;
+			ID3D11ShaderResourceView* PredefGFX_FallbackTexture_SRV = PredefGFX.FallbackTexture_SRV;
+			ID3D11SamplerState* PredefGFX_FallbackSamplerState = PredefGFX.FallbackSamplerState;
+			DXDBG_SETDBGNAMEHELPER(DX_Device);
+			DXDBG_SETDBGNAMEHELPER(DX_ImmediateContext);
+			DXDBG_SETDBGNAMEHELPER(DX_SwapChain1);
+			DXDBG_SETDBGNAMEHELPER(DX_BackBuffer);
+			DXDBG_SETDBGNAMEHELPER(DX_RenderTargetTexture);
+			DXDBG_SETDBGNAMEHELPER(DX_RenderTargetView);
+			DXDBG_SETDBGNAMEHELPER(DX_DepthStencilState);
+			DXDBG_SETDBGNAMEHELPER(DX_DepthStencilTexture);
+			DXDBG_SETDBGNAMEHELPER(DX_DepthStencilView);
+			DXDBG_SETDBGNAMEHELPER(DX_RasterizerState);
+			DXDBG_SETDBGNAMEHELPER(DX_BlendState);
+			DXDBG_SETDBGNAMEHELPER(DX_VSColor);
+			DXDBG_SETDBGNAMEHELPER(DX_PSColor);
+			DXDBG_SETDBGNAMEHELPER(DX_InputLayoutColor);
+			DXDBG_SETDBGNAMEHELPER(DX_CubeVertexBuffer);
+			DXDBG_SETDBGNAMEHELPER(DX_CubeIndexBuffer);
+			DXDBG_SETDBGNAMEHELPER(DX_WorldBuffer);
+			DXDBG_SETDBGNAMEHELPER(DX_ViewProjBuffer);
+			DXDBG_SETDBGNAMEHELPER(PredefGFX_FallbackTexture);
+			DXDBG_SETDBGNAMEHELPER(PredefGFX_FallbackTexture_SRV);
+			DXDBG_SETDBGNAMEHELPER(PredefGFX_FallbackSamplerState);
+		}
+	#endif // LV_CONFIG_DEBUG
 	}
 
 	const fVector WorldPos(10.0f, 10.0f, -10.0f);
@@ -338,13 +332,14 @@ namespace Leviathan
 	LvCameraOrthographic Cam2D;
 
 	constexpr float FrameStep = 0.0166666666666667f;
-	constexpr float fPI = 3.14159265359f;
+
+	// NOTE: Do not plan to use this yet but likely will be good for future sanity checks
+	static bool PvInsideDraw = false;
 
 	void LvGraphicsInstance::PvUpdateAndDraw()
 	{
-		static int RenderIdx = 0;
-		float FakeTime = FrameStep * RenderIdx++;
-		float CurrRad = FakeTime * fPI * 2.0f;
+		float FakeTime = FrameStep * RenderFrameID++;
+		float CurrRad = FakeTime * LvMath::fPI * 2.0f;
 
 		// Update Cam3D's world position
 		{
@@ -357,14 +352,7 @@ namespace Leviathan
 			Cam3D.Orient(CurrCamPos, LookAt, AbsUp);
 		}
 
-		// CKA_NOTE:
-		//	- This call is now necessary every time after calling SwapChain::Present
-		//	- Necessary when using DXGI flip model
-		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
-		DX_ImmediateContext->OMSetDepthStencilState(DX_DepthStencilState, 0);
-
-		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, LvDefault_ClearColor);
-		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+		PvBeginDraw();
 
 		{
 			fMatrix World(SCALE, 7.5f);
@@ -387,9 +375,33 @@ namespace Leviathan
 			VxUVRect_DrawState.Draw(DX_ImmediateContext, pMeshRect->NumPrims, &World, &Cam2D.CamTrans.View);
 		}
 
+		PvEndDraw();
+	}
+
+	void LvGraphicsInstance::PvBeginDraw()
+	{
+		Assert(!PvInsideDraw);
+		// CKA_NOTE:
+		//	- This call is now necessary every time after calling SwapChain::Present
+		//	- Necessary when using DXGI flip model
+		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
+		DX_ImmediateContext->OMSetDepthStencilState(DX_DepthStencilState, 0);
+
+		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, LvDefault_ClearColor);
+		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+		PvInsideDraw = true;
+	}
+
+	void LvGraphicsInstance::PvEndDraw()
+	{
+		Assert(PvInsideDraw);
+
 		DX_ImmediateContext->ResolveSubresource(DX_BackBuffer, 0, DX_RenderTargetTexture, 0, LvDefault_RenderTargetFormat);
 		const DXGI_PRESENT_PARAMETERS PresentParams = {};
 		DX_SwapChain1->Present1(0, DXGI_PRESENT_ALLOW_TEARING, &PresentParams);
+
+		PvInsideDraw = false;
 	}
 
 	namespace LvGraphics
@@ -397,7 +409,6 @@ namespace Leviathan
 		void Init()
 		{
 			LV_DBGTRACESCOPE();
-
 			LvGraphicsInstance::Inst()->PvInit();
 		}
 

@@ -75,6 +75,11 @@ namespace Leviathan
 		SzType NumItems = 0;
 		SzType Capacity = 0;
 
+		// CKA_NOTE: This does NOT delete any items, only resets NumItems to 0
+		void Empty()
+		{
+			NumItems = 0;
+		}
 		void AddItem(const T& NewItem)
 		{
 			if (!(NumItems + 1 <= Capacity))

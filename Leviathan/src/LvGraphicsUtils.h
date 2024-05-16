@@ -11,25 +11,35 @@ namespace Leviathan
 
 	namespace LvGraphicsUtils
 	{
-		template <typename T>
-		struct DXHandle
+		struct OwnedDxRefs
 		{
-			T* Ptr = nullptr;
+			static ID3D11Device* DxDeviceRef;
+			static LvArray<IUnknown*> DxRefsList;
+
+			static void Add(IUnknown* NewRef);
+			static void ReleaseList();
+			static void ReleaseDevice();
+		};
+
+		template <typename DxType>
+		struct DxHandle
+		{
+			DxType* Ptr = nullptr;
+
+			operator DxType*() { return Ptr; }
+			DxType* operator ->() { return Ptr; }
+			DxType* operator *() { return Ptr; }
+			DxType** operator &() { return &Ptr; }
 
 			void SafeRelease() { DXSAFERELEASE(Ptr); }
-			DXHandle(T* InPtr) : Ptr(InPtr) {}
-			~DXHandle()
+			DxHandle(DxType* InPtr) : Ptr(InPtr) { if (nullptr != Ptr) OwnedDxRefs::Add(Ptr); }
+			~DxHandle()
 			{ 
-				// CKA_TODO: We don't want to SafeRelase here so we can control our COM references
+				// CKA_NOTE: We don't want to SafeRelase here so we can have full control of our COM references
 				// - Instead for now just assert that the handle has been cleared
 				Assert(nullptr == Ptr);
 				//SafeRelease();
 			}
-
-			operator T*() { return Ptr; }
-			T* operator ->() { return Ptr; }
-			T* operator *() { return Ptr; }
-			T** operator &() { return &Ptr; }
 		};
 
 		D3D11_BUFFER_DESC GetDefaultBufferDesc(unsigned int SizeBytes);
@@ -143,7 +153,7 @@ namespace Leviathan
 	}
 
 	template <typename T>
-	using DXHandle = LvGraphicsUtils::DXHandle<T>;
+	using DXHandle = LvGraphicsUtils::DxHandle<T>;
 }
 
 #endif // LVGRAPHICSUTILS_H

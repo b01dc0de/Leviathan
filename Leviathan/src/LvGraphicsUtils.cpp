@@ -7,6 +7,40 @@ namespace Leviathan
 {
 	namespace LvGraphicsUtils
 	{
+		ID3D11Device* OwnedDxRefs::DxDeviceRef = nullptr;
+		LvArray<IUnknown*> OwnedDxRefs::DxRefsList{};
+
+		void OwnedDxRefs::Add(IUnknown* NewRef)
+		{
+			if (nullptr == DxDeviceRef)
+			{
+				Assert(0 == DxRefsList.NumItems);
+				DxDeviceRef = (ID3D11Device*)NewRef;
+				// Downcast for now
+				// CKA_TODO: Is there a better way to verify that this first ref is actually a DXDevice
+			}
+			else
+			{
+				DxRefsList.AddItem(NewRef);
+			}
+		}
+
+		void OwnedDxRefs::ReleaseList()
+		{
+			// CKA_NOTE: Release in reverse allocation order
+			for (int RefIdx = DxRefsList.NumItems - 1; RefIdx >= 0; RefIdx--)
+			{
+				DXSAFERELEASE(DxRefsList[RefIdx]);
+			}
+			DxRefsList.Empty();
+		}
+
+		void OwnedDxRefs::ReleaseDevice()
+		{
+			Assert(0 == DxRefsList.NumItems && nullptr != DxDeviceRef);
+			DXSAFERELEASE(DxDeviceRef);
+		}
+
 		D3D11_BUFFER_DESC GetDefaultBufferDesc(unsigned int SizeBytes)
 		{
 			const D3D11_BUFFER_DESC DefaultBufferDesc = 
@@ -219,7 +253,7 @@ namespace Leviathan
 		void ReportLiveObjects(ID3D11Device* DXDevice)
 		{
 		#if LV_CONFIG_DEBUG()
-			DXHandle<ID3D11Debug> DX_Debug = nullptr;
+			DxHandle<ID3D11Debug> DX_Debug = nullptr;
 			DXCHECK(DXDevice->QueryInterface(IID_PPV_ARGS(&DX_Debug)));
 			DX_Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL|D3D11_RLDO_IGNORE_INTERNAL);
 			DX_Debug.SafeRelease();

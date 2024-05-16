@@ -35,7 +35,7 @@ namespace Leviathan
 
 #if LV_PLATFORM_WINDOWS()
 int WINAPI WinMain(HINSTANCE Inst, HINSTANCE PrevInst, PSTR CmdLine, int CmdShow)
-#elif LV_PLATFORM_LINUX()
+#else // LV_PLATFORM_LINUX()
 int main(int argc, const char* argv[])
 #endif // LV_PLATFORM
 {

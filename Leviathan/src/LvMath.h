@@ -83,7 +83,7 @@ namespace Leviathan
 
 	namespace LvMath
 	{
-		static constexpr float PI = 3.14159265359f;
+		static constexpr float fPI = 3.14159265359f;
 
 		// Trig
 		float Sinf(float Rad);
