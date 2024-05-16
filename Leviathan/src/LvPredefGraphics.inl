@@ -22,6 +22,20 @@ namespace Leviathan
 
 		static constexpr DXGI_FORMAT LvDefault_TextureFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
 
+		static constexpr D3D11_RASTERIZER_DESC WireframeRasterDesc =
+		{
+			D3D11_FILL_WIREFRAME, //D3D11_FILL_MODE FillMode,
+			D3D11_CULL_NONE, //D3D11_CULL_MODE CullMode,
+			TRUE, //BOOL FrontCounterClockwise,
+			0, //INT DepthBias,
+			0.0f, //FLOAT DepthBiasClamp,
+			0.0f,//FLOAT SlopeScaledDepthBias;
+			TRUE,//BOOL DepthClipEnable,
+			FALSE,//BOOL ScissorEnable,
+			TRUE,//BOOL MultisampleEnable,
+			TRUE//BOOL AntialiasedLineEnable
+		};
+
 		static constexpr D3D_SHADER_MACRO ColorShader_Defines[] =
 		{
 			"ENABLE_WVP_TRANSFORM", "1",
@@ -111,31 +125,28 @@ namespace Leviathan
 				for (int ColIdx = 0; ColIdx < Size; ColIdx++)
 				{
 					int CellCol = ColIdx / CellSize;
-
 					bool bEvenCell = ((CellRow + CellCol) % 2 == 0);
-					DefaultTextureData[(RowIdx * Size) + ColIdx] = bEvenCell ? Pink : Black;
-				}
-			}
 
-			constexpr bool bEnableRGBAEdges = true;
-			if (bEnableRGBAEdges)
-			{
-				constexpr int CellPxSize = CellSize * CellSize;
-
-				constexpr int RedCellStartPx = 0;
-				constexpr int GreenCellStartPx = MaxCell * CellSize;
-				constexpr int BlueCellStartPx = NumCells * MaxCell * CellSize;
-				constexpr int WhiteCellStartPx = (NumCells * MaxCell + MaxCell) * CellSize;
-				for (int CellPxIdx = 0; CellPxIdx < CellPxSize; CellPxIdx++)
-				{
-					int CellPxRow = CellPxIdx / CellSize;
-					int CellPxCol = CellPxIdx % CellSize;
-					int CellPxOffset = CellPxRow * Size + CellPxCol;
-
-					DefaultTextureData[RedCellStartPx + CellPxOffset] = Red;
-					DefaultTextureData[GreenCellStartPx + CellPxOffset] = Green;
-					DefaultTextureData[BlueCellStartPx + CellPxOffset] = Blue;
-					DefaultTextureData[WhiteCellStartPx + CellPxOffset] = White;
+					if (CellRow == 0 && CellCol == 0)
+					{
+						DefaultTextureData[(RowIdx * Size) + ColIdx] = Red;
+					}
+					else if (CellRow == 0 && CellCol == MaxCell)
+					{
+						DefaultTextureData[(RowIdx * Size) + ColIdx] = Green;
+					}
+					else if (CellRow == MaxCell && CellCol == 0)
+					{
+						DefaultTextureData[(RowIdx * Size) + ColIdx] = Blue;
+					}
+					else if (CellRow == MaxCell && CellCol == MaxCell)
+					{
+						DefaultTextureData[(RowIdx * Size) + ColIdx] = White;
+					}
+					else
+					{
+						DefaultTextureData[(RowIdx * Size) + ColIdx] = bEvenCell ? Pink : Black;
+					}
 				}
 			}
 		}

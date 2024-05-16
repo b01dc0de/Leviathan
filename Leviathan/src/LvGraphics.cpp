@@ -1,8 +1,6 @@
 #include "LvCommon.h"
 
 #include "LvGraphics.h"
-#include "LvGraphicsTypes.h"
-#include "LvGraphicsUtils.h"
 #include "LvEngine.h"
 #include "LvMesh.h"
 #include "LvCamera.h"
@@ -112,7 +110,7 @@ namespace Leviathan
 		delete pMeshRect;
 
 		// Release resources in (generally) reverse init order
-		/*
+
 		DX_WorldBuffer.SafeRelease();
 		DX_ViewProjBuffer.SafeRelease();
 
@@ -142,7 +140,6 @@ namespace Leviathan
 		DX_ImmediateContext->ClearState();
 		DX_ImmediateContext->Flush();
 		DX_ImmediateContext.SafeRelease();
-		*/
 
 	#if LV_CONFIG_DEBUG()
 		LvGraphicsUtils::ReportLiveObjects(DX_Device);

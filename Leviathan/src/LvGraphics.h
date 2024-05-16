@@ -9,6 +9,9 @@
 #include <dxgi1_2.h>
 #include <dxgidebug.h>
 
+#include "LvGraphicsTypes.h"
+#include "LvGraphicsUtils.h"
+
 namespace Leviathan
 {
 	namespace LvGraphics

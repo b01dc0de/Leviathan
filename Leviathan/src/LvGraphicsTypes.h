@@ -1,8 +1,6 @@
 #ifndef LVGRAPHICSTYPES_H
 #define LVGRAPHICSTYPES_H
 
-#include "LvGraphics.h"
-
 namespace Leviathan
 {
 	struct VertexColor

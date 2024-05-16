@@ -1,7 +1,7 @@
 #ifndef LVMESH_H
 #define LVMESH_H
 
-#include "LvGraphicsTypes.h"
+#include "LvGraphics.h"
 
 namespace Leviathan
 {

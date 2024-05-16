@@ -1,7 +1,6 @@
 #ifndef LVGRAPHICSUTILS_H
 #define LVGRAPHICSUTILS_H
 
-#include "LvGraphicsTypes.h"
 #include "LvGraphics.h"
 
 namespace Leviathan
@@ -11,16 +10,6 @@ namespace Leviathan
 
 	namespace LvGraphicsUtils
 	{
-		struct OwnedDxRefs
-		{
-			static ID3D11Device* DxDeviceRef;
-			static LvArray<IUnknown*> DxRefsList;
-
-			static void Add(IUnknown* NewRef);
-			static void ReleaseList();
-			static void ReleaseDevice();
-		};
-
 		template <typename DxType>
 		struct DxHandle
 		{
@@ -32,7 +21,7 @@ namespace Leviathan
 			DxType** operator &() { return &Ptr; }
 
 			void SafeRelease() { DXSAFERELEASE(Ptr); }
-			DxHandle(DxType* InPtr) : Ptr(InPtr) { if (nullptr != Ptr) OwnedDxRefs::Add(Ptr); }
+			DxHandle(DxType* InPtr) : Ptr(InPtr) { }
 			~DxHandle()
 			{ 
 				// CKA_NOTE: We don't want to SafeRelase here so we can have full control of our COM references
