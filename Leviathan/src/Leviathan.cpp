@@ -17,11 +17,17 @@ namespace Leviathan
 			{
 				Leviathan::bLvRunning = false;
 			} break;
+			case WM_LBUTTONUP:
 			case WM_LBUTTONDOWN:
 			case WM_RBUTTONDOWN:
+			case WM_RBUTTONUP:
 			case WM_KEYDOWN:
+			case WM_KEYUP:
 			{
 				Leviathan::bLvRunning = false;
+			} break;
+			case WM_INPUT:
+			{
 			} break;
 			default:
 			{

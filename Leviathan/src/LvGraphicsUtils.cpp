@@ -178,13 +178,13 @@ namespace Leviathan
 		void CreateDefaultRasterizerBlendState
 		(
 			ID3D11Device* DXDevice,
-			ID3D11RasterizerState** Out_RasterizerState,
-			ID3D11BlendState** Out_BlendState
+			ID3D11RasterizerState** Out_DefaultRasterizerState,
+			ID3D11BlendState** Out_DefaultBlendState
 		)
 		{
 			Assert(DXDevice);
-			ID3D11RasterizerState* RasterizerState = nullptr;
-			ID3D11BlendState* BlendState = nullptr;
+			ID3D11RasterizerState* DefaultRasterizerState = nullptr;
+			ID3D11BlendState* DefaultBlendState = nullptr;
 
 			D3D11_RASTERIZER_DESC RasterDesc = {};
 			RasterDesc.FillMode = D3D11_FILL_SOLID;
@@ -194,7 +194,7 @@ namespace Leviathan
 			RasterDesc.ScissorEnable = false;
 			RasterDesc.MultisampleEnable = true;
 			RasterDesc.AntialiasedLineEnable = true;
-			DXCHECK(DXDevice->CreateRasterizerState(&RasterDesc, &RasterizerState));
+			DXCHECK(DXDevice->CreateRasterizerState(&RasterDesc, &DefaultRasterizerState));
 
 			D3D11_RENDER_TARGET_BLEND_DESC RTVBlendDesc = {};
 			RTVBlendDesc.BlendEnable = true;
@@ -209,11 +209,11 @@ namespace Leviathan
 			BlendDesc.AlphaToCoverageEnable = false;
 			BlendDesc.IndependentBlendEnable = false;
 			BlendDesc.RenderTarget[0] = RTVBlendDesc;
-			DXCHECK(DXDevice->CreateBlendState(&BlendDesc, &BlendState));
+			DXCHECK(DXDevice->CreateBlendState(&BlendDesc, &DefaultBlendState));
 
-			Assert(RasterizerState && BlendState);
-			*Out_RasterizerState = RasterizerState;
-			*Out_BlendState = BlendState;
+			Assert(DefaultRasterizerState && DefaultBlendState);
+			*Out_DefaultRasterizerState = DefaultRasterizerState;
+			*Out_DefaultBlendState = DefaultBlendState;
 		}
 
 		void ReportLiveObjects(ID3D11Device* DXDevice)
@@ -269,5 +269,68 @@ namespace Leviathan
 
 			return Result;
 		}
+
+		void CompileShaderPipeline_Defaults
+		(
+			ID3D11Device* DXDevice,
+			LPCWSTR SourceFileName,
+			LvVxType VxType,
+			const D3D_SHADER_MACRO* pOptDefines,
+			ID3D11VertexShader** Out_VertexShader,
+			ID3D11PixelShader** Out_PixelShader,
+			ID3D11InputLayout** Out_InputLayout
+		)
+		{
+			static const char* Def_VSEntryPoint = "VSMain";
+			static const char* Def_PSEntryPoint = "PSMain";
+			static const char* Def_VSShaderModel = "vs_5_0";
+			static const char* Def_PSShaderModel = "ps_5_0";
+
+			Assert(DXDevice);
+			Assert(VxType < LvVxType::LVVX_NUM);
+			
+			ID3D11VertexShader* VertexShader = nullptr;
+			ID3D11PixelShader* PixelShader = nullptr;
+			ID3D11InputLayout* InputLayout = nullptr;
+
+			ID3DBlob* VSCodeBlob = nullptr;
+			ID3DBlob* PSCodeBlob = nullptr;
+			DXCHECK(CompileShader(SourceFileName, Def_VSEntryPoint, Def_VSShaderModel, &VSCodeBlob, pOptDefines));
+			DXCHECK(CompileShader(SourceFileName, Def_PSEntryPoint, Def_PSShaderModel, &PSCodeBlob, pOptDefines));
+
+			Assert(VSCodeBlob && PSCodeBlob);
+			DXCHECK(DXDevice->CreateVertexShader
+			(
+				VSCodeBlob->GetBufferPointer(),
+				VSCodeBlob->GetBufferSize(),
+				nullptr,
+				&VertexShader
+			));
+			DXCHECK(DXDevice->CreatePixelShader
+			(
+				PSCodeBlob->GetBufferPointer(),
+				PSCodeBlob->GetBufferSize(),
+				nullptr,
+				&PixelShader
+			));
+			const LvVxInputDef& VxTypeDef = LvVxInputDef::VxTypeDefTable[(ullong)VxType];
+			DXCHECK(DXDevice->CreateInputLayout
+			(
+				VxTypeDef.InputDesc,
+				VxTypeDef.ElementCount,
+				VSCodeBlob->GetBufferPointer(),
+				VSCodeBlob->GetBufferSize(),
+				&InputLayout
+			));
+
+			VSCodeBlob->Release();
+			PSCodeBlob->Release();
+
+			Assert(VertexShader && PixelShader && InputLayout);
+			*Out_VertexShader = VertexShader;
+			*Out_PixelShader = PixelShader;
+			*Out_InputLayout = InputLayout;
+		}
+
 	}
 }

@@ -28,8 +28,8 @@ namespace Leviathan
 		DXHandle<ID3D11Texture2D> DX_DepthStencilTexture = nullptr;
 		DXHandle<ID3D11DepthStencilView> DX_DepthStencilView = nullptr;
 
-		DXHandle<ID3D11RasterizerState> DX_RasterizerState = nullptr;
-		DXHandle<ID3D11BlendState> DX_BlendState = nullptr;
+		DXHandle<ID3D11RasterizerState> DX_DefaultRasterizerState = nullptr;
+		DXHandle<ID3D11BlendState> DX_DefaultBlendState = nullptr;
 
 		DXHandle<ID3D11VertexShader> DX_VSColor = nullptr;
 		DXHandle<ID3D11PixelShader> DX_PSColor = nullptr;
@@ -126,8 +126,8 @@ namespace Leviathan
 		DX_VSColor.SafeRelease();
 		DX_PSColor.SafeRelease();
 
-		DX_RasterizerState.SafeRelease();
-		DX_BlendState.SafeRelease();
+		DX_DefaultRasterizerState.SafeRelease();
+		DX_DefaultBlendState.SafeRelease();
 		DX_DepthStencilState.SafeRelease();
 		DX_DepthStencilView.SafeRelease();
 		DX_DepthStencilTexture.SafeRelease();
@@ -206,7 +206,7 @@ namespace Leviathan
 			&DX_DepthStencilTexture,
 			&DX_DepthStencilView
 		);
-		CreateDefaultRasterizerBlendState(DX_Device, &DX_RasterizerState, &DX_BlendState);
+		CreateDefaultRasterizerBlendState(DX_Device, &DX_DefaultRasterizerState, &DX_DefaultBlendState);
 
 		D3D11_VIEWPORT Viewport_Desc = {};
 		Viewport_Desc.Width = (FLOAT)ResX;
@@ -216,7 +216,7 @@ namespace Leviathan
 		Viewport_Desc.TopLeftX = 0;
 		Viewport_Desc.TopLeftY = 0;
 		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
-		DX_ImmediateContext->RSSetState(DX_RasterizerState);
+		DX_ImmediateContext->RSSetState(DX_DefaultRasterizerState);
 		DX_ImmediateContext->RSSetViewports(1, &Viewport_Desc);
 
 		pMeshCube = InitCube();
@@ -224,20 +224,22 @@ namespace Leviathan
 		pMeshRect = InitTextureRect();
 
 		LPCWSTR WBasicShaderFilename = L"src/HLSL/BasicShader.hlsl";
-		LvGraphicsUtils::CompileShaderPipeline_Defaults<VertexColor>
+		LvGraphicsUtils::CompileShaderPipeline_Defaults
 		(
 			*DX_Device,
 			WBasicShaderFilename,
+			LvVxType::LVVX_COLOR,
 			&ColorShader_Defines[0],
 			&DX_VSColor,
 			&DX_PSColor,
 			&DX_InputLayoutColor
 		);
 
-		LvGraphicsUtils::CompileShaderPipeline_Defaults<VertexUV>
+		LvGraphicsUtils::CompileShaderPipeline_Defaults
 		(
 			*DX_Device,
 			WBasicShaderFilename,
+			LvVxType::LVVX_UV,
 			&TextureShader_Defines[0],
 			&DX_VSTexture,
 			&DX_PSTexture,
@@ -306,8 +308,8 @@ namespace Leviathan
 			DXDBG_SETDBGNAMEHELPER(DX_DepthStencilState);
 			DXDBG_SETDBGNAMEHELPER(DX_DepthStencilTexture);
 			DXDBG_SETDBGNAMEHELPER(DX_DepthStencilView);
-			DXDBG_SETDBGNAMEHELPER(DX_RasterizerState);
-			DXDBG_SETDBGNAMEHELPER(DX_BlendState);
+			DXDBG_SETDBGNAMEHELPER(DX_DefaultRasterizerState);
+			DXDBG_SETDBGNAMEHELPER(DX_DefaultBlendState);
 			DXDBG_SETDBGNAMEHELPER(DX_VSColor);
 			DXDBG_SETDBGNAMEHELPER(DX_PSColor);
 			DXDBG_SETDBGNAMEHELPER(DX_InputLayoutColor);
@@ -328,7 +330,7 @@ namespace Leviathan
 	LvCameraPerspective Cam3D(WorldPos, LookAt, AbsUp);
 	LvCameraOrthographic Cam2D;
 
-	constexpr float FrameStep = 0.0166666666666667f;
+	constexpr float FrameStep = 0.0166666666666667f / 4.0f;
 
 	// NOTE: Do not plan to use this yet but likely will be good for future sanity checks
 	static bool PvInsideDraw = false;
@@ -362,14 +364,17 @@ namespace Leviathan
 			constexpr float Scale = 0.25f;
 			const fVector CenterPos{ -512.0f, 256.0f, 0.0f };
 
-			float Cam2DT = CurrRad / 5.0f;
-			fVector ImgPos{CenterPos.X + (LvMath::Cosf(Cam2DT) * ImgPathRadius), CenterPos.Y + (LvMath::Sinf(Cam2DT) * ImgPathRadius), 0.0f};
-			float CurrScale = Scale + ((Scale/2.0f) * LvMath::Cosf(CurrRad / 6.0f));
+			float Cam2DT = CurrRad / 25.0f;
+			fVector ImgPos{ CenterPos.X + (LvMath::Cosf(Cam2DT) * ImgPathRadius), CenterPos.Y + (LvMath::Sinf(Cam2DT) * ImgPathRadius), 0.0f };
+			float CurrScale = Scale + ((Scale / 2.0f) * LvMath::Cosf(Cam2DT / 6.0f));
 			float ImgSzScaled = ImgSize * CurrScale;
-			float CurrAngle = -CurrRad / 3.0f;
-			fMatrix World = LvMath::Mult(fMatrix{SCALE, ImgSzScaled, ImgSzScaled, 1.0f}, fMatrix{ROT_Z, CurrAngle}, fMatrix{ TRANS, ImgPos });
+			float CurrAngle = -Cam2DT/ 3.0f;
+			fMatrix World = LvMath::Mult(fMatrix{ SCALE, ImgSzScaled, ImgSzScaled, 1.0f }, fMatrix{ ROT_Z, CurrAngle }, fMatrix{ TRANS, ImgPos });
 
 			VxUVRect_DrawState.Draw(DX_ImmediateContext, pMeshRect->NumPrims, &World, &Cam2D.CamTrans.View);
+
+			fMatrix StillRect_World = LvMath::Mult(fMatrix{ SCALE, 128.0f, 128.0f, 1.0f }, fMatrix{TRANS, +512.0f, -256.0f, 0.0f});
+			VxUVRect_DrawState.Draw(DX_ImmediateContext, pMeshRect->NumPrims, &StillRect_World, &Cam2D.CamTrans.View);
 		}
 
 		PvEndDraw();
