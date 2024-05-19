@@ -28,6 +28,14 @@ namespace Leviathan
 			} break;
 			case WM_INPUT:
 			{
+				if (GET_RAWINPUT_CODE_WPARAM(wParam) == RIM_INPUT)
+				{
+					LvEngine::ProcessRawInput(lParam);
+				}
+				else // wParam == RIM_INPUTSINK
+				{
+					// Do not process input that was sent while in background
+				}
 			} break;
 			default:
 			{

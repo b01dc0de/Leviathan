@@ -1,0 +1,147 @@
+#ifndef LVINPUT_H
+#define LVINPUT_H
+
+namespace Leviathan
+{
+	struct LvInput_KeyboardState
+	{
+		bool mShift = false;
+		bool mCtrl = false;
+		bool mAlt = false;
+		bool mSuper = false;
+
+		bool bLeft = false;
+		bool bRight = false;
+		bool bUp = false;
+		bool bDown = false;
+
+		bool bQuitGame = false;
+
+		static constexpr int Num_Letters = 26;
+		bool Letters[Num_Letters];
+		static constexpr int Num_Digits = 10;
+		bool Digits[Num_Digits];
+	};
+
+	enum LVINPUT_KEYCODE
+	{
+		LVINPUT_INVALID = -1,
+		LVINPUT_UNDEFINED = 0,
+		LVINPUT_UNUSED = 0,
+		LVINPUT_RESERVED = 0,
+		// Modifiers
+		LVINPUT_SHIFT,
+		LVINPUT_CTRL,
+		LVINPUT_ALT,
+		LVINPUT_SUPER,
+		// Mouse buttons:
+		LVINPUT_LBUTTON,
+		LVINPUT_RBUTTON,
+		LVINPUT_MBUTTON,
+		// Control characters
+		LVINPUT_ESC,
+		LVINPUT_TAB,
+		LVINPUT_CAPSLOCK,
+		LVINPUT_BACKSPACE,
+		LVINPUT_ENTER,
+		LVINPUT_SPACE,
+		LVINPUT_PRINTSCREEN,
+		// Page navigation
+		LVINPUT_END,
+		LVINPUT_HOME,
+		LVINPUT_INSERT,
+		LVINPUT_DEL,
+		LVINPUT_PAGEUP,
+		LVINPUT_PAGEDOWN,
+		// Arrow keys
+		LVINPUT_LEFT,
+		LVINPUT_UP,
+		LVINPUT_RIGHT,
+		LVINPUT_DOWN,
+		// Number row:
+		LVINPUT_KEY_0, // 	0 key
+		LVINPUT_KEY_1, // 	1 key
+		LVINPUT_KEY_2, // 	2 key
+		LVINPUT_KEY_3, // 	3 key
+		LVINPUT_KEY_4, // 	4 key
+		LVINPUT_KEY_5, // 	5 key
+		LVINPUT_KEY_6, // 	6 key
+		LVINPUT_KEY_7, // 	7 key
+		LVINPUT_KEY_8, // 	8 key
+		LVINPUT_KEY_9, // 	9 key
+		// A-Z character keys:
+		LVINPUT_KEY_A,
+		LVINPUT_KEY_B,
+		LVINPUT_KEY_C,
+		LVINPUT_KEY_D,
+		LVINPUT_KEY_E,
+		LVINPUT_KEY_F,
+		LVINPUT_KEY_G,
+		LVINPUT_KEY_H,
+		LVINPUT_KEY_I,
+		LVINPUT_KEY_J,
+		LVINPUT_KEY_K,
+		LVINPUT_KEY_L,
+		LVINPUT_KEY_M,
+		LVINPUT_KEY_N,
+		LVINPUT_KEY_O,
+		LVINPUT_KEY_P,
+		LVINPUT_KEY_Q,
+		LVINPUT_KEY_R,
+		LVINPUT_KEY_S,
+		LVINPUT_KEY_T,
+		LVINPUT_KEY_U,
+		LVINPUT_KEY_V,
+		LVINPUT_KEY_W,
+		LVINPUT_KEY_X,
+		LVINPUT_KEY_Y,
+		LVINPUT_KEY_Z,
+		// Punctuation
+		LVINPUT_KEY_BACKTICK,
+		LVINPUT_KEY_MINUS,
+		LVINPUT_KEY_EQUAL,
+		LVINPUT_KEY_LBRACKET,
+		LVINPUT_KEY_RBRACKET,
+		LVINPUT_KEY_BACKSLASH,
+		LVINPUT_KEY_SEMICOLON,
+		LVINPUT_KEY_QUOTE,
+		LVINPUT_KEY_COMMA,
+		LVINPUT_KEY_PERIOD,
+		LVINPUT_KEY_SLASH,
+		// Function keys
+		LVINPUT_KEY_F1,
+		LVINPUT_KEY_F2,
+		LVINPUT_KEY_F3,
+		LVINPUT_KEY_F4,
+		LVINPUT_KEY_F5,
+		LVINPUT_KEY_F6,
+		LVINPUT_KEY_F7,
+		LVINPUT_KEY_F8,
+		LVINPUT_KEY_F9,
+		LVINPUT_KEY_F10,
+		LVINPUT_KEY_F11,
+		LVINPUT_KEY_F12,
+		// Numpad
+		LVINPUT_NUMPAD0,
+		LVINPUT_NUMPAD1,
+		LVINPUT_NUMPAD2,
+		LVINPUT_NUMPAD3,
+		LVINPUT_NUMPAD4,
+		LVINPUT_NUMPAD5,
+		LVINPUT_NUMPAD6,
+		LVINPUT_NUMPAD7,
+		LVINPUT_NUMPAD8,
+		LVINPUT_NUMPAD9,
+		LVINPUT_MULTIPLY,
+		LVINPUT_ADD,
+		LVINPUT_SUBTRACT,
+		LVINPUT_DIVIDE,
+		LVINPUT_DECIMAL,
+		// Enum max/count/num
+		LVINPUT_MAX
+	};
+
+	LVINPUT_KEYCODE WindowsVK_To_LvInput(unsigned int VirtualKey);
+}
+
+#endif // LVINPUT_H

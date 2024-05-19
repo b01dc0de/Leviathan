@@ -24,4 +24,6 @@ using uint = unsigned int;
 using ulong = unsigned long;
 using ullong = unsigned long long;
 
+using b8 = unsigned char;
+
 #endif // LVTYPES_H

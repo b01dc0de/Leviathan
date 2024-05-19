@@ -90,6 +90,7 @@
     <ClCompile Include="src\LvGameSandbox.cpp" />
     <ClCompile Include="src\LvGraphics.cpp" />
     <ClCompile Include="src\LvGraphicsUtils.cpp" />
+    <ClCompile Include="src\LvInput.cpp" />
     <ClCompile Include="src\LvMath.cpp" />
     <ClCompile Include="src\LvMesh.cpp" />
     <ClCompile Include="src\LvTime.cpp" />
@@ -104,6 +105,7 @@
     <ClInclude Include="src\LvGraphics.h" />
     <ClInclude Include="src\LvGraphicsTypes.h" />
     <ClInclude Include="src\LvGraphicsUtils.h" />
+    <ClInclude Include="src\LvInput.h" />
     <ClInclude Include="src\LvMath.h" />
     <ClInclude Include="src\LvMesh.h" />
     <ClInclude Include="src\LvTime.h" />
