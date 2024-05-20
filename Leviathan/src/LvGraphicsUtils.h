@@ -31,7 +31,7 @@ namespace Leviathan
 			}
 		};
 
-		D3D11_BUFFER_DESC GetDefaultBufferDesc(unsigned int SizeBytes);
+		D3D11_BUFFER_DESC GetDefaultBufferDesc(UINT SizeBytes, UINT BindFlags);
 		void CreateWVPBuffers(ID3D11Device* DXDevice, ID3D11Buffer** Out_WBuffer, ID3D11Buffer** Out_VPBuffer);
 		void CreateDefaultSwapChainRenderTarget
 		(
@@ -81,11 +81,11 @@ namespace Leviathan
 			ID3D11Buffer* VxBuffer = nullptr;
 			ID3D11Buffer* IxBuffer = nullptr;
 
-			D3D11_BUFFER_DESC VxBufferDesc = GetDefaultBufferDesc(InMesh->SzVxDataBytes());
+			D3D11_BUFFER_DESC VxBufferDesc = GetDefaultBufferDesc(InMesh->SzVxDataBytes(), D3D11_BIND_VERTEX_BUFFER);
 			D3D11_SUBRESOURCE_DATA VxBufferInitData = { InMesh->VxData, 0, 0 };
 			DXCHECK(DXDevice->CreateBuffer(&VxBufferDesc, &VxBufferInitData, &VxBuffer));
 
-			D3D11_BUFFER_DESC IxBufferDesc = GetDefaultBufferDesc(InMesh->SzIxDataBytes());
+			D3D11_BUFFER_DESC IxBufferDesc = GetDefaultBufferDesc(InMesh->SzIxDataBytes(), D3D11_BIND_INDEX_BUFFER);
 			D3D11_SUBRESOURCE_DATA IxBufferInitData = { InMesh->IxData, 0, 0 };
 			DXCHECK(DXDevice->CreateBuffer(&IxBufferDesc, &IxBufferInitData, &IxBuffer));
 

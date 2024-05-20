@@ -8,16 +8,17 @@ namespace Leviathan
 	{
 		// Constant 	Value 	Description
 		LVINPUT_INVALID,
-		LVINPUT_LBUTTON, // VK_LBUTTON 	0x01 	Left mouse button
-		LVINPUT_RBUTTON, // VK_RBUTTON 	0x02 	Right mouse button
+		LVINPUT_INVALID, // VK_LBUTTON 	0x01 	Left mouse button
+		LVINPUT_INVALID, // VK_RBUTTON 	0x02 	Right mouse button
 		LVINPUT_UNDEFINED, // VK_CANCEL 	0x03 	Control - break processing
-		LVINPUT_MBUTTON,// VK_MBUTTON 	0x04 	Middle mouse button
+		LVINPUT_INVALID, // VK_MBUTTON 	0x04 	Middle mouse button
 		LVINPUT_UNDEFINED, // VK_XBUTTON1 	0x05 	X1 mouse button
 		LVINPUT_UNDEFINED, // VK_XBUTTON2 	0x06 	X2 mouse button
 		LVINPUT_RESERVED, // - 0x07 	Reserved
 		LVINPUT_BACKSPACE, // VK_BACK 	0x08 	BACKSPACE key
 		LVINPUT_TAB, // VK_TAB 	0x09 	TAB key
-		LVINPUT_RESERVED, // - 0x0A - 0B 	Reserved
+		LVINPUT_RESERVED, // 0x0A 	Reserved
+		LVINPUT_RESERVED, // 0x0B 	Reserved
 		LVINPUT_UNDEFINED, // VK_CLEAR 	0x0C 	CLEAR key
 		LVINPUT_ENTER, // VK_RETURN 	0x0D 	ENTER key
 		 // - 0x0E - 0F 	Unassigned
@@ -28,13 +29,11 @@ namespace Leviathan
 		LVINPUT_ALT, // VK_MENU 	0x12 	ALT key
 		LVINPUT_UNDEFINED, // VK_PAUSE 	0x13 	PAUSE key
 		LVINPUT_CAPSLOCK, // VK_CAPITAL 	0x14 	CAPS LOCK key
-		LVINPUT_UNDEFINED, // VK_KANA 	0x15 	IME Kana mode
-		LVINPUT_UNDEFINED, // VK_HANGUL 	0x15 	IME Hangul mode
+		LVINPUT_UNDEFINED, // VK_KANA VK_HANGUL		0x15 	IME Kana mode / IME Hangul mode
 		LVINPUT_UNDEFINED, // VK_IME_ON 	0x16 	IME On
 		LVINPUT_UNDEFINED, // VK_JUNJA 	0x17 	IME Junja mode
 		LVINPUT_UNDEFINED, // VK_FINAL 	0x18 	IME final mode
-		LVINPUT_UNDEFINED, // VK_HANJA 	0x19 	IME Hanja mode
-		LVINPUT_UNDEFINED, // VK_KANJI 	0x19 	IME Kanji mode
+		LVINPUT_UNDEFINED, // VK_HANJA VK_KANJI		0x19 	IME Hanja mode / IME Kanji mode
 		LVINPUT_UNDEFINED, // VK_IME_OFF 	0x1A 	IME Off
 		LVINPUT_ESC, // VK_ESCAPE 	0x1B 	ESC key
 		LVINPUT_UNDEFINED, // VK_CONVERT 	0x1C 	IME convert
@@ -104,7 +103,7 @@ namespace Leviathan
 		LVINPUT_SUPER, // VK_LWIN 	0x5B 	Left Windows key
 		LVINPUT_SUPER, // VK_RWIN 	0x5C 	Right Windows key
 		LVINPUT_UNDEFINED, // VK_APPS 	0x5D 	Applications key
-		LVINPUT_UNDEFINED, // - 0x5E 	Reserved
+		LVINPUT_RESERVED, // - 0x5E 	Reserved
 		LVINPUT_UNDEFINED, // VK_SLEEP 	0x5F 	Computer Sleep key
 		LVINPUT_NUMPAD0, // VK_NUMPAD0 	0x60 	Numeric keypad 0 key
 		LVINPUT_NUMPAD1, // VK_NUMPAD1 	0x61 	Numeric keypad 1 key
@@ -200,13 +199,13 @@ namespace Leviathan
 		// - 0xB8 - B9 	Reserved
 		LVINPUT_RESERVED, // 0xB8
 		LVINPUT_RESERVED, // 0xB9
-		LVINPUT_UNDEFINED, // VK_OEM_1 	0xBA 	Used for miscellaneous characters; it can vary by keyboard.For the US standard keyboard, the; : key
+		LVINPUT_KEY_SEMICOLON, // VK_OEM_1 	0xBA 	Used for miscellaneous characters; it can vary by keyboard.For the US standard keyboard, the; : key
 		LVINPUT_KEY_EQUAL, // VK_OEM_PLUS 	0xBB 	For any country / region, the + key
 		LVINPUT_KEY_COMMA, // VK_OEM_COMMA 	0xBC 	For any country / region, the , key
 		LVINPUT_KEY_MINUS, // VK_OEM_MINUS 	0xBD 	For any country / region, the - key
 		LVINPUT_KEY_PERIOD, // VK_OEM_PERIOD 	0xBE 	For any country / region, the.key
-		LVINPUT_UNDEFINED, // VK_OEM_2 	0xBF 	Used for miscellaneous characters; it can vary by keyboard.For the US standard keyboard, the / ? key
-		LVINPUT_UNDEFINED, // VK_OEM_3 	0xC0 	Used for miscellaneous characters; it can vary by keyboard.For the US standard keyboard, the `~ key
+		LVINPUT_KEY_SLASH, // VK_OEM_2 	0xBF 	Used for miscellaneous characters; it can vary by keyboard.For the US standard keyboard, the / ? key
+		LVINPUT_KEY_BACKTICK, // VK_OEM_3 	0xC0 	Used for miscellaneous characters; it can vary by keyboard.For the US standard keyboard, the `~ key
 		// - 0xC1 - DA 	Reserved
 		LVINPUT_RESERVED, // 0xC1
 		LVINPUT_RESERVED, // 0xC2
@@ -234,10 +233,10 @@ namespace Leviathan
 		LVINPUT_RESERVED, // 0xD8
 		LVINPUT_RESERVED, // 0xD9
 		LVINPUT_RESERVED, // 0xDA
-		LVINPUT_UNDEFINED, // VK_OEM_4 	0xDB 	Used for miscellaneous characters; it can vary by keyboard.For the US standard keyboard, the[{ key
-		LVINPUT_UNDEFINED, // VK_OEM_5 	0xDC 	Used for miscellaneous characters; it can vary by keyboard.For the US standard keyboard, the \\ | key
-		LVINPUT_UNDEFINED, // VK_OEM_6 	0xDD 	Used for miscellaneous characters; it can vary by keyboard.For the US standard keyboard, the]} key
-		LVINPUT_UNDEFINED, // VK_OEM_7 	0xDE 	Used for miscellaneous characters; it can vary by keyboard.For the US standard keyboard, the '" key
+		LVINPUT_KEY_LBRACKET, // VK_OEM_4 	0xDB 	Used for miscellaneous characters; it can vary by keyboard.For the US standard keyboard, the[{ key
+		LVINPUT_KEY_BACKSLASH, // VK_OEM_5 	0xDC 	Used for miscellaneous characters; it can vary by keyboard.For the US standard keyboard, the \\ | key
+		LVINPUT_KEY_RBRACKET, // VK_OEM_6 	0xDD 	Used for miscellaneous characters; it can vary by keyboard.For the US standard keyboard, the]} key
+		LVINPUT_KEY_QUOTE, // VK_OEM_7 	0xDE 	Used for miscellaneous characters; it can vary by keyboard.For the US standard keyboard, the '" key
 		LVINPUT_UNDEFINED, // VK_OEM_8 	0xDF 	Used for miscellaneous characters; it can vary by keyboard.
 		LVINPUT_RESERVED, // - 0xE0 	Reserved
 		LVINPUT_UNDEFINED, // - 0xE1 	OEM specific
@@ -285,4 +284,104 @@ namespace Leviathan
 		return Result;
 	}
 
+	void LvInput_MouseState::UpdateState(const RAWMOUSE& RawMouse)
+	{
+		USHORT MouseFlags = RawMouse.usFlags;
+		LONG InLastX = RawMouse.lLastX;
+		LONG InLastY = RawMouse.lLastY;
+		ULONG ExtraInfo = RawMouse.ulExtraInformation;
+		LV_UNUSED_VAR(ExtraInfo);
+		// Unused: ULONG ulRawButtons = RawMouse->ulRawButtons;
+		bool bAttrChanged = MouseFlags & MOUSE_ATTRIBUTES_CHANGED;
+		if (bAttrChanged)
+		{
+			// CKA_TODO: Need to completely reset mouse state
+			Left = { false, false, 0 };
+			Right = { false, false, 0 };
+			Middle = { false, false, 0 };
+			CurrX = 0; CurrY = 0;
+			LastX = 0; LastY = 0;
+			DeltaX = 0; DeltaY = 0;
+			VWheel = 0; HWheel = 0;
+			return;
+		}
+
+		{ // Update mouse position
+			bool bVirtDesktop = MouseFlags & MOUSE_VIRTUAL_DESKTOP;
+			bool bNoCoalesce = MouseFlags & MOUSE_MOVE_NOCOALESCE;
+			LV_UNUSED_VAR(bVirtDesktop);
+			LV_UNUSED_VAR(bNoCoalesce);
+
+			bool bMvRelative = MouseFlags & MOUSE_MOVE_RELATIVE;
+			bool bMvAbsolute = MouseFlags & MOUSE_MOVE_ABSOLUTE;
+			if (bMvRelative)
+			{
+				LastX = CurrX;
+				LastY = CurrY;
+
+				DeltaX = InLastX;
+				DeltaY = InLastY;
+
+				CurrX += InLastX;
+				CurrY += InLastY;
+			}
+			else if (bMvAbsolute)
+			{
+				LastX = CurrX;
+				LastY = CurrY;
+
+				CurrX = InLastX;
+				CurrY = InLastY;
+
+				DeltaX = CurrX - LastX;
+				DeltaY = CurrY - LastY;
+			}
+		}
+
+		{ // Update button state
+			USHORT ButtonFlags = RawMouse.usButtonFlags;
+			USHORT ButtonData = RawMouse.usButtonData;
+			// Left button state changed
+			if (0 != (ButtonFlags & (RI_MOUSE_LEFT_BUTTON_DOWN|RI_MOUSE_LEFT_BUTTON_UP)))
+			{
+				bool bLeftPressed = 0 != (ButtonFlags & RI_MOUSE_LEFT_BUTTON_DOWN);
+				Left = { bLeftPressed, !bLeftPressed, 0 };
+			}
+			else if (Left.Pressed)
+			{
+				Left.RepeatCount++;
+			}
+
+			// Right button state changed
+			if (0 != (ButtonFlags & (RI_MOUSE_RIGHT_BUTTON_DOWN|RI_MOUSE_RIGHT_BUTTON_UP)))
+			{
+				bool bRightPressed = 0 != (ButtonFlags & RI_MOUSE_RIGHT_BUTTON_DOWN);
+				Right = { bRightPressed, !bRightPressed, 0 };
+			}
+			else if (Right.Pressed)
+			{
+				Right.RepeatCount++;
+			}
+
+			// Middle button state changed
+			if (0 != (ButtonFlags & (RI_MOUSE_MIDDLE_BUTTON_DOWN|RI_MOUSE_MIDDLE_BUTTON_UP)))
+			{
+				bool bMiddlePressed = 0 != (ButtonFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN);
+				Middle = { bMiddlePressed, !bMiddlePressed, 0 };
+			}
+			else if (Middle.Pressed)
+			{
+				Middle.RepeatCount++;
+			}
+
+			{ // Update wheel state
+				bool bVerWheelChanged = 0 != (ButtonFlags & RI_MOUSE_WHEEL);
+				bool bHorWheelChanged = 0 != (ButtonFlags & RI_MOUSE_HWHEEL);
+				short WheelDist = static_cast<short>(ButtonData) / WheelDelta;
+				VWheel = bVerWheelChanged ? WheelDist : 0;
+				HWheel = bHorWheelChanged ? WheelDist : 0;
+			}
+		}
+
+	}
 }

@@ -3,26 +3,6 @@
 
 namespace Leviathan
 {
-	struct LvInput_KeyboardState
-	{
-		bool mShift = false;
-		bool mCtrl = false;
-		bool mAlt = false;
-		bool mSuper = false;
-
-		bool bLeft = false;
-		bool bRight = false;
-		bool bUp = false;
-		bool bDown = false;
-
-		bool bQuitGame = false;
-
-		static constexpr int Num_Letters = 26;
-		bool Letters[Num_Letters];
-		static constexpr int Num_Digits = 10;
-		bool Digits[Num_Digits];
-	};
-
 	enum LVINPUT_KEYCODE
 	{
 		LVINPUT_INVALID = -1,
@@ -35,9 +15,9 @@ namespace Leviathan
 		LVINPUT_ALT,
 		LVINPUT_SUPER,
 		// Mouse buttons:
-		LVINPUT_LBUTTON,
-		LVINPUT_RBUTTON,
-		LVINPUT_MBUTTON,
+		//LVINPUT_LBUTTON,
+		//LVINPUT_RBUTTON,
+		//LVINPUT_MBUTTON,
 		// Control characters
 		LVINPUT_ESC,
 		LVINPUT_TAB,
@@ -142,6 +122,35 @@ namespace Leviathan
 	};
 
 	LVINPUT_KEYCODE WindowsVK_To_LvInput(unsigned int VirtualKey);
+
+	struct LvInput_SingleKeyState
+	{
+		bool Pressed = false;
+		bool JustReleased = false;
+		uint RepeatCount = 0;
+	};
+
+	struct LvInput_MouseState
+	{
+		LvInput_SingleKeyState Left;
+		LvInput_SingleKeyState Right;
+		LvInput_SingleKeyState Middle;
+
+		int CurrX = 0;
+		int CurrY = 0;
+
+		int LastX = 0;
+		int LastY = 0;
+
+		int DeltaX = 0;
+		int DeltaY = 0;
+
+		static constexpr int WheelDelta = 120;
+		int VWheel = 0;
+		int HWheel = 0;
+
+		void UpdateState(const RAWMOUSE& RawMouse);
+	};
 }
 
 #endif // LVINPUT_H

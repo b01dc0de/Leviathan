@@ -15,7 +15,8 @@ namespace Leviathan
 		HWND LvWindow{};
 
 		LvTime EngineTime{};
-		LvInput_KeyboardState Lv_KeyboardState;
+		LvInput_SingleKeyState KeyboardState[LVINPUT_MAX];
+		LvInput_MouseState MouseState;
 
 		void PrivLvInitWindow();
 
@@ -228,7 +229,8 @@ namespace Leviathan
 		{
 			EngineTime.Measure_EngineFrame();
 
-			if (LvEngineFrameID % EnginePrintStatFreq == 0)
+			(void)EnginePrintStatFreq;
+			if (0) //(LvEngineFrameID % EnginePrintStatFreq == 0)
 			{
 				double LvTimeElapsed = EngineTime.CurrTime();
 				double LvAvgFrameCost = LvTimeElapsed / ((double)LvEngineFrameID + 1);
@@ -262,70 +264,45 @@ namespace Leviathan
 		*/
 		bool KeyDown = RawKeyboard->Flags == RI_KEY_MAKE;
 		bool KeyUp = RawKeyboard->Flags == RI_KEY_BREAK;
-		LV_UNUSED_VAR(KeyUp);
 		UINT VirtualKey = (UINT)RawKeyboard->VKey;
 		LVINPUT_KEYCODE LvKeyCode = WindowsVK_To_LvInput(VirtualKey);
-
-		// Process LvKeyCode
+		Assert(LvKeyCode != LVINPUT_INVALID);
+		if (LVINPUT_INVALID < LvKeyCode && LvKeyCode < LVINPUT_MAX)
 		{
-			bool bNewKeyState = KeyDown;
-			if (LVINPUT_KEY_A <= LvKeyCode && LvKeyCode <= LVINPUT_KEY_Z)
+			KeyboardState[LvKeyCode] = {KeyDown, KeyUp, 0};
+		}
+		for (int KeyIdx = 0; KeyIdx < LVINPUT_MAX; KeyIdx++)
+		{
+			if (LvKeyCode != KeyIdx)
 			{
-				int LetterValue = LvKeyCode - LVINPUT_KEY_A;
-				Assert(0 <= LetterValue && LetterValue < LvInput_KeyboardState::Num_Letters);
-				Lv_KeyboardState.Letters[LetterValue] = bNewKeyState;
+				continue;
 			}
-			else if (LVINPUT_KEY_0 <= LvKeyCode && LvKeyCode <= LVINPUT_KEY_9)
+
+			LvInput_SingleKeyState& CurrKey = KeyboardState[KeyIdx];
+			if (CurrKey.Pressed)
 			{
-				int DigitValue = LvKeyCode - LVINPUT_KEY_0;
-				Assert(0 <= DigitValue && DigitValue < LvInput_KeyboardState::Num_Digits);
-				Lv_KeyboardState.Digits[DigitValue] = bNewKeyState;
+				CurrKey.RepeatCount++;
 			}
-			else
+			else if (CurrKey.JustReleased)
 			{
-				if (LVINPUT_SHIFT == LvKeyCode) { Lv_KeyboardState.mShift = bNewKeyState; }
-				else if (LVINPUT_CTRL == LvKeyCode) { Lv_KeyboardState.mCtrl = bNewKeyState; }
-				else if (LVINPUT_ALT == LvKeyCode) { Lv_KeyboardState.mAlt = bNewKeyState; }
-				else if (LVINPUT_SUPER == LvKeyCode) { Lv_KeyboardState.mSuper = bNewKeyState; }
-				else if (LVINPUT_LEFT == LvKeyCode) { Lv_KeyboardState.bLeft = bNewKeyState; }
-				else if (LVINPUT_RIGHT == LvKeyCode) { Lv_KeyboardState.bRight = bNewKeyState; }
-				else if (LVINPUT_UP == LvKeyCode) { Lv_KeyboardState.bUp = bNewKeyState; }
-				else if (LVINPUT_DOWN == LvKeyCode) { Lv_KeyboardState.bDown = bNewKeyState; }
-				switch (LvKeyCode)
-				{
-					// CKA_NOTE: Even though this was a quick and dirty implementation...
-					//			 Only LVINPUT_BACKSPACE works as expected here...
-					case LVINPUT_ESC:
-					case LVINPUT_BACKSPACE:
-					case LVINPUT_END:
-					case LVINPUT_DEL:
-					{
-						Leviathan::bLvRunning = false;
-					} break;
-					default:
-					{
-					} break;
-				}
+				CurrKey.JustReleased = false;
+				CurrKey.RepeatCount = 0;
 			}
 		}
 	}
 
 	void LvEngineInstance::ProcessInput(RAWMOUSE* RawMouse)
 	{
-		/*
-			USHORT usFlags;
-			ULONG ulButtons; == USHORT  usButtonFlags; USHORT  usButtonData;
-			ULONG ulRawButtons;
-			LONG lLastX;
-			LONG lLastY;
-			ULONG ulExtraInformation;
-		*/
-		(void)RawMouse;
+		MouseState.UpdateState(*RawMouse);
 	}
 
 	void LvEngineInstance::ProcessInput(RAWHID* RawHID)
 	{
 		(void)RawHID;
+		//DWORD Size = RawHID->dwSizeHid;
+		//DWORD Count = RawHID->dwCount;
+		//UINT RawDataBufferSz = Size * Count;
+		//BYTE* RawData;
 	}
 
 	void LvEngine::Init()

@@ -7,13 +7,13 @@ namespace Leviathan
 {
 	namespace LvGraphicsUtils
 	{
-		D3D11_BUFFER_DESC GetDefaultBufferDesc(unsigned int SizeBytes)
+		D3D11_BUFFER_DESC GetDefaultBufferDesc(UINT SizeBytes, UINT BindFlags)
 		{
 			const D3D11_BUFFER_DESC DefaultBufferDesc = 
 			{
 				SizeBytes,
 				D3D11_USAGE_DEFAULT,
-				D3D11_BIND_VERTEX_BUFFER,
+				BindFlags,
 				0,
 				0
 			};
