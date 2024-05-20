@@ -151,6 +151,8 @@ namespace Leviathan
 
 		void UpdateState(const RAWMOUSE& RawMouse);
 	};
+
+	void LvDebug__TestVK2LVINPUT();
 }
 
 #endif // LVINPUT_H

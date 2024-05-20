@@ -102,6 +102,8 @@ namespace Leviathan
 		RIDev[MouseIdx].hwndTarget = hWindow;
 		Assert(RegisterRawInputDevices(RIDev, RIDevNum, sizeof(RIDev[0])) != FALSE);
 
+		//(void)LvDebug__TestVK2LVINPUT();
+
 		// CKA_TODO: Init GameInput here
 
 		Assert(hWindow);
@@ -181,13 +183,6 @@ namespace Leviathan
 
 	void LvEngineInstance::ProcessInput(RAWKEYBOARD* RawKeyboard)
 	{
-		/*
-			Currently unused:
-				USHORT MakeCode = RawKeyboard->MakeCode; 
-				UINT Message = RawKeyboard->Message;
-				ULONG ExtraInformation = RawKeyboard->ExtraInformation;
-				// Unused flag values: RI_KEY_E0, RI_KEY_E1
-		*/
 		bool KeyDown = RawKeyboard->Flags == RI_KEY_MAKE;
 		bool KeyUp = RawKeyboard->Flags == RI_KEY_BREAK;
 		UINT VirtualKey = (UINT)RawKeyboard->VKey;
@@ -213,6 +208,14 @@ namespace Leviathan
 			{
 				CurrKey.JustReleased = false;
 				CurrKey.RepeatCount = 0;
+			}
+		}
+
+		{
+			// Process specific game exit keys
+			if (KeyboardState[LVINPUT_ESC].Pressed)
+			{
+				bLvRunning = false;
 			}
 		}
 	}
@@ -262,5 +265,6 @@ namespace Leviathan
 			}
 			Assert(RawInput->header.dwType != RIM_TYPEHID);
 		}
+		delete[] RID_ByteBuffer;
 	}
 }

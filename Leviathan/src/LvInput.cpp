@@ -4,7 +4,7 @@
 
 namespace Leviathan
 {
-	LVINPUT_KEYCODE VK_TO_LVINPUT[] =
+	LVINPUT_KEYCODE const VK_TO_LVINPUT[] =
 	{
 		// Constant 	Value 	Description
 		LVINPUT_INVALID,
@@ -396,6 +396,162 @@ namespace Leviathan
 				}
 			}
 		}
+	}
 
+#define MAKE_CSTR(x) #x
+	const char* const LVINPUTKEY_ENUMSTR_TABLE[] =
+	{
+		MAKE_CSTR(LVINPUT_UNDEFINED),
+		MAKE_CSTR(LVINPUT_SHIFT),
+		MAKE_CSTR(LVINPUT_CTRL),
+		MAKE_CSTR(LVINPUT_ALT),
+		MAKE_CSTR(LVINPUT_SUPER),
+		MAKE_CSTR(LVINPUT_ESC),
+		MAKE_CSTR(LVINPUT_TAB),
+		MAKE_CSTR(LVINPUT_CAPSLOCK),
+		MAKE_CSTR(LVINPUT_BACKSPACE),
+		MAKE_CSTR(LVINPUT_ENTER),
+		MAKE_CSTR(LVINPUT_SPACE),
+		MAKE_CSTR(LVINPUT_PRINTSCREEN),
+		MAKE_CSTR(LVINPUT_END),
+		MAKE_CSTR(LVINPUT_HOME),
+		MAKE_CSTR(LVINPUT_INSERT),
+		MAKE_CSTR(LVINPUT_DEL),
+		MAKE_CSTR(LVINPUT_PAGEUP),
+		MAKE_CSTR(LVINPUT_PAGEDOWN),
+		MAKE_CSTR(LVINPUT_LEFT),
+		MAKE_CSTR(LVINPUT_UP),
+		MAKE_CSTR(LVINPUT_RIGHT),
+		MAKE_CSTR(LVINPUT_DOWN),
+		MAKE_CSTR(LVINPUT_KEY_0),
+		MAKE_CSTR(LVINPUT_KEY_1),
+		MAKE_CSTR(LVINPUT_KEY_2),
+		MAKE_CSTR(LVINPUT_KEY_3),
+		MAKE_CSTR(LVINPUT_KEY_4),
+		MAKE_CSTR(LVINPUT_KEY_5),
+		MAKE_CSTR(LVINPUT_KEY_6),
+		MAKE_CSTR(LVINPUT_KEY_7),
+		MAKE_CSTR(LVINPUT_KEY_8),
+		MAKE_CSTR(LVINPUT_KEY_9),
+		MAKE_CSTR(LVINPUT_KEY_A),
+		MAKE_CSTR(LVINPUT_KEY_B),
+		MAKE_CSTR(LVINPUT_KEY_C),
+		MAKE_CSTR(LVINPUT_KEY_D),
+		MAKE_CSTR(LVINPUT_KEY_E),
+		MAKE_CSTR(LVINPUT_KEY_F),
+		MAKE_CSTR(LVINPUT_KEY_G),
+		MAKE_CSTR(LVINPUT_KEY_H),
+		MAKE_CSTR(LVINPUT_KEY_I),
+		MAKE_CSTR(LVINPUT_KEY_J),
+		MAKE_CSTR(LVINPUT_KEY_K),
+		MAKE_CSTR(LVINPUT_KEY_L),
+		MAKE_CSTR(LVINPUT_KEY_M),
+		MAKE_CSTR(LVINPUT_KEY_N),
+		MAKE_CSTR(LVINPUT_KEY_O),
+		MAKE_CSTR(LVINPUT_KEY_P),
+		MAKE_CSTR(LVINPUT_KEY_Q),
+		MAKE_CSTR(LVINPUT_KEY_R),
+		MAKE_CSTR(LVINPUT_KEY_S),
+		MAKE_CSTR(LVINPUT_KEY_T),
+		MAKE_CSTR(LVINPUT_KEY_U),
+		MAKE_CSTR(LVINPUT_KEY_V),
+		MAKE_CSTR(LVINPUT_KEY_W),
+		MAKE_CSTR(LVINPUT_KEY_X),
+		MAKE_CSTR(LVINPUT_KEY_Y),
+		MAKE_CSTR(LVINPUT_KEY_Z),
+		MAKE_CSTR(LVINPUT_KEY_BACKTICK),
+		MAKE_CSTR(LVINPUT_KEY_MINUS),
+		MAKE_CSTR(LVINPUT_KEY_EQUAL),
+		MAKE_CSTR(LVINPUT_KEY_LBRACKET),
+		MAKE_CSTR(LVINPUT_KEY_RBRACKET),
+		MAKE_CSTR(LVINPUT_KEY_BACKSLASH),
+		MAKE_CSTR(LVINPUT_KEY_SEMICOLON),
+		MAKE_CSTR(LVINPUT_KEY_QUOTE),
+		MAKE_CSTR(LVINPUT_KEY_COMMA),
+		MAKE_CSTR(LVINPUT_KEY_PERIOD),
+		MAKE_CSTR(LVINPUT_KEY_SLASH),
+		MAKE_CSTR(LVINPUT_KEY_F1),
+		MAKE_CSTR(LVINPUT_KEY_F2),
+		MAKE_CSTR(LVINPUT_KEY_F3),
+		MAKE_CSTR(LVINPUT_KEY_F4),
+		MAKE_CSTR(LVINPUT_KEY_F5),
+		MAKE_CSTR(LVINPUT_KEY_F6),
+		MAKE_CSTR(LVINPUT_KEY_F7),
+		MAKE_CSTR(LVINPUT_KEY_F8),
+		MAKE_CSTR(LVINPUT_KEY_F9),
+		MAKE_CSTR(LVINPUT_KEY_F10),
+		MAKE_CSTR(LVINPUT_KEY_F11),
+		MAKE_CSTR(LVINPUT_KEY_F12),
+		MAKE_CSTR(LVINPUT_NUMPAD0),
+		MAKE_CSTR(LVINPUT_NUMPAD1),
+		MAKE_CSTR(LVINPUT_NUMPAD2),
+		MAKE_CSTR(LVINPUT_NUMPAD3),
+		MAKE_CSTR(LVINPUT_NUMPAD4),
+		MAKE_CSTR(LVINPUT_NUMPAD5),
+		MAKE_CSTR(LVINPUT_NUMPAD6),
+		MAKE_CSTR(LVINPUT_NUMPAD7),
+		MAKE_CSTR(LVINPUT_NUMPAD8),
+		MAKE_CSTR(LVINPUT_NUMPAD9),
+		MAKE_CSTR(LVINPUT_MULTIPLY),
+		MAKE_CSTR(LVINPUT_ADD),
+		MAKE_CSTR(LVINPUT_SUBTRACT),
+		MAKE_CSTR(LVINPUT_DIVIDE),
+		MAKE_CSTR(LVINPUT_DECIMAL),
+		MAKE_CSTR(LVINPUT_MAX)
+	};
+
+	void LvDebug__TestVK2LVINPUT()
+	{
+		constexpr int VK_MaxValue = 0xFE;
+		const char* Invalid_LvInput_Val_CStr = MAKE_CSTR(LVINPUT_INVALID);
+		int LvInputKey_NumAssigned[LVINPUT_MAX];
+		for (int NumAssgnIdx = 0; NumAssgnIdx < LVINPUT_MAX; NumAssgnIdx++)
+		{
+			LvInputKey_NumAssigned[NumAssgnIdx] = 0;
+		}
+		Outf("LVINPUT DEBUG -- VK code to LvInput Keycode table:\n");
+		for (uint Curr_VK = 0; Curr_VK <= VK_MaxValue; Curr_VK++)
+		{
+			LVINPUT_KEYCODE LvInput_ConversionResult = WindowsVK_To_LvInput(Curr_VK);
+			if (0 <= LvInput_ConversionResult && LvInput_ConversionResult < LVINPUT_MAX)
+			{
+				const char* LvInputKey_Cstr = LVINPUTKEY_ENUMSTR_TABLE[LvInput_ConversionResult];
+				Outf("\tVK: 0x%02X    ->    %i:%s\n", Curr_VK, (int)LvInput_ConversionResult, LvInputKey_Cstr);
+				LvInputKey_NumAssigned[(int)LvInput_ConversionResult]++;
+			}
+			else
+			{
+				Outf("\tVK: 0x%02X    ->    ERROR:%i:%s\n", Curr_VK, -1, Invalid_LvInput_Val_CStr);
+			}
+		}
+		bool bUnassignedValuesMsgPrint = false;
+		bool bMultipleAssignments = false;
+		for (int NumAssgnIdx = LVINPUT_SHIFT; NumAssgnIdx < LVINPUT_MAX; NumAssgnIdx++)
+		{
+			if (LvInputKey_NumAssigned[NumAssgnIdx] == 0)
+			{
+				if (!bUnassignedValuesMsgPrint)
+				{
+					Outf("LVINPUT WARNING -- The following LVINPUT keycode values are unassigned:\n");
+					bUnassignedValuesMsgPrint = true;
+				}
+				Outf("\t%s\n", LVINPUTKEY_ENUMSTR_TABLE[NumAssgnIdx]);
+			}
+			if (LvInputKey_NumAssigned[NumAssgnIdx] > 1)
+			{
+				bMultipleAssignments = true;
+			}
+		}
+		if (bMultipleAssignments)
+		{
+			Outf("LVINPUT WARNING -- The following LVINPUT keycode values have multiple VK codes assigned to them:\n");
+			for (int NumAssgnIdx = LVINPUT_SHIFT; NumAssgnIdx < LVINPUT_MAX; NumAssgnIdx++)
+			{
+				if (LvInputKey_NumAssigned[NumAssgnIdx] > 1)
+				{
+					Outf("\t%s\n", LVINPUTKEY_ENUMSTR_TABLE[NumAssgnIdx]);
+				}
+			}
+		}
 	}
 }
