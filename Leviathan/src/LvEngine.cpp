@@ -26,7 +26,6 @@ namespace Leviathan
 
 		void ProcessInput(RAWKEYBOARD* RawKeyboard);
 		void ProcessInput(RAWMOUSE* RawMouse);
-		void ProcessInput(RAWHID* RawHID);
 
 		LvEngineInstance() = default;
 		~LvEngineInstance() = default;
@@ -35,14 +34,6 @@ namespace Leviathan
 	};
 
 	static LvEngineInstance* LvPrvEngInst = nullptr;
-
-	enum LvInputDeviceType
-	{
-		LVINPUTDEVICE_KEYBOARD,
-		LVINPUTDEVICE_MOUSE,
-		LVINPUTDEVICE_GAMEPAD,
-		LVINPUTDEVICE_NUM
-	};
 
 #if LV_PLATFORM_WINDOWS()
 	HINSTANCE Lv_Inst;
@@ -97,86 +88,21 @@ namespace Leviathan
 		);
 
 		// Register raw input devices
-		RAWINPUTDEVICE RIDev[LVINPUTDEVICE_NUM];
-		RIDev[LVINPUTDEVICE_KEYBOARD].usUsagePage = 0x01;
-		RIDev[LVINPUTDEVICE_KEYBOARD].usUsage = 0x06;
-		RIDev[LVINPUTDEVICE_KEYBOARD].dwFlags = RIDEV_NOLEGACY;
-		RIDev[LVINPUTDEVICE_KEYBOARD].hwndTarget = hWindow;
-		RIDev[LVINPUTDEVICE_MOUSE].usUsagePage = 0x0001;
-		RIDev[LVINPUTDEVICE_MOUSE].usUsage = 0x02;
-		RIDev[LVINPUTDEVICE_MOUSE].dwFlags = RIDEV_NOLEGACY;
-		RIDev[LVINPUTDEVICE_MOUSE].hwndTarget = hWindow;
-		RIDev[LVINPUTDEVICE_GAMEPAD].usUsagePage = 0x0001;
-		RIDev[LVINPUTDEVICE_GAMEPAD].usUsage = 0x05;
-		RIDev[LVINPUTDEVICE_GAMEPAD].dwFlags = 0;
-		RIDev[LVINPUTDEVICE_GAMEPAD].hwndTarget = hWindow;
-		Assert(RegisterRawInputDevices(RIDev, LVINPUTDEVICE_NUM, sizeof(RIDev[0])) != FALSE);
+		RAWINPUTDEVICE RIDev[] = { RAWINPUTDEVICE{}, RAWINPUTDEVICE{} };
+		constexpr uint RIDevNum = LV_ARRAYSIZE(RIDev);
+		constexpr uint KeyboardIdx = 0;
+		constexpr uint MouseIdx = 1;
+		RIDev[KeyboardIdx].usUsagePage = 0x01;
+		RIDev[KeyboardIdx].usUsage = 0x06;
+		RIDev[KeyboardIdx].dwFlags = RIDEV_NOLEGACY;
+		RIDev[KeyboardIdx].hwndTarget = hWindow;
+		RIDev[MouseIdx].usUsagePage = 0x0001;
+		RIDev[MouseIdx].usUsage = 0x02;
+		RIDev[MouseIdx].dwFlags = RIDEV_NOLEGACY;
+		RIDev[MouseIdx].hwndTarget = hWindow;
+		Assert(RegisterRawInputDevices(RIDev, RIDevNum, sizeof(RIDev[0])) != FALSE);
 
-	#define GET_DETAILED_RID_INFO() (0)
-	#if GET_DETAILED_RID_INFO()
-		RID_DEVICE_INFO_MOUSE* MouseInfos = nullptr;
-		RID_DEVICE_INFO_KEYBOARD* KeyboardInfos = nullptr;
-		RID_DEVICE_INFO_HID* HIDInfos = nullptr;
-		UINT NumMice = 0, NumKeyboards = 0, NumHIDs = 0;
-		{
-			RAWINPUTDEVICELIST* RawInputDeviceList = nullptr;
-			RID_DEVICE_INFO* RID_DeviceInfos = nullptr;
-			UINT Num_RID = 0;
-			{
-				(void)GetRawInputDeviceList(
-					nullptr,
-					&Num_RID,
-					sizeof(RAWINPUTDEVICELIST)
-				);
-				RawInputDeviceList = new RAWINPUTDEVICELIST[Num_RID];
-				RID_DeviceInfos = new RID_DEVICE_INFO[Num_RID];
-			}
-			Assert(GetRawInputDeviceList(
-				RawInputDeviceList,
-				&Num_RID,
-				sizeof(RAWINPUTDEVICELIST)
-			) == Num_RID);
-			UINT NumDevices[] = { 0,0,0 };
-			for (UINT RID_Idx = 0; RID_Idx < Num_RID; RID_Idx++)
-			{
-				UINT DataSz = sizeof(RID_DEVICE_INFO);
-				RID_DeviceInfos[RID_Idx].cbSize = sizeof(RID_DEVICE_INFO);
-				UINT BytesOut = GetRawInputDeviceInfo
-				(
-					RawInputDeviceList[RID_Idx].hDevice,
-					RIDI_DEVICEINFO, // RIDI_DEVICENAME, RIDI_PREPARSEDDATA,
-					&RID_DeviceInfos[RID_Idx],
-					&DataSz
-				);
-				Assert(BytesOut == DataSz);
-				NumDevices[RawInputDeviceList[RID_Idx].dwType]++;
-			}
-			NumMice = NumDevices[RIM_TYPEMOUSE], NumKeyboards = NumDevices[RIM_TYPEKEYBOARD], NumHIDs = NumDevices[RIM_TYPEHID];
-			MouseInfos = new RID_DEVICE_INFO_MOUSE[NumMice];
-			KeyboardInfos = new RID_DEVICE_INFO_KEYBOARD[NumKeyboards];
-			HIDInfos = new RID_DEVICE_INFO_HID[NumHIDs];
-			UINT MiceIdx = 0, KeyboardIdx = 0, HIDIdx = 0;
-			for (UINT RID_Idx = 0; RID_Idx < Num_RID; RID_Idx++)
-			{
-				RID_DEVICE_INFO& CurrDeviceInfo = RID_DeviceInfos[RID_Idx];
-				if (CurrDeviceInfo.dwType == RIM_TYPEMOUSE)
-				{
-					MouseInfos[MiceIdx++] = CurrDeviceInfo.mouse;
-				}
-				else if (CurrDeviceInfo.dwType == RIM_TYPEKEYBOARD)
-				{
-					KeyboardInfos[KeyboardIdx++] = CurrDeviceInfo.keyboard;
-				}
-				else
-				{
-					Assert(CurrDeviceInfo.dwType == RIM_TYPEHID);
-					HIDInfos[HIDIdx++] = CurrDeviceInfo.hid;
-				}
-			}
-			delete[] RawInputDeviceList;
-			delete[] RID_DeviceInfos;
-		}
-	#endif
+		// CKA_TODO: Init GameInput here
 
 		Assert(hWindow);
 		LvWindow = hWindow;
@@ -296,15 +222,6 @@ namespace Leviathan
 		MouseState.UpdateState(*RawMouse);
 	}
 
-	void LvEngineInstance::ProcessInput(RAWHID* RawHID)
-	{
-		(void)RawHID;
-		//DWORD Size = RawHID->dwSizeHid;
-		//DWORD Count = RawHID->dwCount;
-		//UINT RawDataBufferSz = Size * Count;
-		//BYTE* RawData;
-	}
-
 	void LvEngine::Init()
 	{
 		Assert(nullptr == LvPrvEngInst);
@@ -338,35 +255,12 @@ namespace Leviathan
 			if (RawInput->header.dwType == RIM_TYPEKEYBOARD)
 			{
 				LvPrvEngInst->ProcessInput(&RawInput->data.keyboard);
-				/*
-					USHORT MakeCode;
-					USHORT Flags;
-					USHORT Reserved;
-					USHORT VKey;
-					UINT   Message;
-					ULONG ExtraInformation;
-				*/
 			}
 			else if (RawInput->header.dwType == RIM_TYPEMOUSE)
 			{
 				LvPrvEngInst->ProcessInput(&RawInput->data.mouse);
-				/*
-					USHORT usFlags;
-					ULONG ulButtons; == USHORT  usButtonFlags; USHORT  usButtonData;
-					ULONG ulRawButtons;
-					LONG lLastX;
-					LONG lLastY;
-					ULONG ulExtraInformation;
-				*/
 			}
-			else if (RawInput->header.dwType == RIM_TYPEHID)
-			{
-				LvPrvEngInst->ProcessInput(&RawInput->data.hid);
-			}
-			else
-			{
-				LV_FAIL();
-			}
+			Assert(RawInput->header.dwType != RIM_TYPEHID);
 		}
 	}
 }

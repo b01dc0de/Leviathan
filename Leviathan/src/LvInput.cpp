@@ -377,9 +377,23 @@ namespace Leviathan
 			{ // Update wheel state
 				bool bVerWheelChanged = 0 != (ButtonFlags & RI_MOUSE_WHEEL);
 				bool bHorWheelChanged = 0 != (ButtonFlags & RI_MOUSE_HWHEEL);
-				short WheelDist = static_cast<short>(ButtonData) / WheelDelta;
-				VWheel = bVerWheelChanged ? WheelDist : 0;
-				HWheel = bHorWheelChanged ? WheelDist : 0;
+				short WheelVal = static_cast<short>(ButtonData) / WheelDeltaDivisor;
+				Assert(!bVerWheelChanged || !bHorWheelChanged);
+				if (!bVerWheelChanged && !bHorWheelChanged)
+				{
+					VWheel = 0;
+					HWheel = 0;
+				}
+				else if (bVerWheelChanged)
+				{
+					VWheel = WheelVal;
+					HWheel = 0;
+				}
+				else if (bHorWheelChanged)
+				{
+					VWheel = 0;
+					HWheel = WheelVal;
+				}
 			}
 		}
 

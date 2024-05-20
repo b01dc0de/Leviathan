@@ -145,7 +145,7 @@ namespace Leviathan
 		int DeltaX = 0;
 		int DeltaY = 0;
 
-		static constexpr int WheelDelta = 120;
+		static constexpr int WheelDeltaDivisor = 120;
 		int VWheel = 0;
 		int HWheel = 0;
 
