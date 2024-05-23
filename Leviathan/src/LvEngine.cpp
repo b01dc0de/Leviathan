@@ -15,8 +15,12 @@ namespace Leviathan
 		HWND LvWindow{};
 
 		LvTime EngineTime{};
-		LvInput_SingleKeyState KeyboardState[LVINPUT_MAX];
-		LvInput_MouseState MouseState;
+
+		IGameInput* GameInputInst = nullptr;
+		GameInputKind EnabledInputTypes = GameInputKindKeyboard|GameInputKindMouse|GameInputKindGamepad;
+		LvKeyboardState KeyboardState;
+		LvMouseState MouseState;
+		LvGamepadState GamepadState;
 
 		void PrivLvInitWindow();
 
@@ -24,8 +28,7 @@ namespace Leviathan
 		void Term();
 		void MainLoop();
 
-		void ProcessInput(RAWKEYBOARD* RawKeyboard);
-		void ProcessInput(RAWMOUSE* RawMouse);
+		void PollInput();
 
 		LvEngineInstance() = default;
 		~LvEngineInstance() = default;
@@ -87,24 +90,8 @@ namespace Leviathan
 			nullptr // CKA_NOTE: Might want to use this in the future
 		);
 
-		// Register raw input devices
-		RAWINPUTDEVICE RIDev[] = { RAWINPUTDEVICE{}, RAWINPUTDEVICE{} };
-		constexpr uint RIDevNum = LV_ARRAYSIZE(RIDev);
-		constexpr uint KeyboardIdx = 0;
-		constexpr uint MouseIdx = 1;
-		RIDev[KeyboardIdx].usUsagePage = 0x01;
-		RIDev[KeyboardIdx].usUsage = 0x06;
-		RIDev[KeyboardIdx].dwFlags = RIDEV_NOLEGACY;
-		RIDev[KeyboardIdx].hwndTarget = hWindow;
-		RIDev[MouseIdx].usUsagePage = 0x0001;
-		RIDev[MouseIdx].usUsage = 0x02;
-		RIDev[MouseIdx].dwFlags = RIDEV_NOLEGACY;
-		RIDev[MouseIdx].hwndTarget = hWindow;
-		Assert(RegisterRawInputDevices(RIDev, RIDevNum, sizeof(RIDev[0])) != FALSE);
-
-		//(void)LvDebug__TestVK2LVINPUT();
-
-		// CKA_TODO: Init GameInput here
+		// Init GameInput
+		Assert(!FAILED(GameInputCreate(&GameInputInst)));
 
 		Assert(hWindow);
 		LvWindow = hWindow;
@@ -173,6 +160,7 @@ namespace Leviathan
 		while (bLvRunning)
 		{
 			PeekNewMessages();
+			PollInput(); // CKA_TODO: Where should this go within the loop?
 
 			LvGraphics::UpdateAndDraw();
 
@@ -181,48 +169,33 @@ namespace Leviathan
 		}
 	}
 
-	void LvEngineInstance::ProcessInput(RAWKEYBOARD* RawKeyboard)
+	void LvEngineInstance::PollInput()
 	{
-		bool KeyDown = RawKeyboard->Flags == RI_KEY_MAKE;
-		bool KeyUp = RawKeyboard->Flags == RI_KEY_BREAK;
-		UINT VirtualKey = (UINT)RawKeyboard->VKey;
-		LVINPUT_KEYCODE LvKeyCode = WindowsVK_To_LvInput(VirtualKey);
-		Assert(LvKeyCode != LVINPUT_INVALID);
-		if (LVINPUT_INVALID < LvKeyCode && LvKeyCode < LVINPUT_MAX)
+		IGameInputReading* CurrInputReading = nullptr;
+		if (SUCCEEDED(GameInputInst->GetCurrentReading(EnabledInputTypes, nullptr, &CurrInputReading)))
 		{
-			KeyboardState[LvKeyCode] = {KeyDown, KeyUp, 0};
-		}
-		for (int KeyIdx = 0; KeyIdx < LVINPUT_MAX; KeyIdx++)
-		{
-			if (LvKeyCode != KeyIdx)
+			Assert(CurrInputReading);
+			// uint64_t ReadingTs = CurrInputReading->GetTimestamp();
+			// uint64_t GetCurrentTimestamp()
+			GameInputKind InputDeviceType = CurrInputReading->GetInputKind();
+			bool bResult = false;
+			if (InputDeviceType == GameInputKindKeyboard)
 			{
-				continue;
+				bResult = KeyboardState.ProcessInput(CurrInputReading);
 			}
-
-			LvInput_SingleKeyState& CurrKey = KeyboardState[KeyIdx];
-			if (CurrKey.Pressed)
+			else if (InputDeviceType == GameInputKindMouse)
 			{
-				CurrKey.RepeatCount++;
+				bResult = MouseState.ProcessInput(CurrInputReading);
 			}
-			else if (CurrKey.JustReleased)
+			else if (InputDeviceType == GameInputKindGamepad)
 			{
-				CurrKey.JustReleased = false;
-				CurrKey.RepeatCount = 0;
+				bResult = GamepadState.ProcessInput(CurrInputReading);
+			}
+			if (!bResult)
+			{
+				// Idk, some error handling
 			}
 		}
-
-		{
-			// Process specific game exit keys
-			if (KeyboardState[LVINPUT_ESC].Pressed)
-			{
-				bLvRunning = false;
-			}
-		}
-	}
-
-	void LvEngineInstance::ProcessInput(RAWMOUSE* RawMouse)
-	{
-		MouseState.UpdateState(*RawMouse);
 	}
 
 	void LvEngine::Init()
@@ -245,26 +218,5 @@ namespace Leviathan
 	{
 		Assert(LvPrvEngInst);
 		LvPrvEngInst->MainLoop();
-	}
-
-	void LvEngine::ProcessRawInput(LPARAM lParam)
-	{
-		UINT BufferSz;
-		GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &BufferSz, sizeof(RAWINPUTHEADER));
-		b8* RID_ByteBuffer = new b8[BufferSz];
-		Assert(GetRawInputData((HRAWINPUT)lParam, RID_INPUT, RID_ByteBuffer, &BufferSz, sizeof(RAWINPUTHEADER)) == BufferSz);
-		{
-			RAWINPUT* RawInput = (RAWINPUT*)RID_ByteBuffer;
-			if (RawInput->header.dwType == RIM_TYPEKEYBOARD)
-			{
-				LvPrvEngInst->ProcessInput(&RawInput->data.keyboard);
-			}
-			else if (RawInput->header.dwType == RIM_TYPEMOUSE)
-			{
-				LvPrvEngInst->ProcessInput(&RawInput->data.mouse);
-			}
-			Assert(RawInput->header.dwType != RIM_TYPEHID);
-		}
-		delete[] RID_ByteBuffer;
 	}
 }

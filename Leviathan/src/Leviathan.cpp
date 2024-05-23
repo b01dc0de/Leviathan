@@ -23,19 +23,8 @@ namespace Leviathan
 			case WM_RBUTTONUP:
 			case WM_KEYDOWN:
 			case WM_KEYUP:
-			{
-				Leviathan::bLvRunning = false;
-			} break;
 			case WM_INPUT:
 			{
-				if (GET_RAWINPUT_CODE_WPARAM(wParam) == RIM_INPUT)
-				{
-					LvEngine::ProcessRawInput(lParam);
-				}
-				else // wParam == RIM_INPUTSINK
-				{
-					// Do not process input that was sent while in background
-				}
 			} break;
 			default:
 			{

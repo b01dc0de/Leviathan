@@ -615,4 +615,144 @@ namespace Leviathan
 		LV_UNUSED_VAR(_Scale);
 		Scale(SX, SY, SZ);
 	}
+
+	i2D::i2D(int InX, int InY)
+		: X(InX)
+		,Y(InY)
+	{
+	}
+	i2D i2D::operator+(const i2D& O) const
+	{
+		return i2D{ X + O.X, Y + O.Y };
+	}
+	i2D i2D::operator-(const i2D& O) const
+	{
+		return i2D{ X - O.X, Y - O.Y };
+	}
+	i2D i2D::operator*(int S) const
+	{
+		return i2D{ X * S, Y * S };
+	}
+	i2D i2D::operator/(int D) const
+	{
+		return i2D{ X / D, Y / D };
+	}
+	i2D& i2D::operator+=(const i2D& O)
+	{
+		X += O.X;
+		Y += O.Y;
+		return *this;
+	}
+	i2D& i2D::operator-=(const i2D& O)
+	{
+		X -= O.X;
+		Y -= O.Y;
+		return *this;
+	}
+	i2D& i2D::operator*=(int S)
+	{
+		X *= S;
+		Y *= S;
+		return *this;
+	}
+	i2D& i2D::operator/(int D)
+	{
+		X /= D;
+		Y /= D;
+		return *this;
+	}
+
+
+	u2D::u2D(unsigned int InX, unsigned int InY)
+		: X(InX)
+		, Y(InY)
+	{
+	}
+	u2D u2D::operator+(const u2D& O) const
+	{
+		return u2D{ X + O.X, Y + O.Y };
+	}
+	u2D u2D::operator-(const u2D& O) const
+	{
+		return u2D{ X - O.X, Y - O.Y };
+	}
+	u2D u2D::operator*(unsigned int S) const
+	{
+		return u2D{ X * S, Y * S };
+	}
+	u2D u2D::operator/(unsigned int D) const
+	{
+		return u2D{ X / D, Y / D };
+	}
+	u2D& u2D::operator+=(const u2D& O)
+	{
+		X += O.X;
+		Y += O.Y;
+		return *this;
+	}
+	u2D& u2D::operator-=(const u2D& O)
+	{
+		X -= O.X;
+		Y -= O.Y;
+		return *this;
+	}
+	u2D& u2D::operator*=(unsigned int S)
+	{
+		X *= S;
+		Y *= S;
+		return *this;
+	}
+	u2D& u2D::operator/(unsigned int D)
+	{
+		X /= D;
+		Y /= D;
+		return *this;
+	}
+
+
+	f2D::f2D(float InX, float InY)
+		: X(InX)
+		, Y(InY)
+	{
+	}
+	f2D f2D::operator+(const f2D& O) const
+	{
+		return f2D{ X + O.X, Y + O.Y };
+	}
+	f2D f2D::operator-(const f2D& O) const
+	{
+		return f2D{ X - O.X, Y - O.Y };
+	}
+	f2D f2D::operator*(float S) const
+	{
+		return f2D{ X * S, Y * S };
+	}
+	f2D f2D::operator/(float D) const
+	{
+		return f2D{ X / D, Y / D };
+	}
+	f2D& f2D::operator+=(const f2D& O)
+	{
+		X += O.X;
+		Y += O.Y;
+		return *this;
+	}
+	f2D& f2D::operator-=(const f2D& O)
+	{
+		X -= O.X;
+		Y -= O.Y;
+		return *this;
+	}
+	f2D& f2D::operator*=(float S)
+	{
+		X *= S;
+		Y *= S;
+		return *this;
+	}
+	f2D& f2D::operator/(float D)
+	{
+		X /= D;
+		Y /= D;
+		return *this;
+	}
 }

@@ -14,15 +14,14 @@ namespace Leviathan
 	HWND Lv_GetWindowHandle();
 #endif // LV_PLATFORM_WINDOWS()
 
-
 	struct LvEngine
 	{
 		static void Init();
 		static void Term();
 		static void MainLoop();
-
-		static void ProcessRawInput(LPARAM lParam);
 	};
+
+#define LVINPUT_ENABLE_AGNOSTIC_STATE() (0)
 }
 
 #endif // LVENGINE_H

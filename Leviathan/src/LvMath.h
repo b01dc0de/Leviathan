@@ -137,6 +137,70 @@ namespace Leviathan
 	using V4 = fVector;
 	using Matrix = fMatrix;
 	using M4 = fMatrix;
+
+	struct i2D
+	{
+		int X = 0;
+		int Y = 0;
+
+		i2D(int InX, int InY);
+		i2D() = default;
+		i2D(const i2D&) = default;
+		i2D& operator=(const i2D&) = default;
+		~i2D() = default;
+
+		i2D operator+(const i2D& O) const;
+		i2D operator-(const i2D& O) const;
+		i2D operator*(int S) const;
+		i2D operator/(int D) const;
+		i2D& operator+=(const i2D& O);
+		i2D& operator-=(const i2D& O);
+		i2D& operator*=(int S);
+		i2D& operator/(int D);
+	};
+
+	struct u2D
+	{
+		unsigned int X = 0;
+		unsigned int Y = 0;
+
+		u2D(unsigned int InX, unsigned int InY);
+		u2D() = default;
+		u2D(const u2D&) = default;
+		u2D& operator=(const u2D&) = default;
+		~u2D() = default;
+
+		u2D operator+(const u2D& O) const;
+		u2D operator-(const u2D& O) const;
+		u2D operator*(unsigned int S) const;
+		u2D operator/(unsigned int D) const;
+		u2D& operator+=(const u2D& O);
+		u2D& operator-=(const u2D& O);
+		u2D& operator*=(unsigned int S);
+		u2D& operator/(unsigned int D);
+	};
+
+	struct f2D
+	{
+		float X = 0.0f;
+		float Y = 0.0f;
+
+		f2D(float InX, float InY);
+		f2D() = default;
+		f2D(const f2D&) = default;
+		f2D& operator=(const f2D&) = default;
+		~f2D() = default;
+
+		f2D operator+(const f2D& O) const;
+		f2D operator-(const f2D& O) const;
+		f2D operator*(float S) const;
+		f2D operator/(float D) const;
+		f2D& operator+=(const f2D& O);
+		f2D& operator-=(const f2D& O);
+		f2D& operator*=(float S);
+		f2D& operator/(float D);
+	};
+
 }
 
 #endif // LVMATH_H

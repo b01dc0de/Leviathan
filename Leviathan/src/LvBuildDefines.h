@@ -20,18 +20,6 @@
 #error "Must have defined build configuration and platform"
 #endif // UNDEFINED LV BUILD
 
-/* LV BUILD PLATFORM INCLUDES */
-#if LV_PLATFORM_WINDOWS()
-	#if LV_CONFIG_DEBUG()
-		#define _CRTDBG_MAP_ALLOC
-		#include <crtdbg.h>
-	#endif
-	#define WIN32_LEAN_AND_MEAN
-	#include <Windows.h>
-#elif LV_PLATFORM_LINUX() // N/A
-#else // N/A
-#endif /* LV BUILD PLATFORM INCLUDES */
-
 /* LV BUILD PLATFORM DEFINITIONS */
 #if LV_PLATFORM_WINDOWS()
 	#define LV_DBG_BREAK() DebugBreak()
@@ -86,5 +74,6 @@
 #define LV_UNUSED_VAR(var) (void)var
 #define LV_SAFE_DEREF(ptr, member) (ptr == nullptr) ? nullptr : ptr->member // To stop MSVC from complaining
 #define LV_ARRAYSIZE(arr) (sizeof(arr) / sizeof(arr[0]))
+#define LV_MAKE_CSTR(x) #x
 
 #endif // LVBUILDDEFINES_H
