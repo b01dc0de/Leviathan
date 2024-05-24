@@ -294,7 +294,7 @@ namespace Leviathan
 			u64 NewReadingTs = NewReading->GetTimestamp();
 			if (NewReading == CurrReadingID || NewReadingTs == CurrReadingTs)
 			{
-				Outf("LvKeyboardState::ProcessInput - Already at latest input state.\n");
+				//Outf("LvKeyboardState::ProcessInput - Already at latest input state.\n");
 				return false;
 			}
 			Assert(NewReadingTs > CurrReadingTs);
@@ -318,6 +318,17 @@ namespace Leviathan
 					CurrInput[KeyIdx] = {};
 					NumKeysZeroed++;
 				}
+			#if LVINPUT_ENABLE_DEBUG_LOG()
+				if (NumActive > 0)
+				{
+					Outf("LvKeyboardState::ProcessInput - Currently active keys:\n\tVKs: ");
+					for (u32 KeyIdx = 0; KeyIdx < NumActive; KeyIdx++)
+					{
+						Outf("0x%02X ", CurrInput[KeyIdx].virtualKey);
+					}
+					Outf("\n");
+				}
+			#endif // LVINPUT_ENABLE_DEBUG_LOG
 				CurrReadingID = NewReading;
 				CurrReadingTs = NewReadingTs;
 				CurrPressedCount = NewPressedCount;
@@ -344,7 +355,7 @@ namespace Leviathan
 			u64 NewReadingTs = NewReading->GetTimestamp();
 			if (NewReading == CurrReadingID || NewReadingTs == CurrReadingTs)
 			{
-				Outf("LvMouseState::ProcessInput - Already at latest input state.\n");
+				//Outf("LvMouseState::ProcessInput - Already at latest input state.\n");
 				return false;
 			}
 			Assert(NewReadingTs > CurrReadingTs);
@@ -352,6 +363,19 @@ namespace Leviathan
 			MouseState_T NewInput{};
 			if (NewReading->GetMouseState(&NewInput))
 			{
+			#if LVINPUT_ENABLE_DEBUG_LOG()
+				Outf("LvMouseState::ProcessInput - Current mouse state:\n\t");
+				auto GetMBState = [&](GameInputMouseButtons InButton) -> char
+				{
+					return (NewInput.buttons & InButton) ? '1' : '0';
+				};
+				Outf("Buttons: L: %c, R: %c, M: %c\n",
+					GetMBState(GameInputMouseLeftButton),
+					GetMBState(GameInputMouseRightButton),
+					GetMBState(GameInputMouseMiddleButton));
+				Outf("\tPos: (%d, %d)\n", NewInput.positionX, NewInput.positionY);
+				Outf("\tWheel: (%d, %d)\n", NewInput.wheelX, NewInput.wheelY);
+			#endif // LVINPUT_ENABLE_DEBUG_LOG
 				CurrReadingID = NewReading;
 				CurrReadingTs = NewReadingTs;
 				CurrInput = NewInput;
@@ -372,7 +396,7 @@ namespace Leviathan
 			u64 NewReadingTs = NewReading->GetTimestamp();
 			if (NewReading == CurrReadingID || NewReadingTs == CurrReadingTs)
 			{
-				Outf("LvGamepadState::ProcessInput - Already at latest input state.\n");
+				//Outf("LvGamepadState::ProcessInput - Already at latest input state.\n");
 				return false;
 			}
 			Assert(NewReadingTs > CurrReadingTs);
@@ -380,6 +404,19 @@ namespace Leviathan
 			GamepadState_T NewInput{};
 			if (NewReading->GetGamepadState(&NewInput))
 			{
+			#if LVINPUT_ENABLE_DEBUG_LOG()
+				auto GetButtonState = [&](GameInputGamepadButtons InButton) -> char
+				{
+					return (NewInput.buttons & InButton) ? '1' : '0';
+				};
+				Outf("LvGamepadState::ProcessInput - Gamepad state:\n");
+				Outf("\tMenu: %c\tView: %c\n", GetButtonState(GameInputGamepadMenu), GetButtonState(GameInputGamepadView));
+				Outf("\tA: %c, B: %c, X: %c, Y: %c\n", GetButtonState(GameInputGamepadA), GetButtonState(GameInputGamepadB), GetButtonState(GameInputGamepadX), GetButtonState(GameInputGamepadY));
+				Outf("\tDpad - U %c, D %c, L %c, R %c\n", GetButtonState(GameInputGamepadDPadUp), GetButtonState(GameInputGamepadDPadDown), GetButtonState(GameInputGamepadDPadLeft), GetButtonState(GameInputGamepadDPadRight));
+				Outf("\tLB: %c, RB: %c\n", GetButtonState(GameInputGamepadLeftShoulder), GetButtonState(GameInputGamepadRightShoulder));
+				Outf("\tLeftStick: (%.02f, %.02f)    ", NewInput.leftThumbstickX, NewInput.leftThumbstickY);
+				Outf("RightStick: (%.02f, %.02f)\n", NewInput.rightThumbstickX, NewInput.rightThumbstickY);
+			#endif // LVINPUT_ENABLE_DEBUG_LOG
 				CurrReadingID = NewReading;
 				CurrReadingTs = NewReadingTs;
 				CurrInput = NewInput;

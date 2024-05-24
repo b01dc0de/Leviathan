@@ -3,6 +3,9 @@
 
 namespace Leviathan
 {
+
+#define LVINPUT_ENABLE_DEBUG_LOG() (1)
+
 	inline namespace LvInput
 	{
 		enum LVINPUT_KEYCODE
