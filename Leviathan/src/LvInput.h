@@ -10,116 +10,116 @@ namespace Leviathan
 	{
 		enum LVINPUT_KEYCODE
 		{
-			LVINPUT_INVALID = -1,
-			LVINPUT_UNDEFINED = 0,
-			LVINPUT_UNUSED = 0,
-			LVINPUT_RESERVED = 0,
+			LV_KEY_INVALID = -1,
+			LV_KEY_UNDEFINED = 0,
+			LV_KEY_UNUSED = 0,
+			LV_KEY_RESERVED = 0,
 			// Modifiers
-			LVINPUT_SHIFT,
-			LVINPUT_CTRL,
-			LVINPUT_ALT,
-			LVINPUT_SUPER,
+			LV_KEY_SHIFT,
+			LV_KEY_CTRL,
+			LV_KEY_ALT,
+			LV_KEY_SUPER,
 			// Control characters
-			LVINPUT_ESC,
-			LVINPUT_TAB,
-			LVINPUT_CAPSLOCK,
-			LVINPUT_BACKSPACE,
-			LVINPUT_ENTER,
-			LVINPUT_SPACE,
-			LVINPUT_PRINTSCREEN,
+			LV_KEY_ESC,
+			LV_KEY_TAB,
+			LV_KEY_CAPSLOCK,
+			LV_KEY_BACKSPACE,
+			LV_KEY_ENTER,
+			LV_KEY_SPACE,
+			LV_KEY_PRINTSCREEN,
 			// Page navigation
-			LVINPUT_END,
-			LVINPUT_HOME,
-			LVINPUT_INSERT,
-			LVINPUT_DEL,
-			LVINPUT_PAGEUP,
-			LVINPUT_PAGEDOWN,
+			LV_KEY_END,
+			LV_KEY_HOME,
+			LV_KEY_INSERT,
+			LV_KEY_DEL,
+			LV_KEY_PAGEUP,
+			LV_KEY_PAGEDOWN,
 			// Arrow keys
-			LVINPUT_LEFT,
-			LVINPUT_UP,
-			LVINPUT_RIGHT,
-			LVINPUT_DOWN,
+			LV_KEY_LEFT,
+			LV_KEY_UP,
+			LV_KEY_RIGHT,
+			LV_KEY_DOWN,
 			// Number row:
-			LVINPUT_KEY_0, // 	0 key
-			LVINPUT_KEY_1, // 	1 key
-			LVINPUT_KEY_2, // 	2 key
-			LVINPUT_KEY_3, // 	3 key
-			LVINPUT_KEY_4, // 	4 key
-			LVINPUT_KEY_5, // 	5 key
-			LVINPUT_KEY_6, // 	6 key
-			LVINPUT_KEY_7, // 	7 key
-			LVINPUT_KEY_8, // 	8 key
-			LVINPUT_KEY_9, // 	9 key
+			LV_KEY_0, // 	0 key
+			LV_KEY_1, // 	1 key
+			LV_KEY_2, // 	2 key
+			LV_KEY_3, // 	3 key
+			LV_KEY_4, // 	4 key
+			LV_KEY_5, // 	5 key
+			LV_KEY_6, // 	6 key
+			LV_KEY_7, // 	7 key
+			LV_KEY_8, // 	8 key
+			LV_KEY_9, // 	9 key
 			// A-Z character keys:
-			LVINPUT_KEY_A,
-			LVINPUT_KEY_B,
-			LVINPUT_KEY_C,
-			LVINPUT_KEY_D,
-			LVINPUT_KEY_E,
-			LVINPUT_KEY_F,
-			LVINPUT_KEY_G,
-			LVINPUT_KEY_H,
-			LVINPUT_KEY_I,
-			LVINPUT_KEY_J,
-			LVINPUT_KEY_K,
-			LVINPUT_KEY_L,
-			LVINPUT_KEY_M,
-			LVINPUT_KEY_N,
-			LVINPUT_KEY_O,
-			LVINPUT_KEY_P,
-			LVINPUT_KEY_Q,
-			LVINPUT_KEY_R,
-			LVINPUT_KEY_S,
-			LVINPUT_KEY_T,
-			LVINPUT_KEY_U,
-			LVINPUT_KEY_V,
-			LVINPUT_KEY_W,
-			LVINPUT_KEY_X,
-			LVINPUT_KEY_Y,
-			LVINPUT_KEY_Z,
+			LV_KEY_A,
+			LV_KEY_B,
+			LV_KEY_C,
+			LV_KEY_D,
+			LV_KEY_E,
+			LV_KEY_F,
+			LV_KEY_G,
+			LV_KEY_H,
+			LV_KEY_I,
+			LV_KEY_J,
+			LV_KEY_K,
+			LV_KEY_L,
+			LV_KEY_M,
+			LV_KEY_N,
+			LV_KEY_O,
+			LV_KEY_P,
+			LV_KEY_Q,
+			LV_KEY_R,
+			LV_KEY_S,
+			LV_KEY_T,
+			LV_KEY_U,
+			LV_KEY_V,
+			LV_KEY_W,
+			LV_KEY_X,
+			LV_KEY_Y,
+			LV_KEY_Z,
 			// Punctuation
-			LVINPUT_KEY_BACKTICK,
-			LVINPUT_KEY_MINUS,
-			LVINPUT_KEY_EQUAL,
-			LVINPUT_KEY_LBRACKET,
-			LVINPUT_KEY_RBRACKET,
-			LVINPUT_KEY_BACKSLASH,
-			LVINPUT_KEY_SEMICOLON,
-			LVINPUT_KEY_QUOTE,
-			LVINPUT_KEY_COMMA,
-			LVINPUT_KEY_PERIOD,
-			LVINPUT_KEY_SLASH,
+			LV_KEY_BACKTICK,
+			LV_KEY_MINUS,
+			LV_KEY_EQUAL,
+			LV_KEY_LBRACKET,
+			LV_KEY_RBRACKET,
+			LV_KEY_BACKSLASH,
+			LV_KEY_SEMICOLON,
+			LV_KEY_QUOTE,
+			LV_KEY_COMMA,
+			LV_KEY_PERIOD,
+			LV_KEY_SLASH,
 			// Function keys
-			LVINPUT_KEY_F1,
-			LVINPUT_KEY_F2,
-			LVINPUT_KEY_F3,
-			LVINPUT_KEY_F4,
-			LVINPUT_KEY_F5,
-			LVINPUT_KEY_F6,
-			LVINPUT_KEY_F7,
-			LVINPUT_KEY_F8,
-			LVINPUT_KEY_F9,
-			LVINPUT_KEY_F10,
-			LVINPUT_KEY_F11,
-			LVINPUT_KEY_F12,
+			LV_KEY_F1,
+			LV_KEY_F2,
+			LV_KEY_F3,
+			LV_KEY_F4,
+			LV_KEY_F5,
+			LV_KEY_F6,
+			LV_KEY_F7,
+			LV_KEY_F8,
+			LV_KEY_F9,
+			LV_KEY_F10,
+			LV_KEY_F11,
+			LV_KEY_F12,
 			// Numpad
-			LVINPUT_NUMPAD0,
-			LVINPUT_NUMPAD1,
-			LVINPUT_NUMPAD2,
-			LVINPUT_NUMPAD3,
-			LVINPUT_NUMPAD4,
-			LVINPUT_NUMPAD5,
-			LVINPUT_NUMPAD6,
-			LVINPUT_NUMPAD7,
-			LVINPUT_NUMPAD8,
-			LVINPUT_NUMPAD9,
-			LVINPUT_MULTIPLY,
-			LVINPUT_ADD,
-			LVINPUT_SUBTRACT,
-			LVINPUT_DIVIDE,
-			LVINPUT_DECIMAL,
+			LV_KEY_NUMPAD0,
+			LV_KEY_NUMPAD1,
+			LV_KEY_NUMPAD2,
+			LV_KEY_NUMPAD3,
+			LV_KEY_NUMPAD4,
+			LV_KEY_NUMPAD5,
+			LV_KEY_NUMPAD6,
+			LV_KEY_NUMPAD7,
+			LV_KEY_NUMPAD8,
+			LV_KEY_NUMPAD9,
+			LV_KEY_MULTIPLY,
+			LV_KEY_ADD,
+			LV_KEY_SUBTRACT,
+			LV_KEY_DIVIDE,
+			LV_KEY_DECIMAL,
 			// Enum max/count/num
-			LVINPUT_MAX
+			LV_KEY_MAX
 		};
 
 		LVINPUT_KEYCODE WindowsVK_To_LvInput(unsigned int VirtualKey);
@@ -132,9 +132,9 @@ namespace Leviathan
 
 		struct LvKeyInputCombo
 		{
-			LVINPUT_KEYCODE LKC0 = LVINPUT_UNUSED;
-			LVINPUT_KEYCODE LKC1 = LVINPUT_UNUSED;
-			LVINPUT_KEYCODE LKC2 = LVINPUT_UNUSED;
+			LVINPUT_KEYCODE LKC0 = LV_KEY_UNUSED;
+			LVINPUT_KEYCODE LKC1 = LV_KEY_UNUSED;
+			LVINPUT_KEYCODE LKC2 = LV_KEY_UNUSED;
 		};
 
 		// Do not support more than 16 keys pressed at same time
@@ -201,34 +201,31 @@ namespace Leviathan
 
 		enum LVINPUT_GAMEPAD_BUTTON
 		{
-			// CKA_TODO: Rename the above LVINPUT_KEYCODES that conflict with buttons here
-			// CKA_TODO: All LVINPUT_KEYCODES should start with LVINPUT_KEY_...
-			// CKA_TODO: After the above, remove the TMP_ prefix from enum values below:
-			TMP_LVINPUT_GAMEPAD_INVALID = -1,
+			LVINPUT_GAMEPAD_INVALID = -1,
 			// Dpad
-			TMP_LVINPUT_DPAD_UP = 0,
-			TMP_LVINPUT_DPAD_LEFT,
-			TMP_LVINPUT_DPAD_DOWN,
-			TMP_LVINPUT_DPAD_RIGHT,
-			// Face buttons: use direction here because of different layouts (Playstation, Xbox, Nintendo, etc.)
-			TMP_LVINPUT_FACE_UP,
-			TMP_LVINPUT_FACE_LEFT,
-			TMP_LVINPUT_FACE_DOWN,
-			TMP_LVINPUT_FACE_RIGHT,
+			LVINPUT_GAMEPAD_DPAD_UP = 0,
+			LVINPUT_GAMEPAD_DPAD_LEFT,
+			LVINPUT_GAMEPAD_DPAD_DOWN,
+			LVINPUT_GAMEPAD_DPAD_RIGHT,
+			// Face buttons: use direction here b/c Playstation, Xbox, Nintendo, etc.
+			LVINPUT_GAMEPAD_FACE_UP,
+			LVINPUT_GAMEPAD_FACE_LEFT,
+			LVINPUT_GAMEPAD_FACE_DOWN,
+			LVINPUT_GAMEPAD_FACE_RIGHT,
 			// Shoulder buttons
-			TMP_LVINPUT_LSHOULDER,
-			TMP_LVINPUT_RSHOULDER,
-			TMP_LVINPUT_LTRIGGER,
-			TMP_LVINPUT_RTRIGGER,
+			LVINPUT_GAMEPAD_LSHOULDER,
+			LVINPUT_GAMEPAD_RSHOULDER,
+			LVINPUT_GAMEPAD_LTRIGGER,
+			LVINPUT_GAMEPAD_RTRIGGER,
 			// Stick buttons
-			TMP_LVINPUT_LSTICK,
-			TMP_LVINPUT_RSTICK,
+			LVINPUT_GAMEPAD_LSTICK,
+			LVINPUT_GAMEPAD_RSTICK,
 			// General interface (legacy: start/select)
-			TMP_LVINPUT_MENU, // Main 'Start'/'Options'/etc button
-			TMP_LVINPUT_MORE, // The 'Share' button in PS5/XSX
-			TMP_LVINPUT_HOME, // General platform 'Logo' button
+			LVINPUT_GAMEPAD_MENU, // Main 'Start'/'Options'/etc button
+			LVINPUT_GAMEPAD_MORE, // The 'Share' button in PS5/XSX
+			LVINPUT_GAMEPAD_HOME, // General platform 'Logo' button
 			//
-			TMP_LVINPUT_GAMEPAD_MAX
+			LVINPUT_GAMEPAD_MAX
 		};
 
 		struct LvGamepadState
@@ -241,7 +238,7 @@ namespace Leviathan
 		#if LVINPUT_ENABLE_AGNOSTIC_STATE()
 			struct
 			{
-				ButtonState_T Buttons[TMP_LVINPUT_GAMEPAD_MAX];
+				ButtonState_T Buttons[LVINPUT_GAMEPAD_MAX];
 				f2D LeftStick;
 				f2D RightSick;
 				float LeftTrigger = 0.0f;

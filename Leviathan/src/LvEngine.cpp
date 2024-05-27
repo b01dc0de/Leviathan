@@ -171,9 +171,9 @@ namespace Leviathan
 
 	constexpr LvKeyInputCombo EscapeShortcuts[] =
 	{
-		{LVINPUT_ESC},
-		{LVINPUT_ALT, LVINPUT_KEY_F4},
-		{LVINPUT_CTRL, LVINPUT_KEY_Q},
+		{LV_KEY_ESC},
+		{LV_KEY_ALT, LV_KEY_F4},
+		{LV_KEY_CTRL, LV_KEY_Q},
 	};
 	constexpr s32 NumEscapeShortcuts = LV_ARRAYSIZE(EscapeShortcuts);
 
