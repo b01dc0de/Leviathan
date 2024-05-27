@@ -201,13 +201,9 @@ namespace Leviathan
 			}
 			if (bResult)
 			{
-				for (u32 EscComboIdx = 0; EscComboIdx < NumEscapeShortcuts; EscComboIdx++)
+				if (KeyboardState.AnyCombosPressed(EscapeShortcuts, NumEscapeShortcuts))
 				{
-					if (KeyboardState.IsKeyComboPressed(EscapeShortcuts[EscComboIdx]))
-					{
-						bLvRunning = false;
-						break;
-					}
+					bLvRunning = false;
 				}
 			}
 			else

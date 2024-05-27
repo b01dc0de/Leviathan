@@ -152,11 +152,11 @@ namespace Leviathan
 			bool IsKeyPressed(u32 InVK);
 			bool IsKeyPressed(LVINPUT_KEYCODE InLKC);
 			bool IsKeyComboPressed(LvKeyInputCombo InKeys);
+			bool AnyKeysPressed(const LVINPUT_KEYCODE* InLvKeys, u32 NumKeys);
+			bool AnyCombosPressed(const LvKeyInputCombo* InCombos, u32 NumCombos);
 
 			bool ProcessInput(GameInputReading_T* NewReading);
 		};
-
-
 
 		enum LVINPUT_MOUSE_BUTTON
 		{

@@ -318,17 +318,34 @@ namespace Leviathan
 				(InKeys.LKC2 == 0 ? true : IsKeyPressed(InKeys.LKC2));
 		}
 
+		bool LvKeyboardState::AnyKeysPressed(const LVINPUT_KEYCODE* InLvKeys, u32 NumKeys)
+		{
+			for (u32 KeyIdx = 0; KeyIdx < NumKeys; KeyIdx++)
+			{
+				if (IsKeyPressed(InLvKeys[KeyIdx])) { return true; }
+			}
+			return false;
+		}
+
+		bool LvKeyboardState::AnyCombosPressed(const LvKeyInputCombo* InCombos, u32 NumCombos)
+		{
+			for (u32 ComboIdx = 0; ComboIdx < NumCombos; ComboIdx++)
+			{
+				if (IsKeyComboPressed(InCombos[ComboIdx])) { return true; }
+			}
+			return false;
+		}
+
 		bool LvKeyboardState::ProcessInput(GameInputReading_T* NewReading)
 		{
 			Assert(NewReading);
 			Assert(NewReading->GetInputKind() == this->Type);
 			u64 NewReadingTs = NewReading->GetTimestamp();
-			if (NewReading == CurrReadingID || NewReadingTs == CurrReadingTs)
+			if (NewReading == CurrReadingID || NewReadingTs <= CurrReadingTs)
 			{
 				//Outf("LvKeyboardState::ProcessInput - Already at latest input state.\n");
 				return false;
 			}
-			Assert(NewReadingTs > CurrReadingTs);
 			bool bResult;
 			u32 NewPressedCount = NewReading->GetKeyCount();
 			if (NewPressedCount <= LvInput_MaxKeysPressedCount)
@@ -376,12 +393,11 @@ namespace Leviathan
 			Assert(NewReading);
 			Assert(NewReading->GetInputKind() == this->Type);
 			u64 NewReadingTs = NewReading->GetTimestamp();
-			if (NewReading == CurrReadingID || NewReadingTs == CurrReadingTs)
+			if (NewReading == CurrReadingID || NewReadingTs <= CurrReadingTs)
 			{
 				//Outf("LvMouseState::ProcessInput - Already at latest input state.\n");
 				return false;
 			}
-			Assert(NewReadingTs > CurrReadingTs);
 			bool bResult;
 			MouseState_T NewInput{};
 			if (NewReading->GetMouseState(&NewInput))
@@ -417,12 +433,11 @@ namespace Leviathan
 			Assert(NewReading);
 			Assert(NewReading->GetInputKind() == this->Type);
 			u64 NewReadingTs = NewReading->GetTimestamp();
-			if (NewReading == CurrReadingID || NewReadingTs == CurrReadingTs)
+			if (NewReading == CurrReadingID || NewReadingTs <= CurrReadingTs)
 			{
 				//Outf("LvGamepadState::ProcessInput - Already at latest input state.\n");
 				return false;
 			}
-			Assert(NewReadingTs > CurrReadingTs);
 			bool bResult;
 			GamepadState_T NewInput{};
 			if (NewReading->GetGamepadState(&NewInput))
