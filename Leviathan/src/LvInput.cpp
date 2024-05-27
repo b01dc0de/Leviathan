@@ -287,6 +287,37 @@ namespace Leviathan
 			return Result;
 		}
 
+		bool LvKeyboardState::IsKeyPressed(u32 InVK)
+		{
+			for (u32 KeyIdx = 0; KeyIdx < CurrPressedCount; KeyIdx++)
+			{
+				if (InVK == CurrInput[KeyIdx].virtualKey)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		bool LvKeyboardState::IsKeyPressed(LVINPUT_KEYCODE InLKC)
+		{
+			for (u32 KeyIdx = 0; KeyIdx < CurrPressedCount; KeyIdx++)
+			{
+				if (InLKC == WindowsVK_To_LvInput(CurrInput[KeyIdx].virtualKey))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		bool LvKeyboardState::IsKeyComboPressed(LvKeyInputCombo InKeys)
+		{
+			return (InKeys.LKC0 == 0 ? true : IsKeyPressed(InKeys.LKC0)) &&
+				(InKeys.LKC1 == 0 ? true : IsKeyPressed(InKeys.LKC1)) &&
+				(InKeys.LKC2 == 0 ? true : IsKeyPressed(InKeys.LKC2));
+		}
+
 		bool LvKeyboardState::ProcessInput(GameInputReading_T* NewReading)
 		{
 			Assert(NewReading);
@@ -304,14 +335,6 @@ namespace Leviathan
 			{
 				u32 NumActive = NewReading->GetKeyState(LvInput_MaxKeysPressedCount, CurrInput);
 				// Manually zero-out non-active key states
-				/* 
-				* KeysA[]    = { 0, 0, 0, 0, 0, 0, 0, 0} // 0 keys pressed
-				* KeysB[]    = { 1, 1, 1, 1, 1, 1, 0, 0} // 6 keys pressed
-				* NewKeys[] = { 1, 1, 1, 0, 0, 0, 0, 0} // 3 keys pressed
-				* 
-				* Case: KeysB to NewKeys; need to zero out indices[3, 4, 5]
-				* Case: KeysA to NewKeys; no work needed
-				 */
 				u32 NumKeysZeroed = 0; // For debugging purposes
 				for (u32 KeyIdx = NumActive; KeyIdx < CurrPressedCount; KeyIdx++)
 				{
@@ -363,7 +386,7 @@ namespace Leviathan
 			MouseState_T NewInput{};
 			if (NewReading->GetMouseState(&NewInput))
 			{
-			#if LVINPUT_ENABLE_DEBUG_LOG()
+			#if LVINPUT_ENABLE_DEBUG_LOG() && 0
 				Outf("LvMouseState::ProcessInput - Current mouse state:\n\t");
 				auto GetMBState = [&](GameInputMouseButtons InButton) -> char
 				{

@@ -169,6 +169,14 @@ namespace Leviathan
 		}
 	}
 
+	constexpr LvKeyInputCombo EscapeShortcuts[] =
+	{
+		{LVINPUT_ESC},
+		{LVINPUT_ALT, LVINPUT_KEY_F4},
+		{LVINPUT_CTRL, LVINPUT_KEY_Q},
+	};
+	constexpr s32 NumEscapeShortcuts = LV_ARRAYSIZE(EscapeShortcuts);
+
 	void LvEngineInstance::PollInput()
 	{
 		IGameInputReading* CurrInputReading = nullptr;
@@ -191,10 +199,22 @@ namespace Leviathan
 			{
 				bResult = GamepadState.ProcessInput(CurrInputReading);
 			}
-			if (!bResult)
+			if (bResult)
+			{
+				for (u32 EscComboIdx = 0; EscComboIdx < NumEscapeShortcuts; EscComboIdx++)
+				{
+					if (KeyboardState.IsKeyComboPressed(EscapeShortcuts[EscComboIdx]))
+					{
+						bLvRunning = false;
+						break;
+					}
+				}
+			}
+			else
 			{
 				// Idk, some error handling
 			}
+			
 		}
 	}
 

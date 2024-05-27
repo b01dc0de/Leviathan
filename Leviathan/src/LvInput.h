@@ -130,6 +130,13 @@ namespace Leviathan
 		using GamepadState_T = GameInputGamepadState;
 		using GameInputReading_T = IGameInputReading;
 
+		struct LvKeyInputCombo
+		{
+			LVINPUT_KEYCODE LKC0 = LVINPUT_UNUSED;
+			LVINPUT_KEYCODE LKC1 = LVINPUT_UNUSED;
+			LVINPUT_KEYCODE LKC2 = LVINPUT_UNUSED;
+		};
+
 		// Do not support more than 16 keys pressed at same time
 		static constexpr int LvInput_MaxKeysPressedCount = 16;
 		struct LvKeyboardState
@@ -142,9 +149,14 @@ namespace Leviathan
 		#if LVINPUT_ENABLE_AGNOSTIC_STATE()
 			LVINPUT_KEYCODE CurrState_Agn[LvInput_MaxKeysPressed];
 		#endif // LVINPUT_ENABLE_AGNOSTIC_STATE
+			bool IsKeyPressed(u32 InVK);
+			bool IsKeyPressed(LVINPUT_KEYCODE InLKC);
+			bool IsKeyComboPressed(LvKeyInputCombo InKeys);
 
 			bool ProcessInput(GameInputReading_T* NewReading);
 		};
+
+
 
 		enum LVINPUT_MOUSE_BUTTON
 		{
