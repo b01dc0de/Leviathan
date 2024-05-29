@@ -16,11 +16,11 @@ namespace Leviathan
 
 		LvTime EngineTime{};
 
-		IGameInput* GameInputInst = nullptr;
+		IGameInput* GameInputInst{ nullptr };
 		GameInputKind EnabledInputTypes = GameInputKindKeyboard|GameInputKindMouse|GameInputKindGamepad;
-		LvKeyboardState KeyboardState;
-		LvMouseState MouseState;
-		LvGamepadState GamepadState;
+		LvKeyboardState KeyboardState{};
+		LvMouseState MouseState{};
+		LvGamepadState GamepadState{};
 
 		void PrivLvInitWindow();
 
@@ -145,7 +145,7 @@ namespace Leviathan
 			EngineTime.Measure_EngineFrame();
 
 			(void)EnginePrintStatFreq;
-			if (0) //(LvEngineFrameID % EnginePrintStatFreq == 0)
+			if (LvEngineFrameID % EnginePrintStatFreq == 0)
 			{
 				double LvTimeElapsed = EngineTime.CurrTime();
 				double LvAvgFrameCost = LvTimeElapsed / ((double)LvEngineFrameID + 1);

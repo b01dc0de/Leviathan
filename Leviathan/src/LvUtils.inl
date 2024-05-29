@@ -37,7 +37,7 @@ namespace Leviathan
 		template <typename T>
 		static T* NewArray(SzType NumItems)
 		{
-			return new T[NumItems];
+			return new T[NumItems]{};
 		}
 
 		template <typename T>

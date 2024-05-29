@@ -51,6 +51,9 @@
     <ClCompile Include="src\LvInput.cpp">
       <Filter>src\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="src\LvDebugDrawing.cpp">
+      <Filter>src\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -99,6 +102,9 @@
       <Filter>src\Common</Filter>
     </ClInclude>
     <ClInclude Include="src\LvGraphicsIncludes.h">
+      <Filter>src\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LvDebugDrawing.h">
       <Filter>src\Graphics</Filter>
     </ClInclude>
   </ItemGroup>

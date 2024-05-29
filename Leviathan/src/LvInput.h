@@ -179,12 +179,6 @@ namespace Leviathan
 		#if LVINPUT_ENABLE_AGNOSTIC_STATE()
 			struct
 			{
-				/*
-				bool LeftButton = false;
-				bool RightButton = false;
-				bool MiddleButton = false;
-				bool WheelButton = false; // Vertical scroll wheel
-				*/
 				ButtonState_T Buttons[LVINPUT_MOUSE_BUTTON_MAX];
 
 				int VScroll = 0;
@@ -203,15 +197,15 @@ namespace Leviathan
 		{
 			LVINPUT_GAMEPAD_INVALID = -1,
 			// Dpad
-			LVINPUT_GAMEPAD_DPAD_UP = 0,
-			LVINPUT_GAMEPAD_DPAD_LEFT,
-			LVINPUT_GAMEPAD_DPAD_DOWN,
+			LVINPUT_GAMEPAD_DPAD_LEFT = 0,
 			LVINPUT_GAMEPAD_DPAD_RIGHT,
+			LVINPUT_GAMEPAD_DPAD_UP,
+			LVINPUT_GAMEPAD_DPAD_DOWN,
 			// Face buttons: use direction here b/c Playstation, Xbox, Nintendo, etc.
-			LVINPUT_GAMEPAD_FACE_UP,
 			LVINPUT_GAMEPAD_FACE_LEFT,
-			LVINPUT_GAMEPAD_FACE_DOWN,
 			LVINPUT_GAMEPAD_FACE_RIGHT,
+			LVINPUT_GAMEPAD_FACE_UP,
+			LVINPUT_GAMEPAD_FACE_DOWN,
 			// Shoulder buttons
 			LVINPUT_GAMEPAD_LSHOULDER,
 			LVINPUT_GAMEPAD_RSHOULDER,

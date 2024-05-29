@@ -76,4 +76,11 @@
 #define LV_ARRAYSIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 #define LV_MAKE_CSTR(x) #x
 
+/* LV COMMON DEFINITIONS */
+#define LV_STRUCT_DEFAULT_BIG4(Typename) \
+	Typename() = default; \
+	Typename(const Typename&) = default; \
+	Typename& operator=(const Typename&) = default; \
+	~Typename() = default;
+
 #endif // LVBUILDDEFINES_H
