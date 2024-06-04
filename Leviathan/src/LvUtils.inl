@@ -3,6 +3,12 @@
 
 namespace Leviathan
 {
+	template <typename T>
+	T&& LvMove(T& Ref)
+	{
+		return static_cast<T&&>(Ref);
+	}
+
 	struct LvArray_Utils
 	{
 		using SzType = __int64;
@@ -15,7 +21,6 @@ namespace Leviathan
 		{
 			return (0 <= ItemIdx) && (ItemIdx < NumItems);
 		}
-
 		template <typename T>
 		static bool IsValidInitParams(T* InList, SzType InNumItems, SzType InCapacity)
 		{
@@ -51,7 +56,7 @@ namespace Leviathan
 		{
 			for (SzType ItemIdx = 0; ItemIdx < NumItems; ItemIdx++)
 			{
-				DstList[ItemIdx] = SrcList[ItemIdx];
+				DstList[ItemIdx] = LvMove(SrcList[ItemIdx]);
 			}
 		}
 
@@ -75,11 +80,34 @@ namespace Leviathan
 		SzType NumItems = 0;
 		SzType Capacity = 0;
 
-		// CKA_NOTE: This does NOT delete any items, only resets NumItems to 0
+		void DeleteAll()
+		{
+			static_assert(std::is_pointer_v<T>);
+			for (SzType Idx = 0; Idx < NumItems; Idx++)
+			{
+				delete List[Idx];
+				List[Idx] = nullptr;
+			}
+		}
 		void Empty()
 		{
+			// CKA_NOTE: does not delete any items, only resets NumItems to 0
 			NumItems = 0;
 		}
+		void RemoveItemQ(SzType IdxToRemove)
+		{
+			List[IdxToRemove] = LvMove(List[NumItems - 1]);
+			NumItems--;
+		}
+		void RemoveItemLinear(SzType IdxToRemove)
+		{
+			NumItems--;
+			for (SzType Idx = IdxToRemove; Idx < NumItems; Idx++)
+			{
+				List[Idx] = LvMove(List[Idx + 1]);
+			}
+		}
+
 		void AddItem(const T& NewItem)
 		{
 			if (!(NumItems + 1 <= Capacity))

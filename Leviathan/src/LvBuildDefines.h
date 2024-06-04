@@ -56,6 +56,9 @@
 	#define LV_FAIL() \
 		LV_OUTF("LV FAIL: In Function: %s\nIn File: " __FILE__ "\tLine: %d \n", __func__, __LINE__); \
 		LV_DBG_BREAK()
+	#define LV_FAILMSG(msg) \
+		LV_OUTF("LV FAIL: %s\n\t In Function: %s\nIn File: " __FILE__ "\tLine: %d \n", msg, __func__, __LINE__); \
+		LV_DBG_BREAK()
 #else
 	#define LV_OUTF(...) Outf(__VA_ARGS__)
 	#define LV_DBGOUTF(...) LV_NOOP()
@@ -64,6 +67,9 @@
 		if (!(exp)) LV_OUTF("LV ERROR: Failed expression '" #exp "'\n\tIn Function: %s\nIn File: " __FILE__ "\tLine: %d \n", __func__, __LINE__)
 	#define LV_FAIL() \
 		LV_OUTF("LV FAIL: In Function: %s\nIn File: " __FILE__ "\tLine: %d \n", __func__, __LINE__); \
+		*(int*)0 = 0xFF
+	#define LV_FAILMSG(msg) \
+		LV_OUTF("LV FAIL: %s\n\t In Function: %s\nIn File: " __FILE__ "\tLine: %d \n", msg, __func__, __LINE__); \
 		*(int*)0 = 0xFF
 #endif /* LV BUILD CONFIG DEFINITIONS */
 

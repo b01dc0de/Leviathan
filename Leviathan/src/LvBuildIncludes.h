@@ -17,4 +17,8 @@
 	#error "Build platform is undefined"
 #endif /* LV BUILD PLATFORM INCLUDES */
 
+/* C/C++ STANDARD LIBRARY INLCUDES */
+#include <type_traits>
+/* C/C++ STANDARD LIBRARY INLCUDES */
+
 #endif // LVBUILDINCLUDES_H

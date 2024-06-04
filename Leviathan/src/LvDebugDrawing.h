@@ -5,7 +5,8 @@ namespace Leviathan
 {
 	enum LVDEBUG_SHAPE_TYPE
 	{
-		LVDEBUG_SHAPE_POINT,
+		LVDEBUG_SHAPE_INVALID = -1,
+		LVDEBUG_SHAPE_POINT = 0,
 		LVDEBUG_SHAPE_LINE,
 		LVDEBUG_SHAPE_SQUARE,
 		LVDEBUG_SHAPE_BOX,
@@ -93,14 +94,10 @@ namespace Leviathan
 
 	struct LvDebugDrawing
 	{
-		u32 IDCounter{ 0u };
-		LvArray<LvDebugShape> BatchPersistent;
-		LvArray<LvDebugShape> BatchTransient;
-
-		void PvDraw(ID3D11DeviceContext* InContext);
 		static void Draw(ID3D11DeviceContext* InContext);
 
-		DbgShapeIDType PvAddShape(LVDEBUG_SHAPE_TYPE ShapeType, const LvDebugShapeParameters& InParams, const fVector& InColor = LvDebugShape::DefaultColor, bool bPersis = true, float InThiccness = LvDebugShape::DefaultThiccness);
+		static bool RemoveShape(DbgShapeIDType ID);
+
 		static DbgShapeIDType AddShape(LVDEBUG_SHAPE_TYPE ShapeType, const LvDebugShapeParameters& InParams, const fVector& InColor = LvDebugShape::DefaultColor, bool bPersis = true, float InThiccness = LvDebugShape::DefaultThiccness);
 
 		static DbgShapeIDType AddPoint(const fVector& InP, const fVector& InColor = LvDebugShape::DefaultColor, bool bPersis = true, float InThiccness = LvDebugShape::DefaultThiccness);

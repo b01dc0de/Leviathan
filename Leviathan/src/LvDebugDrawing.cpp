@@ -6,9 +6,21 @@
 namespace Leviathan
 {
 	const fVector LvDebugShape::DefaultColor{ 1.0f, 0.0f, 1.0f };
-	LvDebugDrawing Inst{};
 
-	void LvDebugDrawing::PvDraw(ID3D11DeviceContext* InContext)
+	struct LvDebugDrawingInstance
+	{
+		DbgShapeIDType IDCounter{ 0u };
+		LvArray<LvDebugShape> BatchPersistent;
+		LvArray<LvDebugShape> BatchTransient;
+
+		void Draw(ID3D11DeviceContext* InContext);
+		bool RemoveShape(DbgShapeIDType ID);
+		DbgShapeIDType AddShape(LVDEBUG_SHAPE_TYPE ShapeType, const LvDebugShapeParameters& InParams, const fVector& InColor = LvDebugShape::DefaultColor, bool bPersis = true, float InThiccness = LvDebugShape::DefaultThiccness);
+	};
+
+	static LvDebugDrawingInstance Inst;
+
+	void LvDebugDrawingInstance::Draw(ID3D11DeviceContext* InContext)
 	{
 		(void)InContext;
 		{
@@ -17,23 +29,47 @@ namespace Leviathan
 
 		{
 			// Draw persistent debug shapes
+			for (u32 PersisIdx = 0u; PersisIdx < BatchPersistent.NumItems; PersisIdx++)
+			{
+				// BatchPersistent[PersisIdx];
+			}
 		}
 
 		{
 			// Draw transient debug shapes
+			for (u32 TransientIdx = 0u; TransientIdx < BatchTransient.NumItems; TransientIdx++)
+			{
+				// BatchTransient[TransientIdx];
+			}
 		}
 
 		{
 			// Clear transient shapes
+			for (u32 TransientIdx = 0u; TransientIdx < BatchTransient.NumItems; TransientIdx++)
+			{
+				BatchTransient[TransientIdx].Type = LVDEBUG_SHAPE_INVALID;
+				BatchTransient[TransientIdx].ID = 0u;
+			}
+			BatchTransient.Empty();
 		}
 	}
 
-	void LvDebugDrawing::Draw(ID3D11DeviceContext* InContext)
+	bool LvDebugDrawingInstance::RemoveShape(DbgShapeIDType ID)
 	{
-		Inst.PvDraw(InContext);
+		bool bRemoved = false;
+		for (u32 PersisIdx = 0; PersisIdx < BatchPersistent.NumItems; PersisIdx++)
+		{
+			if (BatchPersistent[PersisIdx].ID == ID)
+			{
+				BatchPersistent.RemoveItemQ(PersisIdx);
+				bRemoved = true;
+				break;
+			}
+		}
+		return bRemoved;
 	}
 
-	DbgShapeIDType LvDebugDrawing::PvAddShape(LVDEBUG_SHAPE_TYPE ShapeType, const LvDebugShapeParameters& InParams, const fVector& InColor, bool bPersis, float InThiccness)
+	DbgShapeIDType LvDebugDrawingInstance::AddShape(LVDEBUG_SHAPE_TYPE ShapeType, const LvDebugShapeParameters& InParams, const fVector& InColor, bool bPersis, float InThiccness)
 	{
 		Assert(ShapeType != LVDEBUG_SHAPE_MAX);
 		LvDebugShape NewShape{};
@@ -87,9 +123,19 @@ namespace Leviathan
 		return NewShape.ID;
 	}
 
+	void LvDebugDrawing::Draw(ID3D11DeviceContext* InContext)
+	{
+		Inst.Draw(InContext);
+	}
+
+	bool LvDebugDrawing::RemoveShape(DbgShapeIDType ID)
+	{
+		return Inst.RemoveShape(ID);
+	}
+
 	DbgShapeIDType LvDebugDrawing::AddShape(LVDEBUG_SHAPE_TYPE ShapeType, const LvDebugShapeParameters& InParams, const fVector& InColor, bool bPersis, float InThiccness)
 	{
-		return Inst.PvAddShape(ShapeType, InParams, InColor, bPersis, InThiccness);
+		return Inst.AddShape(ShapeType, InParams, InColor, bPersis, InThiccness);
 	}
 
 	DbgShapeIDType LvDebugDrawing::AddPoint(const fVector& InP, const fVector& InColor, bool bPersis, float InThiccness)
