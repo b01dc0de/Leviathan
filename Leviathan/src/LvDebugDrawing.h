@@ -108,6 +108,8 @@ namespace Leviathan
 		static DbgShapeIDType AddCircle(const fVector& InCenter, float InRadius, const fVector& InColor = LvDebugShape::DefaultColor, bool bPersis = true, float InThiccness = LvDebugShape::DefaultThiccness);
 		static DbgShapeIDType AddSphere(const fVector& InCenter, float InRadius, const fVector& InColor = LvDebugShape::DefaultColor, bool bPersis = true, float InThiccness = LvDebugShape::DefaultThiccness);
 	};
+
+	BasicMeshColor* InitDebugShapes();
 }
 
 #endif // LVDEBUGDRAWING_H

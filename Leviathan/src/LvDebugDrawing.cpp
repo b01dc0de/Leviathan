@@ -1,5 +1,6 @@
 #include "LvCommon.h"
 #include "LvGraphics.h"
+#include "LvMesh.h"
 
 #include "LvDebugDrawing.h"
 
@@ -22,6 +23,76 @@ namespace Leviathan
 
 	void LvDebugDrawingInstance::Draw(ID3D11DeviceContext* InContext)
 	{
+
+		auto GetTopologyType = [](LVDEBUG_SHAPE_TYPE ShapeType) -> D3D11_PRIMITIVE_TOPOLOGY
+		{
+			D3D11_PRIMITIVE_TOPOLOGY Result = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+			switch (ShapeType)
+			{
+				case LVDEBUG_SHAPE_POINT:
+				{
+					Result = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+				} break;
+				case LVDEBUG_SHAPE_LINE:
+				{
+					Result = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+				} break;
+				case LVDEBUG_SHAPE_SQUARE:
+				{
+					Result = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+				} break;
+				case LVDEBUG_SHAPE_BOX:
+				{
+					Result = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+				} break;
+				case LVDEBUG_SHAPE_TRIANGLE:
+				{
+					Result = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+				} break;
+				case LVDEBUG_SHAPE_CIRCLE:
+				{
+					Result = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+				} break;
+				case LVDEBUG_SHAPE_SPHERE:
+				{
+					Result = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+				} break;
+				default:
+				{
+					Result = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+				} break;
+			}
+			return Result;
+		};
+
+		VertexColor VxPoint{ fVector{0.0f, 0.0f, 0.0f}, fVector{1.0f, 0.0f, 0.0f} };
+		VertexColor VxLine[] = {
+			{fVector{0.0f, 0.0f, 0.0f}, VxPoint.Color},
+			{fVector{0.0f, 1.0f, 0.0f}, VxPoint.Color}
+		};
+		VertexColor VxSquare[] = {
+			{fVector{0.0f, 0.0f, 0.0f}, VxPoint.Color},
+			{fVector{1.0f, 0.0f, 0.0f}, VxPoint.Color},
+			{fVector{1.0f, 1.0f, 0.0f}, VxPoint.Color},
+			{fVector{0.0f, 1.0f, 0.0f}, VxPoint.Color},
+		};
+		VertexColor VxBox[] = {
+			{fVector{0.0f, 0.0f, 0.0f}, VxPoint.Color},
+			{fVector{1.0f, 0.0f, 0.0f}, VxPoint.Color},
+			{fVector{1.0f, 1.0f, 0.0f}, VxPoint.Color},
+			{fVector{0.0f, 1.0f, 0.0f}, VxPoint.Color},
+			{fVector{0.0f, 0.0f, 1.0f}, VxPoint.Color},
+			{fVector{1.0f, 0.0f, 1.0f}, VxPoint.Color},
+			{fVector{1.0f, 1.0f, 1.0f}, VxPoint.Color},
+			{fVector{0.0f, 1.0f, 1.0f}, VxPoint.Color},
+		};
+		const float TriangleLength = 1.1547f; // ~ 2/sqrt(3)
+		VertexColor VxTriangle[] = {
+			{fVector{0.0f, 1.0f, 0.0f}, VxPoint.Color},
+			{fVector{-0.5f*TriangleLength, 0.0f, 0.0f}, VxPoint.Color},
+			{fVector{+0.5f*TriangleLength, 0.0f, 0.0f}, VxPoint.Color},
+		};
+
 		(void)InContext;
 		{
 			// Set common debug drawing state
@@ -192,5 +263,47 @@ namespace Leviathan
 		Params.Sphere.Center = InCenter;
 		Params.Sphere.Radius = InRadius;
 		return AddShape(LVDEBUG_SHAPE_SPHERE, Params, InColor, bPersis, InThiccness);
+	}
+
+	BasicMeshColor* InitDebugShapes()
+	{
+		// CKA_TODO:
+		/*
+		BasicMeshColor* DebugShapeMeshes = new BasicMeshColor[LVDEBUG_SHAPE_MAX]{};
+
+		{ // LVDEBUG_SHAPE_POINT
+			int NumVerts;
+			int NumPrims;
+			VertexColor* Verts = new VertexColor[(size_t)NumVerts];
+			PrimType* Prims = new PrimType[(size_t)NumPrims];
+
+		}
+
+		{ // LVDEBUG_SHAPE_LINE
+
+		}
+
+		{ // LVDEBUG_SHAPE_SQUARE
+
+		}
+
+		{ // LVDEBUG_SHAPE_BOX
+
+		}
+
+		{ // LVDEBUG_SHAPE_TRIANGLE
+
+		}
+
+		{ // LVDEBUG_SHAPE_CIRCLE
+
+		}
+
+		{ // LVDEBUG_SHAPE_SPHERE
+
+		}
+		*/
+
+		return nullptr;
 	}
 }
