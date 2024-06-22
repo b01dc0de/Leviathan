@@ -114,9 +114,6 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\LvPredefGraphics.inl">
-      <Filter>src\Graphics</Filter>
-    </None>
     <None Include="src\LvUtils.inl">
       <Filter>src\Common</Filter>
     </None>
