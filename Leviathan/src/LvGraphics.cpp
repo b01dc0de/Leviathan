@@ -248,11 +248,6 @@ namespace Leviathan
 		}
 	};
 
-	struct LvRenderPassState
-	{
-	};
-
-
 	struct LvGraphicsInstance
 	{
 		LvPredefGraphics PredefGFX;
@@ -291,6 +286,14 @@ namespace Leviathan
 
 		DXHandle<ID3D11Buffer> DX_WorldBuffer = nullptr;
 		DXHandle<ID3D11Buffer> DX_ViewProjBuffer = nullptr;
+
+		// D2D:
+		DXHandle<IDXGISurface> DXGI_BBSurface = nullptr;
+		DXHandle<ID2D1RenderTarget> DX_D2D_RT = nullptr;
+		DXHandle<ID2D1Factory> DX_D2DFactory = nullptr;
+		DXHandle<ID2D1GradientStopCollection> DX_BGGradientStopCollection = nullptr;
+		DXHandle<ID2D1LinearGradientBrush> DX_D2DBackgroundGradientBrush = nullptr;
+		DXHandle<ID2D1SolidColorBrush> DX_GreenBrush = nullptr;
 
 		BasicMeshColor* pMeshCube = nullptr;
 		BasicMeshColor* pMeshTriangle = nullptr;
@@ -407,12 +410,17 @@ namespace Leviathan
 	#define DXDBG_SETDBGNAMEHELPER(DX_Handle) LV_NOOP()
 #endif // LV_CONFIG_DEBUG
 
+	static constexpr wchar_t const* LvText_StringToRender = L"Hello world!";
+	static constexpr UINT32 LvText_TextLength = LV_ARRAYSIZE(LvText_StringToRender);
 	void LvGraphicsInstance::PvInit()
 	{
 		UINT CreateDeviceFlags = 0;
 	#if LV_CONFIG_DEBUG()
 		CreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 	#endif
+		// CKA_NOTE: This might be needed for D3D + D2D interoperability
+		CreateDeviceFlags |= D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+
 		D3D_FEATURE_LEVEL DXFeatureLevel;
 
 		// CKA_NOTE: After updating graphics drivers on my laptop, the following
@@ -535,6 +543,68 @@ namespace Leviathan
 			PredefGFX.FallbackSamplerState
 		);
 
+
+
+		//DXCHECK(DX_BackBuffer->QueryInterface<IDXGISurface>(&DXGI_BBSurface));
+		DXCHECK(DX_SwapChain1->GetBuffer(0, IID_PPV_ARGS(&DXGI_BBSurface)));
+
+		//D2D1_SIZE_U RCSize = D2D1::SizeU(ClientRect.right - ClientRect.left, ClientRect.bottom - ClientRect.top);
+		DXCHECK(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &DX_D2DFactory));
+		DXCHECK(DX_D2DFactory->CreateDxgiSurfaceRenderTarget(
+			DXGI_BBSurface,
+			D2D1::RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_HARDWARE,
+				// CKA_NOTE: Passing in UNKONWN will just use the existing surface's format(DXGI_FORMAT_R8G8B8A8_UNORM)
+				D2D1::PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM/*DXGI_FORMAT_UNKNOWN*/, D2D1_ALPHA_MODE_IGNORE/*D2D1_ALPHA_MODE_PREMULTIPLIED*/)),
+			&DX_D2D_RT));
+
+		HWND CachedHwnd = Lv_GetWindowHandle();
+		RECT ClientRect{};
+		GetClientRect(CachedHwnd, &ClientRect);
+		D2D1_POINT_2F TopLeft_2f{ (float)ClientRect.left, (float)ClientRect.top };
+		D2D1_POINT_2F BotRight_2f{ (float)ClientRect.right, (float)ClientRect.bottom };
+
+		D2D1_GRADIENT_STOP BGGradientStops[] = { {0.0f, D2D1::ColorF::Black}, {1.0f, D2D1::ColorF::White} };
+		DXCHECK(DX_D2D_RT->CreateGradientStopCollection(
+			BGGradientStops,
+			LV_ARRAYSIZE(BGGradientStops),
+			D2D1_GAMMA_2_2, // D2D1_GAMMA_1_0
+			D2D1_EXTEND_MODE_WRAP, // D2D1_EXTEND_MODE_CLAMP D2D1_EXTEND_MODE_MIRROR
+			&DX_BGGradientStopCollection));
+		DXCHECK(DX_D2D_RT->CreateLinearGradientBrush(
+			D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES{TopLeft_2f, BotRight_2f},
+			D2D1_BRUSH_PROPERTIES{1.0f, D2D1::Matrix3x2F::Scale(DX_D2D_RT->GetSize())},
+			DX_BGGradientStopCollection,
+			&DX_D2DBackgroundGradientBrush
+		));
+		DXCHECK(DX_D2D_RT->CreateSolidColorBrush(
+			{ D2D1::ColorF::Green },
+			&DX_GreenBrush
+		));
+
+	#if 0
+		//D2D1_RECT_F LayoutRect = D2D1::RectF((float)ClientRect.left, (float)ClientRect.top, (float)(ClientRect.right - ClientRect.left), (float)(ClientRect.bottom - ClientRect.top));
+		//DrawText(LvText_StringToRender, LvText_TextLength, pTextFormat, LayoutRect, pBlackBrush);
+		//CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &DX_WhiteBrush);
+		DXHandle<IDWriteFactory> DX_WriteFactory = nullptr;
+		DXHandle<IDWriteTextFormat> DX_TextFormat = nullptr;
+		DXHandle<ID2D1SolidColorBrush> DX_BlackBrush = nullptr;
+		DXHandle<ID2D1SolidColorBrush> DX_WhiteBrush = nullptr;
+
+		DXCHECK(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (IUnknown**)&DX_WriteFactory));
+		DXCHECK(DX_WriteFactory->CreateTextFormat(
+			L"Consolas",
+			nullptr,
+			DWRITE_FONT_WEIGHT_REGULAR,
+			DWRITE_FONT_STYLE_NORMAL,
+			DWRITE_FONT_STRETCH_NORMAL,
+			64.0f,
+			L"en-US",
+			&DX_TextFormat));
+
+		DXCHECK(DX_TextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
+		DXCHECK(DX_TextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
+	#endif // 0
+
 		RenderFrameID = 0;
 
 	#if LV_CONFIG_DEBUG()
@@ -595,6 +665,8 @@ namespace Leviathan
 			Cam3D.Orient(CurrCamPos, LookAt, AbsUp);
 		}
 
+
+
 		PvBeginDraw();
 
 		{
@@ -620,6 +692,22 @@ namespace Leviathan
 			fMatrix StillRect_World = LvMath::Mult(fMatrix{ SCALE, 128.0f, 128.0f, 1.0f }, fMatrix{TRANS, +512.0f, -256.0f, 0.0f});
 			VxUVRect_DrawState.Draw(DX_ImmediateContext, pMeshRect->NumPrims, &StillRect_World, &Cam2D.CamTrans.View);
 		}
+
+		DX_D2D_RT->BeginDraw();
+		DX_D2D_RT->SetTransform(D2D1::Matrix3x2F::Identity());
+		DX_D2D_RT->Clear(D2D1::ColorF(D2D1::ColorF::White));
+
+
+		{ // Draw gradient background
+			D2D1_RECT_F rect = D2D1::RectF(0.0f, 0.0f, (float)ResX, (float)ResY);
+			DX_D2D_RT->FillRectangle(rect, DX_D2DBackgroundGradientBrush);
+			DX_D2D_RT->DrawRectangle(rect, DX_GreenBrush);
+		}
+		D2D1_TAG D2DTag1;
+		D2D1_TAG D2DTag2;
+		HRESULT HRes = DX_D2D_RT->EndDraw(&D2DTag1, &D2DTag2);
+		(void)HRes;
+
 
 		PvEndDraw();
 	}

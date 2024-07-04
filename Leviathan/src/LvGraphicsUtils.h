@@ -1,8 +1,6 @@
 #ifndef LVGRAPHICSUTILS_H
 #define LVGRAPHICSUTILS_H
 
-#include "LvGraphics.h"
-
 namespace Leviathan
 {
 	#define DXCHECK(DXResult) Assert(!FAILED((DXResult)))

@@ -13,6 +13,8 @@
 	#include <d3d11.h>
 	#include <d3d11_1.h>
 	#include <dxgi1_2.h>
+	#include <dwrite.h>
+	#include <d2d1.h>
 #elif LV_PLATFORM_LINUX()
 	// TBD: This will likely end up being Vulkan headers
 #else
