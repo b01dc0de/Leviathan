@@ -358,6 +358,15 @@ namespace Leviathan
 
 		// Release resources in (generally) reverse init order
 
+		{
+			DXGI_BBSurface.SafeRelease();
+			DX_D2DFactory.SafeRelease();
+			DX_D2D_RT.SafeRelease();
+			DX_BGGradientStopCollection.SafeRelease();
+			DX_D2DBackgroundGradientBrush.SafeRelease();
+			DX_GreenBrush.SafeRelease();
+		}
+
 		DX_WorldBuffer.SafeRelease();
 		DX_ViewProjBuffer.SafeRelease();
 
