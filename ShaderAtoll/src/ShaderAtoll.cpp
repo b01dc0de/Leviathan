@@ -18,8 +18,8 @@
 // Globals
 static bool bRunning = false;
 static HWND hWindow;
-static UINT WinResX = 1600U;
-static UINT WinResY = 900U;
+static UINT WinResX = 512U;
+static UINT WinResY = 512U;
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof(A[0]))
 
@@ -366,7 +366,7 @@ namespace ShaderAtoll_GFX
 
 	void Draw()
 	{
-		float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
+		float ClearColor[4] = { 0.0f, 0.15f, 0.3f, 1.0f };
 		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, ClearColor);
 		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
