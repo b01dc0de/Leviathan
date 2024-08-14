@@ -21,6 +21,8 @@ static HWND hWindow;
 static UINT WinResX = 1600U;
 static UINT WinResY = 900U;
 
+#define ARRAY_SIZE(A) (sizeof(A) / sizeof(A[0]))
+
 #define DXCHECK(Result) if (FAILED(Result)) { return -1; }
 #define DXCHECKMSG(Result, Msg) if (FAILED(Result)) { OutputDebugStringA((Msg)); return -1; }
 
@@ -51,10 +53,25 @@ namespace ShaderAtoll_GFX
 	ID3D11PixelShader* DX_PixelShader = nullptr;
 	ID3D11InputLayout* DX_InputLayout = nullptr;
 
+	struct VF4
+	{
+		float X;
+		float Y;
+		float Z;
+		float W;
+	};
+
 	struct VertexColor
 	{
-		float Position[4];
-		float Color[4];
+		VF4 Position;
+		VF4 Color;
+	};
+
+	struct TriIx
+	{
+		unsigned int Ix0;
+		unsigned int Ix1;
+		unsigned int Ix2;
 	};
 
 	int CompileShaderHelper(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob)
@@ -106,11 +123,25 @@ namespace ShaderAtoll_GFX
 		return Result;
 	};
 
+	VF4 Color_Red = { 1.0f, 0.0f, 0.0f, 1.0f };
+	VF4 Color_Blue = { 0.0f, 1.0f, 0.0f, 1.0f };
+	VF4 Color_Green = { 0.0f, 0.0f, 1.0f, 1.0f };
+	VF4 Color_White = { 1.0f, 1.0f, 1.0f, 1.0f };
+	VF4 BoxP0 = { -1.0f, 1.0f, 0.5f, 1.0f };
+	VF4 BoxP1 = { 1.0f, 1.0f, 0.5f, 1.0f };
+	VF4 BoxP2 = { -1.0f, -1.0f, 0.5f, 1.0f };
+	VF4 BoxP3 = { 1.0f, -1.0f, 0.5f, 1.0f };
 	VertexColor Vertices[] =
 	{
-		{{0.0f, 0.5f, 0.5f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f}},
-		{{0.5f, -0.5f, 0.5f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f}},
-		{{-0.5f, -0.5f, 0.5f, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f}}
+		{BoxP0, Color_Red},
+		{BoxP1, Color_Blue},
+		{BoxP2, Color_Green},
+		{BoxP3, Color_White},
+	};
+	TriIx BoxIxs[] =
+	{
+		{0, 2, 1},
+		{1, 2, 3}
 	};
 
 	int InitGraphics()
@@ -122,7 +153,7 @@ namespace ShaderAtoll_GFX
 			D3D_FEATURE_LEVEL_11_1,
 			D3D_FEATURE_LEVEL_11_0,
 		};
-		UINT NumSupportedFeatureLevels = ARRAYSIZE(SupportedFeatureLevels);
+		UINT NumSupportedFeatureLevels = ARRAY_SIZE(SupportedFeatureLevels);
 		D3D_FEATURE_LEVEL D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
 
 		CreateDXGIFactory1(__uuidof(IDXGIFactory), (void**)&DX_Factory);
@@ -262,7 +293,7 @@ namespace ShaderAtoll_GFX
 
 		D3D11_BUFFER_DESC VertexBufferDesc =
 		{
-			sizeof(VertexColor) * ARRAYSIZE(Vertices),
+			sizeof(Vertices), // sizeof(VertexColor) * ARRAY_SIZE(Vertices),
 			D3D11_USAGE_DEFAULT,
 			D3D11_BIND_VERTEX_BUFFER,
 			0,
@@ -272,16 +303,15 @@ namespace ShaderAtoll_GFX
 		Result = DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_VertexBuffer);
 		DXCHECK(Result);
 
-		UINT Indices[] = { 0, 2, 1 };
 		D3D11_BUFFER_DESC IndexBufferDesc =
 		{
-			sizeof(Indices),
+			sizeof(BoxIxs), //sizeof(TriIx) * ARRAY_SIZE(BoxIxs),
 			D3D11_USAGE_DEFAULT,
 			D3D11_BIND_INDEX_BUFFER,
 			0,
 			0
 		};
-		D3D11_SUBRESOURCE_DATA IndexBufferInitData = { Indices, 0, 0 };
+		D3D11_SUBRESOURCE_DATA IndexBufferInitData = { BoxIxs, 0, 0 };
 		Result = DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBuffer);
 		DXCHECK(Result);
 
@@ -342,7 +372,7 @@ namespace ShaderAtoll_GFX
 
 		UpdateGraphicsState();
 
-		DX_ImmediateContext->DrawIndexed((UINT)1 * 3, 0u, 0u);
+		DX_ImmediateContext->DrawIndexed(sizeof(UINT) * ARRAY_SIZE(BoxIxs), 0u, 0u);
 
 		DX_SwapChain->Present(0, 0);
 	}
