@@ -1,24 +1,31 @@
+#if defined(BUILD_PROJECT)
+// C++ Std Lib
 #include <cstdio>
 #include <vector>
-
+// Win32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-
+// DX11
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <dxgi.h>
 
-// Globals (for now)
-bool bGlobalRunning = false;
-HWND GlobalWindow;
-LPCWSTR GlobalAppName = L"HelloTriangle";
-UINT GlobalWinResX = 1600;
-UINT GlobalWinResY = 900;
+#if UNICODE
+#define APPNAME() (L"Win32_DX11_Triangle")
+#else
+#define APPNAME() ("Win32_DX11_Triangle")
+#endif
+
+// Globals
+bool bRunning = false;
+HWND hWindow;
+UINT WinResX = 1600U;
+UINT WinResY = 900U;
 
 #define DXCHECK(Result) if (FAILED(Result)) { return -1; }
 #define DXCHECKMSG(Result, Msg) if (FAILED(Result)) { OutputDebugStringA((Msg)); return -1; }
 
-namespace SimpleGraphics
+namespace DX11_Triangle
 {
 	IDXGISwapChain* DX_SwapChain = nullptr;
 	ID3D11Device* DX_Device = nullptr;
@@ -152,18 +159,18 @@ namespace SimpleGraphics
 
 		DXGI_SWAP_CHAIN_DESC swapchain_desc = {};
 		swapchain_desc.BufferCount = 2;
-		swapchain_desc.BufferDesc.Width = GlobalWinResX;
-		swapchain_desc.BufferDesc.Height = GlobalWinResY;
+		swapchain_desc.BufferDesc.Width = WinResX;
+		swapchain_desc.BufferDesc.Height = WinResY;
 		swapchain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		swapchain_desc.BufferDesc.RefreshRate.Numerator = 60;
 		swapchain_desc.BufferDesc.RefreshRate.Denominator = 1;
 		swapchain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapchain_desc.OutputWindow = GlobalWindow;
+		swapchain_desc.OutputWindow = hWindow;
 		swapchain_desc.SampleDesc = SharedSampleDesc;
 		swapchain_desc.Windowed = true;
 
 		UINT CreateDeviceFlags = 0;
-	#if DEBUG_BUILD
+	#ifdef _DEBUG
 		CreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 	#endif
 
@@ -171,8 +178,8 @@ namespace SimpleGraphics
 			nullptr,					//IDXGIAdapter* pAdapter
 			D3D_DRIVER_TYPE_HARDWARE,	//D3D_DRIVER_TYPE DriverType
 			nullptr,					//HMODULE Software
-			CreateDeviceFlags,							//UINT Flags
-			SupportedFeatureLevels,	//const D3D_FEATURE_LEVEL* pFeatureLevels
+			CreateDeviceFlags,			//UINT Flags
+			SupportedFeatureLevels,		//const D3D_FEATURE_LEVEL* pFeatureLevels
 			NumSupportedFeatureLevels,	//UINT FeatureLevels
 			D3D11_SDK_VERSION,			//UINT SDKVersion
 			&swapchain_desc,			//const DXGI_SWAP_CHAIN_DESC* pSwapChainDesc
@@ -205,8 +212,8 @@ namespace SimpleGraphics
 		DX_ImmediateContext->RSSetState(DX_RasterizerState);
 
 		D3D11_TEXTURE2D_DESC DepthDesc = {};
-		DepthDesc.Width = GlobalWinResX;
-		DepthDesc.Height = GlobalWinResY;
+		DepthDesc.Width = WinResX;
+		DepthDesc.Height = WinResY;
 		DepthDesc.MipLevels = 1;
 		DepthDesc.ArraySize = 1;
 		DepthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -246,8 +253,8 @@ namespace SimpleGraphics
 		DXCHECK(Result);
 
 		D3D11_VIEWPORT Viewport_Desc = {};
-		Viewport_Desc.Width = (FLOAT)GlobalWinResX;
-		Viewport_Desc.Height = (FLOAT)GlobalWinResY;
+		Viewport_Desc.Width = (FLOAT)WinResX;
+		Viewport_Desc.Height = (FLOAT)WinResY;
 		Viewport_Desc.MinDepth = 0.0f;
 		Viewport_Desc.MaxDepth = 1.0f;
 		Viewport_Desc.TopLeftX = 0;
@@ -282,10 +289,10 @@ namespace SimpleGraphics
 		ID3DBlob* VSCodeBlob = nullptr;
 		ID3DBlob* PSCodeBlob = nullptr;
 
-		Result = CompileShaderHelper(L"src/SimpleShader.hlsl", "VSMain", "vs_5_0"/*"vs_5_0"*/, &VSCodeBlob);
+		Result = CompileShaderHelper(L"src/Win32_DX11_Triangle_Shader.hlsl", "VSMain", "vs_5_0"/*"vs_5_0"*/, &VSCodeBlob);
 		DXCHECKMSG(Result, "Failed to compile Vertex Shader! :(\n");
 
-		Result = CompileShaderHelper(L"src/SimpleShader.hlsl", "PSMain", "ps_5_0"/*"ps_5_0"*/, &PSCodeBlob);
+		Result = CompileShaderHelper(L"src/Win32_DX11_Triangle_Shader.hlsl", "PSMain", "ps_5_0"/*"ps_5_0"*/, &PSCodeBlob);
 		DXCHECKMSG(Result, "Failed to compile Pixel Shader! :(\n");
 
 		if (VSCodeBlob && PSCodeBlob)
@@ -351,19 +358,19 @@ HWND InitWindow(HINSTANCE hInstance)
 	WndClass.style = CS_GLOBALCLASS | CS_HREDRAW | CS_VREDRAW;
 	WndClass.lpfnWndProc = WindowProc;
 	WndClass.hInstance = hInstance;
-	WndClass.lpszClassName = GlobalAppName;
+	WndClass.lpszClassName = APPNAME();
 
 	ATOM RegClassResult = RegisterClassEx(&WndClass);
 
-	RECT WndRect = { 0, 0, (LONG)GlobalWinResX, (LONG)GlobalWinResY };
+	RECT WndRect = { 0, 0, (LONG)WinResX, (LONG)WinResY };
 	UINT WndStyle = WS_CAPTION;
 	UINT WndExStyle = WS_EX_OVERLAPPEDWINDOW;
 	AdjustWindowRectEx(&WndRect, WndStyle, FALSE, WndExStyle);
 
 	HWND hWindow = CreateWindowEx(
 		WndExStyle,
-		GlobalAppName,
-		GlobalAppName,
+		APPNAME(),
+		APPNAME(),
 		WndStyle,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
@@ -380,15 +387,16 @@ HWND InitWindow(HINSTANCE hInstance)
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	LRESULT Result;
+	LRESULT Result = 0;
 	switch (uMsg)
 	{
-		case WM_LBUTTONDOWN:
-		case WM_RBUTTONDOWN:
-		case WM_KEYDOWN:
+		case WM_KEYUP:
 		{
-			bGlobalRunning = false;
-		}
+			if (VK_ESCAPE == wParam)
+			{
+				bRunning = false;
+			}
+		} break;
 		default:
 		{
 			Result = DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -400,18 +408,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow)
 {
-	HWND hWindow = InitWindow(hInstance);
-
-	if (hWindow)
+	if (HWND hWnd = InitWindow(hInstance))
 	{
-		GlobalWindow = hWindow;
+		hWindow = hWnd;
 
-		SimpleGraphics::InitGraphics();
+		HRESULT Result = DX11_Triangle::InitGraphics();
+		if (Result != S_OK)
+		{
+			DebugBreak();
+		}
 
 		ShowWindow(hWindow, nCmdShow);
 
-		bGlobalRunning = true;
-		while (bGlobalRunning)
+		bRunning = true;
+		while (bRunning)
 		{
 			// Get input
 			MSG msg;
@@ -423,17 +433,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
 			}
 			if (MsgResult == -1)
 			{
-				bGlobalRunning = false;
+				bRunning = false;
 				break;
 			}
 
 			// Update
 			UpdateWindow(hWindow);
 
-			SimpleGraphics::Draw();
+			DX11_Triangle::Draw();
 		}
 	}
 
 	return 0;
 }
+#endif // defined(BUILD_PROJECT)
 
