@@ -94,10 +94,16 @@ namespace ShaderAtoll_GFX
 		ID3DBlob* OutBlob = nullptr;
 		ID3DBlob* ErrorMsgBlob = nullptr;
 
+		static constexpr D3D_SHADER_MACRO ShaderHLSL_Defines[] =
+		{
+			"ENABLE_VERTEX_COLOR", "1",
+			NULL, NULL
+		};
+
 		Result = D3DCompileFromFile
 		(
 			SourceFileName,
-			nullptr,
+			ShaderHLSL_Defines,
 			D3D_COMPILE_STANDARD_FILE_INCLUDE,
 			EntryPointFunction,
 			Profile,
