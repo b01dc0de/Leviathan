@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hellos", "Hellos\Hellos.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShaderAtoll", "ShaderAtoll\ShaderAtoll.vcxproj", "{23A34630-BA7A-4F42-BD0E-B5358F514BAC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Untulpa", "Untulpa\Untulpa.vcxproj", "{4DF38324-12BC-41B8-90D8-099B2A6F4C8A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -33,6 +35,10 @@ Global
 		{23A34630-BA7A-4F42-BD0E-B5358F514BAC}.Debug|x64.Build.0 = Debug|x64
 		{23A34630-BA7A-4F42-BD0E-B5358F514BAC}.Release|x64.ActiveCfg = Release|x64
 		{23A34630-BA7A-4F42-BD0E-B5358F514BAC}.Release|x64.Build.0 = Release|x64
+		{4DF38324-12BC-41B8-90D8-099B2A6F4C8A}.Debug|x64.ActiveCfg = Debug|x64
+		{4DF38324-12BC-41B8-90D8-099B2A6F4C8A}.Debug|x64.Build.0 = Debug|x64
+		{4DF38324-12BC-41B8-90D8-099B2A6F4C8A}.Release|x64.ActiveCfg = Release|x64
+		{4DF38324-12BC-41B8-90D8-099B2A6F4C8A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
