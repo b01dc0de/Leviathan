@@ -15,7 +15,7 @@ static UINT WinResY = 900U;
 #define DXCHECK(Result) if (FAILED(Result)) { return -1; }
 #define DXCHECKMSG(Result, Msg) if (FAILED(Result)) { OutputDebugStringA((Msg)); return -1; }
 
-namespace DX11_Triangle
+namespace ShaderAtoll_GFX
 {
 	IDXGISwapChain* DX_SwapChain = nullptr;
 	ID3D11Device* DX_Device = nullptr;
@@ -60,7 +60,7 @@ namespace DX11_Triangle
 		*ShaderBlob = nullptr;
 
 		UINT CompileFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-	#if DEBUG_BUILD
+	#if _DEBUG
 		CompileFlags |= D3DCOMPILE_DEBUG;
 		CompileFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
 	#endif
@@ -408,7 +408,7 @@ int WINAPI Win32_DX11_Triangle_WinMain
 	{
 		hWindow = hWnd;
 
-		HRESULT Result = DX11_Triangle::InitGraphics();
+		HRESULT Result = ShaderAtoll_GFX::InitGraphics();
 		if (Result != S_OK)
 		{
 			DebugBreak();
@@ -436,7 +436,7 @@ int WINAPI Win32_DX11_Triangle_WinMain
 			// Update
 			UpdateWindow(hWindow);
 
-			DX11_Triangle::Draw();
+			ShaderAtoll_GFX::Draw();
 		}
 	}
 

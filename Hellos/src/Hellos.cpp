@@ -11,7 +11,7 @@ enum struct HelloProject : int
 	Num
 };
 
-#define BUILD_PROJECT() (HelloProject::Win32_Barebones)
+#define BUILD_PROJECT() (HelloProject::Win32_DX11_Triangle)
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, PSTR CmdLine, int WndShow)
 {
