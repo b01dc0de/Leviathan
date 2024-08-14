@@ -305,7 +305,7 @@ namespace ShaderAtoll_GFX
 
 		D3D11_BUFFER_DESC IndexBufferDesc =
 		{
-			sizeof(BoxIxs), //sizeof(TriIx) * ARRAY_SIZE(BoxIxs),
+			sizeof(TriIx) * ARRAY_SIZE(BoxIxs),
 			D3D11_USAGE_DEFAULT,
 			D3D11_BIND_INDEX_BUFFER,
 			0,
@@ -372,7 +372,8 @@ namespace ShaderAtoll_GFX
 
 		UpdateGraphicsState();
 
-		DX_ImmediateContext->DrawIndexed(sizeof(UINT) * ARRAY_SIZE(BoxIxs), 0u, 0u);
+		constexpr unsigned int TriIxCount = 3;
+		DX_ImmediateContext->DrawIndexed(TriIxCount * ARRAY_SIZE(BoxIxs), 0u, 0u);
 
 		DX_SwapChain->Present(0, 0);
 	}
