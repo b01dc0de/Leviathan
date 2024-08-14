@@ -1,13 +1,39 @@
-#define HELLOS_PROJECT_WIN32_BAREBONES() (0)
-#define HELLOS_PROJECT_WIN32_DX11_TRIANGLE() (1)
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
 
-#define BUILD_PROJECT() (HELLOS_PROJECT_WIN32_DX11_TRIANGLE())
+#include "Win32_Barebones.h"
+#include "Win32_DX11_Triangle.h"
 
-#if BUILD_PROJECT() == HELLOS_PROJECT_WIN32_BAREBONES()
-#include "Win32_Barebones.cpp"
-#elif BUILD_PROJECT() == HELLOS_PROJECT_WIN32_DX11_TRIANGLE()
-#include "Win32_DX11_Triangle.cpp"
-#else
-#error "ERROR: Undefined BUILD_PROJECT!!"
-#endif
+enum struct HelloProject : int
+{
+	Win32_Barebones,
+	Win32_DX11_Triangle,
+	Num
+};
+
+#define BUILD_PROJECT() (HelloProject::Win32_Barebones)
+
+int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, PSTR CmdLine, int WndShow)
+{
+	int Result = 0;
+
+	switch (BUILD_PROJECT())
+	{
+		case HelloProject::Win32_Barebones:
+		{
+			Result = Win32_Barebones_WinMain(hInst, hPrevInst, CmdLine, WndShow);
+		} break;
+		case HelloProject::Win32_DX11_Triangle:
+		{
+			Result = Win32_DX11_Triangle_WinMain(hInst, hPrevInst, CmdLine, WndShow);
+		} break;
+		default:
+		{
+			Result = 1;
+			DebugBreak();
+		} break;
+	}
+
+	return Result;
+}
 

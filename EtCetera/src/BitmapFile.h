@@ -1,10 +1,7 @@
-#ifndef ETCETERA_H
-#define ETCETERA_H
+#ifndef BITMAPFILE_H
+#define BITMAPFILE_H
 
-using u8 = unsigned char;
-using u16 = unsigned short;
-using u32 = unsigned int;
-using s32 = int;
+#include "Common.h"
 
 struct RGBA32
 {
@@ -60,4 +57,6 @@ struct BMP
     BMPInfoHeader InfoHeader;
 };
 
-#endif // ETCETERA_H
+int BitmapFile_Main(int argc, const char* argv[]);
+
+#endif // BITMAPFILE_H

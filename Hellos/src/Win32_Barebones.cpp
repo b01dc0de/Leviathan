@@ -1,9 +1,4 @@
-#if defined(BUILD_PROJECT)
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#include <dxgi.h>
+#include "Win32_Barebones.h"
 
 LRESULT WinProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -13,9 +8,9 @@ LRESULT WinProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 #define APPNAME() ("Win32_DirectX11")
 #endif
 
-bool bRunning = true;
+static bool bRunning = true;
 
-int WINAPI WinMain
+int WINAPI Win32_Barebones_WinMain
 (
 	HINSTANCE hInst,
 	HINSTANCE hPrevInst,
@@ -106,5 +101,4 @@ LRESULT WinProc
 
 	return lResult;
 }
-#endif // defined(BUILD_PROJECT)
 

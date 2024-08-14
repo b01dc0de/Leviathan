@@ -1,14 +1,4 @@
-#if defined(BUILD_PROJECT)
-// C++ Std Lib
-#include <cstdio>
-#include <vector>
-// Win32
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-// DX11
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#include <dxgi.h>
+#include "Win32_DX11_Triangle.h"
 
 #if UNICODE
 #define APPNAME() (L"Win32_DX11_Triangle")
@@ -17,10 +7,10 @@
 #endif
 
 // Globals
-bool bRunning = false;
-HWND hWindow;
-UINT WinResX = 1600U;
-UINT WinResY = 900U;
+static bool bRunning = false;
+static HWND hWindow;
+static UINT WinResX = 1600U;
+static UINT WinResY = 900U;
 
 #define DXCHECK(Result) if (FAILED(Result)) { return -1; }
 #define DXCHECKMSG(Result, Msg) if (FAILED(Result)) { OutputDebugStringA((Msg)); return -1; }
@@ -406,7 +396,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return Result;
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow)
+int WINAPI Win32_DX11_Triangle_WinMain
+(
+	HINSTANCE hInstance,
+	HINSTANCE hPrevInstance,
+	PSTR lpCmdLine,
+	int nCmdShow
+)
 {
 	if (HWND hWnd = InitWindow(hInstance))
 	{
@@ -446,5 +442,3 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
 
 	return 0;
 }
-#endif // defined(BUILD_PROJECT)
-

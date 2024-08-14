@@ -1,17 +1,17 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-/* C STD Library */
+/* C Std Library */
 #include <cstdio>
-/* C++ STD Library */
+#include <cstdlib>
+#include <ctime>
+#include <cmath>
+/* C++ Std Library */
 #include <random>
 #include <algorithm>
 
-//#include "LvCommon.h"
-
-// CKA_NOTE: Only stub this in temporarily to get this to compile on Windows
-//		Don't want to fiddle with making LVCommon a shared library right now
 #if (_MSC_VER > 0)
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #define Assert(exp) \
 		if (!(exp))	\
@@ -21,6 +21,11 @@
 #else
 #define Assert(exp) (void)0
 #endif
+
+using u8 = unsigned char;
+using u16 = unsigned short;
+using u32 = unsigned int;
+using s32 = int;
 
 int GenRandInRange(int Min, int Max);
 

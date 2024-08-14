@@ -21,4 +21,12 @@
       <Filter>src</Filter>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Win32_Barebones.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Win32_DX11_Triangle.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>

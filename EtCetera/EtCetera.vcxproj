@@ -80,10 +80,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\BitmapFile.cpp" />
+    <ClCompile Include="src\Common.cpp" />
     <ClCompile Include="src\EtCetera.cpp" />
+    <ClCompile Include="src\Pseudoku.cpp" />
+    <ClCompile Include="src\PuzzleSolver.cpp" />
+    <ClCompile Include="src\Sudoku.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\EtCetera.h" />
+    <ClInclude Include="src\BitmapFile.h" />
+    <ClInclude Include="src\Common.h" />
+    <ClInclude Include="src\Pseudoku.h" />
+    <ClInclude Include="src\PuzzleSolver.h" />
+    <ClInclude Include="src\Sudoku.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
