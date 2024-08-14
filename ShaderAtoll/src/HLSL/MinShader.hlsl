@@ -2,6 +2,8 @@
 // MinShader.hlsl //
 ////////////////////
 
+#define ENABLE_VERTEX_COLOR 1
+
 #ifndef ENABLE_VERTEX_COLOR
     #define ENABLE_VERTEX_COLOR 0
 #endif
@@ -27,7 +29,7 @@ PS_INPUT VSMain(VS_INPUT Input)
     return Output;
 }
 
-PS_INPUT PSMain(PS_INPUT Input) : SV_Target
+float4 PSMain(PS_INPUT Input) : SV_Target
 {
     return Input.RGBA;
 }

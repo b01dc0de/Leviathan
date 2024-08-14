@@ -18,8 +18,8 @@
 // Globals
 static bool bRunning = false;
 static HWND hWindow;
-static UINT WinResX = 512U;
-static UINT WinResY = 512U;
+static UINT WinResX = 1024U;
+static UINT WinResY = 1024U;
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof(A[0]))
 
