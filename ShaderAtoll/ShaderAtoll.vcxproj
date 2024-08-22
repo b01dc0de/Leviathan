@@ -11,6 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\AtollGraphics.cpp" />
+    <ClCompile Include="src\AtollUtil.cpp" />
+    <ClCompile Include="src\Atoll_mswin.cpp" />
     <ClCompile Include="src\ShaderAtoll.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -18,6 +21,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\AtollCommon.h" />
+    <ClInclude Include="src\AtollGraphics.h" />
+    <ClInclude Include="src\AtollUtil.h" />
+    <ClInclude Include="src\Atoll_mswin.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

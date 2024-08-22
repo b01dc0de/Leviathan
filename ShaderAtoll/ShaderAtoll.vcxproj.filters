@@ -12,10 +12,33 @@
     <ClCompile Include="src\ShaderAtoll.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\AtollGraphics.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Atoll_mswin.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AtollUtil.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\HLSL\MinShader.hlsl">
       <Filter>src\HLSL</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\AtollGraphics.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Atoll_mswin.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AtollCommon.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AtollUtil.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
