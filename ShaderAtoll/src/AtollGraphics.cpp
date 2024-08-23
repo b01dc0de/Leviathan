@@ -23,6 +23,8 @@ namespace ShaderAtoll
 	ID3D11Buffer* AtollGraphics::DX_VertexBuffer = nullptr;
 	ID3D11Buffer* AtollGraphics::DX_IndexBuffer = nullptr;
 
+	//ID3D11Buffer* AtollGraphics::DX_GlobalsBuffer = nullptr;
+
 	ID3D11VertexShader* AtollGraphics::DX_VertexShader = nullptr;
 	ID3D11PixelShader* AtollGraphics::DX_PixelShader = nullptr;
 	ID3D11InputLayout* AtollGraphics::DX_InputLayout = nullptr;
@@ -63,6 +65,7 @@ namespace ShaderAtoll
 
 		UINT CompileFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS;
 #if BUILD_DEBUG()
+		CompileFlags |= D3DCOMPILE_ALL_RESOURCES_BOUND;
 		CompileFlags |= D3DCOMPILE_DEBUG;
 		CompileFlags |= D3DCOMPILE_DEBUG_NAME_FOR_SOURCE;
 		CompileFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
@@ -280,10 +283,10 @@ namespace ShaderAtoll
 		ID3DBlob* VSCodeBlob = nullptr;
 		ID3DBlob* PSCodeBlob = nullptr;
 
-		Result = CompileShaderHelper(L"src/HLSL/MinShader.hlsl", "VSMain", "vs_5_0"/*"vs_5_0"*/, &VSCodeBlob);
+		Result = CompileShaderHelper(L"src/HLSL/MinShader.hlsl", "VSMain", "vs_5_0", &VSCodeBlob);
 		DXCHECKMSG(Result, "Failed to compile Vertex Shader! :(\n");
 
-		Result = CompileShaderHelper(L"src/HLSL/MinShader.hlsl", "PSMain", "ps_5_0"/*"ps_5_0"*/, &PSCodeBlob);
+		Result = CompileShaderHelper(L"src/HLSL/MinShader.hlsl", "PSMain", "ps_5_0", &PSCodeBlob);
 		DXCHECKMSG(Result, "Failed to compile Pixel Shader! :(\n");
 
 		if (VSCodeBlob && PSCodeBlob)

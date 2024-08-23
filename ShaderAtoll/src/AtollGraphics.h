@@ -30,6 +30,7 @@ namespace ShaderAtoll
 
 		static ID3D11Buffer* DX_VertexBuffer;
 		static ID3D11Buffer* DX_IndexBuffer;
+		//static ID3D11Buffer* DX_GlobalsBuffer;
 
 		static ID3D11VertexShader* DX_VertexShader;
 		static ID3D11PixelShader* DX_PixelShader;
