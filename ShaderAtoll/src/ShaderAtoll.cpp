@@ -1,9 +1,6 @@
 #include "AtollCommon.h"
 #include "Atoll_mswin.h"
 
-#define PLATFORM_WINDOWS() (1)
-#define PLATFORM_OTHER() (0)
-
 #if PLATFORM_WINDOWS()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow)
 {

@@ -4,7 +4,7 @@
     <Filter Include="src">
       <UniqueIdentifier>{5f1856ea-2a48-4404-85ed-a9ceb152585f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\HLSL">
+    <Filter Include="HLSL">
       <UniqueIdentifier>{0632404e-12fd-4856-b552-48b005471030}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -24,7 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\HLSL\MinShader.hlsl">
-      <Filter>src\HLSL</Filter>
+      <Filter>HLSL</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

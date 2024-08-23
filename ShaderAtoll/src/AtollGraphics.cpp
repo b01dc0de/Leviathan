@@ -62,18 +62,19 @@ namespace ShaderAtoll
 
 		*ShaderBlob = nullptr;
 
-		UINT CompileFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-#if _DEBUG
+		UINT CompileFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS;
+#if BUILD_DEBUG()
 		CompileFlags |= D3DCOMPILE_DEBUG;
+		CompileFlags |= D3DCOMPILE_DEBUG_NAME_FOR_SOURCE;
 		CompileFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
+#endif // BUILD_DEBUG()
 
 		ID3DBlob* OutBlob = nullptr;
 		ID3DBlob* ErrorMsgBlob = nullptr;
 
 		static constexpr D3D_SHADER_MACRO ShaderHLSL_Defines[] =
 		{
-			"ENABLE_VERTEX_COLOR", "1",
+			"ENABLE_VERTEX_COLOR", "0",
 			NULL, NULL
 		};
 
@@ -162,9 +163,9 @@ namespace ShaderAtoll
 		swapchain_desc.Windowed = true;
 
 		UINT CreateDeviceFlags = 0;
-#ifdef _DEBUG
+#if BUILD_DEBUG()
 		CreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
+#endif // BUILD_DEBUG()
 
 		Result = D3D11CreateDeviceAndSwapChain(
 			nullptr,					//IDXGIAdapter* pAdapter

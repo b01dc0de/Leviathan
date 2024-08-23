@@ -14,5 +14,11 @@
 
 #include "AtollUtil.h"
 
+#define PLATFORM_WINDOWS() (1)
+#define PLATFORM_OTHER() (!(PLATFORM_WINDOWS()))
+
+#define BUILD_DEBUG() (_DEBUG)
+#define BUILD_RELEASE() (!(BUILD_DEBUG()))
+
 #endif  // ATOLLCOMMON_H
 
