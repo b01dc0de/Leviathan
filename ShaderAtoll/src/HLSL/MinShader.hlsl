@@ -12,34 +12,33 @@ struct VS_INPUT
     float4 RGBA : COLOR;
 };
 
-#if ENABLE_VERTEX_COLOR
 struct PS_INPUT
 {
-    float4 Pos : SV_POSITION;
-    float4 RGBA : COLOR;
+    float4 Pos : SV_Position;
+#if ENABLE_VERTEX_COLOR
+    float4 RGBA : COLOR : qwer;
+#endif //ENABLE_VERTEX_COLOR
 };
 
 PS_INPUT VSMain(VS_INPUT Input)
 {
     PS_INPUT Output;
     Output.Pos = Input.Pos;
+#if ENABLE_VERTEX_COLOR
     Output.RGBA = Input.RGBA;
+#endif //ENABLE_VERTEX_COLOR
     return Output;
 }
 
+#if ENABLE_VERTEX_COLOR
 float4 PSMain(PS_INPUT Input) : SV_Target
 {
     return Input.RGBA;
 }
-#else // !ENABLE_VERTEX_COLOR
-float4 VSMain(VS_INPUT Input) :SV_POSITION
-{
-    return Input.Pos;
-}
-float4 PSMain(float4 Pos:SV_POSITION:linearNoPerspectiveCentroid) :SV_Target
+#else // ENABLE_VERTEX_COLOR
+float4 PSMain(float4 Pos : SV_Position : asdfqwer) : SV_Target
 {
     return Pos;
 }
 #endif // ENABLE_VERTEX_COLOR
-
 

@@ -50,7 +50,6 @@ namespace ShaderAtoll
 		{1, 2, 3}
 	};
 
-
 	int AtollGraphics::CompileShaderHelper(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob)
 	{
 		HRESULT Result = S_OK;
@@ -256,7 +255,7 @@ namespace ShaderAtoll
 
 		D3D11_BUFFER_DESC VertexBufferDesc =
 		{
-			sizeof(Vertices), // sizeof(VertexColor) * ARRAY_SIZE(Vertices),
+			sizeof(VertexColor) * ARRAY_SIZE(Vertices),
 			D3D11_USAGE_DEFAULT,
 			D3D11_BIND_VERTEX_BUFFER,
 			0,
@@ -314,9 +313,9 @@ namespace ShaderAtoll
 
 	void AtollGraphics::UpdateGraphicsState()
 	{
-		UINT Stride = sizeof(VertexColor);
-		UINT Offset = 0;
-		float fDepth = 1.0f;
+		constexpr UINT Stride = sizeof(VertexColor);
+		constexpr UINT Offset = 0;
+		constexpr float fDepth = 1.0f;
 
 		DX_ImmediateContext->IASetInputLayout(DX_InputLayout);
 		DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBuffer, &Stride, &Offset);
@@ -329,13 +328,12 @@ namespace ShaderAtoll
 
 	void AtollGraphics::Draw()
 	{
-		float ClearColor[4] = { 0.0f, 0.15f, 0.3f, 1.0f };
+		float ClearColor[4] = { 0.0125f, 0.15f, 0.3f, 1.0f };
 		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, ClearColor);
 		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 		UpdateGraphicsState();
 
-		constexpr unsigned int TriIxCount = 3;
 		DX_ImmediateContext->DrawIndexed(TriIxCount * ARRAY_SIZE(BoxIxs), 0u, 0u);
 
 		DX_SwapChain->Present(0, 0);

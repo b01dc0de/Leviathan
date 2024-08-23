@@ -57,10 +57,12 @@ namespace ShaderAtoll
 
 	struct TriIx
 	{
-		unsigned int Ix0;
-		unsigned int Ix1;
-		unsigned int Ix2;
+		using IxType = unsigned int;
+		IxType Ix0;
+		IxType Ix1;
+		IxType Ix2;
 	};
+	constexpr unsigned int TriIxCount = sizeof(TriIx) / sizeof(TriIx::IxType);
 }
 
 #endif // ATOLLGRAPHICS_H
