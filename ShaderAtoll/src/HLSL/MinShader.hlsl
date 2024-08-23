@@ -6,6 +6,14 @@
     #define ENABLE_VERTEX_COLOR 0
 #endif
 
+cbuffer AtollGlobals : register(b0)
+{
+    uint FrameWidth;
+    uint FrameHeight;
+    float AppTime;
+    float DeltaTime;
+};
+
 struct VS_INPUT
 {
     float4 Pos : POSITION;

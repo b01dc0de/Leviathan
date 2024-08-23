@@ -37,6 +37,8 @@ namespace ShaderAtoll
 	extern HWND hWindow;
 	extern UINT WinResX;
 	extern UINT WinResY;
+	extern float AppTime_ms;
+	extern float DeltaTime_ms;
 }
 
 #endif // ATOLLUTIL_H

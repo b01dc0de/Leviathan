@@ -23,11 +23,19 @@ namespace ShaderAtoll
 	ID3D11Buffer* AtollGraphics::DX_VertexBuffer = nullptr;
 	ID3D11Buffer* AtollGraphics::DX_IndexBuffer = nullptr;
 
-	//ID3D11Buffer* AtollGraphics::DX_GlobalsBuffer = nullptr;
+	ID3D11Buffer* AtollGraphics::DX_GlobalsBuffer = nullptr;
 
 	ID3D11VertexShader* AtollGraphics::DX_VertexShader = nullptr;
 	ID3D11PixelShader* AtollGraphics::DX_PixelShader = nullptr;
 	ID3D11InputLayout* AtollGraphics::DX_InputLayout = nullptr;
+
+	ShaderGlobals GlobalsData
+	{
+		WinResX,
+		WinResY,
+		0.0f,
+		msPerFrame_60
+	};
 
 	VF4 Color_Red = { 1.0f, 0.0f, 0.0f, 1.0f };
 	VF4 Color_Blue = { 0.0f, 1.0f, 0.0f, 1.0f };
@@ -280,6 +288,18 @@ namespace ShaderAtoll
 		Result = DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBuffer);
 		DXCHECK(Result);
 
+		D3D11_BUFFER_DESC GlobalsBufferDesc =
+		{
+			sizeof(ShaderGlobals),
+			D3D11_USAGE_DEFAULT,
+			D3D11_BIND_CONSTANT_BUFFER,
+			0,
+			0
+		};
+		D3D11_SUBRESOURCE_DATA GlobalsBufferInitData = {&GlobalsData, 0, 0};
+		Result = DX_Device->CreateBuffer(&GlobalsBufferDesc, &GlobalsBufferInitData, &DX_GlobalsBuffer);
+		DXCHECK(Result);
+
 		ID3DBlob* VSCodeBlob = nullptr;
 		ID3DBlob* PSCodeBlob = nullptr;
 
@@ -320,18 +340,26 @@ namespace ShaderAtoll
 		constexpr UINT Offset = 0;
 		constexpr float fDepth = 1.0f;
 
+		GlobalsData.FrameWidth = WinResX;
+		GlobalsData.FrameHeight = WinResY;
+		GlobalsData.AppTime_ms = AppTime_ms;
+		GlobalsData.DeltaTime_ms = DeltaTime_ms;
+
 		DX_ImmediateContext->IASetInputLayout(DX_InputLayout);
 		DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBuffer, &Stride, &Offset);
 		DX_ImmediateContext->IASetIndexBuffer(DX_IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		DX_ImmediateContext->UpdateSubresource(DX_GlobalsBuffer, 0, nullptr, &GlobalsData, sizeof(ShaderGlobals), 0);
 
 		DX_ImmediateContext->VSSetShader(DX_VertexShader, nullptr, 0);
+		DX_ImmediateContext->VSSetConstantBuffers(0, 1, &DX_GlobalsBuffer);
 		DX_ImmediateContext->PSSetShader(DX_PixelShader, nullptr, 0);
+		DX_ImmediateContext->PSSetConstantBuffers(0, 1, &DX_GlobalsBuffer);
 	}
 
 	void AtollGraphics::Draw()
 	{
-		float ClearColor[4] = { 0.0125f, 0.15f, 0.3f, 1.0f };
+		float ClearColor[4] = { 0.025f, 0.15f, 0.3f, 1.0f };
 		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, ClearColor);
 		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 

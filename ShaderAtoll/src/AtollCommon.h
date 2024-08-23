@@ -12,13 +12,16 @@
 #include <d3dcompiler.h>
 #include <dxgi.h>
 
-#include "AtollUtil.h"
-
 #define PLATFORM_WINDOWS() (1)
 #define PLATFORM_OTHER() (!(PLATFORM_WINDOWS()))
 
 #define BUILD_DEBUG() (_DEBUG)
 #define BUILD_RELEASE() (!(BUILD_DEBUG()))
+
+using uchar = unsigned char;
+using uint = unsigned int;
+
+#include "AtollUtil.h"
 
 #endif  // ATOLLCOMMON_H
 
