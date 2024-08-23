@@ -36,7 +36,7 @@ float4 VSMain(VS_INPUT Input) :SV_POSITION
 {
     return Input.Pos;
 }
-float4 PSMain(float4 Pos:SV_POSITION:LinearNoInterpolationCentroid) :SV_Target
+float4 PSMain(float4 Pos:SV_POSITION:linearNoPerspectiveCentroid) :SV_Target
 {
     return Pos;
 }
