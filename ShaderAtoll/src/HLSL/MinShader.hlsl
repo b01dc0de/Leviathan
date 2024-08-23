@@ -41,10 +41,11 @@ PS_INPUT VSMain(VS_INPUT Input)
 #if ENABLE_VERTEX_COLOR
 float4 PSMain(PS_INPUT Input) : SV_Target
 {
-    return Input.RGBA;
+    return Input.Pos;
+    //return Input.RGBA;
 }
 #else // ENABLE_VERTEX_COLOR
-float4 PSMain(float4 Pos : SV_Position : asdfqwer) : SV_Target
+float4 PSMain(float4 Pos : SV_Position) : SV_Target
 {
     return Pos;
 }

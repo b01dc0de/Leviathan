@@ -84,7 +84,7 @@ namespace ShaderAtoll
 
 		static constexpr D3D_SHADER_MACRO ShaderHLSL_Defines[] =
 		{
-			"ENABLE_VERTEX_COLOR", "0",
+			"ENABLE_VERTEX_COLOR", "1",
 			NULL, NULL
 		};
 

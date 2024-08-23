@@ -21,6 +21,7 @@
 using uchar = unsigned char;
 using uint = unsigned int;
 
+#include "AtollEngine.h"
 #include "AtollUtil.h"
 
 #endif  // ATOLLCOMMON_H

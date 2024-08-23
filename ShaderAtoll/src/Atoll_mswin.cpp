@@ -66,42 +66,6 @@ namespace ShaderAtoll
 		int nCmdShow
 	)
 	{
-		if (HWND hWnd = InitWindow(hInstance))
-		{
-			ShaderAtoll::hWindow = hWnd;
-
-			HRESULT Result = AtollGraphics::InitGraphics();
-			if (Result != S_OK)
-			{
-				DebugBreak();
-			}
-
-			ShowWindow(ShaderAtoll::hWindow, nCmdShow);
-
-			ShaderAtoll::bRunning = true;
-			while (ShaderAtoll::bRunning)
-			{
-				// Get input
-				MSG msg;
-				BOOL MsgResult;
-				while ((MsgResult = PeekMessage(&msg, ShaderAtoll::hWindow, 0, 0, PM_REMOVE)) > 0)
-				{
-					TranslateMessage(&msg);
-					DispatchMessage(&msg);
-				}
-				if (MsgResult == -1)
-				{
-					ShaderAtoll::bRunning = false;
-					break;
-				}
-
-				// Update
-				UpdateWindow(ShaderAtoll::hWindow);
-
-				AtollGraphics::Draw();
-			}
-		}
-
-		return 0;
+		return AtollEngine::Run(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 	}
 }
