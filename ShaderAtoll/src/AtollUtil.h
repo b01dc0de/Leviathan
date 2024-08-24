@@ -32,6 +32,24 @@ namespace ShaderAtoll
 		~SysInfo() = delete;
 	};
 
+	struct AtollClock
+	{
+		static constexpr __int64 Ticks_to_us = 100000; // ticks -> microseconds
+		static constexpr __int64 us_per_ms = 1000;
+
+		using TsType = LARGE_INTEGER;
+		static TsType Freq;
+
+		TsType T0 = {};
+		TsType Ts_Last = {};
+		TsType Ts_Delta = {};
+		double fLast_ms = 0.0;
+		double fDelta_ms = 0.0;
+
+		static double ConvertTs_s(TsType InTs);
+		void Tick();
+		void Init();
+	};
 }
 
 #endif // ATOLLUTIL_H

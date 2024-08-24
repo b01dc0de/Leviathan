@@ -10,17 +10,23 @@ namespace ShaderAtoll
 	HWND hWindow;
 	UINT WinResX = Defaults::WinResX;
 	UINT WinResY = Defaults::WinResY;
-	float AppTime_ms = 0.0f;
-	float DeltaTime_ms = 0.0f;
+	double AppTime_s = 0.0f;
+	double DeltaTime_s = 0.0f;
+
 	GlobalPlatformStateType GlobalPlatformState;
 
-	enum AtollErrorType : int
+	// Local/'private' engine functions
+	namespace AtollEngine
 	{
-		NO_ERR,
-		ERR_STARTUP,
-		ERR_RUNTIME,
-		ERR_SHUTDOWN,
-	};
+		AtollClock Clock;
+
+		bool Init();
+		bool MainLoop();
+		bool Term();
+
+		void PollInput();
+		void UpdateState();
+	}
 
 #if PLATFORM_WINDOWS()
 	int AtollEngine::Run(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow)
@@ -40,13 +46,13 @@ namespace ShaderAtoll
 		GlobalPlatformState.argv = argv;
 #endif // PLATFORM
 
-		if (!Init()) { return AtollErrorType::ERR_STARTUP; }
+		if (!Init()) { return (int)AtollErrorType::ERR_STARTUP; }
 
-		if (!MainLoop()) { return AtollErrorType::ERR_RUNTIME; }
+		if (!MainLoop()) { return (int)AtollErrorType::ERR_RUNTIME; }
 
-		if (!Term()) { return AtollErrorType::ERR_SHUTDOWN; }
+		if (!Term()) { return (int)AtollErrorType::ERR_SHUTDOWN; }
 
-		return AtollErrorType::NO_ERR;
+		return (int)AtollErrorType::NO_ERR;
 	}
 
 	bool AtollEngine::Init()
@@ -65,6 +71,8 @@ namespace ShaderAtoll
 
 			ShowWindow(ShaderAtoll::hWindow, GlobalPlatformState.nCmdShow);
 
+			Clock.Init();
+
 			ShaderAtoll::bRunning = true;
 		}
 		else
@@ -81,23 +89,11 @@ namespace ShaderAtoll
 
 		while (ShaderAtoll::bRunning)
 		{
-			// Get input
-			MSG msg;
-			BOOL MsgResult;
-			while ((MsgResult = PeekMessage(&msg, ShaderAtoll::hWindow, 0, 0, PM_REMOVE)) > 0)
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-			if (MsgResult == -1)
-			{
-				ShaderAtoll::bRunning = false;
-				break;
-			}
-
 			// Update
-			UpdateWindow(ShaderAtoll::hWindow);
+			PollInput();
+			UpdateState();
 
+			// Draw
 			AtollGraphics::Draw();
 		}
 
@@ -108,5 +104,31 @@ namespace ShaderAtoll
 	{
 		bool bResult = true;
 		return bResult;
+	}
+
+	void AtollEngine::PollInput()
+	{
+		// Get input
+		MSG msg;
+		BOOL MsgResult;
+		while ((MsgResult = PeekMessage(&msg, ShaderAtoll::hWindow, 0, 0, PM_REMOVE)) > 0)
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		if (MsgResult == -1)
+		{
+			ShaderAtoll::bRunning = false;
+		}
+	}
+
+	void AtollEngine::UpdateState()
+	{
+		Clock.Tick();
+		AppTime_s = Clock.fLast_ms;
+		DeltaTime_s = Clock.fDelta_ms;
+
+		UpdateWindow(ShaderAtoll::hWindow);
 	}
 }

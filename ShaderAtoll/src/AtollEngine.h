@@ -10,19 +10,24 @@ namespace ShaderAtoll
 	extern HWND hWindow;
 	extern UINT WinResX;
 	extern UINT WinResY;
-	extern float AppTime_ms;
-	extern float DeltaTime_ms;
+	extern double AppTime_s;
+	extern double DeltaTime_s;
 
 	namespace AtollEngine
 	{
+		enum struct AtollErrorType : int
+		{
+			NO_ERR,
+			ERR_STARTUP,
+			ERR_RUNTIME,
+			ERR_SHUTDOWN,
+		};
+
 #if PLATFORM_WINDOWS()
 		int WINAPI Run(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow);
 #elif PLATFORM_OTHER()
 		int Run(int argc, const char* argv[]);
 #endif // PLATFORM
-		bool Init();
-		bool MainLoop();
-		bool Term();
 	};
 
 #if PLATFORM_WINDOWS()
