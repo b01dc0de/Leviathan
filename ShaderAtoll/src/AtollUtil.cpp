@@ -2,8 +2,30 @@
 
 namespace ShaderAtoll
 {
+	SysInfo GlobalSysInfo;
+
 	SysInfo::SysInfo()
 	{
+		RECT ResXY = {};
+		/*
+		SystemParametersInfoA(
+			...,
+			0,
+			&ResXY,
+			0
+		);
+		PrimaryResX = 0;
+		PrimaryResY = 0;
+		*/
+
+		SystemParametersInfoA(
+			SPI_GETWORKAREA,
+			0,
+			&ResXY,
+			0
+		);
+		PrimaryWorkAreaX = ResXY.right - ResXY.left;
+		PrimaryWorkAreaY = ResXY.bottom - ResXY.top;
 	}
 
 	AtollClock::TsType AtollClock::Freq = {};
@@ -45,6 +67,4 @@ namespace ShaderAtoll
 		Ts_Last = Ts_T0;
 		Ts_Delta = {};
 	}
-
-
 }

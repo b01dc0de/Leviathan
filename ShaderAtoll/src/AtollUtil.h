@@ -26,11 +26,21 @@ namespace ShaderAtoll
 
 	struct SysInfo
 	{
+		// Primary display resolution
+		UINT PrimaryResX = 0;
+		UINT PrimaryResY = 0;
+
+		// Display resolution without the taskbar, toolbars, etc.
+		UINT PrimaryWorkAreaX = 0;
+		UINT PrimaryWorkAreaY = 0;
+
 		SysInfo();
 		SysInfo(const SysInfo&) = delete;
 		SysInfo& operator=(const SysInfo&) = delete;
-		~SysInfo() = delete;
+		~SysInfo() = default;
 	};
+
+	extern SysInfo GlobalSysInfo;
 
 	struct AtollClock
 	{

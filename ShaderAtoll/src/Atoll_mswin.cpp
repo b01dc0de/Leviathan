@@ -1,5 +1,6 @@
 #include "Atoll_mswin.h"
 #include "AtollGraphics.h"
+#include "AtollEngine.h"
 
 namespace ShaderAtoll
 {
@@ -42,12 +43,10 @@ namespace ShaderAtoll
 		LRESULT Result = 0;
 		switch (uMsg)
 		{
+			case WM_KEYDOWN:
 			case WM_KEYUP:
 			{
-				if (VK_ESCAPE == wParam)
-				{
-					ShaderAtoll::bRunning = false;
-				}
+				AtollEngine::HandleKeyInput(uMsg, wParam, lParam);
 			} break;
 			default:
 			{

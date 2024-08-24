@@ -25,8 +25,10 @@ namespace ShaderAtoll
 
 #if PLATFORM_WINDOWS()
 		int WINAPI Run(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow);
+		void HandleKeyInput(UINT uMsg, WPARAM wParam, LPARAM lParam);
 #elif PLATFORM_OTHER()
 		int Run(int argc, const char* argv[]);
+		void HandleKeyInput();
 #endif // PLATFORM
 	};
 

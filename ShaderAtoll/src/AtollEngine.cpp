@@ -19,6 +19,7 @@ namespace ShaderAtoll
 	namespace AtollEngine
 	{
 		AtollClock Clock;
+		bool bMaximized = false;
 
 		bool Init();
 		bool MainLoop();
@@ -26,6 +27,8 @@ namespace ShaderAtoll
 
 		void PollInput();
 		void UpdateState();
+
+		void ToggleMaximize();
 	}
 
 #if PLATFORM_WINDOWS()
@@ -54,6 +57,22 @@ namespace ShaderAtoll
 
 		return (int)AtollErrorType::NO_ERR;
 	}
+
+	void AtollEngine::HandleKeyInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
+	{
+		if (WM_KEYUP == uMsg)
+		{
+			if (VK_ESCAPE == wParam)
+			{
+				ShaderAtoll::bRunning = false;
+			}
+			else if (VK_F11 == wParam)
+			{
+				ToggleMaximize();
+			}
+		}
+	}
+
 
 	bool AtollEngine::Init()
 	{
@@ -130,5 +149,22 @@ namespace ShaderAtoll
 		DeltaTime_ms = Clock.fDelta_ms;
 
 		UpdateWindow(ShaderAtoll::hWindow);
+	}
+
+	void AtollEngine::ToggleMaximize()
+	{
+		bMaximized = !bMaximized;
+		if (bMaximized)
+		{
+			WinResX = GlobalSysInfo.PrimaryWorkAreaX;
+			WinResY = GlobalSysInfo.PrimaryWorkAreaY;
+		}
+		else
+		{
+			WinResX = Defaults::WinResX;
+			WinResY = Defaults::WinResY;
+		}
+		UINT WndFlags = 0;
+		SetWindowPos(ShaderAtoll::hWindow, HWND_TOP, 0, 0, WinResX, WinResY, WndFlags);
 	}
 }
