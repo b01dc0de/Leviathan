@@ -11,7 +11,7 @@ namespace ShaderAtoll
 	UINT WinResX = Defaults::WinResX;
 	UINT WinResY = Defaults::WinResY;
 	double AppTime_s = 0.0f;
-	double DeltaTime_s = 0.0f;
+	double DeltaTime_ms = 0.0f;
 
 	GlobalPlatformStateType GlobalPlatformState;
 
@@ -126,8 +126,8 @@ namespace ShaderAtoll
 	void AtollEngine::UpdateState()
 	{
 		Clock.Tick();
-		AppTime_s = Clock.fLast_ms;
-		DeltaTime_s = Clock.fDelta_ms;
+		AppTime_s = Clock.fLast_s;
+		DeltaTime_ms = Clock.fDelta_ms;
 
 		UpdateWindow(ShaderAtoll::hWindow);
 	}

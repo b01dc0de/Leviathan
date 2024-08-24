@@ -16,8 +16,8 @@ namespace ShaderAtoll
 		double fTs_us = (double)(InTs.QuadPart * Ticks_to_us);
 		double fFreq_us = (double)Freq.QuadPart;
 
-		double fTime_ms = (fTs_us / fFreq_us) / (double)Ticks_to_us;
-		return fTime_ms;
+		double fTime_s = (fTs_us / (fFreq_us * (double)Ticks_to_us));
+		return fTime_s;
 	}
 
 	void AtollClock::Tick()
@@ -30,8 +30,8 @@ namespace ShaderAtoll
 		Ts_Last.QuadPart = Ts_QPC.QuadPart - T0.QuadPart;
 		Ts_Delta.QuadPart = Ts_Last.QuadPart - Ts_Prev.QuadPart;
 
-		fLast_ms = ConvertTs_s(Ts_Last);
-		fDelta_ms = ConvertTs_s(Ts_Delta);
+		fLast_s = ConvertTs_s(Ts_Last);
+		fDelta_ms = ConvertTs_s(Ts_Delta) * (double)ms_per_s;
 	}
 
 	void AtollClock::Init()

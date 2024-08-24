@@ -11,7 +11,7 @@ namespace ShaderAtoll
 	extern UINT WinResX;
 	extern UINT WinResY;
 	extern double AppTime_s;
-	extern double DeltaTime_s;
+	extern double DeltaTime_ms;
 
 	namespace AtollEngine
 	{

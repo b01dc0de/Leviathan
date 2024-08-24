@@ -342,8 +342,8 @@ namespace ShaderAtoll
 
 		GlobalsData.FrameWidth = WinResX;
 		GlobalsData.FrameHeight = WinResY;
-		GlobalsData.AppTime_ms = (float)AppTime_s;
-		GlobalsData.DeltaTime_ms = (float)DeltaTime_s;
+		GlobalsData.AppTime_s = (float)AppTime_s;
+		GlobalsData.DeltaTime_ms = (float)DeltaTime_ms;
 
 		DX_ImmediateContext->IASetInputLayout(DX_InputLayout);
 		DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBuffer, &Stride, &Offset);

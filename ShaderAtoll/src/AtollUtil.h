@@ -36,6 +36,7 @@ namespace ShaderAtoll
 	{
 		static constexpr __int64 Ticks_to_us = 100000; // ticks -> microseconds
 		static constexpr __int64 us_per_ms = 1000;
+		static constexpr __int64 ms_per_s = 1000;
 
 		using TsType = LARGE_INTEGER;
 		static TsType Freq;
@@ -43,7 +44,7 @@ namespace ShaderAtoll
 		TsType T0 = {};
 		TsType Ts_Last = {};
 		TsType Ts_Delta = {};
-		double fLast_ms = 0.0;
+		double fLast_s = 0.0;
 		double fDelta_ms = 0.0;
 
 		static double ConvertTs_s(TsType InTs);

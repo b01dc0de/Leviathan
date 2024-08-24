@@ -36,7 +36,7 @@ namespace ShaderAtoll
 	{
 		uint FrameWidth;
 		uint FrameHeight;
-		float AppTime_ms;
+		float AppTime_s;
 		float DeltaTime_ms;
 	};
 
