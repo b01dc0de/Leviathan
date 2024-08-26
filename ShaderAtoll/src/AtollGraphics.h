@@ -40,7 +40,6 @@ namespace ShaderAtoll
 		int FrameHeight;
 		int MouseX;
 		int MouseY;
-
 		int Pad0;
 		int Pad1;
 	};
@@ -59,7 +58,7 @@ namespace ShaderAtoll
 
 	struct AtollGraphics
 	{
-		static IDXGISwapChain* DX_SwapChain;
+		static IDXGISwapChain1* DX_SwapChain1;
 		static ID3D11Device* DX_Device;
 		static D3D_FEATURE_LEVEL UsedFeatureLevel;
 		static ID3D11DeviceContext* DX_ImmediateContext;
@@ -67,10 +66,13 @@ namespace ShaderAtoll
 		static ID3D11Texture2D* DX_BackBuffer;
 		static ID3D11RenderTargetView* DX_RenderTargetView;
 
-		static IDXGIFactory1* DX_Factory;
+		static IDXGIFactory2* DX_Factory2;
+#define ENABLE_OUTPUT_ENUMERATION() (0)
+#if ENABLE_OUTPUT_ENUMERATION()
 		static std::vector<IDXGIAdapter*> DX_AdapterList;
 		static std::vector<IDXGIOutput*> DX_Outputs;
 		static std::vector<DXGI_MODE_DESC*> OutputModeDescList;
+#endif // ENABLE_OUTPUT_ENUMERATION()
 
 		static ID3D11RasterizerState* DX_RasterizerState;
 		static ID3D11Texture2D* DX_DepthStencil;

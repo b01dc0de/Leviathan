@@ -2,7 +2,7 @@
 
 namespace ShaderAtoll
 {
-	IDXGISwapChain* AtollGraphics::DX_SwapChain = nullptr;
+	IDXGISwapChain1* AtollGraphics::DX_SwapChain1 = nullptr;
 	ID3D11Device* AtollGraphics::DX_Device = nullptr;
 	D3D_FEATURE_LEVEL AtollGraphics::UsedFeatureLevel = {};
 	ID3D11DeviceContext* AtollGraphics::DX_ImmediateContext = nullptr;
@@ -10,10 +10,11 @@ namespace ShaderAtoll
 	ID3D11Texture2D* AtollGraphics::DX_BackBuffer = nullptr;
 	ID3D11RenderTargetView* AtollGraphics::DX_RenderTargetView = nullptr;
 
-	IDXGIFactory1* AtollGraphics::DX_Factory = nullptr;
+	IDXGIFactory2* AtollGraphics::DX_Factory2 = nullptr;
+#if ENABLE_OUTPUT_ENUMERATION()
 	std::vector<IDXGIAdapter*> AtollGraphics::DX_AdapterList = {};
-	std::vector<IDXGIOutput*> AtollGraphics::DX_Outputs = {};
 	std::vector<DXGI_MODE_DESC*> AtollGraphics::OutputModeDescList = {};
+#endif // ENABLE_OUTPUT_ENUMERATION()
 
 	ID3D11RasterizerState* AtollGraphics::DX_RasterizerState = nullptr;
 	ID3D11Texture2D* AtollGraphics::DX_DepthStencil = nullptr;
@@ -131,16 +132,16 @@ namespace ShaderAtoll
 		UINT NumSupportedFeatureLevels = ARRAY_SIZE(SupportedFeatureLevels);
 		D3D_FEATURE_LEVEL D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
 
-		CreateDXGIFactory1(__uuidof(IDXGIFactory), (void**)&DX_Factory);
-		if (nullptr != DX_Factory)
+		CreateDXGIFactory1(__uuidof(IDXGIFactory2), (void**)&DX_Factory2);
+#if ENABLE_OUTPUT_ENUMERATION()
+		if (DX_Factory2)
 		{
 			IDXGIAdapter* DX_Adapter = nullptr;
-			for (UINT AdapterIdx = 0; DX_Factory->EnumAdapters(AdapterIdx, &DX_Adapter); AdapterIdx++)
+			for (UINT AdapterIdx = 0; DX_Factory2->EnumAdapters(AdapterIdx, &DX_Adapter); AdapterIdx++)
 			{
 				DX_AdapterList.push_back(DX_Adapter);
 			}
 		}
-
 		for (int AdapterIdx = 0; AdapterIdx < DX_AdapterList.size(); AdapterIdx++)
 		{
 			IDXGIOutput* DX_Output = nullptr;
@@ -157,45 +158,64 @@ namespace ShaderAtoll
 				}
 			}
 		}
+#endif // ENABLE_OUTPUT_ENUMERATION()
 
+#define ENABLE_MULTISAMPLING() (0)
+#if ENABLE_MULTISAMPLING()
 		DXGI_SAMPLE_DESC SharedSampleDesc = {};
 		SharedSampleDesc.Count = 4;
 		SharedSampleDesc.Quality = (UINT)D3D11_STANDARD_MULTISAMPLE_PATTERN;
-
-		DXGI_SWAP_CHAIN_DESC swapchain_desc = {};
-		swapchain_desc.BufferCount = 2;
-		swapchain_desc.BufferDesc.Width = ShaderAtoll::WinResX;
-		swapchain_desc.BufferDesc.Height = ShaderAtoll::WinResY;
-		swapchain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		swapchain_desc.BufferDesc.RefreshRate.Numerator = 60;
-		swapchain_desc.BufferDesc.RefreshRate.Denominator = 1;
-		swapchain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapchain_desc.OutputWindow = ShaderAtoll::hWindow;
-		swapchain_desc.SampleDesc = SharedSampleDesc;
-		swapchain_desc.Windowed = true;
+#else
+		DXGI_SAMPLE_DESC SharedSampleDesc = {};
+		SharedSampleDesc.Count = 1;
+		SharedSampleDesc.Quality = (UINT)0;
+#endif // ENABLE_MULTISAMPLING
 
 		UINT CreateDeviceFlags = 0;
 #if BUILD_DEBUG()
 		CreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif // BUILD_DEBUG()
 
-		Result = D3D11CreateDeviceAndSwapChain(
-			nullptr,					//IDXGIAdapter* pAdapter
-			D3D_DRIVER_TYPE_HARDWARE,	//D3D_DRIVER_TYPE DriverType
-			nullptr,					//HMODULE Software
-			CreateDeviceFlags,			//UINT Flags
-			SupportedFeatureLevels,		//const D3D_FEATURE_LEVEL* pFeatureLevels
-			NumSupportedFeatureLevels,	//UINT FeatureLevels
-			D3D11_SDK_VERSION,			//UINT SDKVersion
-			&swapchain_desc,			//const DXGI_SWAP_CHAIN_DESC* pSwapChainDesc
-			&DX_SwapChain,
+		Result = D3D11CreateDevice(
+			nullptr,
+			D3D_DRIVER_TYPE_HARDWARE,
+			nullptr,
+			CreateDeviceFlags,
+			SupportedFeatureLevels,
+			NumSupportedFeatureLevels,
+			D3D11_SDK_VERSION,
 			&DX_Device,
 			&UsedFeatureLevel,
 			&DX_ImmediateContext
 		);
 		DXCHECK(Result);
 
-		Result = DX_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&DX_BackBuffer);
+		DXGI_SWAP_CHAIN_DESC1 SwapChainDesc1 = {};
+		SwapChainDesc1.Width = WinResX;
+		SwapChainDesc1.Height = WinResX;
+		SwapChainDesc1.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		SwapChainDesc1.Stereo = FALSE;
+		SwapChainDesc1.SampleDesc = SharedSampleDesc;
+		SwapChainDesc1.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		SwapChainDesc1.BufferCount = 2;
+		SwapChainDesc1.Scaling = DXGI_SCALING_NONE;
+		SwapChainDesc1.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+		SwapChainDesc1.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+		SwapChainDesc1.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+		DXGI_SWAP_CHAIN_FULLSCREEN_DESC SwapChainFullscreenDesc = {};
+
+		DXCHECK(DX_Factory2 && DX_Device);
+		Result = DX_Factory2->CreateSwapChainForHwnd(
+			DX_Device, 
+			hWindow,
+			&SwapChainDesc1,
+			nullptr, //&SwapChainFullscreenDesc,
+			nullptr,
+			&DX_SwapChain1
+		);
+		DXCHECK(Result);
+
+		Result = DX_SwapChain1->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&DX_BackBuffer);
 		DXCHECK(Result);
 
 		Result = DX_Device->CreateRenderTargetView(DX_BackBuffer, nullptr, &DX_RenderTargetView);
@@ -223,8 +243,6 @@ namespace ShaderAtoll
 
 		Result = DX_Device->CreateDepthStencilView(DX_DepthStencil, &DepthStencilViewDesc, &DX_DepthStencilView);
 		DXCHECK(Result);
-
-		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
 
 		D3D11_RENDER_TARGET_BLEND_DESC RTVBlendDesc = {};
 		RTVBlendDesc.BlendEnable = true;
@@ -333,12 +351,15 @@ namespace ShaderAtoll
 		constexpr UINT Offset = 0;
 		constexpr float fDepth = 1.0f;
 
-		GlobalsData.FrameWidth = WinResX;
-		GlobalsData.FrameHeight = WinResY;
-		GlobalsData.AppTime_s = (float)AppTime_s;
-		GlobalsData.DeltaTime_ms = (float)DeltaTime_ms;
-		GlobalsData.MouseX = MousePosX;
-		GlobalsData.MouseY = MousePosY;
+		GlobalsData =
+		{
+			(float)AppTime_s,
+			(float)DeltaTime_ms,
+			WinResX,
+			WinResY,
+			MousePosX,
+			MousePosY
+		};
 
 		DX_ImmediateContext->IASetInputLayout(DX_InputLayout);
 		DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBuffer, &Stride, &Offset);
@@ -354,19 +375,23 @@ namespace ShaderAtoll
 
 		DX_ImmediateContext->PSSetShader(DX_PixelShader, nullptr, 0);
 		DX_ImmediateContext->PSSetConstantBuffers(0, 1, &DX_GlobalsBuffer);
+
+		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
+
+		float ClearColor[4] = { 0.025f, 0.15f, 0.3f, 1.0f };
+		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, ClearColor);
+		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
 	void AtollGraphics::Draw()
 	{
-		float ClearColor[4] = { 0.025f, 0.15f, 0.3f, 1.0f };
-		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, ClearColor);
-		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-
 		UpdateGraphicsState();
 
 		DX_ImmediateContext->DrawIndexed(TriIxCount * ARRAY_SIZE(BoxIxs), 0u, 0u);
 
-		DX_SwapChain->Present(0, 0);
+		const DXGI_PRESENT_PARAMETERS PresentParameters = {};
+		const UINT PresentFlags = DXGI_PRESENT_ALLOW_TEARING;
+		DX_SwapChain1->	Present1(0, PresentFlags, &PresentParameters);
 	}
 }
 
