@@ -22,6 +22,8 @@ namespace ShaderAtoll
 	{
 		static constexpr UINT WinResX = 1024U;
 		static constexpr UINT WinResY = 1024U;
+		static constexpr int MousePosX = -1;
+		static constexpr int MousePosY = -1;
 	};
 
 	struct SysInfo

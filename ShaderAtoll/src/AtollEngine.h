@@ -8,10 +8,12 @@ namespace ShaderAtoll
 	// Globals
 	extern bool bRunning;
 	extern HWND hWindow;
-	extern UINT WinResX;
-	extern UINT WinResY;
 	extern double AppTime_s;
 	extern double DeltaTime_ms;
+	extern int WinResX;
+	extern int WinResY;
+	extern int MousePosX;
+	extern int MousePosY;
 
 	namespace AtollEngine
 	{
@@ -25,10 +27,12 @@ namespace ShaderAtoll
 
 #if PLATFORM_WINDOWS()
 		int WINAPI Run(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow);
-		void HandleKeyInput(UINT uMsg, WPARAM wParam, LPARAM lParam);
+		LRESULT HandleKeyInput(UINT uMsg, WPARAM wParam, LPARAM lParam);
+		LRESULT HandleMouseInput(UINT uMsg, WPARAM wParam, LPARAM lParam);
 #elif PLATFORM_OTHER()
 		int Run(int argc, const char* argv[]);
 		void HandleKeyInput();
+		void HandleMouseInput();
 #endif // PLATFORM
 	};
 

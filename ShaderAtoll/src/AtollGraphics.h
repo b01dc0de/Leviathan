@@ -34,10 +34,15 @@ namespace ShaderAtoll
 	constexpr float msPerFrame_60 = 1000.0f / 60.0f;
 	struct ShaderGlobals
 	{
-		uint FrameWidth;
-		uint FrameHeight;
 		float AppTime_s;
 		float DeltaTime_ms;
+		int FrameWidth;
+		int FrameHeight;
+		int MouseX;
+		int MouseY;
+
+		int Pad0;
+		int Pad1;
 	};
 
 	/*

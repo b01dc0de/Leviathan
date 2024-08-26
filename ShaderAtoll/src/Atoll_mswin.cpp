@@ -40,14 +40,35 @@ namespace ShaderAtoll
 
 	LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
+#define ENABLE_EXTENDED_MOUSE_INPUT() (0)
 		LRESULT Result = 0;
 		switch (uMsg)
 		{
 			case WM_KEYDOWN:
 			case WM_KEYUP:
 			{
-				AtollEngine::HandleKeyInput(uMsg, wParam, lParam);
+				Result = AtollEngine::HandleKeyInput(uMsg, wParam, lParam);
 			} break;
+#if ENABLE_EXTENDED_MOUSE_INPUT()
+			case WM_LBUTTONDBLCLK:
+			case WM_LBUTTONDOWN:
+			case WM_LBUTTONUP:
+			case WM_MBUTTONDBLCLK:
+			case WM_MBUTTONDOWN:
+			case WM_MBUTTONUP:
+			case WM_RBUTTONDBLCLK:
+			case WM_RBUTTONDOWN:
+			case WM_RBUTTONUP:
+			case WM_MOUSEWHEEL:
+			case WM_MOUSEACTIVATE:
+			case WM_MOUSEHOVER:
+			case WM_MOUSEHWHEEL:
+			case WM_MOUSELEAVE:
+#endif // ENABLE_EXTENDED_MOUSE_INPUT
+			case WM_MOUSEMOVE:
+			{
+				Result = AtollEngine::HandleMouseInput(uMsg, wParam, lParam);
+			}
 			default:
 			{
 				Result = DefWindowProc(hwnd, uMsg, wParam, lParam);

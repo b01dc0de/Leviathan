@@ -8,10 +8,12 @@ namespace ShaderAtoll
 {
 	bool bRunning = false;
 	HWND hWindow;
-	UINT WinResX = Defaults::WinResX;
-	UINT WinResY = Defaults::WinResY;
 	double AppTime_s = 0.0f;
 	double DeltaTime_ms = 0.0f;
+	int WinResX = Defaults::WinResX;
+	int WinResY = Defaults::WinResY;
+	int MousePosX = Defaults::MousePosX;
+	int MousePosY = Defaults::MousePosY;
 
 	GlobalPlatformStateType GlobalPlatformState;
 
@@ -58,8 +60,10 @@ namespace ShaderAtoll
 		return (int)AtollErrorType::NO_ERR;
 	}
 
-	void AtollEngine::HandleKeyInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
+#if PLATFORM_WINDOWS()
+	LRESULT AtollEngine::HandleKeyInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
+		LRESULT Result = 0;
 		if (WM_KEYUP == uMsg)
 		{
 			if (VK_ESCAPE == wParam)
@@ -71,8 +75,36 @@ namespace ShaderAtoll
 				ToggleMaximize();
 			}
 		}
+		return Result;
 	}
+	LRESULT AtollEngine::HandleMouseInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
+	{
+		LRESULT Result = 0;
+		if (WM_MOUSEMOVE == uMsg)
+		{
+			/*
+			bool bCtrl = (bool)(wParam & MK_CONTROL);
+			bool bShift = (bool)(wParam & MK_SHIFT);
+			bool bLB = (bool)(wParam & MK_LBUTTON);
+			bool bMB = (bool)(wParam & MK_MBUTTON);
+			bool bRB = (bool)(wParam & MK_RBUTTON);
+			*/
+			int PosX = GET_X_LPARAM(lParam);
+			int PosY = GET_Y_LPARAM(lParam);
 
+			ShaderAtoll::MousePosX = PosX;
+			ShaderAtoll::MousePosY = PosY;
+		}
+		return Result;
+	}
+#elif PLATFORM_OTHER()
+	void HandleKeyInput()
+	{
+	}
+	void HandleMouseInput()
+	{
+	}
+#endif // PLATFORM
 
 	bool AtollEngine::Init()
 	{

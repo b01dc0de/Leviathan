@@ -31,10 +31,12 @@ namespace ShaderAtoll
 
 	ShaderGlobals GlobalsData
 	{
+		0.0f,
+		msPerFrame_60,
 		WinResX,
 		WinResY,
-		0.0f,
-		msPerFrame_60
+		MousePosX,
+		MousePosY
 	};
 
 	VF4 Color_Red = { 1.0f, 0.0f, 0.0f, 1.0f };
@@ -335,6 +337,8 @@ namespace ShaderAtoll
 		GlobalsData.FrameHeight = WinResY;
 		GlobalsData.AppTime_s = (float)AppTime_s;
 		GlobalsData.DeltaTime_ms = (float)DeltaTime_ms;
+		GlobalsData.MouseX = MousePosX;
+		GlobalsData.MouseY = MousePosY;
 
 		DX_ImmediateContext->IASetInputLayout(DX_InputLayout);
 		DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBuffer, &Stride, &Offset);
