@@ -84,7 +84,7 @@ namespace ShaderAtoll
 
 		static constexpr D3D_SHADER_MACRO ShaderHLSL_Defines[] =
 		{
-			"ENABLE_VERTEX_COLOR", "1",
+			"ENABLE_VERTEX_COLOR", "0",
 			NULL, NULL
 		};
 
@@ -199,21 +199,6 @@ namespace ShaderAtoll
 		Result = DX_Device->CreateRenderTargetView(DX_BackBuffer, nullptr, &DX_RenderTargetView);
 		DXCHECK(Result);
 
-		D3D11_RASTERIZER_DESC RasterDesc = {};
-		RasterDesc.FillMode = D3D11_FILL_SOLID;
-		RasterDesc.CullMode = D3D11_CULL_BACK;
-		RasterDesc.FrontCounterClockwise = true;
-		RasterDesc.DepthClipEnable = true;
-		RasterDesc.DepthClipEnable = true;
-		RasterDesc.ScissorEnable = false;
-		RasterDesc.MultisampleEnable = true;
-		RasterDesc.AntialiasedLineEnable = true;
-
-		Result = DX_Device->CreateRasterizerState(&RasterDesc, &DX_RasterizerState);
-		DXCHECK(Result);
-
-		DX_ImmediateContext->RSSetState(DX_RasterizerState);
-
 		D3D11_TEXTURE2D_DESC DepthDesc = {};
 		DepthDesc.Width = ShaderAtoll::WinResX;
 		DepthDesc.Height = ShaderAtoll::WinResY;
@@ -255,14 +240,20 @@ namespace ShaderAtoll
 		Result = DX_Device->CreateBlendState(&BlendDesc, &DX_BlendState);
 		DXCHECK(Result);
 
-		D3D11_VIEWPORT Viewport_Desc = {};
-		Viewport_Desc.Width = (FLOAT)ShaderAtoll::WinResX;
-		Viewport_Desc.Height = (FLOAT)ShaderAtoll::WinResY;
-		Viewport_Desc.MinDepth = 0.0f;
-		Viewport_Desc.MaxDepth = 1.0f;
-		Viewport_Desc.TopLeftX = 0;
-		Viewport_Desc.TopLeftY = 0;
-		DX_ImmediateContext->RSSetViewports(1, &Viewport_Desc);
+		D3D11_RASTERIZER_DESC RasterDesc = {};
+		RasterDesc.FillMode = D3D11_FILL_SOLID;
+		RasterDesc.CullMode = D3D11_CULL_BACK;
+		RasterDesc.FrontCounterClockwise = true;
+		RasterDesc.DepthClipEnable = true;
+		RasterDesc.DepthClipEnable = true;
+		RasterDesc.ScissorEnable = false;
+		RasterDesc.MultisampleEnable = true;
+		RasterDesc.AntialiasedLineEnable = true;
+
+		Result = DX_Device->CreateRasterizerState(&RasterDesc, &DX_RasterizerState);
+		DXCHECK(Result);
+
+		DX_ImmediateContext->RSSetState(DX_RasterizerState);
 
 		D3D11_BUFFER_DESC VertexBufferDesc =
 		{
@@ -353,6 +344,10 @@ namespace ShaderAtoll
 
 		DX_ImmediateContext->VSSetShader(DX_VertexShader, nullptr, 0);
 		DX_ImmediateContext->VSSetConstantBuffers(0, 1, &DX_GlobalsBuffer);
+
+		const D3D11_VIEWPORT Viewport_Desc = { 0, 0, (FLOAT)WinResX, (FLOAT)WinResY, 0.0f, 1.0f };
+		DX_ImmediateContext->RSSetViewports(1, &Viewport_Desc);
+
 		DX_ImmediateContext->PSSetShader(DX_PixelShader, nullptr, 0);
 		DX_ImmediateContext->PSSetConstantBuffers(0, 1, &DX_GlobalsBuffer);
 	}
