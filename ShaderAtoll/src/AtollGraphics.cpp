@@ -8,6 +8,7 @@ namespace ShaderAtoll
 	ID3D11DeviceContext* AtollGraphics::DX_ImmediateContext = nullptr;
 
 	ID3D11Texture2D* AtollGraphics::DX_BackBuffer = nullptr;
+	ID3D11Texture2D* AtollGraphics::DX_RenderTargetTexture = nullptr;
 	ID3D11RenderTargetView* AtollGraphics::DX_RenderTargetView = nullptr;
 
 	IDXGIFactory2* AtollGraphics::DX_Factory2 = nullptr;
@@ -133,43 +134,6 @@ namespace ShaderAtoll
 		D3D_FEATURE_LEVEL D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
 
 		CreateDXGIFactory1(__uuidof(IDXGIFactory2), (void**)&DX_Factory2);
-#if ENABLE_OUTPUT_ENUMERATION()
-		if (DX_Factory2)
-		{
-			IDXGIAdapter* DX_Adapter = nullptr;
-			for (UINT AdapterIdx = 0; DX_Factory2->EnumAdapters(AdapterIdx, &DX_Adapter); AdapterIdx++)
-			{
-				DX_AdapterList.push_back(DX_Adapter);
-			}
-		}
-		for (int AdapterIdx = 0; AdapterIdx < DX_AdapterList.size(); AdapterIdx++)
-		{
-			IDXGIOutput* DX_Output = nullptr;
-			for (int OutputIdx = 0; DX_AdapterList[AdapterIdx]->EnumOutputs(OutputIdx, &DX_Output) != DXGI_ERROR_NOT_FOUND; OutputIdx++)
-			{
-				DXGI_FORMAT Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-				UINT NumModes = 0;
-				Result = DX_Output->GetDisplayModeList(Format, 0, &NumModes, nullptr);
-				if (NumModes != 0)
-				{
-					DXGI_MODE_DESC* ModeList = new DXGI_MODE_DESC[NumModes];
-					Result = DX_Output->GetDisplayModeList(Format, 0, &NumModes, ModeList);
-					OutputModeDescList.push_back(ModeList);
-				}
-			}
-		}
-#endif // ENABLE_OUTPUT_ENUMERATION()
-
-#define ENABLE_MULTISAMPLING() (0)
-#if ENABLE_MULTISAMPLING()
-		DXGI_SAMPLE_DESC SharedSampleDesc = {};
-		SharedSampleDesc.Count = 4;
-		SharedSampleDesc.Quality = (UINT)D3D11_STANDARD_MULTISAMPLE_PATTERN;
-#else
-		DXGI_SAMPLE_DESC SharedSampleDesc = {};
-		SharedSampleDesc.Count = 1;
-		SharedSampleDesc.Quality = (UINT)0;
-#endif // ENABLE_MULTISAMPLING
 
 		UINT CreateDeviceFlags = 0;
 #if BUILD_DEBUG()
@@ -195,7 +159,8 @@ namespace ShaderAtoll
 		SwapChainDesc1.Height = WinResX;
 		SwapChainDesc1.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		SwapChainDesc1.Stereo = FALSE;
-		SwapChainDesc1.SampleDesc = SharedSampleDesc;
+		SwapChainDesc1.SampleDesc.Count = 1;
+		SwapChainDesc1.SampleDesc.Quality = 0;
 		SwapChainDesc1.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		SwapChainDesc1.BufferCount = 2;
 		SwapChainDesc1.Scaling = DXGI_SCALING_NONE;
@@ -218,7 +183,24 @@ namespace ShaderAtoll
 		Result = DX_SwapChain1->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&DX_BackBuffer);
 		DXCHECK(Result);
 
-		Result = DX_Device->CreateRenderTargetView(DX_BackBuffer, nullptr, &DX_RenderTargetView);
+		DXGI_SAMPLE_DESC SampleDescMS = {};
+		SampleDescMS.Count = 4;
+		SampleDescMS.Quality = (UINT)D3D11_STANDARD_MULTISAMPLE_PATTERN;
+
+		D3D11_TEXTURE2D_DESC RTT_Desc;
+		RTT_Desc.Width = WinResX;
+		RTT_Desc.Height = WinResY;
+		RTT_Desc.MipLevels = 1;
+		RTT_Desc.ArraySize = 1;
+		RTT_Desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		RTT_Desc.SampleDesc = SampleDescMS;
+		RTT_Desc.Usage = D3D11_USAGE_DEFAULT;
+		RTT_Desc.BindFlags = D3D11_BIND_RENDER_TARGET;
+		RTT_Desc.CPUAccessFlags = 0;
+		RTT_Desc.MiscFlags = 0;
+
+		Result = DX_Device->CreateTexture2D(&RTT_Desc, nullptr, &DX_RenderTargetTexture);
+		Result = DX_Device->CreateRenderTargetView(DX_RenderTargetTexture, nullptr, &DX_RenderTargetView);
 		DXCHECK(Result);
 
 		D3D11_TEXTURE2D_DESC DepthDesc = {};
@@ -227,7 +209,7 @@ namespace ShaderAtoll
 		DepthDesc.MipLevels = 1;
 		DepthDesc.ArraySize = 1;
 		DepthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		DepthDesc.SampleDesc = SharedSampleDesc;
+		DepthDesc.SampleDesc = SampleDescMS;
 		DepthDesc.Usage = D3D11_USAGE_DEFAULT;
 		DepthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 		DepthDesc.CPUAccessFlags = 0;
@@ -236,12 +218,13 @@ namespace ShaderAtoll
 		Result = DX_Device->CreateTexture2D(&DepthDesc, nullptr, &DX_DepthStencil);
 		DXCHECK(Result);
 
+		/*
 		D3D11_DEPTH_STENCIL_VIEW_DESC DepthStencilViewDesc = {};
 		DepthStencilViewDesc.Format = DepthStencilViewDesc.Format;
 		DepthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
 		DepthStencilViewDesc.Texture2D.MipSlice = 0;
-
-		Result = DX_Device->CreateDepthStencilView(DX_DepthStencil, &DepthStencilViewDesc, &DX_DepthStencilView);
+		*/
+		Result = DX_Device->CreateDepthStencilView(DX_DepthStencil, nullptr/*&DepthStencilViewDesc*/ , &DX_DepthStencilView);
 		DXCHECK(Result);
 
 		D3D11_RENDER_TARGET_BLEND_DESC RTVBlendDesc = {};
@@ -388,6 +371,7 @@ namespace ShaderAtoll
 		UpdateGraphicsState();
 
 		DX_ImmediateContext->DrawIndexed(TriIxCount * ARRAY_SIZE(BoxIxs), 0u, 0u);
+		DX_ImmediateContext->ResolveSubresource(DX_BackBuffer, 0, DX_RenderTargetTexture, 0, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 		const DXGI_PRESENT_PARAMETERS PresentParameters = {};
 		const UINT PresentFlags = DXGI_PRESENT_ALLOW_TEARING;

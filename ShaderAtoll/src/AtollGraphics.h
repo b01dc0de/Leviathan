@@ -64,6 +64,7 @@ namespace ShaderAtoll
 		static ID3D11DeviceContext* DX_ImmediateContext;
 
 		static ID3D11Texture2D* DX_BackBuffer;
+		static ID3D11Texture2D* DX_RenderTargetTexture;
 		static ID3D11RenderTargetView* DX_RenderTargetView;
 
 		static IDXGIFactory2* DX_Factory2;
