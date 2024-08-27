@@ -71,7 +71,9 @@ namespace ShaderAtoll
 
 		static int InitGraphics();
 		static void UpdateGraphicsState();
+		static void RecompileShaders();
 		static void Draw();
+
 	};
 }
 

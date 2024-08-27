@@ -31,6 +31,7 @@ namespace ShaderAtoll
 		void UpdateState();
 
 		void ToggleMaximize();
+		void TriggerShaderRecompile();
 	}
 
 #if PLATFORM_WINDOWS()
@@ -66,13 +67,20 @@ namespace ShaderAtoll
 		LRESULT Result = 0;
 		if (WM_KEYUP == uMsg)
 		{
-			if (VK_ESCAPE == wParam)
+			switch (wParam)
 			{
-				ShaderAtoll::bRunning = false;
-			}
-			else if (VK_F11 == wParam)
-			{
-				ToggleMaximize();
+				case VK_ESCAPE:
+				{
+					ShaderAtoll::bRunning = false;
+				} break;
+				case VK_F11:
+				{
+					ToggleMaximize();
+				} break;
+				case VK_F2:
+				{
+					TriggerShaderRecompile();
+				} break;
 			}
 		}
 		return Result;
@@ -198,5 +206,10 @@ namespace ShaderAtoll
 		}
 		UINT WndFlags = 0;
 		SetWindowPos(ShaderAtoll::hWindow, HWND_TOP, 0, 0, WinResX, WinResY, WndFlags);
+	}
+
+	void AtollEngine::TriggerShaderRecompile()
+	{
+		AtollGraphics::RecompileShaders();
 	}
 }

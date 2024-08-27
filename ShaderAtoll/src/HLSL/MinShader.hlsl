@@ -18,7 +18,7 @@ cbuffer AtollGlobals : register(b0)
     int MouseY;
 };
 
-float4 ShaderAtollMain(float4 SVPos)
+float4 AtollMain_Ver0(float4 SVPos)
 {
     const float PI_DIV_3 = _PI / 3.0;
     float Red = cos(AppTime) * (SVPos.x / FrameWidth);
@@ -36,6 +36,25 @@ float4 ShaderAtollMain(float4 SVPos)
         Result = lerp(Result, 1.0, BlendFactor);
     }
     return Result;
+}
+float4 AtollMain_Ver1(float4 SVPos)
+{
+    float4 Result = AtollMain_Ver0(SVPos);
+    Result.x = 1.0 - Result.x;
+    Result.y = 1.0 - Result.y;
+    Result.z = 1.0 - Result.z;
+    return Result;
+}
+#define MAIN_VERSION (1)
+float4 AtollMain(float4 SVPos)
+{
+#if MAIN_VERSION == 0
+    return AtollMain_Ver0(SVPos);
+#elif MAIN_VERSION == 1
+    return AtollMain_Ver1(SVPos);
+#else
+    return 0.0;
+#endif // MAIN_VERSION
 }
 
 struct VS_INPUT
@@ -67,7 +86,7 @@ float4 PSMain(PS_INPUT Input) : SV_Target
 #if ENABLE_VERTEX_COLOR
     return Input.RGBA;
 #else // ENABLE_VERTEX_COLOR
-    return ShaderAtollMain(Input.Pos);
+    return AtollMain(Input.Pos);
 #endif // ENABLE_VERTEX_COLOR
 }
 

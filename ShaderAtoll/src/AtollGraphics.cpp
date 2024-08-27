@@ -297,6 +297,34 @@ namespace ShaderAtoll
 		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
+	void AtollGraphics::RecompileShaders()
+	{
+		DrawPipelineState OldState = MainDrawPipelineState;
+
+		DrawPipelineState MinShaderDrawState = {};
+		bool bResult = CompileDrawPipeline
+		(
+			DX_Device,
+			L"src/HLSL/MinShader.hlsl",
+			ShaderMacroDefines,
+			InputLayoutDesc,
+			NumInputElements,
+			&MinShaderDrawState
+		);
+		CHECK(MinShaderDrawState.VertexShader
+			&& MinShaderDrawState.InputLayout
+			&& MinShaderDrawState.PixelShader
+			&& bResult);
+		MainDrawPipelineState = MinShaderDrawState;
+
+		if (bResult)
+		{
+			OldState.VertexShader->Release();
+			OldState.PixelShader->Release();
+			OldState.InputLayout->Release();
+		}
+	}
+
 	void AtollGraphics::Draw()
 	{
 		UpdateGraphicsState();
