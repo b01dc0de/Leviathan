@@ -4,8 +4,8 @@
 #include "AtollCommon.h"
 #include "AtollDrawPipelineState.h"
 
-#define DXCHECK(Result) if (FAILED(Result)) { return -1; }
-#define DXCHECKMSG(Result, Msg) if (FAILED(Result)) { OutputDebugStringA((Msg)); return -1; }
+#define DXCHECK(Result) if (FAILED(Result)) { DebugBreak(); }
+#define DXCHECKMSG(Result, Msg) if (FAILED(Result)) { OutputDebugStringA((Msg)); DebugBreak(); }
 
 namespace ShaderAtoll
 {
@@ -47,8 +47,6 @@ namespace ShaderAtoll
 
 	struct AtollGraphics
 	{
-		static DrawPipelineState MainDrawPipelineState;
-
 		static IDXGISwapChain1* DX_SwapChain1;
 		static ID3D11Device* DX_Device;
 		static D3D_FEATURE_LEVEL UsedFeatureLevel;
@@ -69,9 +67,7 @@ namespace ShaderAtoll
 		static ID3D11Buffer* DX_IndexBuffer;
 		static ID3D11Buffer* DX_GlobalsBuffer;
 
-		static ID3D11VertexShader* DX_VertexShader;
-		static ID3D11PixelShader* DX_PixelShader;
-		static ID3D11InputLayout* DX_InputLayout;
+		static DrawPipelineState MainDrawPipelineState;
 
 		static int InitGraphics();
 		static void UpdateGraphicsState();

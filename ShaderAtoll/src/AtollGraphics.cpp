@@ -26,10 +26,6 @@ namespace ShaderAtoll
 
 	ID3D11Buffer* AtollGraphics::DX_GlobalsBuffer = nullptr;
 
-	ID3D11VertexShader* AtollGraphics::DX_VertexShader = nullptr;
-	ID3D11PixelShader* AtollGraphics::DX_PixelShader = nullptr;
-	ID3D11InputLayout* AtollGraphics::DX_InputLayout = nullptr;
-
 	ShaderGlobals GlobalsData
 	{
 		0.0f,
@@ -125,7 +121,7 @@ namespace ShaderAtoll
 		SwapChainDesc1.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 		DXGI_SWAP_CHAIN_FULLSCREEN_DESC SwapChainFullscreenDesc = {};
 
-		DXCHECK(DX_Factory2 && DX_Device);
+		CHECK(DX_Factory2 && DX_Device);
 		Result = DX_Factory2->CreateSwapChainForHwnd(
 			DX_Device, 
 			hWindow,
@@ -254,13 +250,11 @@ namespace ShaderAtoll
 			NumInputElements,
 			&MinShaderDrawState
 		);
-		DXCHECK(MinShaderDrawState.VertexShader && MinShaderDrawState.InputLayout && MinShaderDrawState.PixelShader && bResult);
-
+		CHECK(MinShaderDrawState.VertexShader
+			&& MinShaderDrawState.InputLayout
+			&& MinShaderDrawState.PixelShader
+			&& bResult);
 		MainDrawPipelineState = MinShaderDrawState;
-
-		DX_VertexShader = MainDrawPipelineState.VertexShader;
-		DX_PixelShader = MainDrawPipelineState.PixelShader;
-		DX_InputLayout = MainDrawPipelineState.InputLayout;
 
 		return Result;
 	}
@@ -281,19 +275,19 @@ namespace ShaderAtoll
 			MousePosY
 		};
 
-		DX_ImmediateContext->IASetInputLayout(DX_InputLayout);
+		DX_ImmediateContext->IASetInputLayout(MainDrawPipelineState.InputLayout);
 		DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBuffer, &Stride, &Offset);
 		DX_ImmediateContext->IASetIndexBuffer(DX_IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		DX_ImmediateContext->UpdateSubresource(DX_GlobalsBuffer, 0, nullptr, &GlobalsData, sizeof(ShaderGlobals), 0);
 
-		DX_ImmediateContext->VSSetShader(DX_VertexShader, nullptr, 0);
+		DX_ImmediateContext->VSSetShader(MainDrawPipelineState.VertexShader, nullptr, 0);
 		DX_ImmediateContext->VSSetConstantBuffers(0, 1, &DX_GlobalsBuffer);
 
 		const D3D11_VIEWPORT Viewport_Desc = { 0, 0, (FLOAT)WinResX, (FLOAT)WinResY, 0.0f, 1.0f };
 		DX_ImmediateContext->RSSetViewports(1, &Viewport_Desc);
 
-		DX_ImmediateContext->PSSetShader(DX_PixelShader, nullptr, 0);
+		DX_ImmediateContext->PSSetShader(MainDrawPipelineState.PixelShader, nullptr, 0);
 		DX_ImmediateContext->PSSetConstantBuffers(0, 1, &DX_GlobalsBuffer);
 
 		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);

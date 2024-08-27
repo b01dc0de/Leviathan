@@ -191,7 +191,6 @@ namespace ShaderAtoll_GFX
 		RasterDesc.CullMode = D3D11_CULL_BACK;
 		RasterDesc.FrontCounterClockwise = true;
 		RasterDesc.DepthClipEnable = true;
-		RasterDesc.DepthClipEnable = true;
 		RasterDesc.ScissorEnable = false;
 		RasterDesc.MultisampleEnable = true;
 		RasterDesc.AntialiasedLineEnable = true;

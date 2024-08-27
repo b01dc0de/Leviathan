@@ -82,7 +82,7 @@ namespace ShaderAtoll
 			&VSCodeBlob);
 		DXCHECKMSG(VSCodeBlob && Result, "Failed to compile Vertex Shader! :(\n");
 
-		DXCHECK(InDevice);
+		CHECK(InDevice);
 		Result = InDevice->CreateVertexShader(VSCodeBlob->GetBufferPointer(), VSCodeBlob->GetBufferSize(), nullptr, Out_VS);
 		DXCHECKMSG(Result, "Device could not create vertex shader! :(\n");
 
@@ -90,6 +90,8 @@ namespace ShaderAtoll
 		DXCHECKMSG(Result, "Device could not create input layout! :(\n");
 
 		if (VSCodeBlob) { VSCodeBlob->Release(); }
+
+		return SUCCEEDED(Result);
 	}
 
 	int CompilePixelShader_Defaults
@@ -109,11 +111,13 @@ namespace ShaderAtoll
 			&PSCodeBlob);
 		DXCHECKMSG(PSCodeBlob && Result, "Failed to compile Pixel Shader! :(\n");
 
-		DXCHECK(InDevice);
+		CHECK(InDevice);
 		Result = InDevice->CreatePixelShader(PSCodeBlob->GetBufferPointer(), PSCodeBlob->GetBufferSize(), nullptr, Out_PS);
 		DXCHECKMSG(Result, "Device could not create pixel shader! :(\n");
 
 		if (PSCodeBlob) { PSCodeBlob->Release(); }
+
+		return SUCCEEDED(Result);
 	}
 
 	bool CompileDrawPipeline
@@ -126,7 +130,7 @@ namespace ShaderAtoll
 		DrawPipelineState* OutDrawPipelineState
 	)
 	{
-		DXCHECK(InDevice);
+		CHECK(InDevice);
 
 		OutDrawPipelineState->VertexShader = nullptr;
 		OutDrawPipelineState->PixelShader = nullptr;
@@ -141,13 +145,15 @@ namespace ShaderAtoll
 			&OutDrawPipelineState->VertexShader,
 			&OutDrawPipelineState->InputLayout
 		);
+		DXCHECK(Result);
 
 		Result = CompilePixelShader_Defaults(
 			InDevice,
 			SrcFilename,
 			MacroDefines,
 			&OutDrawPipelineState->PixelShader);
+		DXCHECK(Result);
 
-		return false;
+		return SUCCEEDED(Result);
 	}
 }

@@ -10,6 +10,7 @@
 #endif // UNICODE
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof(A[0]))
+#define CHECK(Exp) if (!(Exp)) { OutputDebugStringA(#Exp); DebugBreak(); }
 
 namespace ShaderAtoll
 {
