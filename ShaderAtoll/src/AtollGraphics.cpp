@@ -1,7 +1,10 @@
 #include "AtollGraphics.h"
+#include "AtollDrawPipelineState.h"
 
 namespace ShaderAtoll
 {
+	DrawPipelineState AtollGraphics::MainDrawPipelineState = {};
+
 	IDXGISwapChain1* AtollGraphics::DX_SwapChain1 = nullptr;
 	ID3D11Device* AtollGraphics::DX_Device = nullptr;
 	D3D_FEATURE_LEVEL AtollGraphics::UsedFeatureLevel = {};
@@ -12,10 +15,6 @@ namespace ShaderAtoll
 	ID3D11RenderTargetView* AtollGraphics::DX_RenderTargetView = nullptr;
 
 	IDXGIFactory2* AtollGraphics::DX_Factory2 = nullptr;
-#if ENABLE_OUTPUT_ENUMERATION()
-	std::vector<IDXGIAdapter*> AtollGraphics::DX_AdapterList = {};
-	std::vector<DXGI_MODE_DESC*> AtollGraphics::OutputModeDescList = {};
-#endif // ENABLE_OUTPUT_ENUMERATION()
 
 	ID3D11RasterizerState* AtollGraphics::DX_RasterizerState = nullptr;
 	ID3D11Texture2D* AtollGraphics::DX_DepthStencil = nullptr;
@@ -64,62 +63,19 @@ namespace ShaderAtoll
 		{1, 2, 3}
 	};
 
-	int AtollGraphics::CompileShaderHelper(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob)
+	static constexpr D3D_SHADER_MACRO ShaderMacroDefines[] =
 	{
-		HRESULT Result = S_OK;
-
-		if (SourceFileName == nullptr || EntryPointFunction == nullptr || Profile == nullptr || ShaderBlob == nullptr)
-		{
-			return E_INVALIDARG;
-		}
-
-		*ShaderBlob = nullptr;
-
-		UINT CompileFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS;
-#if BUILD_DEBUG()
-		CompileFlags |= D3DCOMPILE_ALL_RESOURCES_BOUND;
-		CompileFlags |= D3DCOMPILE_DEBUG;
-		CompileFlags |= D3DCOMPILE_DEBUG_NAME_FOR_SOURCE;
-		CompileFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif // BUILD_DEBUG()
-
-		ID3DBlob* OutBlob = nullptr;
-		ID3DBlob* ErrorMsgBlob = nullptr;
-
-		static constexpr D3D_SHADER_MACRO ShaderHLSL_Defines[] =
-		{
-			"ENABLE_VERTEX_COLOR", "0",
-			NULL, NULL
-		};
-
-		Result = D3DCompileFromFile
-		(
-			SourceFileName,
-			ShaderHLSL_Defines,
-			D3D_COMPILE_STANDARD_FILE_INCLUDE,
-			EntryPointFunction,
-			Profile,
-			CompileFlags,
-			0, //UINT Flags2
-			&OutBlob,
-			&ErrorMsgBlob
-		);
-
-		if (FAILED(Result) && OutBlob)
-		{
-			OutBlob->Release();
-			OutBlob = nullptr;
-		}
-		if (ErrorMsgBlob)
-		{
-			OutputDebugStringA((char*)ErrorMsgBlob->GetBufferPointer());
-			ErrorMsgBlob->Release();
-		}
-
-		*ShaderBlob = OutBlob;
-
-		return Result;
+		"ENABLE_VERTEX_COLOR", "0",
+		NULL, NULL
 	};
+
+	D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		// { "TEXTURE", ... }
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+	UINT NumInputElements = ARRAYSIZE(InputLayoutDesc);
 
 	int AtollGraphics::InitGraphics()
 	{
@@ -218,13 +174,7 @@ namespace ShaderAtoll
 		Result = DX_Device->CreateTexture2D(&DepthDesc, nullptr, &DX_DepthStencil);
 		DXCHECK(Result);
 
-		/*
-		D3D11_DEPTH_STENCIL_VIEW_DESC DepthStencilViewDesc = {};
-		DepthStencilViewDesc.Format = DepthStencilViewDesc.Format;
-		DepthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
-		DepthStencilViewDesc.Texture2D.MipSlice = 0;
-		*/
-		Result = DX_Device->CreateDepthStencilView(DX_DepthStencil, nullptr/*&DepthStencilViewDesc*/ , &DX_DepthStencilView);
+		Result = DX_Device->CreateDepthStencilView(DX_DepthStencil, nullptr, &DX_DepthStencilView);
 		DXCHECK(Result);
 
 		D3D11_RENDER_TARGET_BLEND_DESC RTVBlendDesc = {};
@@ -294,36 +244,23 @@ namespace ShaderAtoll
 		Result = DX_Device->CreateBuffer(&GlobalsBufferDesc, &GlobalsBufferInitData, &DX_GlobalsBuffer);
 		DXCHECK(Result);
 
-		ID3DBlob* VSCodeBlob = nullptr;
-		ID3DBlob* PSCodeBlob = nullptr;
+		DrawPipelineState MinShaderDrawState = {};
+		bool bResult = CompileDrawPipeline
+		(
+			DX_Device,
+			L"src/HLSL/MinShader.hlsl",
+			ShaderMacroDefines,
+			InputLayoutDesc,
+			NumInputElements,
+			&MinShaderDrawState
+		);
+		DXCHECK(MinShaderDrawState.VertexShader && MinShaderDrawState.InputLayout && MinShaderDrawState.PixelShader && bResult);
 
-		Result = CompileShaderHelper(L"src/HLSL/MinShader.hlsl", "VSMain", "vs_5_0", &VSCodeBlob);
-		DXCHECKMSG(Result, "Failed to compile Vertex Shader! :(\n");
+		MainDrawPipelineState = MinShaderDrawState;
 
-		Result = CompileShaderHelper(L"src/HLSL/MinShader.hlsl", "PSMain", "ps_5_0", &PSCodeBlob);
-		DXCHECKMSG(Result, "Failed to compile Pixel Shader! :(\n");
-
-		if (VSCodeBlob && PSCodeBlob)
-		{
-			Result = DX_Device->CreateVertexShader(VSCodeBlob->GetBufferPointer(), VSCodeBlob->GetBufferSize(), nullptr, &DX_VertexShader);
-			DXCHECKMSG(Result, "Device could not create vertex shader! :(\n");
-
-			Result = DX_Device->CreatePixelShader(PSCodeBlob->GetBufferPointer(), PSCodeBlob->GetBufferSize(), nullptr, &DX_PixelShader);
-			DXCHECKMSG(Result, "Device could not create pixel shader! :(\n");
-
-			D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
-			{
-				{"POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				// { "TEXTURE", ... }
-				{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			};
-			UINT NumInputElements = ARRAYSIZE(InputLayoutDesc);
-
-			Result = DX_Device->CreateInputLayout(InputLayoutDesc, NumInputElements, VSCodeBlob->GetBufferPointer(), VSCodeBlob->GetBufferSize(), &DX_InputLayout);
-			DXCHECKMSG(Result, "Device could not create input layout! :(\n");
-		}
-		if (VSCodeBlob) { VSCodeBlob->Release(); }
-		if (PSCodeBlob) { PSCodeBlob->Release(); }
+		DX_VertexShader = MainDrawPipelineState.VertexShader;
+		DX_PixelShader = MainDrawPipelineState.PixelShader;
+		DX_InputLayout = MainDrawPipelineState.InputLayout;
 
 		return Result;
 	}

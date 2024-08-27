@@ -24,6 +24,9 @@
     <ClCompile Include="src\AtollEngine.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\AtollDrawPipelineState.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\HLSL\MinShader.hlsl">
@@ -44,6 +47,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\AtollEngine.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AtollDrawPipelineState.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

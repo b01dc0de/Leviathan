@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AtollEngine.cpp" />
+    <ClCompile Include="src\AtollDrawPipelineState.cpp" />
     <ClCompile Include="src\AtollGraphics.cpp" />
     <ClCompile Include="src\AtollUtil.cpp" />
     <ClCompile Include="src\Atoll_mswin.cpp" />
@@ -26,6 +27,7 @@
   <ItemGroup>
     <ClInclude Include="src\AtollCommon.h" />
     <ClInclude Include="src\AtollEngine.h" />
+    <ClInclude Include="src\AtollDrawPipelineState.h" />
     <ClInclude Include="src\AtollGraphics.h" />
     <ClInclude Include="src\AtollUtil.h" />
     <ClInclude Include="src\Atoll_mswin.h" />

@@ -2,6 +2,7 @@
 #define ATOLLGRAPHICS_H
 
 #include "AtollCommon.h"
+#include "AtollDrawPipelineState.h"
 
 #define DXCHECK(Result) if (FAILED(Result)) { return -1; }
 #define DXCHECKMSG(Result, Msg) if (FAILED(Result)) { OutputDebugStringA((Msg)); return -1; }
@@ -44,20 +45,10 @@ namespace ShaderAtoll
 		int Pad1;
 	};
 
-	/*
-	struct DrawPipelineState
-	{
-		DrawPipelineState() = default;
-		DrawPipelineState(const DrawPipelineState&) = default;
-		DrawPipelineState& operator=(const DrawPipelineState&) = default;
-		DrawPipelineState(DrawPipelineState&&);
-		DrawPipelineState& operator=(DrawPipelineState&&) = default;
-		~DrawPipelineState() = default;
-	};
-	*/
-
 	struct AtollGraphics
 	{
+		static DrawPipelineState MainDrawPipelineState;
+
 		static IDXGISwapChain1* DX_SwapChain1;
 		static ID3D11Device* DX_Device;
 		static D3D_FEATURE_LEVEL UsedFeatureLevel;
@@ -68,12 +59,6 @@ namespace ShaderAtoll
 		static ID3D11RenderTargetView* DX_RenderTargetView;
 
 		static IDXGIFactory2* DX_Factory2;
-#define ENABLE_OUTPUT_ENUMERATION() (0)
-#if ENABLE_OUTPUT_ENUMERATION()
-		static std::vector<IDXGIAdapter*> DX_AdapterList;
-		static std::vector<IDXGIOutput*> DX_Outputs;
-		static std::vector<DXGI_MODE_DESC*> OutputModeDescList;
-#endif // ENABLE_OUTPUT_ENUMERATION()
 
 		static ID3D11RasterizerState* DX_RasterizerState;
 		static ID3D11Texture2D* DX_DepthStencil;
@@ -88,7 +73,6 @@ namespace ShaderAtoll
 		static ID3D11PixelShader* DX_PixelShader;
 		static ID3D11InputLayout* DX_InputLayout;
 
-		static int CompileShaderHelper(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, ID3DBlob** ShaderBlob);
 		static int InitGraphics();
 		static void UpdateGraphicsState();
 		static void Draw();
