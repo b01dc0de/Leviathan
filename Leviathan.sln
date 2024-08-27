@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShaderAtoll", "ShaderAtoll\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Untulpa", "Untulpa\Untulpa.vcxproj", "{4DF38324-12BC-41B8-90D8-099B2A6F4C8A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LvShared", "LvShared\LvShared.vcxitems", "{37C4037D-EAD2-4FDA-9525-CA9A4BFA8DAB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
