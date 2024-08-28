@@ -3,6 +3,12 @@
 
 namespace ShaderAtoll
 {
+	template <>
+	DXHandle<ID3D11Device>::DXHandle(ID3D11Device* InHandle)
+		: Handle(InHandle)
+	{
+	}
+
 	DrawPipelineState AtollGraphics::MainDrawPipelineState = {};
 
 	D3D_FEATURE_LEVEL AtollGraphics::UsedFeatureLevel = {};
@@ -369,12 +375,24 @@ namespace ShaderAtoll
 
 		const DXGI_PRESENT_PARAMETERS PresentParameters = {};
 		const UINT PresentFlags = DXGI_PRESENT_ALLOW_TEARING;
-		DX_SwapChain1->	Present1(0, PresentFlags, &PresentParameters);
+		DX_SwapChain1->Present1(0, PresentFlags, &PresentParameters);
 	}
 
 	int AtollGraphics::TermGraphics()
 	{
 		DXHandleMgr::Term();
+
+
+#if BUILD_DEBUG()
+		ID3D11Debug* DX_Debug = nullptr;
+		DX_Device->QueryInterface(&DX_Debug);
+		if (DX_Debug)
+		{
+			DX_Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
+			DX_Debug->Release();
+		}
+#endif // BUILD_DEBUG()
+		DX_Device->Release();
 
 		return 0;
 	}
