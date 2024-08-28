@@ -5,26 +5,61 @@ namespace ShaderAtoll
 {
 	DrawPipelineState AtollGraphics::MainDrawPipelineState = {};
 
-	IDXGISwapChain1* AtollGraphics::DX_SwapChain1 = nullptr;
-	ID3D11Device* AtollGraphics::DX_Device = nullptr;
 	D3D_FEATURE_LEVEL AtollGraphics::UsedFeatureLevel = {};
-	ID3D11DeviceContext* AtollGraphics::DX_ImmediateContext = nullptr;
 
-	ID3D11Texture2D* AtollGraphics::DX_BackBuffer = nullptr;
-	ID3D11Texture2D* AtollGraphics::DX_RenderTargetTexture = nullptr;
-	ID3D11RenderTargetView* AtollGraphics::DX_RenderTargetView = nullptr;
+	DXHandle<IDXGISwapChain1> AtollGraphics::DX_SwapChain1;
+	DXHandle<ID3D11Device> AtollGraphics::DX_Device;
+	DXHandle<ID3D11DeviceContext> AtollGraphics::DX_ImmediateContext;
+	DXHandle<ID3D11Texture2D> AtollGraphics::DX_BackBuffer;
+	DXHandle<ID3D11Texture2D> AtollGraphics::DX_RenderTargetTexture;
+	DXHandle<ID3D11RenderTargetView> AtollGraphics::DX_RenderTargetView;
+	DXHandle<IDXGIFactory2> AtollGraphics::DX_Factory2;
+	DXHandle<ID3D11RasterizerState> AtollGraphics::DX_RasterizerState;
+	DXHandle<ID3D11Texture2D> AtollGraphics::DX_DepthStencil;
+	DXHandle<ID3D11DepthStencilView> AtollGraphics::DX_DepthStencilView;
+	DXHandle<ID3D11BlendState> AtollGraphics::DX_BlendState;
+	DXHandle<ID3D11Buffer> AtollGraphics::DX_VertexBuffer;
+	DXHandle<ID3D11Buffer> AtollGraphics::DX_IndexBuffer;
+	DXHandle<ID3D11Buffer> AtollGraphics::DX_GlobalsBuffer;
 
-	IDXGIFactory2* AtollGraphics::DX_Factory2 = nullptr;
+	DXHandleMgr* DXHandleMgr::_Inst = nullptr;
+	DXHandleMgr* DXHandleMgr::Inst()
+	{
+		if (nullptr == _Inst)
+		{
+			_Inst = new DXHandleMgr;
+		}
+		return _Inst;
+	}
 
-	ID3D11RasterizerState* AtollGraphics::DX_RasterizerState = nullptr;
-	ID3D11Texture2D* AtollGraphics::DX_DepthStencil = nullptr;
-	ID3D11DepthStencilView* AtollGraphics::DX_DepthStencilView = nullptr;
-	ID3D11BlendState* AtollGraphics::DX_BlendState = nullptr;
+	void DXHandleMgr::Add(IUnknown** InHandle)
+	{
+		CHECK(nullptr != InHandle);
+		Inst()->HandleList.AddItem(InHandle);
+	}
+	void DXHandleMgr::SafeReleaseAll()
+	{
+		Lv::DynArray<IUnknown**>& PrivList = Inst()->HandleList;
+		for (int HandleIdx = 0; HandleIdx < PrivList.NumItems; HandleIdx++)
+		{
+			IUnknown**& CurrHandle = PrivList[HandleIdx];
+			if (*CurrHandle)
+			{
+				(*CurrHandle)->Release();
+			}
+			CurrHandle = nullptr;
+		}
+	}
+	void DXHandleMgr::Term()
+	{
+		if (_Inst)
+		{
+			_Inst->SafeReleaseAll();
+			delete _Inst;
+			_Inst = nullptr;
+		}
+	}
 
-	ID3D11Buffer* AtollGraphics::DX_VertexBuffer = nullptr;
-	ID3D11Buffer* AtollGraphics::DX_IndexBuffer = nullptr;
-
-	ID3D11Buffer* AtollGraphics::DX_GlobalsBuffer = nullptr;
 
 	ShaderGlobals GlobalsData
 	{
@@ -335,6 +370,13 @@ namespace ShaderAtoll
 		const DXGI_PRESENT_PARAMETERS PresentParameters = {};
 		const UINT PresentFlags = DXGI_PRESENT_ALLOW_TEARING;
 		DX_SwapChain1->	Present1(0, PresentFlags, &PresentParameters);
+	}
+
+	int AtollGraphics::TermGraphics()
+	{
+		DXHandleMgr::Term();
+
+		return 0;
 	}
 }
 

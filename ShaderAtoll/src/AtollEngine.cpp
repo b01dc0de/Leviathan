@@ -162,6 +162,7 @@ namespace ShaderAtoll
 	bool AtollEngine::Term()
 	{
 		bool bResult = true;
+		bResult &= 0 == AtollGraphics::TermGraphics();
 		return bResult;
 	}
 

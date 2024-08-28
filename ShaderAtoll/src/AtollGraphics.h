@@ -2,6 +2,7 @@
 #define ATOLLGRAPHICS_H
 
 #include "AtollCommon.h"
+#include "LvShared.h"
 #include "AtollDrawPipelineState.h"
 
 #define DXCHECK(Result) if (FAILED(Result)) { DebugBreak(); }
@@ -45,35 +46,69 @@ namespace ShaderAtoll
 		int Pad1;
 	};
 
+	struct DXHandleMgr
+	{
+		Lv::DynArray<IUnknown**> HandleList;
+
+		static DXHandleMgr* _Inst;
+		static DXHandleMgr* Inst();
+
+		static void Add(IUnknown** InHandle);
+		static void SafeReleaseAll();
+		static void Term();
+	};
+
+	template <typename DX_T>
+	struct DXHandle
+	{
+		DX_T* Handle = nullptr;
+
+		DXHandle(DX_T* InHandle = nullptr)
+			: Handle(InHandle)
+		{
+			DXHandleMgr::Add((IUnknown**)&Handle);
+		}
+		DXHandle(const DXHandle&) = default;
+		DXHandle& operator=(const DXHandle&) = default;
+		~DXHandle() = default;
+		DXHandle(DXHandle&&) = delete;
+		DXHandle& operator=(DXHandle&&) = delete;
+		DXHandle& operator=(DX_T* InHandle)
+		{
+			Handle = InHandle;
+			return *this;
+		}
+		DX_T** operator&() { return &Handle; }
+		DX_T* operator->() { return Handle; }
+		operator bool() { return nullptr != Handle; }
+		operator DX_T*() { return Handle; }
+	};
+
 	struct AtollGraphics
 	{
-		static IDXGISwapChain1* DX_SwapChain1;
-		static ID3D11Device* DX_Device;
+		static DXHandle<IDXGISwapChain1> DX_SwapChain1;
+		static DXHandle<ID3D11Device> DX_Device;
+		static DXHandle<ID3D11DeviceContext> DX_ImmediateContext;
+		static DXHandle<ID3D11Texture2D> DX_BackBuffer;
+		static DXHandle<ID3D11Texture2D> DX_RenderTargetTexture;
+		static DXHandle<ID3D11RenderTargetView> DX_RenderTargetView;
+		static DXHandle<IDXGIFactory2> DX_Factory2;
+		static DXHandle<ID3D11RasterizerState> DX_RasterizerState;
+		static DXHandle<ID3D11Texture2D> DX_DepthStencil;
+		static DXHandle<ID3D11DepthStencilView> DX_DepthStencilView;
+		static DXHandle<ID3D11BlendState> DX_BlendState;
+		static DXHandle<ID3D11Buffer> DX_VertexBuffer;
+		static DXHandle<ID3D11Buffer> DX_IndexBuffer;
+		static DXHandle<ID3D11Buffer> DX_GlobalsBuffer;
+
 		static D3D_FEATURE_LEVEL UsedFeatureLevel;
-		static ID3D11DeviceContext* DX_ImmediateContext;
-
-		static ID3D11Texture2D* DX_BackBuffer;
-		static ID3D11Texture2D* DX_RenderTargetTexture;
-		static ID3D11RenderTargetView* DX_RenderTargetView;
-
-		static IDXGIFactory2* DX_Factory2;
-
-		static ID3D11RasterizerState* DX_RasterizerState;
-		static ID3D11Texture2D* DX_DepthStencil;
-		static ID3D11DepthStencilView* DX_DepthStencilView;
-		static ID3D11BlendState* DX_BlendState;
-
-		static ID3D11Buffer* DX_VertexBuffer;
-		static ID3D11Buffer* DX_IndexBuffer;
-		static ID3D11Buffer* DX_GlobalsBuffer;
-
 		static DrawPipelineState MainDrawPipelineState;
 
 		static int InitGraphics();
 		static void UpdateGraphicsState();
 		static void RecompileShaders();
 		static void Draw();
-
+		static int TermGraphics();
 	};
 }
 

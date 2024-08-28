@@ -10,4 +10,9 @@
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)src\LvShared.inl">
+      <Filter>src</Filter>
+    </None>
+  </ItemGroup>
 </Project>

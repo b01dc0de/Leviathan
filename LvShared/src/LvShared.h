@@ -1,9 +1,6 @@
 #ifndef LVSHARED_H
 #define LVSHARED_H
 
-namespace Lv
-{
-
-}
+#include "LvShared.inl"
 
 #endif // LVSHARED_H
