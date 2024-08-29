@@ -32,6 +32,7 @@ namespace ShaderAtoll
 
 		void ToggleMaximize();
 		void TriggerShaderRecompile();
+		void SwitchActiveShader(bool bInc = true);
 	}
 
 #if PLATFORM_WINDOWS()
@@ -64,8 +65,13 @@ namespace ShaderAtoll
 #if PLATFORM_WINDOWS()
 	LRESULT AtollEngine::HandleKeyInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
+		static bool bShift = false;
 		LRESULT Result = 0;
-		if (WM_KEYUP == uMsg)
+		if (wParam == VK_SHIFT)
+		{
+			bShift = WM_KEYDOWN == uMsg;
+		}
+		else if (WM_KEYUP == uMsg)
 		{
 			switch (wParam)
 			{
@@ -80,6 +86,10 @@ namespace ShaderAtoll
 				case VK_F2:
 				{
 					TriggerShaderRecompile();
+				} break;
+				case VK_TAB:
+				{
+					SwitchActiveShader(!bShift);
 				} break;
 			}
 		}
@@ -212,5 +222,10 @@ namespace ShaderAtoll
 	void AtollEngine::TriggerShaderRecompile()
 	{
 		AtollGraphics::RecompileShaders();
+	}
+
+	void AtollEngine::SwitchActiveShader(bool bInc)
+	{
+		AtollGraphics::SwitchActiveShader(bInc);
 	}
 }

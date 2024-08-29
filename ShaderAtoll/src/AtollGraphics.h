@@ -39,6 +39,7 @@ namespace ShaderAtoll
 		static int InitGraphics();
 		static void UpdateGraphicsState();
 		static void RecompileShaders();
+		static void SwitchActiveShader(bool bInc = true);
 		static void Draw();
 		static int TermGraphics();
 	};

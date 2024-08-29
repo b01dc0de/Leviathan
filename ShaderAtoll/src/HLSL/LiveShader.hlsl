@@ -9,7 +9,7 @@
 
 float4 Main_Live(float4 ScreenPos)
 {
-
+    return 0.0;
 }
 
 #else // AUTO_LIVE

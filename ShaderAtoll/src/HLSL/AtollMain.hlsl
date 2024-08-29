@@ -33,19 +33,19 @@ float4 AtollMain(float4 ScreenPos)
     #elif SELECT_EXAMPLE_SHADER == 2
         return Main_Example2(ScreenPos);
     #elif SELECT_EXAMPLE_SHADER == 3
-        return Main_Example2(ScreenPos);
+        return Main_Example3(ScreenPos);
     #elif SELECT_EXAMPLE_SHADER == 4
-        return Main_Example2(ScreenPos);
+        return Main_Example4(ScreenPos);
     #elif SELECT_EXAMPLE_SHADER == 5
-        return Main_Example2(ScreenPos);
+        return Main_Example5(ScreenPos);
     #elif SELECT_EXAMPLE_SHADER == 6
-        return Main_Example2(ScreenPos);
+        return Main_Example6(ScreenPos);
     #elif SELECT_EXAMPLE_SHADER == 7
-        return Main_Example2(ScreenPos);
+        return Main_Example7(ScreenPos);
     #elif SELECT_EXAMPLE_SHADER == 8
-        return Main_Example2(ScreenPos);
+        return Main_Example8(ScreenPos);
     #elif SELECT_EXAMPLE_SHADER == 9
-        return Main_Example2(ScreenPos);
+        return Main_Example9(ScreenPos);
     #elif SELECT_EXAMPLE_SHADER == 0
         return Main_Example0(ScreenPos);
     #else
