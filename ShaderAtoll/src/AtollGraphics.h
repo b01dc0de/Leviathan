@@ -29,7 +29,12 @@ namespace ShaderAtoll
 		static DXHandle<ID3D11Buffer> DX_GlobalsBuffer;
 
 		static D3D_FEATURE_LEVEL UsedFeatureLevel;
-		static DrawPipelineState MainDrawPipelineState;
+
+		static DrawPipelineState Live_DrawState;
+		static DrawPipelineState Error_DrawState;
+		static DrawPipelineState Example_DrawState;
+		static int SelectedExampleNum;
+		static DrawPipelineState* CurrActive_DrawState;
 
 		static int InitGraphics();
 		static void UpdateGraphicsState();

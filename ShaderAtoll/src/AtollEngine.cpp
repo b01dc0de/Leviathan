@@ -123,7 +123,7 @@ namespace ShaderAtoll
 			ShaderAtoll::hWindow = hWnd;
 
 			HRESULT Result = AtollGraphics::InitGraphics();
-			if (Result != S_OK)
+			if (!SUCCEEDED(Result))
 			{
 				DebugBreak();
 			}

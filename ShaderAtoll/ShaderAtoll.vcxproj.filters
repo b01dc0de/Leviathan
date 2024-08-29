@@ -7,6 +7,9 @@
     <Filter Include="HLSL">
       <UniqueIdentifier>{0632404e-12fd-4856-b552-48b005471030}</UniqueIdentifier>
     </Filter>
+    <Filter Include="HLSL\Examples">
+      <UniqueIdentifier>{76cc2edc-2e61-4843-9be0-df22ce86bea6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ShaderAtoll.cpp">
@@ -29,8 +32,56 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="src\HLSL\MinShader.hlsl">
+    <FxCompile Include="src\HLSL\BaseShader.hlsl">
       <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\LiveShader.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\ErrorShader.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\AtollMain.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\Examples\Example0.hlsl">
+      <Filter>HLSL\Examples</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\Examples\Example1.hlsl">
+      <Filter>HLSL\Examples</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\Examples\Example2.hlsl">
+      <Filter>HLSL\Examples</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\Examples\Example3.hlsl">
+      <Filter>HLSL\Examples</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\Examples\Example4.hlsl">
+      <Filter>HLSL\Examples</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\Examples\Example5.hlsl">
+      <Filter>HLSL\Examples</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\Examples\Example6.hlsl">
+      <Filter>HLSL\Examples</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\Examples\Example7.hlsl">
+      <Filter>HLSL\Examples</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\Examples\Example8.hlsl">
+      <Filter>HLSL\Examples</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\Examples\Example9.hlsl">
+      <Filter>HLSL\Examples</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\Examples\ExampleCommon.hlsl">
+      <Filter>HLSL\Examples</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\ShaderCommon.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="src\HLSL\Examples\AllExamples.hlsl">
+      <Filter>HLSL\Examples</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

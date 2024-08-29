@@ -1,0 +1,25 @@
+/////////////////////
+// LiveShader.hlsl //
+/////////////////////
+
+#ifndef AUTO_LIVE
+    #define AUTO_LIVE 0
+#endif
+#if !AUTO_LIVE
+
+float4 Main_Live(float4 ScreenPos)
+{
+
+}
+
+#else // AUTO_LIVE
+float4 Main_Live(float4 ScreenPos)
+{
+    float4 ColorA = { 0.9, 0.9, 0.9, 1.0 };
+    float4 ColorB = { 0.1, 0.1, 0.1, 1.0 };
+    float TimeInterval = 1.0;
+
+    return PulseGradientTime(ColorA, ColorB, TimeInterval);
+}
+#endif // AUTO_LIVE
+
