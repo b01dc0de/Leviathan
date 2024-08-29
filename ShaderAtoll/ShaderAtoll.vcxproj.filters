@@ -52,5 +52,8 @@
     <ClInclude Include="src\AtollDrawPipelineState.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\AtollGraphicsTypes.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

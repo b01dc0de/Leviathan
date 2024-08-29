@@ -52,13 +52,25 @@ namespace Lv
 		DynArray(const DynArray&) = delete;
 		DynArray& operator=(const DynArray&) = delete;
 
-		void AddItem(T& NewItem)
+		void Reset()
+		{
+			NumItems = 0;
+		}
+		void AddItem(const T& NewItem)
 		{
 			if (NumItems + 1 > Capacity)
 			{
 				Inc();
 			}
 			Data[NumItems++] = NewItem;
+		}
+		void AddItem(T&& MoveItem)
+		{
+			if (NumItems + 1 > Capacity)
+			{
+				Inc();
+			}
+			Data[NumItems++] = MoveItem;
 		}
 		void Inc()
 		{

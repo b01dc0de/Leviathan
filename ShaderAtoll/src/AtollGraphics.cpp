@@ -38,23 +38,32 @@ namespace ShaderAtoll
 		return _Inst;
 	}
 
-	void DXHandleMgr::Add(IUnknown** InHandle)
+	void DXHandleMgr::LocalAdd(IUnknown** InHandle)
 	{
 		CHECK(nullptr != InHandle);
-		Inst()->HandleList.AddItem(InHandle);
+		HandleList.AddItem(InHandle);
+	}
+	void DXHandleMgr::LocalSafeReleaseAll()
+	{
+		for (int HandleIdx = 0; HandleIdx < HandleList.NumItems; HandleIdx++)
+		{
+			IUnknown*& CurrHandle = (*HandleList[HandleIdx]);
+			if (CurrHandle)
+			{
+				CurrHandle->Release();
+				CurrHandle = nullptr;
+			}
+		}
+		HandleList.Reset();
+	}
+
+	void DXHandleMgr::Add(IUnknown** InHandle)
+	{
+		Inst()->LocalAdd(InHandle);
 	}
 	void DXHandleMgr::SafeReleaseAll()
 	{
-		Lv::DynArray<IUnknown**>& PrivList = Inst()->HandleList;
-		for (int HandleIdx = 0; HandleIdx < PrivList.NumItems; HandleIdx++)
-		{
-			IUnknown**& CurrHandle = PrivList[HandleIdx];
-			if (*CurrHandle)
-			{
-				(*CurrHandle)->Release();
-			}
-			CurrHandle = nullptr;
-		}
+		Inst()->LocalSafeReleaseAll();
 	}
 	void DXHandleMgr::Term()
 	{
@@ -380,8 +389,9 @@ namespace ShaderAtoll
 
 	int AtollGraphics::TermGraphics()
 	{
+		DX_ImmediateContext->ClearState();
+		MainDrawPipelineState.Release();
 		DXHandleMgr::Term();
-
 
 #if BUILD_DEBUG()
 		ID3D11Debug* DX_Debug = nullptr;

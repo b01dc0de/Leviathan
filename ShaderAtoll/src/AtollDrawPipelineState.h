@@ -2,6 +2,7 @@
 #define ATOLLDRAWPIPELINESTATE_H
 
 #include "AtollCommon.h"
+#include "AtollGraphicsTypes.h"
 
 namespace ShaderAtoll
 {
@@ -10,6 +11,13 @@ namespace ShaderAtoll
 		ID3D11VertexShader* VertexShader = nullptr;
 		ID3D11PixelShader* PixelShader = nullptr;
 		ID3D11InputLayout* InputLayout = nullptr;
+
+		void Release()
+		{
+			if (VertexShader) { VertexShader->Release(); VertexShader = nullptr; }
+			if (PixelShader) { PixelShader->Release(); PixelShader = nullptr; }
+			if (InputLayout) { InputLayout->Release(); InputLayout = nullptr; }
+		}
 	};
 
 	bool CompileDrawPipeline(
