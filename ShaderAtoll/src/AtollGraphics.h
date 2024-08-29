@@ -11,6 +11,14 @@
 
 namespace ShaderAtoll
 {
+	enum SHADER_MODE_TYPE
+	{
+		SHADER_MODE_LIVE,
+		SHADER_MODE_EXAMPLES,
+		SHADER_MODE_ERROR,
+		SHADER_MODE_NUM,
+	};
+
 	struct AtollGraphics
 	{
 		static DXHandle<IDXGISwapChain1> DX_SwapChain1;
@@ -30,15 +38,18 @@ namespace ShaderAtoll
 
 		static D3D_FEATURE_LEVEL UsedFeatureLevel;
 
-		static DrawPipelineState Live_DrawState;
 		static DrawPipelineState Error_DrawState;
+		static DrawPipelineState Live_DrawState;
 		static DrawPipelineState Example_DrawState;
+		static constexpr int NumExamples = 10;
 		static int SelectedExampleNum;
 		static DrawPipelineState* CurrActive_DrawState;
 
 		static int InitGraphics();
 		static void UpdateGraphicsState();
 		static void RecompileShaders();
+		static SHADER_MODE_TYPE GetActiveShaderMode();
+		static void SwitchActiveExample(bool bInc = true);
 		static void SwitchActiveShader(bool bInc = true);
 		static void Draw();
 		static int TermGraphics();

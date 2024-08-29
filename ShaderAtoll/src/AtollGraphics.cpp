@@ -488,44 +488,37 @@ namespace ShaderAtoll
 		}
 	}
 
-	enum SHADER_MODE_TYPE
+	SHADER_MODE_TYPE AtollGraphics::GetActiveShaderMode()
 	{
-		SHADER_MODE_LIVE,
-		SHADER_MODE_EXAMPLES,
-		SHADER_MODE_ERROR,
-		SHADER_MODE_NUM,
-	};
+		if (CurrActive_DrawState == &Live_DrawState)
+		{
+			return SHADER_MODE_LIVE;
+		}
+		else if (CurrActive_DrawState == &Example_DrawState)
+		{
+			return SHADER_MODE_EXAMPLES;
+		}
+		else
+		{
+			return SHADER_MODE_ERROR;
+		}
+	}
+
+	void AtollGraphics::SwitchActiveExample(bool bInc)
+	{
+		if (GetActiveShaderMode() == SHADER_MODE_EXAMPLES)
+		{
+			SelectedExampleNum += (bInc ? 1 : -1) % NumExamples;
+			RecompileShaders();
+		}
+	}
 
 	void AtollGraphics::SwitchActiveShader(bool bInc)
 	{
-		static SHADER_MODE_TYPE ActiveMode = SHADER_MODE_NUM;
-		static constexpr int NumExamples = 10;
 		bool bRecompile = false;
-		switch (ActiveMode)
-		{
-			case SHADER_MODE_LIVE:
-			{
-				ActiveMode = bInc ? SHADER_MODE_EXAMPLES : SHADER_MODE_ERROR;
-			} break;
-			case SHADER_MODE_EXAMPLES:
-			{
-				if ((bInc && (SelectedExampleNum == NumExamples - 1))
-					|| (!bInc && SelectedExampleNum == 0))
-				{
-					ActiveMode = SHADER_MODE_LIVE;
-				}
-				else
-				{
-					SelectedExampleNum += bInc ? 1 : -1;
-				}
-			} break;
-			case SHADER_MODE_ERROR:
-			case SHADER_MODE_NUM:
-			default:
-			{
-				ActiveMode = SHADER_MODE_LIVE;
-			} break;
-		}
+
+		SHADER_MODE_TYPE ActiveMode = GetActiveShaderMode();
+		ActiveMode = (SHADER_MODE_TYPE)((ActiveMode + (bInc ? 1 : -1)) % SHADER_MODE_NUM);
 
 		if (ActiveMode == SHADER_MODE_LIVE)
 		{

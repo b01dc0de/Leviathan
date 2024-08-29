@@ -34,6 +34,7 @@ namespace ShaderAtoll
 		void ToggleMaximize();
 		void TriggerShaderRecompile();
 		void SwitchActiveShader(bool bInc = true);
+		void SwitchActiveExample(bool bInc = true);
 	}
 
 #if PLATFORM_WINDOWS()
@@ -91,6 +92,11 @@ namespace ShaderAtoll
 				case VK_TAB:
 				{
 					SwitchActiveShader(!bShift);
+				} break;
+				case VK_LEFT:
+				case VK_RIGHT:
+				{
+					SwitchActiveExample(wParam == VK_RIGHT);
 				} break;
 			}
 		}
@@ -236,5 +242,10 @@ namespace ShaderAtoll
 	void AtollEngine::SwitchActiveShader(bool bInc)
 	{
 		AtollGraphics::SwitchActiveShader(bInc);
+	}
+
+	void AtollEngine::SwitchActiveExample(bool bInc)
+	{
+		AtollGraphics::SwitchActiveExample(bInc);
 	}
 }
