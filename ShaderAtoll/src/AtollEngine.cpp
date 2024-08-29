@@ -29,6 +29,7 @@ namespace ShaderAtoll
 
 		void PollInput();
 		void UpdateState();
+		void Rest();
 
 		void ToggleMaximize();
 		void TriggerShaderRecompile();
@@ -164,6 +165,9 @@ namespace ShaderAtoll
 
 			// Draw
 			AtollGraphics::Draw();
+
+			// Rest
+			Rest();
 		}
 
 		return bResult;
@@ -200,6 +204,11 @@ namespace ShaderAtoll
 		DeltaTime_ms = Clock.fDelta_ms;
 
 		UpdateWindow(ShaderAtoll::hWindow);
+	}
+
+	void AtollEngine::Rest()
+	{
+		Clock.Rest();
 	}
 
 	void AtollEngine::ToggleMaximize()

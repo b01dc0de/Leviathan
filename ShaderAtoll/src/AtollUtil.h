@@ -62,6 +62,7 @@ namespace ShaderAtoll
 
 		static double ConvertTs_s(TsType InTs);
 		void Tick();
+		void Rest();
 		void Init();
 	};
 }
