@@ -3,6 +3,219 @@
 
 namespace ShaderAtoll
 {
+	namespace ShaderUtils
+	{
+		LPCWSTR Base_ShaderFilename = L"src/HLSL/BaseShader.hlsl";
+
+		D3D11_INPUT_ELEMENT_DESC VxColor_InputLayoutDesc[] =
+		{
+			{"POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			// { "TEXTURE", ... }
+			{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+		UINT VxColor_NumInputElements = ARRAYSIZE(VxColor_InputLayoutDesc);
+
+		bool CompileShader(ID3D11Device* Device, const D3D_SHADER_MACRO* InMacroDefines, DrawPipelineState& Out_DrawState)
+		{
+			DrawPipelineState TmpDrawState = {};
+			bool bResult = CompileDrawPipeline
+			(
+				Device,
+				Base_ShaderFilename,
+				InMacroDefines,
+				VxColor_InputLayoutDesc,
+				VxColor_NumInputElements,
+				&TmpDrawState
+			);
+			if (TmpDrawState.VertexShader && TmpDrawState.InputLayout && TmpDrawState.PixelShader)
+			{
+				Out_DrawState = TmpDrawState;
+			}
+			Out_DrawState.bValid = bResult;
+			return bResult;
+		}
+
+		bool CompileErrorShader(ID3D11Device* Device, DrawPipelineState& Out_ErrorDrawState)
+		{
+			static constexpr D3D_SHADER_MACRO HLSL_MacroDefines[] =
+			{
+				"ENABLE_VERTEX_COLOR", "0",
+				"SELECT_ERROR_SHADER", "1",
+				"SELECT_LIVE_SHADER", "0",
+				"SELECT_EXAMPLE_SHADER", "0",
+				NULL, NULL
+			};
+
+			bool bResult = CompileShader(Device, HLSL_MacroDefines, Out_ErrorDrawState);
+			CHECK(bResult);
+
+			return bResult;
+		}
+
+		bool CompileLiveShader(ID3D11Device* Device, bool bAutoLive, DrawPipelineState& Out_LiveDrawState)
+		{
+			D3D_SHADER_MACRO HLSL_MacroDefines[] =
+			{
+				"ENABLE_VERTEX_COLOR", "0",
+				"SELECT_ERROR_SHADER", "0",
+				"SELECT_LIVE_SHADER", "1",
+				"SELECT_EXAMPLE_SHADER", "0",
+				"AUTO_LIVE", bAutoLive ? "1" : "0",
+				NULL, NULL
+			};
+
+			bool bResult = CompileShader(Device, HLSL_MacroDefines, Out_LiveDrawState);
+			return bResult;
+		}
+
+		bool CompileExampleShader(ID3D11Device* Device, int ExampleNum, DrawPipelineState& Out_ExampleDrawState)
+		{
+			static constexpr int ExampleMacroIdx = 3;
+			static constexpr int DefaultExampleNum = 1;
+
+			D3D_SHADER_MACRO HLSL_MacroDefines[] =
+			{
+				"ENABLE_VERTEX_COLOR", "0",
+				"SELECT_ERROR_SHADER", "0",
+				"SELECT_LIVE_SHADER", "0",
+				"SELECT_EXAMPLE_SHADER", NULL,
+				NULL, NULL
+			};
+			static LPCSTR SelectedExampleDefVals[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+			int SelectedExampleNum = DefaultExampleNum;
+			if (0 <= ExampleNum && ExampleNum <= 9)
+			{
+				SelectedExampleNum = ExampleNum;
+			}
+			HLSL_MacroDefines[ExampleMacroIdx].Definition = SelectedExampleDefVals[SelectedExampleNum];
+
+			bool bResult = CompileShader(Device, HLSL_MacroDefines, Out_ExampleDrawState);
+			CHECK(bResult);
+
+			return bResult;
+		}
+	}
+
+
+	void DrawStateManager::Init(ID3D11Device* InDevice)
+	{
+		CachedDevice = InDevice;
+		SelectedExampleNum = 1;
+
+		bool bShaderCompiled = ShaderUtils::CompileErrorShader
+		(
+			CachedDevice,
+			ErrorState
+		);
+		if (!bShaderCompiled)
+		{
+			DebugBreak();
+		}
+
+		bShaderCompiled = ShaderUtils::CompileLiveShader
+		(
+			CachedDevice,
+			true,
+			LiveState
+		);
+		if (!bShaderCompiled) { DebugBreak(); }
+
+		bShaderCompiled = ShaderUtils::CompileExampleShader
+		(
+			CachedDevice,
+			SelectedExampleNum,
+			ExampleState
+		);
+		if (!bShaderCompiled) { DebugBreak(); }
+
+		CurrActive_DrawState = &ExampleState;
+	}
+
+	void DrawStateManager::Term()
+	{
+		LiveState.Release();
+		ErrorState.Release();
+		ExampleState.Release();
+	}
+
+	DrawPipelineState* DrawStateManager::GetCurrState()
+	{
+		return CurrActive_DrawState;
+	}
+
+	SHADER_MODE_TYPE DrawStateManager::GetCurrMode()
+	{
+		if (CurrActive_DrawState == &LiveState)
+		{
+			return SHADER_MODE_LIVE;
+		}
+		else if (CurrActive_DrawState == &ErrorState)
+		{
+			return SHADER_MODE_ERROR;
+		}
+		else if (CurrActive_DrawState == &ExampleState)
+		{
+			return SHADER_MODE_EXAMPLES;
+		}
+	}
+
+	void DrawStateManager::ChangeState(int Delta)
+	{
+		SHADER_MODE_TYPE ActiveMode = GetCurrMode();
+		if (0 != Delta)
+		{
+			ActiveMode = (SHADER_MODE_TYPE)((ActiveMode + ((Delta > 0) ? 1 : -1)) % SHADER_MODE_NUM);
+		}
+		else if (SHADER_MODE_EXAMPLES == ActiveMode)
+		{
+			SelectedExampleNum += 1 % NumExamples;
+		}
+
+		bool bRecompile = SHADER_MODE_ERROR != ActiveMode;
+
+		if (ActiveMode == SHADER_MODE_LIVE) { CurrActive_DrawState = &LiveState; }
+		else if (ActiveMode == SHADER_MODE_EXAMPLES) { CurrActive_DrawState = &ExampleState; }
+		else if (ActiveMode == SHADER_MODE_ERROR) { CurrActive_DrawState = &ErrorState; }
+
+		if (bRecompile)
+		{
+			RecompileState();
+		}
+	}
+
+	void DrawStateManager::RecompileState()
+	{
+		bool bResult = false;
+
+		DrawPipelineState Old_DrawState = *CurrActive_DrawState;
+
+		if (CurrActive_DrawState == &LiveState)
+		{
+			static bool bAutoLive = true;
+			bResult = ShaderUtils::CompileLiveShader(CachedDevice, bAutoLive, LiveState);
+		}
+		else if (CurrActive_DrawState == &ErrorState)
+		{
+			bResult = ShaderUtils::CompileErrorShader(CachedDevice, ErrorState);
+		}
+		else if (CurrActive_DrawState == &ExampleState)
+		{
+			bResult = ShaderUtils::CompileExampleShader(CachedDevice, SelectedExampleNum, ExampleState);
+		}
+		else { CHECK(false); return; }
+
+		if (bResult)
+		{
+			Old_DrawState.Release();
+		}
+		else
+		{
+			CurrActive_DrawState->Release();
+			*CurrActive_DrawState = Old_DrawState;
+			CurrActive_DrawState = &ErrorState;
+		}
+	}
+
 	int CompileShaderHelper(LPCWSTR SourceFileName, LPCSTR EntryPointFunction, LPCSTR Profile, const D3D_SHADER_MACRO* MacroDefines, ID3DBlob** ShaderBlob)
 	{
 		HRESULT Result = S_OK;

@@ -24,13 +24,9 @@ namespace ShaderAtoll
 	DXHandle<ID3D11Buffer> AtollGraphics::DX_IndexBuffer;
 	DXHandle<ID3D11Buffer> AtollGraphics::DX_GlobalsBuffer;
 
-	D3D_FEATURE_LEVEL AtollGraphics::UsedFeatureLevel = {};
+	DrawStateManager AtollGraphics::DrawStateMgr = {};
 
-	DrawPipelineState AtollGraphics::Live_DrawState = {};
-	DrawPipelineState AtollGraphics::Error_DrawState = {};
-	DrawPipelineState AtollGraphics::Example_DrawState = {};
-	int AtollGraphics::SelectedExampleNum = 1;
-	DrawPipelineState* AtollGraphics::CurrActive_DrawState = nullptr;
+	D3D_FEATURE_LEVEL UsedFeatureLevel = {};
 
 	DXHandleMgr* DXHandleMgr::_Inst = nullptr;
 	DXHandleMgr* DXHandleMgr::Inst()
@@ -111,99 +107,6 @@ namespace ShaderAtoll
 		{0, 2, 1},
 		{1, 2, 3}
 	};
-
-	D3D11_INPUT_ELEMENT_DESC VxColor_InputLayoutDesc[] =
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		// { "TEXTURE", ... }
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-	UINT VxColor_NumInputElements = ARRAYSIZE(VxColor_InputLayoutDesc);
-
-	namespace ShaderUtils
-	{
-		LPCWSTR Base_ShaderFilename = L"src/HLSL/BaseShader.hlsl";
-
-		bool CompileShader(ID3D11Device* Device, const D3D_SHADER_MACRO* InMacroDefines, DrawPipelineState& Out_DrawState)
-		{
-			DrawPipelineState TmpDrawState = {};
-			bool bResult = CompileDrawPipeline
-			(
-				Device,
-				Base_ShaderFilename,
-				InMacroDefines,
-				VxColor_InputLayoutDesc,
-				VxColor_NumInputElements,
-				&TmpDrawState
-			);
-			if (TmpDrawState.VertexShader && TmpDrawState.InputLayout && TmpDrawState.PixelShader)
-			{
-				Out_DrawState = TmpDrawState;
-			}
-			return bResult;
-		}
-
-		bool CompileErrorShader(ID3D11Device* Device, DrawPipelineState& Out_ErrorDrawState)
-		{
-			static constexpr D3D_SHADER_MACRO HLSL_MacroDefines[] =
-			{
-				"ENABLE_VERTEX_COLOR", "0",
-				"SELECT_ERROR_SHADER", "1",
-				"SELECT_LIVE_SHADER", "0",
-				"SELECT_EXAMPLE_SHADER", "0",
-				NULL, NULL
-			};
-
-			bool bResult = CompileShader(Device, HLSL_MacroDefines, Out_ErrorDrawState);
-			CHECK(bResult);
-
-			return bResult;
-		}
-
-		bool CompileLiveShader(ID3D11Device* Device, bool bAutoLive, DrawPipelineState& Out_LiveDrawState)
-		{
-			D3D_SHADER_MACRO HLSL_MacroDefines[] =
-			{
-				"ENABLE_VERTEX_COLOR", "0",
-				"SELECT_ERROR_SHADER", "0",
-				"SELECT_LIVE_SHADER", "1",
-				"SELECT_EXAMPLE_SHADER", "0",
-				"AUTO_LIVE", bAutoLive ? "1" : "0",
-				NULL, NULL
-			};
-
-			bool bResult = CompileShader(Device, HLSL_MacroDefines, Out_LiveDrawState);
-			return bResult;
-		}
-
-		bool CompileExampleShader(ID3D11Device* Device, int ExampleNum, DrawPipelineState& Out_ExampleDrawState)
-		{
-			static constexpr int ExampleMacroIdx = 3;
-			static constexpr int DefaultExampleNum = 1;
-
-			D3D_SHADER_MACRO HLSL_MacroDefines[] =
-			{
-				"ENABLE_VERTEX_COLOR", "0",
-				"SELECT_ERROR_SHADER", "0",
-				"SELECT_LIVE_SHADER", "0",
-				"SELECT_EXAMPLE_SHADER", NULL,
-				NULL, NULL
-			};
-			static LPCSTR SelectedExampleDefVals[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
-			int SelectedExampleNum = DefaultExampleNum;
-			if (0 <= ExampleNum && ExampleNum <= 9)
-			{
-				SelectedExampleNum = ExampleNum;
-			}
-			HLSL_MacroDefines[ExampleMacroIdx].Definition = SelectedExampleDefVals[SelectedExampleNum];
-
-			bool bResult = CompileShader(Device, HLSL_MacroDefines, Out_ExampleDrawState);
-			CHECK(bResult);
-
-			return bResult;
-		}
-	}
-
 
 	int AtollGraphics::InitGraphics()
 	{
@@ -372,36 +275,7 @@ namespace ShaderAtoll
 		Result = DX_Device->CreateBuffer(&GlobalsBufferDesc, &GlobalsBufferInitData, &DX_GlobalsBuffer);
 		DXCHECK(Result);
 
-		bool bShaderCompiled = ShaderUtils::CompileErrorShader
-		(
-			DX_Device,
-			Error_DrawState
-		);
-		if (!bShaderCompiled)
-		{
-			DebugBreak();
-			return 0;
-		}
-
-		bShaderCompiled = ShaderUtils::CompileLiveShader
-		(
-			DX_Device,
-			true,
-			Live_DrawState
-		);
-		if (!bShaderCompiled) { DebugBreak(); return 0; }
-
-		bShaderCompiled = ShaderUtils::CompileExampleShader
-		(
-			DX_Device,
-			1,
-			Example_DrawState
-		);
-		if (!bShaderCompiled) { DebugBreak(); return 0; }
-
-		//CurrActive_DrawState = &Live_DrawState;
-		CurrActive_DrawState = &Error_DrawState;
-		//CurrActive_DrawState = &Example_DrawState;
+		DrawStateMgr.Init(DX_Device);
 
 		return SUCCEEDED(Result);
 	}
@@ -412,10 +286,11 @@ namespace ShaderAtoll
 		constexpr UINT Offset = 0;
 		constexpr float fDepth = 1.0f;
 
-		CHECK(CurrActive_DrawState
-			&& CurrActive_DrawState->VertexShader
-			&& CurrActive_DrawState->InputLayout
-			&& CurrActive_DrawState->PixelShader);
+		DrawPipelineState& DrawState = *DrawStateMgr.GetCurrState();
+		CHECK(DrawState.bValid
+			&& DrawState.VertexShader
+			&& DrawState.InputLayout
+			&& DrawState.PixelShader);
 
 		GlobalsData =
 		{
@@ -427,19 +302,19 @@ namespace ShaderAtoll
 			MousePosY
 		};
 
-		DX_ImmediateContext->IASetInputLayout(CurrActive_DrawState->InputLayout);
+		DX_ImmediateContext->IASetInputLayout(DrawState.InputLayout);
 		DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBuffer, &Stride, &Offset);
 		DX_ImmediateContext->IASetIndexBuffer(DX_IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		DX_ImmediateContext->UpdateSubresource(DX_GlobalsBuffer, 0, nullptr, &GlobalsData, sizeof(ShaderGlobals), 0);
 
-		DX_ImmediateContext->VSSetShader(CurrActive_DrawState->VertexShader, nullptr, 0);
+		DX_ImmediateContext->VSSetShader(DrawState.VertexShader, nullptr, 0);
 		DX_ImmediateContext->VSSetConstantBuffers(0, 1, &DX_GlobalsBuffer);
 
 		const D3D11_VIEWPORT Viewport_Desc = { 0, 0, (FLOAT)WinResX, (FLOAT)WinResY, 0.0f, 1.0f };
 		DX_ImmediateContext->RSSetViewports(1, &Viewport_Desc);
 
-		DX_ImmediateContext->PSSetShader(CurrActive_DrawState->PixelShader, nullptr, 0);
+		DX_ImmediateContext->PSSetShader(DrawState.PixelShader, nullptr, 0);
 		DX_ImmediateContext->PSSetConstantBuffers(0, 1, &DX_GlobalsBuffer);
 
 		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
@@ -451,94 +326,17 @@ namespace ShaderAtoll
 
 	void AtollGraphics::RecompileShaders()
 	{
-		bool bResult = false;
-
-		DrawPipelineState Old_DrawState = *CurrActive_DrawState;
-
-		if (CurrActive_DrawState == &Live_DrawState)
-		{
-			bResult = ShaderUtils::CompileLiveShader(DX_Device, false, Live_DrawState);
-		}
-		else if (CurrActive_DrawState == &Error_DrawState)
-		{
-			bResult = ShaderUtils::CompileErrorShader(DX_Device, Error_DrawState);
-		}
-		else if (CurrActive_DrawState == &Example_DrawState)
-		{
-			bResult = ShaderUtils::CompileExampleShader(DX_Device, SelectedExampleNum, Example_DrawState);
-			if (!bResult)
-			{
-			}
-		}
-		else
-		{
-			CHECK(false);
-			return;
-		}
-
-		if (bResult)
-		{
-			Old_DrawState.Release();
-		}
-		else
-		{
-			CurrActive_DrawState->Release();
-			*CurrActive_DrawState = Old_DrawState;
-			CurrActive_DrawState = &Error_DrawState;
-		}
+		DrawStateMgr.RecompileState();
 	}
 
-	SHADER_MODE_TYPE AtollGraphics::GetActiveShaderMode()
+	SHADER_MODE_TYPE AtollGraphics::GetCurrShaderMode()
 	{
-		if (CurrActive_DrawState == &Live_DrawState)
-		{
-			return SHADER_MODE_LIVE;
-		}
-		else if (CurrActive_DrawState == &Example_DrawState)
-		{
-			return SHADER_MODE_EXAMPLES;
-		}
-		else
-		{
-			return SHADER_MODE_ERROR;
-		}
+		return DrawStateMgr.GetCurrMode();
 	}
-
-	void AtollGraphics::SwitchActiveExample(bool bInc)
+	
+	void AtollGraphics::ChangeState(int Delta)
 	{
-		if (GetActiveShaderMode() == SHADER_MODE_EXAMPLES)
-		{
-			SelectedExampleNum += (bInc ? 1 : -1) % NumExamples;
-			RecompileShaders();
-		}
-	}
-
-	void AtollGraphics::SwitchActiveShader(bool bInc)
-	{
-		bool bRecompile = false;
-
-		SHADER_MODE_TYPE ActiveMode = GetActiveShaderMode();
-		ActiveMode = (SHADER_MODE_TYPE)((ActiveMode + (bInc ? 1 : -1)) % SHADER_MODE_NUM);
-
-		if (ActiveMode == SHADER_MODE_LIVE)
-		{
-			bRecompile = true;
-			CurrActive_DrawState = &Live_DrawState;
-		}
-		else if (ActiveMode == SHADER_MODE_EXAMPLES)
-		{
-			bRecompile = true;
-			CurrActive_DrawState = &Example_DrawState;
-		}
-		else if (ActiveMode == SHADER_MODE_ERROR)
-		{
-			CurrActive_DrawState = &Error_DrawState;
-		}
-
-		if (bRecompile)
-		{
-			RecompileShaders();
-		}
+		DrawStateMgr.ChangeState(Delta);
 	}
 
 	void AtollGraphics::Draw()
@@ -556,11 +354,9 @@ namespace ShaderAtoll
 	int AtollGraphics::TermGraphics()
 	{
 		DX_ImmediateContext->ClearState();
-		Live_DrawState.Release();
-		Error_DrawState.Release();
-		Example_DrawState.Release();
-		DXHandleMgr::Term();
 
+		DrawStateMgr.Term();
+		DXHandleMgr::Term();
 #if BUILD_DEBUG()
 		ID3D11Debug* DX_Debug = nullptr;
 		DX_Device->QueryInterface(&DX_Debug);

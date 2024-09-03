@@ -91,12 +91,12 @@ namespace ShaderAtoll
 				} break;
 				case VK_TAB:
 				{
-					SwitchActiveShader(!bShift);
+					AtollGraphics::ChangeState(bShift ? -1 : 1);
 				} break;
 				case VK_LEFT:
 				case VK_RIGHT:
 				{
-					SwitchActiveExample(wParam == VK_RIGHT);
+					AtollGraphics::ChangeState(0);
 				} break;
 			}
 		}
@@ -237,15 +237,5 @@ namespace ShaderAtoll
 	void AtollEngine::TriggerShaderRecompile()
 	{
 		AtollGraphics::RecompileShaders();
-	}
-
-	void AtollEngine::SwitchActiveShader(bool bInc)
-	{
-		AtollGraphics::SwitchActiveShader(bInc);
-	}
-
-	void AtollEngine::SwitchActiveExample(bool bInc)
-	{
-		AtollGraphics::SwitchActiveExample(bInc);
 	}
 }

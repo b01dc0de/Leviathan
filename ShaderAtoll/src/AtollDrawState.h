@@ -11,13 +11,43 @@ namespace ShaderAtoll
 		ID3D11VertexShader* VertexShader = nullptr;
 		ID3D11PixelShader* PixelShader = nullptr;
 		ID3D11InputLayout* InputLayout = nullptr;
+		bool bValid = false;
 
 		void Release()
 		{
 			if (VertexShader) { VertexShader->Release(); VertexShader = nullptr; }
 			if (PixelShader) { PixelShader->Release(); PixelShader = nullptr; }
 			if (InputLayout) { InputLayout->Release(); InputLayout = nullptr; }
+			bValid = false;
 		}
+	};
+
+	enum SHADER_MODE_TYPE
+	{
+		SHADER_MODE_LIVE,
+		SHADER_MODE_ERROR,
+		SHADER_MODE_EXAMPLES,
+		SHADER_MODE_NUM,
+	};
+
+	struct DrawStateManager
+	{
+		DrawPipelineState LiveState = {};
+		DrawPipelineState ErrorState = {};
+		DrawPipelineState ExampleState = {};
+
+		static constexpr int NumExamples = 10;
+		DrawPipelineState* CurrActive_DrawState = nullptr;
+		int SelectedExampleNum = 1;
+
+		ID3D11Device* CachedDevice = nullptr;
+
+		void Init(ID3D11Device* InDevice);
+		void Term();
+		DrawPipelineState* GetCurrState();
+		SHADER_MODE_TYPE GetCurrMode();
+		void ChangeState(int Delta);
+		void RecompileState();
 	};
 
 	bool CompileDrawPipeline(
