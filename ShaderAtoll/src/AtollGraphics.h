@@ -4,7 +4,7 @@
 #include "AtollCommon.h"
 #include "LvShared.h"
 #include "AtollGraphicsTypes.h"
-#include "AtollDrawPipelineState.h"
+#include "AtollDrawState.h"
 
 #define DXCHECK(Result) if (FAILED(Result)) { DebugBreak(); }
 #define DXCHECKMSG(Result, Msg) if (FAILED(Result)) { OutputDebugStringA((Msg)); DebugBreak(); }

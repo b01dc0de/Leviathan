@@ -27,7 +27,7 @@
     <ClCompile Include="src\AtollEngine.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\AtollDrawPipelineState.cpp">
+    <ClCompile Include="src\AtollDrawState.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -100,10 +100,10 @@
     <ClInclude Include="src\AtollEngine.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\AtollDrawPipelineState.h">
+    <ClInclude Include="src\AtollGraphicsTypes.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\AtollGraphicsTypes.h">
+    <ClInclude Include="src\AtollDrawState.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
