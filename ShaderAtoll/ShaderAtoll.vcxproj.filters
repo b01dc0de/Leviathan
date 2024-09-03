@@ -83,6 +83,9 @@
     <FxCompile Include="src\HLSL\Examples\AllExamples.hlsl">
       <Filter>HLSL\Examples</Filter>
     </FxCompile>
+    <FxCompile Include="src\HLSL\LiveShader_Wrapper.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\AtollGraphics.h">

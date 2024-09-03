@@ -16,7 +16,7 @@
 
 #include "ErrorShader.hlsl"
 #if SELECT_LIVE_SHADER
-    #include "LiveShader.hlsl"
+    #include "LiveShader_Wrapper.hlsl"
 #else
     #include "Examples/AllExamples.hlsl"
 #endif // SELECT_LIVE_SHADER
