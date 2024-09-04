@@ -22,14 +22,6 @@ namespace ShaderAtoll
 		}
 	};
 
-	enum SHADER_MODE_TYPE
-	{
-		SHADER_MODE_LIVE,
-		SHADER_MODE_ERROR,
-		SHADER_MODE_EXAMPLES,
-		SHADER_MODE_NUM,
-	};
-
 	struct DrawStateManager
 	{
 		DrawPipelineState LiveState = {};
@@ -46,7 +38,7 @@ namespace ShaderAtoll
 		void Term();
 		DrawPipelineState* GetCurrState();
 		SHADER_MODE_TYPE GetCurrMode();
-		void ChangeState(int Delta);
+		void ChangeState(ATOLL_STATE_CHANGE DeltaState);
 		void RecompileState();
 	};
 

@@ -91,12 +91,16 @@ namespace ShaderAtoll
 				} break;
 				case VK_TAB:
 				{
-					AtollGraphics::ChangeState(bShift ? -1 : 1);
+					ATOLL_STATE_CHANGE DeltaState = bShift ? DEC_MODE : INC_MODE;
+					AtollGraphics::ChangeState(DeltaState);
 				} break;
 				case VK_LEFT:
+				{
+					AtollGraphics::ChangeState(ATOLL_STATE_CHANGE::DEC_EXP);
+				} break;
 				case VK_RIGHT:
 				{
-					AtollGraphics::ChangeState(0);
+					AtollGraphics::ChangeState(ATOLL_STATE_CHANGE::INC_EXP);
 				} break;
 			}
 		}

@@ -334,9 +334,9 @@ namespace ShaderAtoll
 		return DrawStateMgr.GetCurrMode();
 	}
 	
-	void AtollGraphics::ChangeState(int Delta)
+	void AtollGraphics::ChangeState(ATOLL_STATE_CHANGE DeltaState)
 	{
-		DrawStateMgr.ChangeState(Delta);
+		DrawStateMgr.ChangeState(DeltaState);
 	}
 
 	void AtollGraphics::Draw()

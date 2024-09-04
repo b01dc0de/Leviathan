@@ -57,6 +57,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>W:\Leviathan\LvShared\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -80,7 +81,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\BitmapFile.cpp" />
+    <ClCompile Include="src\BitmapTest.cpp" />
     <ClCompile Include="src\Common.cpp" />
     <ClCompile Include="src\EtCetera.cpp" />
     <ClCompile Include="src\Pseudoku.cpp" />
@@ -88,7 +89,7 @@
     <ClCompile Include="src\Sudoku.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\BitmapFile.h" />
+    <ClInclude Include="src\BitmapTest.h" />
     <ClInclude Include="src\Common.h" />
     <ClInclude Include="src\Pseudoku.h" />
     <ClInclude Include="src\PuzzleSolver.h" />

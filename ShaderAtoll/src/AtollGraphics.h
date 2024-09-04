@@ -33,7 +33,7 @@ namespace ShaderAtoll
 		static int InitGraphics();
 		static void UpdateGraphicsState();
 		static void RecompileShaders();
-		static void ChangeState(int Delta);
+		static void ChangeState(ATOLL_STATE_CHANGE DeltaState);
 		static SHADER_MODE_TYPE GetCurrShaderMode();
 		static void Draw();
 		static int TermGraphics();

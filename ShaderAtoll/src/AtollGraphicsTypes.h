@@ -81,6 +81,23 @@ namespace ShaderAtoll
 		operator bool() { return nullptr != Handle; }
 		operator DX_T*() { return Handle; }
 	};
+
+	enum SHADER_MODE_TYPE
+	{
+		SHADER_MODE_LIVE,
+		SHADER_MODE_ERROR,
+		SHADER_MODE_EXAMPLES,
+		SHADER_MODE_NUM,
+	};
+
+	enum ATOLL_STATE_CHANGE
+	{
+		INC_MODE,
+		DEC_MODE,
+		INC_EXP,
+		DEC_EXP,
+		STATE_CHANGE_NUM
+	};
 }
 
 #endif // ATOLLGRAPHICSTYPES_H

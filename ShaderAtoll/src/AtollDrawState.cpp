@@ -157,18 +157,31 @@ namespace ShaderAtoll
 		{
 			return SHADER_MODE_EXAMPLES;
 		}
+		return SHADER_MODE_ERROR;
 	}
 
-	void DrawStateManager::ChangeState(int Delta)
+	void DrawStateManager::ChangeState(ATOLL_STATE_CHANGE DeltaState)
 	{
 		SHADER_MODE_TYPE ActiveMode = GetCurrMode();
-		if (0 != Delta)
+
+		switch (DeltaState)
 		{
-			ActiveMode = (SHADER_MODE_TYPE)((ActiveMode + ((Delta > 0) ? 1 : -1)) % SHADER_MODE_NUM);
-		}
-		else if (SHADER_MODE_EXAMPLES == ActiveMode)
-		{
-			SelectedExampleNum += 1 % NumExamples;
+			case INC_MODE:
+			{
+				ActiveMode = (SHADER_MODE_TYPE)((ActiveMode + 1) % SHADER_MODE_NUM);
+			} break;
+			case DEC_MODE:
+			{
+				ActiveMode = (SHADER_MODE_TYPE)((ActiveMode - 1) % SHADER_MODE_NUM);
+			} break;
+			case INC_EXP:
+			{
+				SelectedExampleNum = (SelectedExampleNum + 1) % NumExamples;
+			} break;
+			case DEC_EXP:
+			{
+				SelectedExampleNum = (SelectedExampleNum - 1) % NumExamples;
+			} break;
 		}
 
 		bool bRecompile = SHADER_MODE_ERROR != ActiveMode;
