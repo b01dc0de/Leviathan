@@ -1,11 +1,11 @@
 #include "Common.h"
 #include "PuzzleSolver.h"
-#include "BitmapFile.h"
+#include "BitmapTest.h"
 
 enum struct EtCeteraProject : int
 {
 	PuzzleSolver,
-	BitmapFile,
+	BitmapTest,
 	Project_Num
 };
 
@@ -20,9 +20,9 @@ int main(int argc, const char* argv[])
 		{
 			Result = PuzzleSolver_Main(argc, argv);
 		} break;
-		case EtCeteraProject::BitmapFile:
+		case EtCeteraProject::BitmapTest:
 		{
-			Result = BitmapFile_Main(argc, argv);
+			Result = BitmapTest_Main(argc, argv);
 		} break;
 		default:
 		{
@@ -30,4 +30,5 @@ int main(int argc, const char* argv[])
 			Assert(false);
 		} break;
 	}
+	return Result;
 }

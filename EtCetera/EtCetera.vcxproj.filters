@@ -18,10 +18,10 @@
     <ClCompile Include="src\Sudoku.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\BitmapFile.cpp">
+    <ClCompile Include="src\PuzzleSolver.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\PuzzleSolver.cpp">
+    <ClCompile Include="src\BitmapTest.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,10 +35,10 @@
     <ClInclude Include="src\Sudoku.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\BitmapFile.h">
+    <ClInclude Include="src\PuzzleSolver.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\PuzzleSolver.h">
+    <ClInclude Include="src\BitmapTest.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
