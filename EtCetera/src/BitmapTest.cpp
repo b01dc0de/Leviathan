@@ -1,9 +1,10 @@
 #include "BitmapTest.h"
-#include "BitmapFile.h"
+#include "LvBitmapFile.h"
 
 #include <cstdio>
-// CKA_TODO: Fix this!
-#include "BitmapFile.cpp"
+
+using Image32 = Lv::Image32;
+using RGBA32 = Lv::RGBA32;
 
 int BitmapTest_Main(int argc, const char* argv[])
 {
@@ -38,7 +39,7 @@ int BitmapTest_Main(int argc, const char* argv[])
 			  GREEN     0x0000FF00
 			  BLUE      0x000000FF
 	*/
-	WriteBMP("Test.bmp", ImgData);
+	Lv::WriteBMP("Test.bmp", ImgData);
 
 	return(0);
 }

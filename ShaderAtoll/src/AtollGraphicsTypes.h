@@ -1,7 +1,7 @@
 #ifndef ATOLLGRAPHICSTYPES_H
 #define ATOLLGRAPHICSTYPES_H
 
-#include "LvShared.h"
+#include "LvLib.h"
 
 namespace ShaderAtoll
 {

@@ -1,5 +1,5 @@
-#ifndef LVSHARED_INL
-#define LVSHARED_INL
+#ifndef LVLIB_INL
+#define LVLIB_INL
 
 namespace Lv
 {
@@ -109,4 +109,4 @@ namespace Lv
 	};
 }
 
-#endif // LVSHARED_INL
+#endif // LVLIB_INL

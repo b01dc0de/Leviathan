@@ -206,6 +206,7 @@ namespace ShaderAtoll
 		{
 			static bool bAutoLive = true;
 			bResult = ShaderUtils::CompileLiveShader(CachedDevice, bAutoLive, LiveState);
+			bAutoLive = false;
 		}
 		else if (CurrActive_DrawState == &ErrorState)
 		{

@@ -9,7 +9,7 @@ enum struct EtCeteraProject : int
 	Project_Num
 };
 
-#define BUILD_PROJECT() (EtCeteraProject::PuzzleSolver)
+#define BUILD_PROJECT() (EtCeteraProject::BitmapTest)
 
 int main(int argc, const char* argv[])
 {

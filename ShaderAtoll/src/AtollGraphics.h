@@ -2,7 +2,7 @@
 #define ATOLLGRAPHICS_H
 
 #include "AtollCommon.h"
-#include "LvShared.h"
+#include "LvLib.h"
 #include "AtollGraphicsTypes.h"
 #include "AtollDrawState.h"
 
