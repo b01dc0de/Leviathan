@@ -67,6 +67,8 @@ namespace ShaderAtoll
 #if PLATFORM_WINDOWS()
 	LRESULT AtollEngine::HandleKeyInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
+		(void)wParam;
+		(void)lParam;
 		static bool bShift = false;
 		LRESULT Result = 0;
 		if (wParam == VK_SHIFT)
@@ -108,6 +110,7 @@ namespace ShaderAtoll
 	}
 	LRESULT AtollEngine::HandleMouseInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
+		(void)wParam;
 		LRESULT Result = 0;
 		if (WM_MOUSEMOVE == uMsg)
 		{

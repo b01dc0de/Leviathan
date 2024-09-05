@@ -21,9 +21,9 @@ namespace Lv
 		return (ColorResult);
 	}
 
-	void WriteBMP(Image32 Image, const char* FileName)
+	void WriteBMP(const char* OutFilename, Image32 InImage)
 	{
-		u32 PxBytes = sizeof(u32) * Image.PxCount;
+		u32 PxBytes = sizeof(u32) * InImage.PxCount;
 
 		BMP BMP_Data = {};
 
@@ -34,8 +34,8 @@ namespace Lv
 		BMP_Data.FileHeader.OffsetBytes = sizeof(BMP_Data);
 
 		BMP_Data.InfoHeader.StructSize = sizeof(BMP_Data) - 14;
-		BMP_Data.InfoHeader.Width = (s32)Image.Width;
-		BMP_Data.InfoHeader.Height = -(s32)Image.Height;
+		BMP_Data.InfoHeader.Width = (s32)InImage.Width;
+		BMP_Data.InfoHeader.Height = -(s32)InImage.Height;
 		BMP_Data.InfoHeader.Planes = 1;
 		BMP_Data.InfoHeader.BitsPerPixel = 32;
 		BMP_Data.InfoHeader.Compression = 0;
@@ -46,22 +46,23 @@ namespace Lv
 		BMP_Data.InfoHeader.ColorsImportant = 0;
 
 		FILE* BMP_File = nullptr;
-		fopen_s(&BMP_File, FileName, "wb");
+		fopen_s(&BMP_File, OutFilename, "wb");
 		if (BMP_File != nullptr)
 		{
 			fwrite(&BMP_Data.FileHeader, sizeof(BMP_Data.FileHeader), 1, BMP_File);
 			fwrite(&BMP_Data.InfoHeader, sizeof(BMP_Data.InfoHeader), 1, BMP_File);
-			fwrite(Image.PixelBuffer, Image.PxBytes, 1, BMP_File);
+			fwrite(InImage.PixelBuffer, InImage.PxBytes, 1, BMP_File);
 			fclose(BMP_File);
 		}
 		else
 		{
-			printf("ERROR: Cannot open file \"%s\"\n", FileName);
+			printf("ERROR: Cannot open file \"%s\" for write\n", OutFilename);
 		}
 	}
 
 	void ReadBMP(const char* InFilename, Image32 OutImage)
 	{
+		(void)OutImage;
 		FILE* BMP_File = nullptr;
 		fopen_s(&BMP_File, InFilename, "wb");
 

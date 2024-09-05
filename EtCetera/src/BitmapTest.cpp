@@ -8,6 +8,8 @@ using RGBA32 = Lv::RGBA32;
 
 int BitmapTest_Main(int argc, const char* argv[])
 {
+	(void)argc;
+	(void)argv;
 	u32 ImgSize = 512;
 	Image32 ImgData = {};
 	ImgData.Width = ImgSize;

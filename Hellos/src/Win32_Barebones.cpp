@@ -18,6 +18,10 @@ int WINAPI Win32_Barebones_WinMain
 	int ShowWnd
 )
 {
+	(void)hPrevInst;
+	(void)CmdLine;
+	(void)ShowWnd;
+
 	int ExitCode = 0;
 
 	WNDCLASSEX WndClassEx = {};
@@ -58,8 +62,7 @@ int WINAPI Win32_Barebones_WinMain
 		while (bRunning)
 		{
 			MSG msg;
-			BOOL bResult;
-			while (bResult = PeekMessage(&msg, hWindowEx, 0, 0, PM_REMOVE))
+			while (BOOL bResult = PeekMessage(&msg, hWindowEx, 0, 0, PM_REMOVE))
 			{
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);

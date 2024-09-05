@@ -78,9 +78,11 @@ using namespace SudokuUtils;
 
 #define ENABLE_SUDO_PRINT() 1
 #if ENABLE_SUDO_PRINT()
+	#pragma warning( push )
+	#pragma warning(disable : 4984)
 	#define SUDO_DBG_PRINT(VerboseLevel, ...) \
 	{ \
-		if (SudoDbgPrintVerboseLevel >= VerboseLevel) \
+		if constexpr (SudoDbgPrintVerboseLevel >= VerboseLevel) \
 		{ \
 			switch (DbgPrintTabScope::GetScopeLevel()) \
 			{ \
@@ -98,8 +100,9 @@ using namespace SudokuUtils;
 	#define SUDO_TEST_PRINT(...) SUDO_DBG_PRINT(0, __VA_ARGS__)
 
 	#define SUDO_DBG_PRINT_INLINE(VerboseLevel, ...) \
-		if (SudoDbgPrintVerboseLevel >= VerboseLevel) { DBG_PRINT(__VA_ARGS__); }
+		if constexpr (SudoDbgPrintVerboseLevel >= VerboseLevel) { DBG_PRINT(__VA_ARGS__); }
 	#define SUDO_TEST_PRINT_INLINE(...) SUDO_DBG_PRINT_INLINE(0, __VA_ARGS__)
+	#pragma warning( pop )
 #else
 	#define SUDO_DBG_PRINT(...) (void)0
 	#define SUDO_TEST_PRINT(...) (void)0
@@ -644,7 +647,7 @@ struct GuessList
 	const ActiveGuess& NextGuess()
 	{
 		int NextGuessVal = Guesses[LastGuess].NextGuess();
-		return Guesses[LastGuess];
+		return Guesses[NextGuessVal];
 	}
 
 	int Backtrack()

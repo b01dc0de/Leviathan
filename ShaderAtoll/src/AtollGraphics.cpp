@@ -119,6 +119,7 @@ namespace ShaderAtoll
 		};
 		UINT NumSupportedFeatureLevels = ARRAY_SIZE(SupportedFeatureLevels);
 		D3D_FEATURE_LEVEL D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
+		(void)D3DFeatureLevel;
 
 		CreateDXGIFactory1(__uuidof(IDXGIFactory2), (void**)&DX_Factory2);
 
@@ -284,7 +285,6 @@ namespace ShaderAtoll
 	{
 		constexpr UINT Stride = sizeof(VertexColor);
 		constexpr UINT Offset = 0;
-		constexpr float fDepth = 1.0f;
 
 		DrawPipelineState& DrawState = *DrawStateMgr.GetCurrState();
 		CHECK(DrawState.bValid
@@ -320,8 +320,9 @@ namespace ShaderAtoll
 		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
 
 		float ClearColor[4] = { 0.025f, 0.15f, 0.3f, 1.0f };
+		constexpr float fDepth = 1.0f;
 		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, ClearColor);
-		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, fDepth, 0);
 	}
 
 	void AtollGraphics::RecompileShaders()

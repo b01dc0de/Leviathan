@@ -5,6 +5,8 @@
 
 int PuzzleSolver_Main(int argc, const char* argv[])
 {
+	(void)argc;
+	(void)argv;
 	printf("PuzzleSolver: Init\n");
 
 	using Pseudoku::PseudokuNew;

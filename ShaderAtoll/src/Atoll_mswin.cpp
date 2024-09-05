@@ -13,14 +13,15 @@ namespace ShaderAtoll
 		WndClass.hInstance = hInstance;
 		WndClass.lpszClassName = APPNAME();
 
-		ATOM RegClassResult = RegisterClassEx(&WndClass);
+		//ATOM RegClassResult = 
+		RegisterClassEx(&WndClass);
 
 		RECT WndRect = { 0, 0, (LONG)ShaderAtoll::WinResX, (LONG)ShaderAtoll::WinResY };
 		UINT WndStyle = WS_CAPTION;
 		UINT WndExStyle = WS_EX_OVERLAPPEDWINDOW;
 		AdjustWindowRectEx(&WndRect, WndStyle, FALSE, WndExStyle);
 
-		HWND hWindow = CreateWindowEx(
+		HWND NewWindow = CreateWindowEx(
 			WndExStyle,
 			APPNAME(),
 			APPNAME(),
@@ -35,7 +36,7 @@ namespace ShaderAtoll
 			nullptr
 		);
 
-		return hWindow;
+		return NewWindow;
 	}
 
 	LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

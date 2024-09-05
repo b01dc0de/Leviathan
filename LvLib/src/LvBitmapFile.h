@@ -30,7 +30,7 @@ namespace Lv
 		RGBA32* PixelBuffer;
 	};
 
-	void WriteBMP(Image32 InImage, const char* OutFilename);
+	void WriteBMP(const char* OutFilename, Image32 InImage);
 	void ReadBMP(const char* InFilename, Image32 OutImage);
 
 #pragma pack(push, 1)

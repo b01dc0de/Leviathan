@@ -64,11 +64,11 @@ namespace ShaderAtoll
 		CurrFrameTime.QuadPart -= T0.QuadPart;
 		double fCurrFrameTime_ms = (ConvertTs_s(CurrFrameTime) - fLast_s) * 1000.0;
 
-		constexpr double fMS_PER_FRAME_60Hz = 1000.0f / 60.0;
-		constexpr double fMS_PER_FRAME_90Hz = 1000.0f / 90.0;
+		//constexpr double fMS_PER_FRAME_60Hz = 1000.0f / 60.0;
+		//constexpr double fMS_PER_FRAME_90Hz = 1000.0f / 90.0;
 		constexpr double fMS_PER_FRAME_120Hz = 1000.0f / 120.0;
 		DWORD msToSleep = DWORD(fMS_PER_FRAME_120Hz - fCurrFrameTime_ms);
-		Sleep(DWORD(fMS_PER_FRAME_60Hz - fCurrFrameTime_ms));
+		Sleep(msToSleep);
 	}
 
 	void AtollClock::Init()

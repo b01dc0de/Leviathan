@@ -115,6 +115,7 @@ namespace ShaderAtoll_GFX
 		};
 		UINT NumSupportedFeatureLevels = ARRAYSIZE(SupportedFeatureLevels);
 		D3D_FEATURE_LEVEL D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
+		(void)D3DFeatureLevel;
 
 		CreateDXGIFactory1(__uuidof(IDXGIFactory), (void**)&DX_Factory);
 		if (nullptr != DX_Factory)
@@ -313,7 +314,6 @@ namespace ShaderAtoll_GFX
 	{
 		UINT Stride = sizeof(VertexColor);
 		UINT Offset = 0;
-		float fDepth = 1.0f;
 
 		DX_ImmediateContext->IASetInputLayout(DX_InputLayout);
 		DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBuffer, &Stride, &Offset);
@@ -327,8 +327,9 @@ namespace ShaderAtoll_GFX
 	void Draw()
 	{
 		float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
+		float fDepth = 1.0f;
 		DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, ClearColor);
-		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+		DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, fDepth, 0);
 
 		UpdateGraphicsState();
 
@@ -349,14 +350,15 @@ HWND InitWindow(HINSTANCE hInstance)
 	WndClass.hInstance = hInstance;
 	WndClass.lpszClassName = APPNAME();
 
-	ATOM RegClassResult = RegisterClassEx(&WndClass);
+	//ATOM RegClassResult =
+	RegisterClassEx(&WndClass);
 
 	RECT WndRect = { 0, 0, (LONG)WinResX, (LONG)WinResY };
 	UINT WndStyle = WS_CAPTION;
 	UINT WndExStyle = WS_EX_OVERLAPPEDWINDOW;
 	AdjustWindowRectEx(&WndRect, WndStyle, FALSE, WndExStyle);
 
-	HWND hWindow = CreateWindowEx(
+	HWND NewWindow = CreateWindowEx(
 		WndExStyle,
 		APPNAME(),
 		APPNAME(),
@@ -371,7 +373,7 @@ HWND InitWindow(HINSTANCE hInstance)
 		nullptr
 	);
 
-	return hWindow;
+	return NewWindow;
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -403,6 +405,8 @@ int WINAPI Win32_DX11_Triangle_WinMain
 	int nCmdShow
 )
 {
+	(void)hPrevInstance;
+	(void)lpCmdLine;
 	if (HWND hWnd = InitWindow(hInstance))
 	{
 		hWindow = hWnd;
