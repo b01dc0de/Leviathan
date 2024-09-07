@@ -10,7 +10,7 @@
 //    int MouseX;
 //    int MouseY;
 
-float4 Main_Live(float4 ScreenPos)
+float4 Main_Live(PS_INPUT Input)
 {
     return 0.0;
 }

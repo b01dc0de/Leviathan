@@ -4,9 +4,6 @@
 #ifndef ENABLE_VERTEX_COLOR
     #define ENABLE_VERTEX_COLOR 0
 #endif
-#ifndef ENABLE_VERTEX_TEXTURE
-    #define ENABLEL_VERTEX_TEXTURE 0
-#endif
 
 #define _PI (3.14159265359)
 
@@ -20,6 +17,9 @@ cbuffer AtollGlobals : register(b0)
     int MouseY;
 };
 
+Texture2D DebugTexture : register(t0);
+SamplerState MainSampler : register(s0);
+
 struct VS_INPUT
 {
     linear float4 Pos : POSITION;
@@ -27,17 +27,11 @@ struct VS_INPUT
     float4 RGBA : COLOR;
 };
 
-#if ENABLE_VERTEX_TEXTURE
-    Texture2D MainTexture : register(t0);
-    SamplerState MainSampler : register(s0);
-#endif
-
 struct PS_INPUT
 {
     float4 Pos : SV_Position;
-#if ENABLE_VERTEX_TEXTURE
     float2 TexUV : TEXCOORD;
-#elif ENABLE_VERTEX_COLOR
+#if ENABLE_VERTEX_COLOR
     float4 RGBA : COLOR;
 #endif //ENABLE_VERTEX_COLOR
 };

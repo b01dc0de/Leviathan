@@ -2,8 +2,8 @@
 // Example1.hlsl //
 ///////////////////
 
-float4 Main_Example1(float4 ScreenPos)
+float4 Main_Example1(PS_INPUT Input)
 {
-    return Example_Gradient(ScreenPos);
+    return (DebugTexture.Sample(MainSampler, Input.TexUV) + Example_Gradient(Input.Pos)) / 0.5f;
 }
 

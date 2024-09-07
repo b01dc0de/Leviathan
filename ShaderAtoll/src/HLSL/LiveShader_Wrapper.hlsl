@@ -8,7 +8,7 @@
 #if !AUTO_LIVE
     #include "LiveShader.hlsl"
 #else // AUTO_LIVE
-float4 Main_Live(float4 ScreenPos)
+float4 Main_Live(PS_INPUT Input)
 {
     float4 ColorA = { 0.9, 0.9, 0.9, 1.0 };
     float4 ColorB = { 0.1, 0.1, 0.1, 1.0 };

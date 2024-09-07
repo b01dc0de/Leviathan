@@ -39,7 +39,6 @@ namespace ShaderAtoll
 		{
 			static constexpr D3D_SHADER_MACRO HLSL_MacroDefines[] =
 			{
-				"ENABLE_VERTEX_TEXTURE", "0",
 				"ENABLE_VERTEX_COLOR", "0",
 				"SELECT_ERROR_SHADER", "1",
 				"SELECT_LIVE_SHADER", "0",
@@ -57,7 +56,6 @@ namespace ShaderAtoll
 		{
 			D3D_SHADER_MACRO HLSL_MacroDefines[] =
 			{
-				"ENABLE_VERTEX_TEXTURE", "0",
 				"ENABLE_VERTEX_COLOR", "0",
 				"SELECT_ERROR_SHADER", "0",
 				"SELECT_LIVE_SHADER", "1",
@@ -77,7 +75,6 @@ namespace ShaderAtoll
 
 			D3D_SHADER_MACRO HLSL_MacroDefines[] =
 			{
-				"ENABLE_VERTEX_TEXTURE", "1",
 				"ENABLE_VERTEX_COLOR", "0",
 				"SELECT_ERROR_SHADER", "0",
 				"SELECT_LIVE_SHADER", "0",

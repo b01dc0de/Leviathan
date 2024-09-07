@@ -296,8 +296,7 @@ namespace ShaderAtoll
 			Lv::Image32 TestBMP = {};
 			Lv::ReadBMP("Assets/DebugTexture.bmp", TestBMP);
 
-			//constexpr DXGI_FORMAT Image32_DXGI_FMT = DXGI_FORMAT_R8G8B8A8_UINT;
-			constexpr DXGI_FORMAT DXGI_FMT = DXGI_FORMAT_R32G32B32A32_FLOAT;
+			constexpr DXGI_FORMAT BMP_DXGI_FORMAT = DXGI_FORMAT_R32G32B32A32_FLOAT;
 
 			using fRGBAColor = Lv::fRGBAColor;
 
@@ -318,7 +317,7 @@ namespace ShaderAtoll
 			DefaultTextureDesc.Height = TestBMP.Height;
 			DefaultTextureDesc.MipLevels = 1;
 			DefaultTextureDesc.ArraySize = 1;
-			DefaultTextureDesc.Format = DXGI_FMT;
+			DefaultTextureDesc.Format = BMP_DXGI_FORMAT;
 			DefaultTextureDesc.SampleDesc.Count = 1;
 			DefaultTextureDesc.SampleDesc.Quality = 0;
 			DefaultTextureDesc.Usage = D3D11_USAGE_DEFAULT;
