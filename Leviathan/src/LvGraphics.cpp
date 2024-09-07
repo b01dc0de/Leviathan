@@ -4,6 +4,7 @@
 #include "LvEngine.h"
 #include "LvMesh.h"
 #include "LvCamera.h"
+#include "LvBitmapFile.h"
 
 namespace Leviathan
 {
@@ -98,61 +99,14 @@ namespace Leviathan
 
 	void LvPredefGraphics::PvInitFallbackTextureState(ID3D11Device* DXDevice)
 	{
-		struct fRGBAColor
-		{
-			float R;
-			float G;
-			float B;
-			float A;
-		};
-		constexpr fRGBAColor Pink{ 1.0f, 73.0f / 255.0f, 173.0f / 255.0f, 1.0f};
-		constexpr fRGBAColor Black{ 0.0f, 0.0f, 0.0f, 1.0f};
-		constexpr fRGBAColor Red{ 1.0f, 0.0f, 0.0f, 1.0f };
-		constexpr fRGBAColor Green{ 0.0f, 1.0f, 0.0f, 1.0f };
-		constexpr fRGBAColor Blue{ 0.0f, 0.0f, 1.0f, 1.0f };
-		constexpr fRGBAColor White{ 1.0f, 1.0f, 1.0f, 1.0f };
+		Lv::fRGBAColor* FallbackBitmapData = nullptr;
+		int Size = Lv::FallbackTexture_Size;
+		Lv::GetFallbackBitmapTexture(&FallbackBitmapData);
 
-		constexpr int Size = 512;
-		constexpr int NumCells = 16;
-		constexpr int CellSize = Size / NumCells;
-		constexpr int MaxCell = (Size - 1) / CellSize;
-		fRGBAColor* DefaultTextureData = new fRGBAColor[Size*Size];
-		{
-			for (int RowIdx = 0; RowIdx < Size; RowIdx++)
-			{
-				int CellRow = RowIdx / CellSize;
-				for (int ColIdx = 0; ColIdx < Size; ColIdx++)
-				{
-					int CellCol = ColIdx / CellSize;
-					bool bEvenCell = ((CellRow + CellCol) % 2 == 0);
-
-					if (CellRow == 0 && CellCol == 0)
-					{
-						DefaultTextureData[(RowIdx * Size) + ColIdx] = Red;
-					}
-					else if (CellRow == 0 && CellCol == MaxCell)
-					{
-						DefaultTextureData[(RowIdx * Size) + ColIdx] = Green;
-					}
-					else if (CellRow == MaxCell && CellCol == 0)
-					{
-						DefaultTextureData[(RowIdx * Size) + ColIdx] = Blue;
-					}
-					else if (CellRow == MaxCell && CellCol == MaxCell)
-					{
-						DefaultTextureData[(RowIdx * Size) + ColIdx] = White;
-					}
-					else
-					{
-						DefaultTextureData[(RowIdx * Size) + ColIdx] = bEvenCell ? Pink : Black;
-					}
-				}
-			}
-		}
 		D3D11_SUBRESOURCE_DATA TexDataDesc[] = { {} };
-		TexDataDesc[0].pSysMem = DefaultTextureData;
-		TexDataDesc[0].SysMemPitch = sizeof(fRGBAColor) * Size;
-		TexDataDesc[0].SysMemSlicePitch = sizeof(fRGBAColor) * Size * Size;
+		TexDataDesc[0].pSysMem = FallbackBitmapData;
+		TexDataDesc[0].SysMemPitch = sizeof(Lv::fRGBAColor) * Size;
+		TexDataDesc[0].SysMemSlicePitch = sizeof(Lv::fRGBAColor) * Size * Size;
 
 		D3D11_TEXTURE2D_DESC DefaultTextureDesc = {};
 		DefaultTextureDesc.Width = Size;
@@ -168,7 +122,7 @@ namespace Leviathan
 		DefaultTextureDesc.MiscFlags = 0;
 		DXCHECK(DXDevice->CreateTexture2D(&DefaultTextureDesc, &TexDataDesc[0], &FallbackTexture));
 
-		delete[] DefaultTextureData;
+		delete[] FallbackBitmapData;
 
 		DXCHECK(DXDevice->CreateShaderResourceView(FallbackTexture, nullptr, &FallbackTexture_SRV));
 

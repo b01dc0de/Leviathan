@@ -5,6 +5,12 @@
 
 namespace ShaderAtoll
 {
+	struct VF2
+	{
+		float X;
+		float Y;
+	};
+
 	struct VF4
 	{
 		float X;
@@ -13,9 +19,10 @@ namespace ShaderAtoll
 		float W;
 	};
 
-	struct VertexColor
+	struct VertexUVColor
 	{
 		VF4 Position;
+		VF2 UV;
 		VF4 Color;
 	};
 

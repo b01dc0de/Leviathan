@@ -182,7 +182,7 @@ namespace Leviathan
 		IGameInputReading* CurrInputReading = nullptr;
 		if (SUCCEEDED(GameInputInst->GetCurrentReading(EnabledInputTypes, nullptr, &CurrInputReading)))
 		{
-			Assert(CurrInputReading);
+			//Assert(CurrInputReading);
 			// uint64_t ReadingTs = CurrInputReading->GetTimestamp();
 			// uint64_t GetCurrentTimestamp()
 			GameInputKind InputDeviceType = CurrInputReading->GetInputKind();

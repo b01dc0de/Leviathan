@@ -16,8 +16,13 @@ int BitmapTest_Main(int argc, const char* argv[])
 	ImgData.Height = ImgSize;
 	ImgData.PxCount = ImgData.Width * ImgData.Height;
 	ImgData.PxBytes = ImgData.PxCount * sizeof(RGBA32);
-	ImgData.PixelBuffer = new RGBA32[ImgSize * ImgSize];
 
+#define USE_DEFAULT_FALLBACK_TEXTURE (1)
+
+#if USE_DEFAULT_FALLBACK_TEXTURE
+	Lv::GetFallbackBitmapTexture(&ImgData.PixelBuffer);
+#else
+	ImgData.PixelBuffer = new RGBA32[ImgSize * ImgSize];
 	const RGBA32 Pink{ 255, 73, 173, 255 };
 	const RGBA32 Black{ 0, 0, 0, 255 };
 
@@ -34,6 +39,7 @@ int BitmapTest_Main(int argc, const char* argv[])
 			ImgData.PixelBuffer[(RowIdx * Size) + ColIdx] = { SelectedColor.B, SelectedColor.G, SelectedColor.R, SelectedColor.A };
 		}
 	}
+#endif // USE_DEFAULT_FALLBACK_TEXTURE
 
 	/*
 		CKA_NOTE:

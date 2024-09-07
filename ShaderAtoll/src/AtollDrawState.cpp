@@ -7,13 +7,13 @@ namespace ShaderAtoll
 	{
 		LPCWSTR Base_ShaderFilename = L"src/HLSL/BaseShader.hlsl";
 
-		D3D11_INPUT_ELEMENT_DESC VxColor_InputLayoutDesc[] =
+		D3D11_INPUT_ELEMENT_DESC VxUVColor_InputLayoutDesc[] =
 		{
-			{"POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			// { "TEXTURE", ... }
-			{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
-		UINT VxColor_NumInputElements = ARRAYSIZE(VxColor_InputLayoutDesc);
+		UINT VxUVColor_NumInputElements = ARRAYSIZE(VxUVColor_InputLayoutDesc);
 
 		bool CompileShader(ID3D11Device* Device, const D3D_SHADER_MACRO* InMacroDefines, DrawPipelineState& Out_DrawState)
 		{
@@ -23,8 +23,8 @@ namespace ShaderAtoll
 				Device,
 				Base_ShaderFilename,
 				InMacroDefines,
-				VxColor_InputLayoutDesc,
-				VxColor_NumInputElements,
+				VxUVColor_InputLayoutDesc,
+				VxUVColor_NumInputElements,
 				&TmpDrawState
 			);
 			if (TmpDrawState.VertexShader && TmpDrawState.InputLayout && TmpDrawState.PixelShader)
@@ -39,6 +39,7 @@ namespace ShaderAtoll
 		{
 			static constexpr D3D_SHADER_MACRO HLSL_MacroDefines[] =
 			{
+				"ENABLE_VERTEX_TEXTURE", "0",
 				"ENABLE_VERTEX_COLOR", "0",
 				"SELECT_ERROR_SHADER", "1",
 				"SELECT_LIVE_SHADER", "0",
@@ -56,6 +57,7 @@ namespace ShaderAtoll
 		{
 			D3D_SHADER_MACRO HLSL_MacroDefines[] =
 			{
+				"ENABLE_VERTEX_TEXTURE", "0",
 				"ENABLE_VERTEX_COLOR", "0",
 				"SELECT_ERROR_SHADER", "0",
 				"SELECT_LIVE_SHADER", "1",
@@ -75,6 +77,7 @@ namespace ShaderAtoll
 
 			D3D_SHADER_MACRO HLSL_MacroDefines[] =
 			{
+				"ENABLE_VERTEX_TEXTURE", "1",
 				"ENABLE_VERTEX_COLOR", "0",
 				"SELECT_ERROR_SHADER", "0",
 				"SELECT_LIVE_SHADER", "0",

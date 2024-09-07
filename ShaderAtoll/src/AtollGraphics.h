@@ -28,6 +28,11 @@ namespace ShaderAtoll
 		static DXHandle<ID3D11Buffer> DX_IndexBuffer;
 		static DXHandle<ID3D11Buffer> DX_GlobalsBuffer;
 
+		static DXHandle<ID3D11Texture2D> TestTexture;
+		static DXHandle<ID3D11ShaderResourceView> TestTexture_SRV;
+		static DXHandle<ID3D11SamplerState> TestSamplerState;
+
+
 		static DrawStateManager DrawStateMgr;
 
 		static int InitGraphics();

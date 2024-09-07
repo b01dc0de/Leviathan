@@ -1,5 +1,6 @@
 #include "AtollGraphics.h"
 #include "AtollDrawState.h"
+#include "LvBitmapFile.h"
 
 namespace ShaderAtoll
 {
@@ -23,6 +24,11 @@ namespace ShaderAtoll
 	DXHandle<ID3D11Buffer> AtollGraphics::DX_VertexBuffer;
 	DXHandle<ID3D11Buffer> AtollGraphics::DX_IndexBuffer;
 	DXHandle<ID3D11Buffer> AtollGraphics::DX_GlobalsBuffer;
+
+	DXHandle<ID3D11Texture2D> AtollGraphics::TestTexture;
+	DXHandle<ID3D11ShaderResourceView> AtollGraphics::TestTexture_SRV;
+	DXHandle<ID3D11SamplerState> AtollGraphics::TestSamplerState;
+
 
 	DrawStateManager AtollGraphics::DrawStateMgr = {};
 
@@ -93,13 +99,17 @@ namespace ShaderAtoll
 	VF4 BoxP1 = { 1.0f, 1.0f, 0.5f, 1.0f };
 	VF4 BoxP2 = { -1.0f, -1.0f, 0.5f, 1.0f };
 	VF4 BoxP3 = { 1.0f, -1.0f, 0.5f, 1.0f };
+	VF2 UV_TopL = { 0.0f, 0.0f };
+	VF2 UV_TopR = { 1.0f, 0.0f };
+	VF2 UV_BotL = { 0.0f, 1.0f };
+	VF2 UV_BotR = { 1.0f, 1.0f };
 
-	VertexColor Vertices[] =
+	VertexUVColor Vertices[] =
 	{
-		{BoxP0, Color_Red},
-		{BoxP1, Color_Blue},
-		{BoxP2, Color_Green},
-		{BoxP3, Color_White},
+		{BoxP0, UV_TopL, Color_Red},
+		{BoxP1, UV_TopR, Color_Blue},
+		{BoxP2, UV_BotL, Color_Green},
+		{BoxP3, UV_BotR, Color_White},
 	};
 
 	TriIx BoxIxs[] =
@@ -242,7 +252,7 @@ namespace ShaderAtoll
 
 		D3D11_BUFFER_DESC VertexBufferDesc =
 		{
-			sizeof(VertexColor) * ARRAY_SIZE(Vertices),
+			sizeof(VertexUVColor) * ARRAY_SIZE(Vertices),
 			D3D11_USAGE_DEFAULT,
 			D3D11_BIND_VERTEX_BUFFER,
 			0,
@@ -278,12 +288,69 @@ namespace ShaderAtoll
 
 		DrawStateMgr.Init(DX_Device);
 
+
+		// Load BMP file as DX11 Texture2D
+		{
+			// CKA_TODO: Change 'Test.bmp' to the fallback texture used by Leviathan w/ debug corner squares
+
+			Lv::Image32 TestBMP = {};
+			Lv::ReadBMP("Assets/DebugTexture.bmp", TestBMP);
+
+			//constexpr DXGI_FORMAT Image32_DXGI_FMT = DXGI_FORMAT_R8G8B8A8_UINT;
+			constexpr DXGI_FORMAT DXGI_FMT = DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+			using fRGBAColor = Lv::fRGBAColor;
+
+			fRGBAColor* TmpPxData = new fRGBAColor[TestBMP.PxCount];
+			for (unsigned int PxIdx = 0; PxIdx < TestBMP.PxCount; PxIdx++)
+			{
+				fRGBAColor& CurrPx = TmpPxData[PxIdx];
+				CurrPx = fRGBAColor::ConvertFromRGBA32(TestBMP.PixelBuffer[PxIdx]);
+			}
+
+			D3D11_SUBRESOURCE_DATA TexDataDesc[] = { {} };
+			TexDataDesc[0].pSysMem = TmpPxData;
+			TexDataDesc[0].SysMemPitch = sizeof(fRGBAColor) * TestBMP.Width;
+			TexDataDesc[0].SysMemSlicePitch = sizeof(fRGBAColor) * TestBMP.PxCount;
+
+			D3D11_TEXTURE2D_DESC DefaultTextureDesc = {};
+			DefaultTextureDesc.Width = TestBMP.Width;
+			DefaultTextureDesc.Height = TestBMP.Height;
+			DefaultTextureDesc.MipLevels = 1;
+			DefaultTextureDesc.ArraySize = 1;
+			DefaultTextureDesc.Format = DXGI_FMT;
+			DefaultTextureDesc.SampleDesc.Count = 1;
+			DefaultTextureDesc.SampleDesc.Quality = 0;
+			DefaultTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+			DefaultTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+			DefaultTextureDesc.CPUAccessFlags = 0;
+			DefaultTextureDesc.MiscFlags = 0;
+			DXCHECK(DX_Device->CreateTexture2D(&DefaultTextureDesc, &TexDataDesc[0], &TestTexture));
+
+			DXCHECK(DX_Device->CreateShaderResourceView(TestTexture, nullptr, &TestTexture_SRV));
+
+			D3D11_SAMPLER_DESC DefaultTextureSamplerDesc = {};
+			DefaultTextureSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+			DefaultTextureSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+			DefaultTextureSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+			DefaultTextureSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+			DefaultTextureSamplerDesc.MipLODBias = 0.0f;
+			DefaultTextureSamplerDesc.MaxAnisotropy = 0;
+			DefaultTextureSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+			DefaultTextureSamplerDesc.MinLOD = 0;
+			DefaultTextureSamplerDesc.MaxLOD = 0;
+			DXCHECK(DX_Device->CreateSamplerState(&DefaultTextureSamplerDesc, &TestSamplerState));
+
+			delete[] TmpPxData;
+			delete[] TestBMP.PixelBuffer;
+		}
+
 		return SUCCEEDED(Result);
 	}
 
 	void AtollGraphics::UpdateGraphicsState()
 	{
-		constexpr UINT Stride = sizeof(VertexColor);
+		constexpr UINT Stride = sizeof(VertexUVColor);
 		constexpr UINT Offset = 0;
 
 		DrawPipelineState& DrawState = *DrawStateMgr.GetCurrState();
@@ -316,6 +383,8 @@ namespace ShaderAtoll
 
 		DX_ImmediateContext->PSSetShader(DrawState.PixelShader, nullptr, 0);
 		DX_ImmediateContext->PSSetConstantBuffers(0, 1, &DX_GlobalsBuffer);
+		DX_ImmediateContext->PSSetShaderResources(0, 1, &TestTexture_SRV);
+		DX_ImmediateContext->PSSetSamplers(0, 1, &TestSamplerState);
 
 		DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
 

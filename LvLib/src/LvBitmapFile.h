@@ -19,7 +19,39 @@ namespace Lv
 		{
 			return u32((A << 24) | (B << 16) | (G << 8) | (R << 0));
 		}
+		static RGBA32 Unswizzle(RGBA32 InVal)
+		{
+			RGBA32 Result = {};
+			Result.R = InVal.B;
+			Result.G = InVal.G;
+			Result.B = InVal.R;
+			Result.A = InVal.A;
+			return Result;
+		}
 	};
+
+	struct fRGBAColor
+	{
+		float R;
+		float G;
+		float B;
+		float A;
+
+		static fRGBAColor ConvertFromRGBA32(Lv::RGBA32 InVal)
+		{
+			constexpr float Divisor = 255.0f;
+			return fRGBAColor{
+				InVal.R / Divisor,
+				InVal.G / Divisor,
+				InVal.B / Divisor,
+				InVal.A / Divisor
+			};
+		}
+	};
+
+	constexpr int FallbackTexture_Size = 512;
+	void GetFallbackBitmapTexture(fRGBAColor** OutPxData);
+	void GetFallbackBitmapTexture(RGBA32** OutPxData);
 
 	struct Image32
 	{
@@ -30,8 +62,8 @@ namespace Lv
 		RGBA32* PixelBuffer;
 	};
 
-	void WriteBMP(const char* OutFilename, Image32 InImage);
-	void ReadBMP(const char* InFilename, Image32 OutImage);
+	void WriteBMP(const char* OutFilename, const Image32& InImage);
+	void ReadBMP(const char* InFilename, Image32& OutImage);
 
 #pragma pack(push, 1)
 	struct BMPFileHeader
