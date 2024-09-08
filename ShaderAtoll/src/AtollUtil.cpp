@@ -68,7 +68,7 @@ namespace ShaderAtoll
 		//constexpr double fMS_PER_FRAME_90Hz = 1000.0f / 90.0;
 		constexpr double fMS_PER_FRAME_120Hz = 1000.0f / 120.0;
 		DWORD msToSleep = DWORD(fMS_PER_FRAME_120Hz - fCurrFrameTime_ms);
-		Sleep(msToSleep);
+		Sleep(fCurrFrameTime_ms > fMS_PER_FRAME_120Hz ? 0 : msToSleep);
 	}
 
 	void AtollClock::Init()

@@ -293,28 +293,28 @@ namespace ShaderAtoll
 		{
 			// CKA_TODO: Change 'Test.bmp' to the fallback texture used by Leviathan w/ debug corner squares
 
-			Lv::Image32 TestBMP = {};
-			Lv::ReadBMP("Assets/DebugTexture.bmp", TestBMP);
+			Lv::Image32 DebugTextureFile = {};
+			Lv::ReadBMP("Assets/DebugTexture.bmp", DebugTextureFile);
 
 			constexpr DXGI_FORMAT BMP_DXGI_FORMAT = DXGI_FORMAT_R32G32B32A32_FLOAT;
 
 			using fRGBAColor = Lv::fRGBAColor;
 
-			fRGBAColor* TmpPxData = new fRGBAColor[TestBMP.PxCount];
-			for (unsigned int PxIdx = 0; PxIdx < TestBMP.PxCount; PxIdx++)
+			fRGBAColor* TmpPxData = new fRGBAColor[DebugTextureFile.PxCount];
+			for (unsigned int PxIdx = 0; PxIdx < DebugTextureFile.PxCount; PxIdx++)
 			{
 				fRGBAColor& CurrPx = TmpPxData[PxIdx];
-				CurrPx = fRGBAColor::ConvertFromRGBA32(TestBMP.PixelBuffer[PxIdx]);
+				CurrPx = fRGBAColor::ConvertFromRGBA32(DebugTextureFile.PixelBuffer[PxIdx]);
 			}
 
 			D3D11_SUBRESOURCE_DATA TexDataDesc[] = { {} };
 			TexDataDesc[0].pSysMem = TmpPxData;
-			TexDataDesc[0].SysMemPitch = sizeof(fRGBAColor) * TestBMP.Width;
-			TexDataDesc[0].SysMemSlicePitch = sizeof(fRGBAColor) * TestBMP.PxCount;
+			TexDataDesc[0].SysMemPitch = sizeof(fRGBAColor) * DebugTextureFile.Width;
+			TexDataDesc[0].SysMemSlicePitch = sizeof(fRGBAColor) * DebugTextureFile.PxCount;
 
 			D3D11_TEXTURE2D_DESC DefaultTextureDesc = {};
-			DefaultTextureDesc.Width = TestBMP.Width;
-			DefaultTextureDesc.Height = TestBMP.Height;
+			DefaultTextureDesc.Width = DebugTextureFile.Width;
+			DefaultTextureDesc.Height = DebugTextureFile.Height;
 			DefaultTextureDesc.MipLevels = 1;
 			DefaultTextureDesc.ArraySize = 1;
 			DefaultTextureDesc.Format = BMP_DXGI_FORMAT;
@@ -341,7 +341,7 @@ namespace ShaderAtoll
 			DXCHECK(DX_Device->CreateSamplerState(&DefaultTextureSamplerDesc, &TestSamplerState));
 
 			delete[] TmpPxData;
-			delete[] TestBMP.PixelBuffer;
+			delete[] DebugTextureFile.PixelBuffer;
 		}
 
 		return SUCCEEDED(Result);
