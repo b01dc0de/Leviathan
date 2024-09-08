@@ -44,7 +44,7 @@
     <FxCompile Include="src\HLSL\AtollMain.hlsl">
       <Filter>HLSL</Filter>
     </FxCompile>
-    <FxCompile Include="src\HLSL\Examples\Example0.hlsl">
+    <FxCompile Include="src\HLSL\Examples\Example10.hlsl">
       <Filter>HLSL\Examples</Filter>
     </FxCompile>
     <FxCompile Include="src\HLSL\Examples\Example1.hlsl">

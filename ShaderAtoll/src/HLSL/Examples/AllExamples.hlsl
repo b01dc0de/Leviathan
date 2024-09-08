@@ -22,6 +22,6 @@
 #elif SELECT_EXAMPLE_SHADER == 9
     #include "Examples/Example9.hlsl"
 #elif SELECT_EXAMPLE_SHADER == 0
-    #include "Examples/Example0.hlsl"
+    #include "Examples/Example10.hlsl"
 #endif // SELECT_EXAMPLE_SHADER
 

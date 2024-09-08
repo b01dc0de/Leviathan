@@ -31,7 +31,7 @@
     <FxCompile Include="src\HLSL\Examples\AllExamples.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="src\HLSL\Examples\Example0.hlsl">
+    <FxCompile Include="src\HLSL\Examples\Example10.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="src\HLSL\Examples\Example1.hlsl">
