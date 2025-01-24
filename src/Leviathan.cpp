@@ -1,4 +1,5 @@
 #include "Leviathan.h"
+#include "Graphics.h"
 
 namespace Leviathan
 {
@@ -113,11 +114,16 @@ namespace Leviathan
             AppWindow = hWnd;
             ShowWindow(AppWindow, nShowCmd);
 
+            InitGraphics();
+
             bAppRunning = true;
             while (bAppRunning)
             {
                 WindowMsgLoop(AppWindow);
+                UpdateAndDraw();
             }
+
+            TermGraphics();
         }
 
         return 0;

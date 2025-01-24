@@ -4,9 +4,15 @@
     <Filter Include="src">
       <UniqueIdentifier>{6fb049f0-1154-4a73-83ac-41cd67e8c20e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\hlsl">
+      <UniqueIdentifier>{bb33e0c7-7c2b-4a5c-a1ec-20e35a58fb75}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Leviathan.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -14,5 +20,13 @@
     <ClInclude Include="src\Leviathan.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\Graphics.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="src\hlsl\BaseShader.hlsl">
+      <Filter>src\hlsl</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
