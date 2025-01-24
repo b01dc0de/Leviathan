@@ -1,2 +1,11 @@
 # VisualStudio:
 .vs/
+*.exe
+*.idb
+*.ilk
+*.log
+*.obj
+*.pdb
+*.recipe
+*.tlog
+*.user
