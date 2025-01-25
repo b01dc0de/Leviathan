@@ -564,6 +564,12 @@ namespace Leviathan
                 }
             }
 
+            static bool bDrawInputVisualizerBG = true;
+            if (bDrawInputVisualizerBG)
+            {
+                // TODO: ...
+            }
+
             DX_CHECK(D2_RenderTarget->EndDraw());
         }
 

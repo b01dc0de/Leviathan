@@ -13,6 +13,11 @@ namespace Leviathan
         static void SetKeyUp(int VKCode);
         static void SetKeyDown(int VKCode);
     };
+
+    struct InputVisualizer
+    {
+        static void Draw(ID2D1RenderTarget* D2_RenderTarget);
+    };
 }
 
 #endif // LEVIATHAN_INPUT_H
