@@ -22,12 +22,35 @@ namespace Leviathan
     ID3D11PixelShader* DX_PixelShaderColor = nullptr;
     ID3D11InputLayout* DX_InputLayoutColor = nullptr;
 
+    ID3D11VertexShader* DX_VertexShaderTexture = nullptr;
+    ID3D11PixelShader* DX_PixelShaderTexture = nullptr;
+    ID3D11InputLayout* DX_InputLayoutTexture = nullptr;
+
     ID3D11Buffer* DX_WVPBuffer = nullptr;
 
     ID3D11Buffer* DX_VertexBufferTriangle = nullptr;
     ID3D11Buffer* DX_IndexBufferTriangle = nullptr;
 
+    ID3D11Texture2D* DX_DebugTexture = nullptr;
+    ID3D11ShaderResourceView* DX_DebugTextureSRV = nullptr;
+    ID3D11SamplerState* DX_DefaultSamplerState = nullptr;
+    ID3D11Buffer* DX_VertexBufferQuad = nullptr;
+    ID3D11Buffer* DX_IndexBufferQuad = nullptr;
+
     D3D_FEATURE_LEVEL UsedFeatureLevel;
+
+    struct v2f
+    {
+        float X;
+        float Y;
+    };
+
+    struct v3f
+    {
+        float X;
+        float Y;
+        float Z;
+    };
 
     struct v4f
     {
@@ -43,16 +66,34 @@ namespace Leviathan
         v4f Col;
     };
 
+    struct VxTexture
+    {
+        v4f Pos;
+        v2f TexUV;
+    };
+
     VxColor Vertices_Triangle[] =
     {
         { {+0.0f, +0.5f, +0.5f, 1.0f}, {0.0f, 1.0f, 1.0f, 1.0f} },
         { {-0.5f, -0.5f, +0.5f, 1.0f}, {1.0f, 0.0f, 1.0f, 1.0f} },
         { {+0.5f, -0.5f, +0.5f, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f} },
     };
-
     unsigned int Indices_Triangle[] =
     {
         0, 1, 2
+    };
+
+    VxTexture Vertices_Quad[] =
+    {
+        { {-0.5f, +0.5f, +0.5f, +1.0f}, { 0.0f, 0.0f } },
+        { {+0.5f, +0.5f, +0.5f, +1.0f}, { 1.0f, 0.0f } },
+        { {-0.5f, -0.5f, +0.5f, +1.0f}, { 0.0f, 1.0f } },
+        { {+0.5f, -0.5f, +0.5f, +1.0f}, { 1.0f, 1.0f } },
+    };
+    unsigned int Indices_Quad[] =
+    {
+        0, 2, 1,
+        1, 2, 3
     };
 
     struct m4f
@@ -68,6 +109,64 @@ namespace Leviathan
         m4f View;
         m4f Proj;
     };
+
+    struct RGBA32
+    {
+        unsigned char R;
+        unsigned char G;
+        unsigned char B;
+        unsigned char A;
+    };
+    struct ImageT
+    {
+        unsigned int Width;
+        unsigned int Height;
+        size_t PxCount;
+        size_t PxBytes;
+        RGBA32* PxBuffer;
+    };
+    void GetDebugImage(ImageT& OutImage)
+    {
+        unsigned int DebugImageLength = 16;
+        OutImage.Width = DebugImageLength;
+        OutImage.Height = DebugImageLength;
+        OutImage.PxCount = OutImage.Width * OutImage.Height;
+        OutImage.PxBytes = sizeof(RGBA32) * OutImage.PxCount;
+        OutImage.PxBuffer = new RGBA32[OutImage.PxCount];
+
+        const RGBA32 Pink{ 255u, 73u, 173u, 255u };
+        const RGBA32 Black{ 0u, 0u, 0u, 255u };
+        const RGBA32 Red{ 255u, 0u, 0u, 255u };
+        const RGBA32 Green{ 0u, 255u, 0u, 255u };
+        const RGBA32 Blue{ 0u, 0u, 255u, 255u };
+        const RGBA32 White{ 255u, 255u, 255u, 255u };
+        for (int PxIdx = 0; PxIdx < OutImage.PxCount; PxIdx++)
+        {
+            int PxRow = PxIdx / OutImage.Width;
+            int PxCol = PxIdx % OutImage.Width;
+            if (PxRow == 0 && PxCol == 0)
+            {
+                OutImage.PxBuffer[PxIdx] = Red;
+            }
+            else if (PxRow == 0 && PxCol == (OutImage.Width - 1))
+            {
+                OutImage.PxBuffer[PxIdx] = Green;
+            }
+            else if (PxRow == (OutImage.Height - 1) && PxCol == 0)
+            {
+                OutImage.PxBuffer[PxIdx] = Blue;
+            }
+            else if (PxRow == (OutImage.Height - 1) && PxCol == (OutImage.Width - 1))
+            {
+                OutImage.PxBuffer[PxIdx] = White;
+            }
+            else
+            {
+                bool bEvenCell = (PxRow + PxCol) % 2 == 0;
+                OutImage.PxBuffer[PxIdx] = bEvenCell ? Black : Pink;
+            }
+        }
+    }
 
     int CompileShaderHelper
     (
@@ -239,8 +338,14 @@ namespace Leviathan
             ID3DBlob* VSBlob = nullptr;
             ID3DBlob* PSBlob = nullptr;
 
-            DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "VSMain", "vs_5_0", &VSBlob, nullptr));
-            DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "PSMain", "ps_5_0", &PSBlob, nullptr));
+            const D3D_SHADER_MACRO DefinesVxColor[] =
+            {
+                "ENABLE_VERTEX_COLOR", "1",
+                "ENABLE_VERTEX_TEXTURE", "0",
+                nullptr, nullptr
+            };
+            DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "VSMain", "vs_5_0", &VSBlob, DefinesVxColor));
+            DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "PSMain", "ps_5_0", &PSBlob, DefinesVxColor));
 
             if (VSBlob && PSBlob)
             {
@@ -254,6 +359,36 @@ namespace Leviathan
                 };
                 UINT NumInputElements = ARRAY_SIZE(InputLayoutDesc);
                 DX_CHECK(DX_Device->CreateInputLayout(InputLayoutDesc, NumInputElements, VSBlob->GetBufferPointer(), VSBlob->GetBufferSize(), &DX_InputLayoutColor));
+            }
+            DX_SAFE_RELEASE(VSBlob);
+            DX_SAFE_RELEASE(PSBlob);
+        }
+
+        {
+            ID3DBlob* VSBlob = nullptr;
+            ID3DBlob* PSBlob = nullptr;
+
+            const D3D_SHADER_MACRO DefinesVxTexture[] =
+            {
+                "ENABLE_VERTEX_COLOR", "0",
+                "ENABLE_VERTEX_TEXTURE", "1",
+                nullptr, nullptr
+            };
+            DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "VSMain", "vs_5_0", &VSBlob, DefinesVxTexture));
+            DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "PSMain", "ps_5_0", &PSBlob, DefinesVxTexture));
+
+            if (VSBlob && PSBlob)
+            {
+                DX_CHECK(DX_Device->CreateVertexShader(VSBlob->GetBufferPointer(), VSBlob->GetBufferSize(), nullptr, &DX_VertexShaderTexture));
+                DX_CHECK(DX_Device->CreatePixelShader(PSBlob->GetBufferPointer(), PSBlob->GetBufferSize(), nullptr, &DX_PixelShaderTexture));
+
+                D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
+                {
+                    { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+                    { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+                };
+                UINT NumInputElements = ARRAY_SIZE(InputLayoutDesc);
+                DX_CHECK(DX_Device->CreateInputLayout(InputLayoutDesc, NumInputElements, VSBlob->GetBufferPointer(), VSBlob->GetBufferSize(), &DX_InputLayoutTexture));
             }
             DX_SAFE_RELEASE(VSBlob);
             DX_SAFE_RELEASE(PSBlob);
@@ -274,6 +409,58 @@ namespace Leviathan
             D3D11_BUFFER_DESC IndexBufferDesc = { sizeof(Indices_Triangle), D3D11_USAGE_DEFAULT, D3D11_BIND_INDEX_BUFFER, 0, 0 };
             D3D11_SUBRESOURCE_DATA IndexBufferInitData = { Indices_Triangle, 0, 0 };
             DX_CHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBufferTriangle));
+        }
+
+        {
+
+            ImageT DebugImage = {};
+            GetDebugImage(DebugImage);
+
+            D3D11_SUBRESOURCE_DATA DebugTextureDataDesc[] = { {} };
+            DebugTextureDataDesc[0].pSysMem = DebugImage.PxBuffer;
+            DebugTextureDataDesc[0].SysMemPitch = sizeof(RGBA32) * DebugImage.Width;
+            DebugTextureDataDesc[0].SysMemSlicePitch = DebugImage.PxBytes;
+            D3D11_TEXTURE2D_DESC DebugTextureDesc = {};
+            DebugTextureDesc.Width = DebugImage.Width;
+            DebugTextureDesc.Height = DebugImage.Height;
+            DebugTextureDesc.MipLevels = 1;
+            DebugTextureDesc.ArraySize = 1;
+            DebugTextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            DebugTextureDesc.SampleDesc.Count = 1;
+            DebugTextureDesc.SampleDesc.Quality = 0;
+            DebugTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+            DebugTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+            DebugTextureDesc.CPUAccessFlags = 0;
+            DebugTextureDesc.MiscFlags = 0;
+            DX_CHECK(DX_Device->CreateTexture2D(&DebugTextureDesc, &DebugTextureDataDesc[0], &DX_DebugTexture));
+            DX_CHECK(DX_Device->CreateShaderResourceView(DX_DebugTexture, nullptr, &DX_DebugTextureSRV));
+
+            D3D11_TEXTURE_ADDRESS_MODE SamplerAddressMode = D3D11_TEXTURE_ADDRESS_WRAP;
+            D3D11_SAMPLER_DESC DefaultSamplerDesc = {};
+            DefaultSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+            DefaultSamplerDesc.AddressU = SamplerAddressMode;
+            DefaultSamplerDesc.AddressV = SamplerAddressMode;
+            DefaultSamplerDesc.AddressW = SamplerAddressMode;
+            DefaultSamplerDesc.MipLODBias = 0.0f;
+            DefaultSamplerDesc.MaxAnisotropy = 0;
+            DefaultSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+            DefaultSamplerDesc.MinLOD = 0;
+            DefaultSamplerDesc.MaxLOD = 0;
+            DX_CHECK(DX_Device->CreateSamplerState(&DefaultSamplerDesc, &DX_DefaultSamplerState));
+        }
+
+        {
+            D3D11_BUFFER_DESC VertexBufferDesc = { sizeof(Vertices_Quad), D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0 };
+            D3D11_SUBRESOURCE_DATA VertexBufferInitData = { Vertices_Quad, 0, 0 };
+            DX_CHECK(DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_VertexBufferQuad));
+
+            D3D11_BUFFER_DESC IndexBufferDesc = { sizeof(Indices_Quad), D3D11_USAGE_DEFAULT, D3D11_BIND_INDEX_BUFFER, 0, 0 };
+            D3D11_SUBRESOURCE_DATA IndexBufferInitData = { Indices_Quad, 0, 0 };
+            DX_CHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBufferQuad));
+        }
+
+        {
+
         }
     }
 
@@ -312,6 +499,23 @@ namespace Leviathan
             DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Triangle), 0u, 0u);
         }
 
+        { // Draw tex quad
+            UINT Offset = 0;
+            const UINT Stride = sizeof(VxTexture);
+            DX_ImmediateContext->IASetInputLayout(DX_InputLayoutTexture);
+            DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBufferQuad, &Stride, &Offset);
+            DX_ImmediateContext->IASetIndexBuffer(DX_IndexBufferQuad, DXGI_FORMAT_R32_UINT, 0);
+            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            DX_ImmediateContext->VSSetShader(DX_VertexShaderTexture, nullptr, 0);
+            DX_ImmediateContext->VSSetConstantBuffers(WVPBufferSlot, 1, &DX_WVPBuffer);
+            DX_ImmediateContext->PSSetShader(DX_PixelShaderTexture, nullptr, 0);
+            DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_DebugTextureSRV);
+            DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
+
+            DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Quad), 0u, 0u);
+        }
+
         UINT SyncInterval = 0;
         UINT PresentFlags = 0;
         DXGI_PRESENT_PARAMETERS PresentParams = {};
@@ -320,6 +524,33 @@ namespace Leviathan
 
     void TermGraphics()
     {
+        DX_SAFE_RELEASE(DX_VertexBufferTriangle);
+        DX_SAFE_RELEASE(DX_IndexBufferTriangle);
 
+        DX_SAFE_RELEASE(DX_WVPBuffer);
+
+        DX_SAFE_RELEASE(DX_VertexShaderColor);
+        DX_SAFE_RELEASE(DX_PixelShaderColor);
+        DX_SAFE_RELEASE(DX_InputLayoutColor);
+
+        DX_SAFE_RELEASE(DXGI_SwapChain1);
+        DX_SAFE_RELEASE(DX_Backbuffer);
+        DX_SAFE_RELEASE(DX_RenderTargetView);
+        DX_SAFE_RELEASE(DX_RasterizerState);
+        DX_SAFE_RELEASE(DX_DepthStencil);
+        DX_SAFE_RELEASE(DX_DepthStencilView);
+
+        DX_SAFE_RELEASE(DXGI_Factory2);
+        DX_SAFE_RELEASE(DX_ImmediateContext);
+
+        if (DX_Device)
+        {
+            ID3D11Debug* DX_Debug = nullptr;
+            DX_Device->QueryInterface(__uuidof(ID3D11Debug), (void**)&DX_Debug);
+            if (DX_Debug) { DX_Debug->ReportLiveDeviceObjects(D3D11_RLDO_IGNORE_INTERNAL); }
+            DX_SAFE_RELEASE(DX_Debug);
+        }
+
+        DX_SAFE_RELEASE(DX_Device);
     }
 }
