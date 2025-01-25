@@ -5,9 +5,12 @@
 
 namespace Leviathan
 {
-    void InitGraphics();
-    void UpdateAndDraw();
-    void TermGraphics();
+    struct Graphics
+    {
+        static void Init();
+        static void UpdateAndDraw();
+        static void Term();
+    };
 }
 
 #endif // LEVIATHAN_GRAPHICS_H

@@ -18,6 +18,7 @@
     <ClCompile Include="src\Math.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Engine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -29,6 +30,7 @@
     <ClInclude Include="src\Math.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\Engine.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\hlsl\BaseShader.hlsl">

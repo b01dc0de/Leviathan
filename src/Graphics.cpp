@@ -3,10 +3,9 @@
 namespace Leviathan
 {
 
-#define ARRAY_SIZE(Array) (sizeof(Array) / sizeof(Array[0]))
-
 #define DX_CHECK(DXResult) if (FAILED(DXResult)) { DebugBreak(); }
 #define DX_SAFE_RELEASE(Ptr) if (Ptr) { Ptr->Release(); Ptr = nullptr; }
+#define DX_UUID_HELPER(Type, Ptr) __uuidof(Type), (void**)&Ptr
 
     IDXGIFactory2* DXGI_Factory2 = nullptr;
     ID3D11Device* DX_Device = nullptr;
@@ -60,30 +59,6 @@ namespace Leviathan
         v2f TexUV;
     };
 
-    VxColor Vertices_Triangle[] =
-    {
-        { {+0.0f, +0.5f, +0.5f, 1.0f}, {0.0f, 1.0f, 1.0f, 1.0f} },
-        { {-0.5f, -0.5f, +0.5f, 1.0f}, {1.0f, 0.0f, 1.0f, 1.0f} },
-        { {+0.5f, -0.5f, +0.5f, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f} },
-    };
-    unsigned int Indices_Triangle[] =
-    {
-        0, 1, 2
-    };
-
-    VxTexture Vertices_Quad[] =
-    {
-        { {-0.5f, +0.5f, +0.5f, +1.0f}, { 0.0f, 0.0f } },
-        { {+0.5f, +0.5f, +0.5f, +1.0f}, { 1.0f, 0.0f } },
-        { {-0.5f, -0.5f, +0.5f, +1.0f}, { 0.0f, 1.0f } },
-        { {+0.5f, -0.5f, +0.5f, +1.0f}, { 1.0f, 1.0f } },
-    };
-    unsigned int Indices_Quad[] =
-    {
-        0, 2, 1,
-        1, 2, 3
-    };
-
     struct WVPData
     {
         m4f World;
@@ -111,6 +86,31 @@ namespace Leviathan
         size_t PxBytes;
         RGBA32* PxBuffer;
     };
+
+    VxColor Vertices_Triangle[] =
+    {
+        { {+0.0f, +0.5f, +0.5f, 1.0f}, {0.0f, 1.0f, 1.0f, 1.0f} },
+        { {-0.5f, -0.5f, +0.5f, 1.0f}, {1.0f, 0.0f, 1.0f, 1.0f} },
+        { {+0.5f, -0.5f, +0.5f, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f} },
+    };
+    unsigned int Indices_Triangle[] =
+    {
+        0, 1, 2
+    };
+
+    VxTexture Vertices_Quad[] =
+    {
+        { {-0.5f, +0.5f, +0.5f, +1.0f}, { 0.0f, 0.0f } },
+        { {+0.5f, +0.5f, +0.5f, +1.0f}, { 1.0f, 0.0f } },
+        { {-0.5f, -0.5f, +0.5f, +1.0f}, { 0.0f, 1.0f } },
+        { {+0.5f, -0.5f, +0.5f, +1.0f}, { 1.0f, 1.0f } },
+    };
+    unsigned int Indices_Quad[] =
+    {
+        0, 2, 1,
+        1, 2, 3
+    };
+
     void GetDebugImage(ImageT& OutImage)
     {
         unsigned int DebugImageLength = 16;
@@ -208,7 +208,7 @@ namespace Leviathan
         return Result;
     }
 
-    void InitGraphics()
+    void Graphics::Init()
     {
         D3D_FEATURE_LEVEL SupportedFeatureLevels[] =
         {
@@ -217,7 +217,7 @@ namespace Leviathan
         };
         UINT NumSupportedFeatureLevels = ARRAY_SIZE(SupportedFeatureLevels);
 
-        CreateDXGIFactory1(__uuidof(IDXGIFactory2), (void**)&DXGI_Factory2);
+        CreateDXGIFactory1(DX_UUID_HELPER(IDXGIFactory2, DXGI_Factory2));
 
         UINT CreateDeviceFlags = 0;
     #ifdef _DEBUG
@@ -264,7 +264,7 @@ namespace Leviathan
             &DXGI_SwapChain1
         ));
 
-        DX_CHECK(DXGI_SwapChain1->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&DX_Backbuffer));
+        DX_CHECK(DXGI_SwapChain1->GetBuffer(0, DX_UUID_HELPER(ID3D11Texture2D, DX_Backbuffer)));
 
         DX_CHECK(DX_Device->CreateRenderTargetView(DX_Backbuffer, nullptr, &DX_RenderTargetView));
 
@@ -464,7 +464,7 @@ namespace Leviathan
         }
     }
 
-    void UpdateAndDraw()
+    void Graphics::UpdateAndDraw()
     {
         DX_ImmediateContext->RSSetState(DX_RasterizerState);
         DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
@@ -538,7 +538,7 @@ namespace Leviathan
         DXGI_SwapChain1->Present1(SyncInterval, PresentFlags, &PresentParams);
     }
 
-    void TermGraphics()
+    void Graphics::Term()
     {
         DX_SAFE_RELEASE(DX_VertexBufferTriangle);
         DX_SAFE_RELEASE(DX_IndexBufferTriangle);
@@ -574,7 +574,7 @@ namespace Leviathan
         if (DX_Device)
         {
             ID3D11Debug* DX_Debug = nullptr;
-            DX_Device->QueryInterface(__uuidof(ID3D11Debug), (void**)&DX_Debug);
+            DX_Device->QueryInterface(DX_UUID_HELPER(ID3D11Debug, DX_Debug));
             if (DX_Debug) { DX_Debug->ReportLiveDeviceObjects(D3D11_RLDO_IGNORE_INTERNAL); }
             DX_SAFE_RELEASE(DX_Debug);
         }

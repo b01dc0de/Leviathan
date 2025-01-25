@@ -21,6 +21,17 @@ namespace Leviathan
     extern HWND AppWindow;
 }
 
+#define ASSERT(Expr) if (!(Expr)) { DebugBreak(); /* TODO: Log */ }
+#define ARRAY_SIZE(Array) (sizeof(Array) / sizeof(Array[0]))
+#define APPNAMEW() (L"Leviathan")
+#define APPNAMEA() ("Leviathan")
+#if UNICODE
+    #define APPNAME() APPNAMEW()
+#else // UNICODE
+    #define APPNAME() APPNAMEA()
+#endif // UNICODE
+
+#include "Engine.h"
 #include "Math.h"
 
 #endif // LEVIATHAN_H

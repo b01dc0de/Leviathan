@@ -37,8 +37,8 @@
 #endif // ENABLE_WVP_TRANSFORM
 
 #if ENABLE_VERTEX_TEXTURE
-Texture2D MainTexture : register(t0);
-SamplerState MainSampler : register(s0);
+    Texture2D MainTexture : register(t0);
+    SamplerState MainSampler : register(s0);
 #endif // ENABLE_VERTEX_TEXTURE
 
 struct VS_INPUT
