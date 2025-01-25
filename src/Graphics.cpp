@@ -26,7 +26,16 @@ namespace Leviathan
     ID3D11PixelShader* DX_PixelShaderTexture = nullptr;
     ID3D11InputLayout* DX_InputLayoutTexture = nullptr;
 
+#define DX_COMBINED_WVP_BUFFER() (0)
+#if DX_COMBINED_WVP_BUFFER()
     ID3D11Buffer* DX_WVPBuffer = nullptr;
+    const int WVPBufferSlot = 0;
+#else // DX_COMBINED_WVP_BUFFER()
+    ID3D11Buffer* DX_WBuffer = nullptr;
+    ID3D11Buffer* DX_VPBuffer = nullptr;
+    const int WBufferSlot = 0;
+    const int VPBufferSlot = 1;
+#endif // DX_COMBINED_WVP_BUFFER()
 
     ID3D11Buffer* DX_VertexBufferTriangle = nullptr;
     ID3D11Buffer* DX_IndexBufferTriangle = nullptr;
@@ -106,6 +115,11 @@ namespace Leviathan
     struct WVPData
     {
         m4f World;
+        m4f View;
+        m4f Proj;
+    };
+    struct VPData
+    {
         m4f View;
         m4f Proj;
     };
@@ -343,6 +357,7 @@ namespace Leviathan
                 "ENABLE_VERTEX_COLOR", "1",
                 "ENABLE_VERTEX_TEXTURE", "0",
                 "ENABLE_WVP_TRANSFORM", "1",
+                "COMBINED_WVP_BUFFER", DX_COMBINED_WVP_BUFFER() ? "1" : "0",
                 nullptr, nullptr
             };
             DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "VSMain", "vs_5_0", &VSBlob, DefinesVxColor));
@@ -374,6 +389,7 @@ namespace Leviathan
                 "ENABLE_VERTEX_COLOR", "0",
                 "ENABLE_VERTEX_TEXTURE", "1",
                 "ENABLE_WVP_TRANSFORM", "1",
+                "COMBINED_WVP_BUFFER", DX_COMBINED_WVP_BUFFER() ? "1" : "0",
                 nullptr, nullptr
             };
             DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "VSMain", "vs_5_0", &VSBlob, DefinesVxTexture));
@@ -396,12 +412,27 @@ namespace Leviathan
             DX_SAFE_RELEASE(PSBlob);
         }
 
+    #if DX_COMBINED_WVP_BUFFER()
         D3D11_BUFFER_DESC WVPBufferDesc = {};
         WVPBufferDesc.ByteWidth = sizeof(WVPData);
         WVPBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         WVPBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         WVPBufferDesc.CPUAccessFlags = 0;
         DX_CHECK(DX_Device->CreateBuffer(&WVPBufferDesc, nullptr, &DX_WVPBuffer));
+    #else // DX_COMBINED_WVP_BUFFER()
+        D3D11_BUFFER_DESC WorldBufferDesc = {};
+        WorldBufferDesc.ByteWidth = sizeof(m4f);
+        WorldBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+        WorldBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        WorldBufferDesc.CPUAccessFlags = 0;
+        D3D11_BUFFER_DESC ViewProjBufferDesc = {};
+        ViewProjBufferDesc.ByteWidth = sizeof(VPData);
+        ViewProjBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+        ViewProjBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        ViewProjBufferDesc.CPUAccessFlags = 0;
+        DX_CHECK(DX_Device->CreateBuffer(&WorldBufferDesc, nullptr, &DX_WBuffer));
+        DX_CHECK(DX_Device->CreateBuffer(&ViewProjBufferDesc, nullptr, &DX_VPBuffer));
+    #endif // DX_COMBINED_WVP_BUFFER()
 
         {
             D3D11_BUFFER_DESC VertexBufferDesc = { sizeof(Vertices_Triangle), D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0 };
@@ -414,7 +445,6 @@ namespace Leviathan
         }
 
         {
-
             ImageT DebugImage = {};
             GetDebugImage(DebugImage);
 
@@ -460,10 +490,6 @@ namespace Leviathan
             D3D11_SUBRESOURCE_DATA IndexBufferInitData = { Indices_Quad, 0, 0 };
             DX_CHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBufferQuad));
         }
-
-        {
-
-        }
     }
 
     void UpdateAndDraw()
@@ -481,10 +507,16 @@ namespace Leviathan
             { 0.0f, 0.0f, 1.0f, 0.0f },
             { 0.0f, 0.0f, 0.0f, 1.0f },
         };
-        WVPData WVP = { IdentityMatrix, IdentityMatrix, IdentityMatrix };
 
-        const int WVPBufferSlot = 0;
+    #if DX_COMBINED_WVP_BUFFER()
+        WVPData WVP = { IdentityMatrix, IdentityMatrix, IdentityMatrix };
         DX_ImmediateContext->UpdateSubresource(DX_WVPBuffer, 0, nullptr, &WVP, sizeof(WVPData), 0);
+    #else // DX_COMBINED_WVP_BUFFER()
+        m4f W = IdentityMatrix;
+        VPData VP = { IdentityMatrix, IdentityMatrix };
+        DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &W, sizeof(m4f), 0);
+        DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &VP, sizeof(VPData), 0);
+    #endif // DX_COMBINED_WVP_BUFFER()
 
         { // Draw triangle
             UINT Offset = 0;
@@ -495,8 +527,13 @@ namespace Leviathan
             DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
             DX_ImmediateContext->VSSetShader(DX_VertexShaderColor, nullptr, 0);
-            DX_ImmediateContext->PSSetShader(DX_PixelShaderColor, nullptr, 0);
+        #if DX_COMBINED_WVP_BUFFER()
             DX_ImmediateContext->VSSetConstantBuffers(WVPBufferSlot, 1, &DX_WVPBuffer);
+        #else // DX_COMBINED_WVP_BUFFER()
+            DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
+            DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
+        #endif // DX_COMBINED_WVP_BUFFER()
+            DX_ImmediateContext->PSSetShader(DX_PixelShaderColor, nullptr, 0);
 
             DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Triangle), 0u, 0u);
         }
@@ -510,7 +547,12 @@ namespace Leviathan
             DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
             DX_ImmediateContext->VSSetShader(DX_VertexShaderTexture, nullptr, 0);
+        #if DX_COMBINED_WVP_BUFFER()
             DX_ImmediateContext->VSSetConstantBuffers(WVPBufferSlot, 1, &DX_WVPBuffer);
+        #else // DX_COMBINED_WVP_BUFFER()
+            DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
+            DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
+        #endif // DX_COMBINED_WVP_BUFFER()
             DX_ImmediateContext->PSSetShader(DX_PixelShaderTexture, nullptr, 0);
             DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_DebugTextureSRV);
             DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
@@ -529,11 +571,23 @@ namespace Leviathan
         DX_SAFE_RELEASE(DX_VertexBufferTriangle);
         DX_SAFE_RELEASE(DX_IndexBufferTriangle);
 
+        DX_SAFE_RELEASE(DX_VertexBufferQuad);
+        DX_SAFE_RELEASE(DX_IndexBufferQuad);
+
+    #if DX_COMBINED_WVP_BUFFER()
         DX_SAFE_RELEASE(DX_WVPBuffer);
+    #else // DX_COMBINED_WVP_BUFFER()
+        DX_SAFE_RELEASE(DX_WBuffer);
+        DX_SAFE_RELEASE(DX_VPBuffer);
+    #endif // DX_COMBINED_WVP_BUFFER()
 
         DX_SAFE_RELEASE(DX_VertexShaderColor);
         DX_SAFE_RELEASE(DX_PixelShaderColor);
         DX_SAFE_RELEASE(DX_InputLayoutColor);
+
+        DX_SAFE_RELEASE(DX_VertexShaderTexture);
+        DX_SAFE_RELEASE(DX_PixelShaderTexture);
+        DX_SAFE_RELEASE(DX_InputLayoutTexture);
 
         DX_SAFE_RELEASE(DXGI_SwapChain1);
         DX_SAFE_RELEASE(DX_Backbuffer);
