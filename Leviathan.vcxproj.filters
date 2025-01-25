@@ -21,6 +21,9 @@
     <ClCompile Include="src\Engine.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Input.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -33,6 +36,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Input.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

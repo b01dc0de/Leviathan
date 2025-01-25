@@ -133,12 +133,14 @@
   <ItemGroup>
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
+    <ClCompile Include="src\Input.cpp" />
     <ClCompile Include="src\Leviathan.cpp" />
     <ClCompile Include="src\Math.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Graphics.h" />
+    <ClInclude Include="src\Input.h" />
     <ClInclude Include="src\Leviathan.h" />
     <ClInclude Include="src\Math.h" />
   </ItemGroup>

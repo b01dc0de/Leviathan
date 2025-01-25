@@ -15,10 +15,11 @@ namespace Leviathan
         {
             case WM_KEYUP:
             {
-                if (wParam == VK_ESCAPE)
-                {
-                    bAppRunning = false;
-                }
+                KeyboardState::SetKeyUp(wParam);
+            } break;
+            case WM_KEYDOWN:
+            {
+                KeyboardState::SetKeyDown(wParam);
             } break;
             case WM_CLOSE:
             {
@@ -109,6 +110,11 @@ namespace Leviathan
         {
             WindowMsgLoop(AppWindow);
             Graphics::UpdateAndDraw();
+
+            if (KeyboardState::GetKeyState(VK_ESCAPE))
+            {
+                bAppRunning = false;
+            }
         }
     }
 

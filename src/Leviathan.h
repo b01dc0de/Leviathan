@@ -32,6 +32,7 @@ namespace Leviathan
 #endif // UNICODE
 
 #include "Engine.h"
+#include "Input.h"
 #include "Math.h"
 
 #endif // LEVIATHAN_H
