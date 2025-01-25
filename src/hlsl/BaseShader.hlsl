@@ -8,13 +8,18 @@
 #ifndef ENABLE_VERTEX_TEXTURE
     #define ENABLE_VERTEX_TEXTURE (0)
 #endif // ENABLE_VERTEX_TEXTURE
+#ifndef ENABLE_WVP_TRANSFORM
+    #define ENABLE_WVP_TRANSFORM (0)
+#endif // ENABLE_WVP_TRANSFORM
 
+#if ENABLE_WVP_TRANSFORM
 cbuffer WorldViewProjBuffer : register(b0)
 {
     matrix World;
     matrix View;
     matrix Proj;
 }
+#endif // ENABLE_WVP_TRANSFORM
 
 #if ENABLE_VERTEX_TEXTURE
 Texture2D MainTexture : register(t0);
@@ -46,9 +51,12 @@ struct VS_OUTPUT
 VS_OUTPUT VSMain(VS_INPUT Input)
 {
     VS_OUTPUT Output;
-    Output.Pos = mul(Input.Pos, World);
+    Output.Pos = Input.Pos;
+#if ENABLE_WVP_TRANSFORM
+    Output.Pos = mul(Output.Pos, World);
     Output.Pos = mul(Output.Pos, View);
     Output.Pos = mul(Output.Pos, Proj);
+#endif // ENABLE_WVP_TRANSFORM
 #if ENABLE_VERTEX_COLOR
     Output.RGBA = Input.RGBA;
 #endif // ENABLE_VERTEX_COLOR

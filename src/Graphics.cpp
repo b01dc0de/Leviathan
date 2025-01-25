@@ -342,6 +342,7 @@ namespace Leviathan
             {
                 "ENABLE_VERTEX_COLOR", "1",
                 "ENABLE_VERTEX_TEXTURE", "0",
+                "ENABLE_WVP_TRANSFORM", "1",
                 nullptr, nullptr
             };
             DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "VSMain", "vs_5_0", &VSBlob, DefinesVxColor));
@@ -372,6 +373,7 @@ namespace Leviathan
             {
                 "ENABLE_VERTEX_COLOR", "0",
                 "ENABLE_VERTEX_TEXTURE", "1",
+                "ENABLE_WVP_TRANSFORM", "1",
                 nullptr, nullptr
             };
             DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "VSMain", "vs_5_0", &VSBlob, DefinesVxTexture));
