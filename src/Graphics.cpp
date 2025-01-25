@@ -26,7 +26,7 @@ namespace Leviathan
     ID3D11PixelShader* DX_PixelShaderTexture = nullptr;
     ID3D11InputLayout* DX_InputLayoutTexture = nullptr;
 
-#define DX_COMBINED_WVP_BUFFER() (0)
+#define DX_COMBINED_WVP_BUFFER() (1)
 #if DX_COMBINED_WVP_BUFFER()
     ID3D11Buffer* DX_WVPBuffer = nullptr;
     const int WVPBufferSlot = 0;
@@ -47,27 +47,6 @@ namespace Leviathan
     ID3D11Buffer* DX_IndexBufferQuad = nullptr;
 
     D3D_FEATURE_LEVEL UsedFeatureLevel;
-
-    struct v2f
-    {
-        float X;
-        float Y;
-    };
-
-    struct v3f
-    {
-        float X;
-        float Y;
-        float Z;
-    };
-
-    struct v4f
-    {
-        float X;
-        float Y;
-        float Z;
-        float W;
-    };
 
     struct VxColor
     {
@@ -105,13 +84,6 @@ namespace Leviathan
         1, 2, 3
     };
 
-    struct m4f
-    {
-        v4f R0;
-        v4f R1;
-        v4f R2;
-        v4f R3;
-    };
     struct WVPData
     {
         m4f World;

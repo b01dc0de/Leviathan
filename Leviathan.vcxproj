@@ -133,10 +133,12 @@
   <ItemGroup>
     <ClCompile Include="src\Graphics.cpp" />
     <ClCompile Include="src\Leviathan.cpp" />
+    <ClCompile Include="src\Math.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics.h" />
     <ClInclude Include="src\Leviathan.h" />
+    <ClInclude Include="src\Math.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\hlsl\BaseShader.hlsl">
