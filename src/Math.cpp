@@ -2,14 +2,25 @@
 
 namespace Leviathan
 {
+    float LengthSq(const v2f& A)
+    {
+        float Result = A.X*A.X + A.Y*A.Y;
+        return Result;
+    }
+    float LengthSq(const v3f& A)
+    {
+        float Result = A.X*A.X + A.Y*A.Y + A.Z*A.Z;
+        return Result;
+    }
+
     float Length(const v2f& A)
     {
-        float Result = sqrtf(A.X * A.X + A.Y * A.Y);
+        float Result = sqrtf(LengthSq(A));
         return Result;
     }
     float Length(const v3f& A)
     {
-        float Result = sqrtf(A.X*A.X + A.Y*A.Y + A.Z*A.Z);
+        float Result = sqrtf(LengthSq(A));
         return Result;
     }
 
@@ -48,6 +59,24 @@ namespace Leviathan
     {
         v2f Result{ A.X - B.X, A.Y - B.Y };
         return Result;
+    }
+
+    v2f operator+(const v2f& A, const v2f& B)
+    {
+        return Add(A, B);
+    }
+    v3f operator+(const v3f& A, const v3f& B)
+    {
+        return Add(A, B);
+    }
+
+    v2f operator-(const v2f& A, const v2f& B)
+    {
+        return Subtract(A, B);
+    }
+    v3f operator-(const v3f& A, const v3f& B)
+    {
+        return Subtract(A, B);
     }
 
     float Dot(const v2f& A, const v2f& B)
