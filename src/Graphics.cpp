@@ -53,6 +53,7 @@ namespace Leviathan
     ID2D1RenderTarget* D2_RenderTarget = nullptr;
     ID2D1LinearGradientBrush* D2_LinearGradientBrush = nullptr;
     ID2D1GradientStopCollection* D2_GradientStops = nullptr;
+    ID2D1SolidColorBrush* D2_LightGrayBrush = nullptr;
 
     struct VxColor
     {
@@ -492,6 +493,9 @@ namespace Leviathan
             DX_CHECK(D2_RenderTarget->CreateLinearGradientBrush(
                 D2D1::LinearGradientBrushProperties(D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(1.0, 1.0f)),
                 D2_GradientStops, &D2_LinearGradientBrush));
+
+            D2D1_COLOR_F LightGrayColor = D2D1::ColorF(0xE1E6EF);
+            D2_RenderTarget->CreateSolidColorBrush(LightGrayColor, &D2_LightGrayBrush);
         }
     }
 
@@ -528,9 +532,38 @@ namespace Leviathan
             D2D1_SIZE_F TargetSize = D2_RenderTarget->GetSize();
 
             D2_RenderTarget->BeginDraw();
-            D2_LinearGradientBrush->SetTransform(D2D1::Matrix3x2F::Scale(TargetSize));
-            D2D1_RECT_F Rect = D2D1::RectF(0.0f, 0.0f, TargetSize.width, TargetSize.height);
-            D2_RenderTarget->FillRectangle(&Rect, D2_LinearGradientBrush);
+
+            static bool bDrawGradientBG = true;
+            if (bDrawGradientBG)
+            {
+                D2_LinearGradientBrush->SetTransform(D2D1::Matrix3x2F::Scale(TargetSize));
+                D2D1_RECT_F Rect = D2D1::RectF(0.0f, 0.0f, TargetSize.width, TargetSize.height);
+                D2_RenderTarget->FillRectangle(&Rect, D2_LinearGradientBrush);
+            }
+
+            static bool bDrawGridBG = true;
+            if (bDrawGridBG)
+            {
+                const int GridX = 16;
+                const int GridY = 9;
+                const float CellSizeX = TargetSize.width / (float)GridX;
+                const float CellSizeY = TargetSize.height / (float)GridY;
+                const FLOAT StrokeWidth = 1.0f;
+                ID2D1StrokeStyle* StrokeStyle = nullptr;
+                for (int ColIdx = 1; ColIdx < GridX; ColIdx++)
+                {
+                    D2D1_POINT_2F StartPoint = D2D1::Point2F(CellSizeX * ColIdx, 0.0f);
+                    D2D1_POINT_2F EndPoint = D2D1::Point2F(CellSizeX * ColIdx, TargetSize.height);
+                    D2_RenderTarget->DrawLine(StartPoint, EndPoint, D2_LightGrayBrush, StrokeWidth, StrokeStyle);
+                }
+                for (int RowIdx = 1; RowIdx < GridY; RowIdx++)
+                {
+                    D2D1_POINT_2F StartPoint = D2D1::Point2F(0.0f, CellSizeY * RowIdx);
+                    D2D1_POINT_2F EndPoint = D2D1::Point2F(TargetSize.width, CellSizeY * RowIdx);
+                    D2_RenderTarget->DrawLine(StartPoint, EndPoint, D2_LightGrayBrush, StrokeWidth, StrokeStyle);
+                }
+            }
+
             DX_CHECK(D2_RenderTarget->EndDraw());
         }
 
@@ -590,6 +623,7 @@ namespace Leviathan
             DX_SAFE_RELEASE(D2_RenderTarget);
             DX_SAFE_RELEASE(D2_LinearGradientBrush);
             DX_SAFE_RELEASE(D2_GradientStops);
+            DX_SAFE_RELEASE(D2_LightGrayBrush);
         }
 
         DX_SAFE_RELEASE(DX_VertexBufferTriangle);
