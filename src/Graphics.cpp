@@ -47,6 +47,13 @@ namespace Leviathan
 
     D3D_FEATURE_LEVEL UsedFeatureLevel;
 
+    // Direct2D:
+    ID2D1Factory* D2_Factory = nullptr;
+    IDXGISurface* DXGI_Surface = nullptr;
+    ID2D1RenderTarget* D2_RenderTarget = nullptr;
+    ID2D1LinearGradientBrush* D2_LinearGradientBrush = nullptr;
+    ID2D1GradientStopCollection* D2_GradientStops = nullptr;
+
     struct VxColor
     {
         v4f Pos;
@@ -219,7 +226,7 @@ namespace Leviathan
 
         CreateDXGIFactory1(DX_UUID_HELPER(IDXGIFactory2, DXGI_Factory2));
 
-        UINT CreateDeviceFlags = 0;
+        UINT CreateDeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
     #ifdef _DEBUG
         CreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
     #endif // _DEBUG
@@ -462,6 +469,30 @@ namespace Leviathan
             D3D11_SUBRESOURCE_DATA IndexBufferInitData = { Indices_Quad, 0, 0 };
             DX_CHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBufferQuad));
         }
+
+        { // Direct2D
+            DX_CHECK(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &D2_Factory));
+            DX_CHECK(DXGI_SwapChain1->GetBuffer(0, DX_UUID_HELPER(IDXGISurface, DXGI_Surface)));
+            D2D1_RENDER_TARGET_PROPERTIES D2_RT_Properties = D2D1::RenderTargetProperties(
+                D2D1_RENDER_TARGET_TYPE_DEFAULT,
+                D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
+                0, 0
+            );
+            DX_CHECK(D2_Factory->CreateDxgiSurfaceRenderTarget(
+                DXGI_Surface,
+                &D2_RT_Properties,
+                &D2_RenderTarget 
+            ));
+            D2D1_GRADIENT_STOP GradientBrushStops[] =
+            {
+                {0.0f, D2D1::ColorF(D2D1::ColorF::MidnightBlue, 1)},
+                {1.0f, D2D1::ColorF(D2D1::ColorF::DarkViolet, 1)},
+            };
+            DX_CHECK(D2_RenderTarget->CreateGradientStopCollection(GradientBrushStops, ARRAY_SIZE(GradientBrushStops), D2D1_GAMMA_2_2, D2D1_EXTEND_MODE_CLAMP, &D2_GradientStops));
+            DX_CHECK(D2_RenderTarget->CreateLinearGradientBrush(
+                D2D1::LinearGradientBrushProperties(D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(1.0, 1.0f)),
+                D2_GradientStops, &D2_LinearGradientBrush));
+        }
     }
 
     void Graphics::UpdateAndDraw()
@@ -489,6 +520,19 @@ namespace Leviathan
         DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &W, sizeof(m4f), 0);
         DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &VP, sizeof(VPData), 0);
     #endif // DX_COMBINED_WVP_BUFFER()
+
+        { // Direct2D background
+            DXGI_SWAP_CHAIN_DESC SwapChainDesc = {};
+            DX_CHECK(DXGI_SwapChain1->GetDesc(&SwapChainDesc));
+
+            D2D1_SIZE_F TargetSize = D2_RenderTarget->GetSize();
+
+            D2_RenderTarget->BeginDraw();
+            D2_LinearGradientBrush->SetTransform(D2D1::Matrix3x2F::Scale(TargetSize));
+            D2D1_RECT_F Rect = D2D1::RectF(0.0f, 0.0f, TargetSize.width, TargetSize.height);
+            D2_RenderTarget->FillRectangle(&Rect, D2_LinearGradientBrush);
+            DX_CHECK(D2_RenderTarget->EndDraw());
+        }
 
         { // Draw triangle
             UINT Offset = 0;
@@ -540,6 +584,14 @@ namespace Leviathan
 
     void Graphics::Term()
     {
+        { // Direct2D:
+            DX_SAFE_RELEASE(D2_Factory);
+            DX_SAFE_RELEASE(DXGI_Surface);
+            DX_SAFE_RELEASE(D2_RenderTarget);
+            DX_SAFE_RELEASE(D2_LinearGradientBrush);
+            DX_SAFE_RELEASE(D2_GradientStops);
+        }
+
         DX_SAFE_RELEASE(DX_VertexBufferTriangle);
         DX_SAFE_RELEASE(DX_IndexBufferTriangle);
 
