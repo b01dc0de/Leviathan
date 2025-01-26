@@ -107,7 +107,7 @@ namespace Leviathan
 
     struct InputVisualizer
     {
-        static void Draw(ID2D1RenderTarget* D2_RenderTarget);
+        static void Draw(ID2D1RenderTarget* D2_RenderTarget, ID2D1Brush* InBrush);
     };
 }
 

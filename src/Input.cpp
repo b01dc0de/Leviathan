@@ -307,7 +307,7 @@ namespace Leviathan
             {
                 bKeyFound = true;
             }
-            if (bKeyFound && KeyIdx < (ActiveCount - 1))
+            if (bKeyFound && KeyIdx <= (ActiveCount - 1))
             {
                 ActiveKeys[KeyIdx] = ActiveKeys[KeyIdx + 1];
             }
@@ -328,7 +328,7 @@ namespace Leviathan
             {
                 return;
             }
-            if (ActiveKeys[KeyIdx] == 0)
+            if (ActiveKeys[KeyIdx] == LV_KEY_NONE)
             {
                 ActiveKeys[KeyIdx] = LvCode;
                 ActiveCount++;
@@ -337,8 +337,26 @@ namespace Leviathan
         }
     }
 
-    void InputVisualizer::Draw(ID2D1RenderTarget* D2_RenderTarget)
+    void InputVisualizer::Draw(ID2D1RenderTarget* D2_RenderTarget, ID2D1Brush* InBrush)
     {
         // TODO: Implement (draw the owl)
+        bool bIsDown = KeyboardState::GetKeyState(LV_KEY_ARROW_UP);
+        v2f KeyPos{AppWidth - 100.0f, 100.0f};
+        float HalfKeySize = 25.0f;
+        D2D1_RECT_F KeyRect
+        {
+            KeyPos.X - HalfKeySize,
+            KeyPos.Y - HalfKeySize,
+            KeyPos.X + HalfKeySize,
+            KeyPos.Y + HalfKeySize
+        };
+        if (bIsDown)
+        {
+            D2_RenderTarget->FillRectangle(&KeyRect, InBrush);
+        }
+        else
+        {
+            D2_RenderTarget->DrawRectangle(&KeyRect, InBrush, 1.0f, nullptr);
+        }
     }
 }
