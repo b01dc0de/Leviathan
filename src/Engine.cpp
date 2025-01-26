@@ -111,7 +111,7 @@ namespace Leviathan
             WindowMsgLoop(AppWindow);
             Graphics::UpdateAndDraw();
 
-            if (KeyboardState::GetKeyState(VK_ESCAPE))
+            if (KeyboardState::GetKeyState(LV_KEY_ESC))
             {
                 bAppRunning = false;
             }
