@@ -301,23 +301,36 @@ namespace Leviathan
         if (LvCode == LV_KEY_NONE) { return; }
 
         bool bKeyFound = false;
-        for (int KeyIdx = 0; KeyIdx < ActiveCount; KeyIdx++)
+        int KeyIdx = 0;
+        while (KeyIdx < ActiveCount)
         {
             if (ActiveKeys[KeyIdx] == LvCode)
             {
                 bKeyFound = true;
+                break;
             }
-            if (bKeyFound && KeyIdx <= (ActiveCount - 1))
+            KeyIdx++;
+        }
+        while (KeyIdx < ActiveCount)
+        {
+            if (KeyIdx == ActiveCount - 1)
+            {
+                ActiveKeys[KeyIdx] = LV_KEY_NONE;
+            }
+            else
             {
                 ActiveKeys[KeyIdx] = ActiveKeys[KeyIdx + 1];
             }
+            KeyIdx++;
         }
         if (bKeyFound) { ActiveCount--; }
     }
 
     void KeyboardState::SetKeyDown(int VkCode)
     {
-        if (ActiveCount == KeyCount) { return; }
+        if (ActiveCount == KeyCount) {
+            return;
+        }
 
         LvKeyCode LvCode = VkToLv(VkCode);
         if (LvCode == LV_KEY_NONE) { return; }
@@ -345,6 +358,7 @@ namespace Leviathan
 
     struct VisualKeyboard
     {
+        static constexpr float KeySize = 25.0f;
         static VisualKey Row0[LV_KEY_F12 - LV_KEY_ESC + 1];
         static VisualKey Row1[LV_KEY_BACKSPACE - LV_KEY_GRAVE + 1];
         static VisualKey Row2[LV_KEY_BACKSLASH - LV_KEY_TAB + 1];
@@ -356,31 +370,29 @@ namespace Leviathan
         static void DrawKeyboard(ID2D1RenderTarget* InRT, ID2D1Brush* InBrush);
     };
 
-    VisualKey VisualKeyboard::Row0[] = {
-        {LV_KEY_ESC},
+    VisualKey VisualKeyboard::Row0[] = { {LV_KEY_ESC},
         {LV_KEY_F1}, {LV_KEY_F2}, {LV_KEY_F3}, {LV_KEY_F4},
         {LV_KEY_F5}, {LV_KEY_F6}, {LV_KEY_F7}, {LV_KEY_F8},
         {LV_KEY_F9}, {LV_KEY_F10}, {LV_KEY_F11}, {LV_KEY_F12},
     };
-    VisualKey VisualKeyboard::Row1[] = {
-        {LV_KEY_GRAVE}, {LV_KEY_1}, {LV_KEY_2}, {LV_KEY_3}, {LV_KEY_4},
-        {LV_KEY_5}, {LV_KEY_6}, {LV_KEY_7}, {LV_KEY_8}, {LV_KEY_9},
-        {LV_KEY_0}, {LV_KEY_MINUS}, {LV_KEY_EQUALS}, {LV_KEY_BACKSPACE}
+    VisualKey VisualKeyboard::Row1[] = { {LV_KEY_GRAVE},
+        {LV_KEY_1}, {LV_KEY_2}, {LV_KEY_3}, {LV_KEY_4}, {LV_KEY_5},
+        {LV_KEY_6}, {LV_KEY_7}, {LV_KEY_8}, {LV_KEY_9}, {LV_KEY_0},
+        {LV_KEY_MINUS}, {LV_KEY_EQUALS}, {LV_KEY_BACKSPACE}
     };
-    VisualKey VisualKeyboard::Row2[] = {
-        {LV_KEY_TAB}, {LV_KEY_Q}, {LV_KEY_W}, {LV_KEY_E}, {LV_KEY_R},
-        {LV_KEY_T}, {LV_KEY_Y}, {LV_KEY_U}, {LV_KEY_I}, {LV_KEY_O},
-        {LV_KEY_P}, {LV_KEY_LEFT_BRACKET}, {LV_KEY_RIGHT_BRACKET}, {LV_KEY_BACKSLASH}
+    VisualKey VisualKeyboard::Row2[] = { {LV_KEY_TAB},
+        {LV_KEY_Q}, {LV_KEY_W}, {LV_KEY_E}, {LV_KEY_R}, {LV_KEY_T},
+        {LV_KEY_Y}, {LV_KEY_U}, {LV_KEY_I}, {LV_KEY_O}, {LV_KEY_P},
+        {LV_KEY_LEFT_BRACKET}, {LV_KEY_RIGHT_BRACKET}, {LV_KEY_BACKSLASH}
     };
-    VisualKey VisualKeyboard::Row3[] = {
-        {LV_KEY_CAPSLOCK}, {LV_KEY_A}, {LV_KEY_S}, {LV_KEY_D}, {LV_KEY_F},
-        {LV_KEY_G}, {LV_KEY_H}, {LV_KEY_J}, {LV_KEY_K}, {LV_KEY_L},
+    VisualKey VisualKeyboard::Row3[] = { {LV_KEY_CAPSLOCK},
+        {LV_KEY_A}, {LV_KEY_S}, {LV_KEY_D}, {LV_KEY_F}, {LV_KEY_G},
+        {LV_KEY_H}, {LV_KEY_J}, {LV_KEY_K}, {LV_KEY_L},
         {LV_KEY_SEMICOLON}, {LV_KEY_QUOTE}, {LV_KEY_ENTER},
     };
-    VisualKey VisualKeyboard::Row4[] = {
-        {LV_KEY_LEFT_SHIFT}, {LV_KEY_Z}, {LV_KEY_X}, {LV_KEY_C},
-        {LV_KEY_V}, {LV_KEY_B}, {LV_KEY_N}, {LV_KEY_M}, {LV_KEY_COMMA},
-        {LV_KEY_PERIOD}, {LV_KEY_SLASH}, {LV_KEY_RIGHT_SHIFT},
+    VisualKey VisualKeyboard::Row4[] = { {LV_KEY_LEFT_SHIFT},
+        {LV_KEY_Z}, {LV_KEY_X}, {LV_KEY_C}, {LV_KEY_V}, {LV_KEY_B}, {LV_KEY_N}, {LV_KEY_M},
+        {LV_KEY_COMMA}, {LV_KEY_PERIOD}, {LV_KEY_SLASH}, {LV_KEY_RIGHT_SHIFT},
     };
     VisualKey VisualKeyboard::Row5[] = {
         {LV_KEY_LEFT_CTRL}, {LV_KEY_LEFT_SUPER}, {LV_KEY_LEFT_ALT},
@@ -409,7 +421,6 @@ namespace Leviathan
 
     void VisualKeyboard::DrawRow(ID2D1RenderTarget* InRT, ID2D1Brush* InBrush, const VisualKey* Row, int KeyCount, const v2f& Pos)
     {
-        float KeySize = 25.0f;
         float HalfKeySize = KeySize * 0.5f;
         float KeyX = Pos.X;
         for (int KeyIdx = 0; KeyIdx < KeyCount; KeyIdx++)
@@ -424,7 +435,6 @@ namespace Leviathan
     void VisualKeyboard::DrawKeyboard(ID2D1RenderTarget* InRT, ID2D1Brush* InBrush)
     {
         float StartX = 800.0f;
-        float KeySize = 25.0f;
         v2f Row0_Pos{ StartX, KeySize };
         v2f Row1_Pos{ StartX, KeySize * 2.0f };
         v2f Row2_Pos{ StartX, KeySize * 3.0f };

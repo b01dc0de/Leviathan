@@ -85,7 +85,7 @@ namespace Leviathan
         LV_KEY_RIGHT_ALT,
         LV_KEY_RIGHT_SUPER,
         LV_KEY_RIGHT_CTRL,
-        // Arrow LV_KEYs
+        // Arrow keys
         LV_KEY_ARROW_UP,
         LV_KEY_ARROW_LEFT,
         LV_KEY_ARROW_DOWN,
@@ -95,7 +95,7 @@ namespace Leviathan
 
     struct KeyboardState
     {
-        static constexpr int KeyCount = 8;
+        static constexpr int KeyCount = 16;
         static LvKeyCode ActiveKeys[KeyCount];
         static int ActiveCount;
 
