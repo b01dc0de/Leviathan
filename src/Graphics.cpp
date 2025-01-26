@@ -529,6 +529,8 @@ namespace Leviathan
         DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &VP, sizeof(VPData), 0);
     #endif // DX_COMBINED_WVP_BUFFER()
 
+        static bool bD2Background = true;
+        if (bD2Background)
         { // Direct2D background
             DXGI_SWAP_CHAIN_DESC SwapChainDesc = {};
             DX_CHECK(DXGI_SwapChain1->GetDesc(&SwapChainDesc));
@@ -566,12 +568,6 @@ namespace Leviathan
                     D2D1_POINT_2F EndPoint = D2D1::Point2F(TargetSize.width, CellSizeY * RowIdx);
                     D2_RenderTarget->DrawLine(StartPoint, EndPoint, D2_LightGrayBrush, StrokeWidth, StrokeStyle);
                 }
-            }
-
-            static bool bDrawInputVisualizerBG = true;
-            if (bDrawInputVisualizerBG)
-            {
-                InputVisualizer::Draw(D2_RenderTarget, D2_LightYellowBrush);
             }
 
             DX_CHECK(D2_RenderTarget->EndDraw());
@@ -618,6 +614,21 @@ namespace Leviathan
 
             DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Quad), 0u, 0u);
         }
+
+        static bool bD2Foreground = true;
+        if (bD2Background)
+        {
+            D2_RenderTarget->BeginDraw();
+
+            static bool bDrawInputVisualizerBG = true;
+            if (bDrawInputVisualizerBG)
+            {
+                InputVisualizer::Draw(D2_RenderTarget, D2_LightYellowBrush);
+            }
+
+            DX_CHECK(D2_RenderTarget->EndDraw());
+        }
+
 
         UINT SyncInterval = 0;
         UINT PresentFlags = 0;

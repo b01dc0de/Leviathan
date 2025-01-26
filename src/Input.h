@@ -48,7 +48,7 @@ namespace Leviathan
         LV_KEY_O,
         LV_KEY_P,
         LV_KEY_LEFT_BRACKET,
-        LV_KEY_RIGHT_BACKET,
+        LV_KEY_RIGHT_BRACKET,
         LV_KEY_BACKSLASH,
         // Row 4
         LV_KEY_CAPSLOCK,

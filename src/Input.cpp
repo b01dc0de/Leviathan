@@ -227,7 +227,7 @@ namespace Leviathan
         LV_KEY_NONE, // ----                       0xDA    Reserved
         LV_KEY_LEFT_BRACKET, // VK_OEM_4                   0xDB    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the [{ key
         LV_KEY_BACKSLASH, // VK_OEM_5                   0xDC    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the \\| key
-        LV_KEY_RIGHT_BACKET, // VK_OEM_6                   0xDD    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ]} key
+        LV_KEY_RIGHT_BRACKET, // VK_OEM_6                   0xDD    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ]} key
         LV_KEY_QUOTE, // VK_OEM_7                   0xDE    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '" key
         LV_KEY_NONE, // VK_OEM_8                   0xDF    Used for miscellaneous characters; it can vary by keyboard.
         LV_KEY_NONE, // ----                       0xE0    Reserved
@@ -337,12 +337,59 @@ namespace Leviathan
         }
     }
 
-    void InputVisualizer::Draw(ID2D1RenderTarget* D2_RenderTarget, ID2D1Brush* InBrush)
+    struct VisualKey
     {
-        // TODO: Implement (draw the owl)
-        bool bIsDown = KeyboardState::GetKeyState(LV_KEY_ARROW_UP);
-        v2f KeyPos{AppWidth - 100.0f, 100.0f};
-        float HalfKeySize = 25.0f;
+        LvKeyCode LvCode = LV_KEY_NONE;
+        v2f Size{ 1.0f, 1.0f };
+    };
+
+    struct VisualKeyboard
+    {
+        static VisualKey Row0[LV_KEY_F12 - LV_KEY_ESC + 1];
+        static VisualKey Row1[LV_KEY_BACKSPACE - LV_KEY_GRAVE + 1];
+        static VisualKey Row2[LV_KEY_BACKSLASH - LV_KEY_TAB + 1];
+        static VisualKey Row3[LV_KEY_ENTER - LV_KEY_CAPSLOCK + 1];
+        static VisualKey Row4[LV_KEY_RIGHT_SHIFT - LV_KEY_LEFT_SHIFT + 1];
+        static VisualKey Row5[LV_KEY_RIGHT_CTRL - LV_KEY_LEFT_CTRL + 1];
+        static void DrawKey(ID2D1RenderTarget* D2_RenderTarget, ID2D1Brush* InBrush, bool bIsDown, float HalfKeySize, const v2f& KeyPos);
+        static void DrawRow(ID2D1RenderTarget* InRT, ID2D1Brush* InBrush, const VisualKey* Row, int KeyCount, const v2f& Pos);
+        static void DrawKeyboard(ID2D1RenderTarget* InRT, ID2D1Brush* InBrush);
+    };
+
+    VisualKey VisualKeyboard::Row0[] = {
+        {LV_KEY_ESC},
+        {LV_KEY_F1}, {LV_KEY_F2}, {LV_KEY_F3}, {LV_KEY_F4},
+        {LV_KEY_F5}, {LV_KEY_F6}, {LV_KEY_F7}, {LV_KEY_F8},
+        {LV_KEY_F9}, {LV_KEY_F10}, {LV_KEY_F11}, {LV_KEY_F12},
+    };
+    VisualKey VisualKeyboard::Row1[] = {
+        {LV_KEY_GRAVE}, {LV_KEY_1}, {LV_KEY_2}, {LV_KEY_3}, {LV_KEY_4},
+        {LV_KEY_5}, {LV_KEY_6}, {LV_KEY_7}, {LV_KEY_8}, {LV_KEY_9},
+        {LV_KEY_0}, {LV_KEY_MINUS}, {LV_KEY_EQUALS}, {LV_KEY_BACKSPACE}
+    };
+    VisualKey VisualKeyboard::Row2[] = {
+        {LV_KEY_TAB}, {LV_KEY_Q}, {LV_KEY_W}, {LV_KEY_E}, {LV_KEY_R},
+        {LV_KEY_T}, {LV_KEY_Y}, {LV_KEY_U}, {LV_KEY_I}, {LV_KEY_O},
+        {LV_KEY_P}, {LV_KEY_LEFT_BRACKET}, {LV_KEY_RIGHT_BRACKET}, {LV_KEY_BACKSLASH}
+    };
+    VisualKey VisualKeyboard::Row3[] = {
+        {LV_KEY_CAPSLOCK}, {LV_KEY_A}, {LV_KEY_S}, {LV_KEY_D}, {LV_KEY_F},
+        {LV_KEY_G}, {LV_KEY_H}, {LV_KEY_J}, {LV_KEY_K}, {LV_KEY_L},
+        {LV_KEY_SEMICOLON}, {LV_KEY_QUOTE}, {LV_KEY_ENTER},
+    };
+    VisualKey VisualKeyboard::Row4[] = {
+        {LV_KEY_LEFT_SHIFT}, {LV_KEY_Z}, {LV_KEY_X}, {LV_KEY_C},
+        {LV_KEY_V}, {LV_KEY_B}, {LV_KEY_N}, {LV_KEY_M}, {LV_KEY_COMMA},
+        {LV_KEY_PERIOD}, {LV_KEY_SLASH}, {LV_KEY_RIGHT_SHIFT},
+    };
+    VisualKey VisualKeyboard::Row5[] = {
+        {LV_KEY_LEFT_CTRL}, {LV_KEY_LEFT_SUPER}, {LV_KEY_LEFT_ALT},
+        {LV_KEY_SPACE},
+        {LV_KEY_RIGHT_ALT}, {LV_KEY_RIGHT_SUPER}, {LV_KEY_RIGHT_CTRL}
+    };
+
+    void VisualKeyboard::DrawKey(ID2D1RenderTarget* D2_RenderTarget, ID2D1Brush* InBrush, bool bIsDown, float HalfKeySize, const v2f& KeyPos)
+    {
         D2D1_RECT_F KeyRect
         {
             KeyPos.X - HalfKeySize,
@@ -358,5 +405,55 @@ namespace Leviathan
         {
             D2_RenderTarget->DrawRectangle(&KeyRect, InBrush, 1.0f, nullptr);
         }
+    }
+
+    void VisualKeyboard::DrawRow(ID2D1RenderTarget* InRT, ID2D1Brush* InBrush, const VisualKey* Row, int KeyCount, const v2f& Pos)
+    {
+        float KeySize = 25.0f;
+        float HalfKeySize = KeySize * 0.5f;
+        float KeyX = Pos.X;
+        for (int KeyIdx = 0; KeyIdx < KeyCount; KeyIdx++)
+        {
+            const VisualKey& CurrKey = Row[KeyIdx];
+            v2f CurrKeyPos{ KeyX, Pos.Y };
+            DrawKey(InRT, InBrush, KeyboardState::GetKeyState(CurrKey.LvCode), HalfKeySize, CurrKeyPos);
+            KeyX += KeySize;
+        }
+    }
+
+    void VisualKeyboard::DrawKeyboard(ID2D1RenderTarget* InRT, ID2D1Brush* InBrush)
+    {
+        float StartX = 800.0f;
+        float KeySize = 25.0f;
+        v2f Row0_Pos{ StartX, KeySize };
+        v2f Row1_Pos{ StartX, KeySize * 2.0f };
+        v2f Row2_Pos{ StartX, KeySize * 3.0f };
+        v2f Row3_Pos{ StartX, KeySize * 4.0f };
+        v2f Row4_Pos{ StartX, KeySize * 5.0f };
+        v2f Row5_Pos{ StartX, KeySize * 6.0f };
+        DrawRow(InRT, InBrush, Row0, ARRAY_SIZE(Row0), Row0_Pos);
+        DrawRow(InRT, InBrush, Row1, ARRAY_SIZE(Row1), Row1_Pos);
+        DrawRow(InRT, InBrush, Row2, ARRAY_SIZE(Row2), Row2_Pos);
+        DrawRow(InRT, InBrush, Row3, ARRAY_SIZE(Row3), Row3_Pos);
+        DrawRow(InRT, InBrush, Row4, ARRAY_SIZE(Row4), Row4_Pos);
+        DrawRow(InRT, InBrush, Row5, ARRAY_SIZE(Row5), Row5_Pos);
+    }
+
+    void InputVisualizer::Draw(ID2D1RenderTarget* D2_RenderTarget, ID2D1Brush* InBrush)
+    {
+        // TODO: Implement (draw the owl)
+        float KeySize = 50.0f;
+        float HalfKeySize = KeySize * 0.5f;
+        v2f BaseKeyPos{AppWidth - 100.0f, 100.0f};
+        v2f ArrowUpPos = BaseKeyPos;
+        v2f ArrowLeftPos{ BaseKeyPos.X - KeySize, BaseKeyPos.Y + KeySize };
+        v2f ArrowDownPos{ ArrowLeftPos.X + KeySize, ArrowLeftPos.Y };
+        v2f ArrowRightPos{ ArrowDownPos.X + KeySize, ArrowLeftPos.Y };
+        VisualKeyboard::DrawKey(D2_RenderTarget, InBrush, KeyboardState::GetKeyState(LV_KEY_ARROW_UP), HalfKeySize, ArrowUpPos);
+        VisualKeyboard::DrawKey(D2_RenderTarget, InBrush, KeyboardState::GetKeyState(LV_KEY_ARROW_LEFT), HalfKeySize, ArrowLeftPos);
+        VisualKeyboard::DrawKey(D2_RenderTarget, InBrush, KeyboardState::GetKeyState(LV_KEY_ARROW_DOWN), HalfKeySize, ArrowDownPos);
+        VisualKeyboard::DrawKey(D2_RenderTarget, InBrush, KeyboardState::GetKeyState(LV_KEY_ARROW_RIGHT), HalfKeySize, ArrowRightPos);
+
+        VisualKeyboard::DrawKeyboard(D2_RenderTarget, InBrush);
     }
 }
