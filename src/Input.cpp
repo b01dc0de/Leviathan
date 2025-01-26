@@ -2,8 +2,6 @@
 
 namespace Leviathan
 {
-    // NOTE: Added some blank space here to align the VKCodeMap so that
-    // [0] == 0x00 == Line #100 for easy verification
     LvKeyCode VKCodeMap[] =
     {
         LV_KEY_NONE, //                            0x00    Unused
@@ -166,12 +164,12 @@ namespace Leviathan
         LV_KEY_NONE, // ----                       0x9D    Unassigned
         LV_KEY_NONE, // ----                       0x9E    Unassigned
         LV_KEY_NONE, // ----                       0x9F    Unassigned
-        LV_KEY_LEFT_SHIFT, // VK_LSHIFT                  0xA0    Left SHIFT key
-        LV_KEY_RIGHT_SHIFT, // VK_RSHIFT                  0xA1    Right SHIFT key
-        LV_KEY_LEFT_CTRL, // VK_LCONTROL                0xA2    Left CONTROL key
-        LV_KEY_RIGHT_CTRL, // VK_RCONTROL                0xA3    Right CONTROL key
-        LV_KEY_LEFT_ALT, // VK_LMENU                   0xA4    Left ALT key
-        LV_KEY_RIGHT_ALT, // VK_RMENU                   0xA5    Right ALT key
+        LV_KEY_LEFT_SHIFT, // VK_LSHIFT            0xA0    Left SHIFT key
+        LV_KEY_RIGHT_SHIFT, // VK_RSHIFT           0xA1    Right SHIFT key
+        LV_KEY_LEFT_CTRL, // VK_LCONTROL           0xA2    Left CONTROL key
+        LV_KEY_RIGHT_CTRL, // VK_RCONTROL          0xA3    Right CONTROL key
+        LV_KEY_LEFT_ALT, // VK_LMENU               0xA4    Left ALT key
+        LV_KEY_RIGHT_ALT, // VK_RMENU              0xA5    Right ALT key
         LV_KEY_NONE, // VK_BROWSER_BACK            0xA6    Browser Back key
         LV_KEY_NONE, // VK_BROWSER_FORWARD         0xA7    Browser Forward key
         LV_KEY_NONE, // VK_BROWSER_REFRESH         0xA8    Browser Refresh key
@@ -225,17 +223,17 @@ namespace Leviathan
         LV_KEY_NONE, // ----                       0xD8    Reserved
         LV_KEY_NONE, // ----                       0xD9    Reserved
         LV_KEY_NONE, // ----                       0xDA    Reserved
-        LV_KEY_LEFT_BRACKET, // VK_OEM_4                   0xDB    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the [{ key
-        LV_KEY_BACKSLASH, // VK_OEM_5                   0xDC    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the \\| key
-        LV_KEY_RIGHT_BRACKET, // VK_OEM_6                   0xDD    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ]} key
-        LV_KEY_QUOTE, // VK_OEM_7                   0xDE    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '" key
+        LV_KEY_LEFT_BRACKET, // VK_OEM_4           0xDB    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the [{ key
+        LV_KEY_BACKSLASH, // VK_OEM_5              0xDC    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the \\| key
+        LV_KEY_RIGHT_BRACKET, // VK_OEM_6          0xDD    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ]} key
+        LV_KEY_QUOTE, // VK_OEM_7                  0xDE    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '" key
         LV_KEY_NONE, // VK_OEM_8                   0xDF    Used for miscellaneous characters; it can vary by keyboard.
         LV_KEY_NONE, // ----                       0xE0    Reserved
         LV_KEY_NONE, // ----                       0xE1    OEM specific
         LV_KEY_NONE, // VK_OEM_102                 0xE2    The <> keys on the US standard keyboard, or the \\| key on the non-US 102-key keyboard
         LV_KEY_NONE, // ----                       0xE3    OEM specific
         LV_KEY_NONE, // ----                       0xE4    OEM specific
-        LV_KEY_NONE, // VK_PROCESSLV_KEY              0xE5    IME PROCESS key
+        LV_KEY_NONE, // VK_PROCESSLV_KEY           0xE5    IME PROCESS key
         LV_KEY_NONE, // ----                       0xE6    OEM specific
         LV_KEY_NONE, // VK_PACKET                  0xE7    Used to pass Unicode characters as if they were keystrokes. The VK_PACKET key is the low word of a 32-bit Virtual Key value used for non-keyboard input methods. For more information, see Remark in LV_KEYBDINPUT, SendInput, WM_LV_KEYDOWN, and WM_LV_KEYUP
         LV_KEY_NONE, // ----                       0xE8    Unassigned
