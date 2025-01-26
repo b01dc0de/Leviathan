@@ -42,7 +42,7 @@ namespace Leviathan
         WndClassEx.cbClsExtra = 0;
         WndClassEx.cbWndExtra = 0;
         WndClassEx.hIcon = nullptr;
-        WndClassEx.hCursor = nullptr;
+        WndClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);
         WndClassEx.hbrBackground = nullptr;
         WndClassEx.lpszMenuName = nullptr;
         WndClassEx.lpszClassName = APPNAME();

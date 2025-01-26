@@ -451,8 +451,7 @@ namespace Leviathan
 
     void InputVisualizer::Draw(ID2D1RenderTarget* D2_RenderTarget, ID2D1Brush* InBrush)
     {
-        // TODO: Implement (draw the owl)
-        float KeySize = 50.0f;
+        float KeySize = 25.0f;
         float HalfKeySize = KeySize * 0.5f;
         v2f BaseKeyPos{AppWidth - 100.0f, 100.0f};
         v2f ArrowUpPos = BaseKeyPos;
