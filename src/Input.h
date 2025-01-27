@@ -99,6 +99,7 @@ namespace Leviathan
         static bool GetKeyState(LvKeyCode LvCode);
         static void SetKeyUp(int VkCode);
         static void SetKeyDown(int VkCode);
+        static void Win32_KeyMsg(UINT Msg, WPARAM wParam, LPARAM lParam);
     };
 
     struct InputVisualizer

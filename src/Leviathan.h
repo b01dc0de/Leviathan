@@ -23,6 +23,7 @@ namespace Leviathan
     extern HWND AppWindow;
 }
 
+#define LV_UNUSED(Var) (void)Var
 #define ASSERT(Expr) if (!(Expr)) { DebugBreak(); /* TODO: Log */ }
 #define ARRAY_SIZE(Array) (sizeof(Array) / sizeof(Array[0]))
 #define APPNAMEW() (L"Leviathan")

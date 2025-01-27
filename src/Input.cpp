@@ -22,7 +22,7 @@ namespace Leviathan
         LV_KEY_NONE, // ----                       0x0F    Unassigned
         LV_KEY_SHIFT, // VK_SHIFT                  0x10    SHIFT key
         LV_KEY_CTRL, // VK_CONTROL                 0x11    CTRL key
-        LV_KEY_NONE, // VK_MENU                    0x12    ALT key
+        LV_KEY_ALT, // VK_MENU                    0x12    ALT key
         LV_KEY_NONE, // VK_PAUSE                   0x13    PAUSE key
         LV_KEY_CAPSLOCK, // VK_CAPITAL             0x14    CAPS LOCK key
         LV_KEY_NONE, // VK_KANA | VK_HANGUL        0x15    IME Kana mode | IME Hangul mode
@@ -298,6 +298,7 @@ namespace Leviathan
         LvKeyCode LvCode = VkToLv(VkCode);
         if (LvCode == LV_KEY_NONE) { return; }
 
+
         bool bKeyFound = false;
         int KeyIdx = 0;
         while (KeyIdx < ActiveCount)
@@ -327,9 +328,7 @@ namespace Leviathan
 
     void KeyboardState::SetKeyDown(int VkCode)
     {
-        if (ActiveCount == KeyCount) {
-            return;
-        }
+        if (ActiveCount == KeyCount) { return; }
 
         LvKeyCode LvCode = VkToLv(VkCode);
         if (LvCode == LV_KEY_NONE) { return; }
@@ -346,6 +345,29 @@ namespace Leviathan
                 ActiveCount++;
                 return;
             }
+        }
+    }
+
+    void KeyboardState::Win32_KeyMsg(UINT Msg, WPARAM wParam, LPARAM lParam)
+    {
+        LV_UNUSED(lParam);
+        WORD vkCode = LOWORD(wParam);
+        switch (Msg)
+        {
+            case WM_KEYDOWN:
+            case WM_SYSKEYDOWN:
+            {
+                KeyboardState::SetKeyDown(vkCode);
+            } break;
+            case WM_KEYUP:
+            case WM_SYSKEYUP:
+            {
+                KeyboardState::SetKeyUp(vkCode);
+            } break;
+            default:
+            {
+                ASSERT(false);
+            } break;
         }
     }
 

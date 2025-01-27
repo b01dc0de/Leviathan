@@ -14,12 +14,11 @@ namespace Leviathan
         switch (uMsg)
         {
             case WM_KEYUP:
-            {
-                KeyboardState::SetKeyUp(wParam);
-            } break;
+            case WM_SYSKEYUP:
             case WM_KEYDOWN:
+            case WM_SYSKEYDOWN:
             {
-                KeyboardState::SetKeyDown(wParam);
+                KeyboardState::Win32_KeyMsg(uMsg, wParam, lParam);
             } break;
             case WM_CLOSE:
             {
