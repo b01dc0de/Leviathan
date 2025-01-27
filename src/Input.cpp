@@ -368,17 +368,17 @@ namespace Leviathan
 
     void VisualKeyboard::Init()
     {
-        float fModWidth = 1.25f;
         for (int KeyIdx = LV_KEY_NONE; KeyIdx < LV_KEY_COUNT; KeyIdx++) { KeyList[KeyIdx].LvCode = (LvKeyCode)KeyIdx; }
         KeyList[LV_KEY_BACKSPACE].Size.X = 2.0f;
         KeyList[LV_KEY_TAB].Size.X = 1.5f;
         KeyList[LV_KEY_BACKSLASH].Size.X = 1.5f;
         KeyList[LV_KEY_CAPSLOCK].Size.X = 1.75f;
         KeyList[LV_KEY_ENTER].Size.X = 2.25f;
-        KeyList[LV_KEY_SHIFT].Size.X = 2.25f;
-        KeyList[LV_KEY_CTRL].Size.X = fModWidth;
-        KeyList[LV_KEY_SUPER].Size.X = fModWidth;
-        KeyList[LV_KEY_ALT].Size.X = fModWidth;
+        const v2f ModSize{ 2.0f, 1.0f };
+        KeyList[LV_KEY_SHIFT].Size = ModSize;
+        KeyList[LV_KEY_CTRL].Size = ModSize;
+        KeyList[LV_KEY_SUPER].Size = ModSize;
+        KeyList[LV_KEY_ALT].Size = ModSize;
         KeyList[LV_KEY_SPACE].Size.X = 6.0f;
         float FuncRowGap = 2.0f / 3.0f; // RowWidth = 15, NumRowKeys = 12, NumGaps = 3, FuncGap = (RowWidth - NumRowKeys) / NumGaps
         float RowX = 1.0f + FuncRowGap;
@@ -412,11 +412,16 @@ namespace Leviathan
                 } break;
             }
         }
-        KeyList[LV_KEY_SPACE].Pos = v2f{ fModWidth * 3, RowY };
-        KeyList[LV_KEY_ARROW_UP].Pos = v2f{ RightRegionOrigin.X + 1.0f, RightRegionOrigin.Y + RowY - 1.0f };
-        KeyList[LV_KEY_ARROW_LEFT].Pos = v2f{ RightRegionOrigin.X, RightRegionOrigin.Y + RowY };
-        KeyList[LV_KEY_ARROW_DOWN].Pos = v2f{ RightRegionOrigin.X + 1.0f, RightRegionOrigin.Y + RowY };
-        KeyList[LV_KEY_ARROW_RIGHT].Pos = v2f{ RightRegionOrigin.X + 2.0f, RightRegionOrigin.Y + RowY };
+        KeyList[LV_KEY_SPACE].Pos = v2f{ 3.75f, RowY };
+        v2f ModOrigin = RightRegionOrigin + v2f{ 1.0f, 0.0f };
+        KeyList[LV_KEY_SHIFT].Pos = ModOrigin;
+        KeyList[LV_KEY_CTRL].Pos = ModOrigin + v2f{ 0.0f, 1.0f };
+        KeyList[LV_KEY_SUPER].Pos = ModOrigin + v2f{ 0.0f, 2.0f };;
+        KeyList[LV_KEY_ALT].Pos = ModOrigin + v2f{ 0.0f, 3.0f };
+        KeyList[LV_KEY_ARROW_UP].Pos = RightRegionOrigin + v2f{ 1.0f, RowY - 1.0f };
+        KeyList[LV_KEY_ARROW_LEFT].Pos = RightRegionOrigin + v2f{ 0.0f, RowY };
+        KeyList[LV_KEY_ARROW_DOWN].Pos = RightRegionOrigin + v2f{ 1.0f, RowY };
+        KeyList[LV_KEY_ARROW_RIGHT].Pos = RightRegionOrigin + v2f{ 2.0f, RowY };
 
         bInit = true;
     }
@@ -437,20 +442,10 @@ namespace Leviathan
     {
         static VisualKeyboard vKeyboard;
         if (!vKeyboard.bInit) { vKeyboard.Init(); }
-        v2f Origin{800.0f, 25.0};
-        float Scale = 25.0f;
+        v2f Origin{800.0f, 10.0};
+        float Scale = 20.0f;
         for (int KeyIdx = LV_KEY_ESC; KeyIdx < LV_KEY_COUNT; KeyIdx++)
         {
-            switch (KeyIdx)
-            {
-                case LV_KEY_SHIFT:
-                case LV_KEY_CTRL:
-                case LV_KEY_SUPER:
-                case LV_KEY_ALT:
-                {
-                    continue;
-                } break;
-            }
             DrawKey(InD2RT, InBrush, vKeyboard.KeyList[KeyIdx], Origin, Scale);
         }
     }
