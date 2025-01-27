@@ -6,7 +6,7 @@ namespace Leviathan
     enum LvKeyCode
     {
         LV_KEY_NONE,
-        // Row 1
+        // Function row
         LV_KEY_ESC,
         LV_KEY_F1,
         LV_KEY_F2,
@@ -20,7 +20,7 @@ namespace Leviathan
         LV_KEY_F10,
         LV_KEY_F11,
         LV_KEY_F12,
-        // Row 2
+        // Number row
         LV_KEY_GRAVE,
         LV_KEY_1,
         LV_KEY_2,
@@ -35,7 +35,7 @@ namespace Leviathan
         LV_KEY_MINUS,
         LV_KEY_EQUALS,
         LV_KEY_BACKSPACE,
-        // Row 3
+        // QWERTY row
         LV_KEY_TAB,
         LV_KEY_Q,
         LV_KEY_W,
@@ -50,7 +50,7 @@ namespace Leviathan
         LV_KEY_LEFT_BRACKET,
         LV_KEY_RIGHT_BRACKET,
         LV_KEY_BACKSLASH,
-        // Row 4
+        // ASDF row
         LV_KEY_CAPSLOCK,
         LV_KEY_A,
         LV_KEY_S,
@@ -64,8 +64,7 @@ namespace Leviathan
         LV_KEY_SEMICOLON,
         LV_KEY_QUOTE,
         LV_KEY_ENTER,
-        // Row 5
-        LV_KEY_LEFT_SHIFT,
+        // ZXCV row
         LV_KEY_Z,
         LV_KEY_X,
         LV_KEY_C,
@@ -76,22 +75,19 @@ namespace Leviathan
         LV_KEY_COMMA,
         LV_KEY_PERIOD,
         LV_KEY_SLASH,
-        LV_KEY_RIGHT_SHIFT,
-        // Row 6
-        LV_KEY_LEFT_CTRL,
-        LV_KEY_LEFT_SUPER,
-        LV_KEY_LEFT_ALT,
+        // Modifiers
+        LV_KEY_SHIFT,
+        LV_KEY_CTRL,
+        LV_KEY_SUPER,
+        LV_KEY_ALT,
         LV_KEY_SPACE,
-        LV_KEY_RIGHT_ALT,
-        LV_KEY_RIGHT_SUPER,
-        LV_KEY_RIGHT_CTRL,
         // Arrow keys
         LV_KEY_ARROW_UP,
         LV_KEY_ARROW_LEFT,
         LV_KEY_ARROW_DOWN,
-        LV_KEY_ARROW_RIGHT
+        LV_KEY_ARROW_RIGHT,
+        LV_KEY_COUNT,
     };
-    // TODO: Do we want to distinguish between left/right modifier keys?
 
     struct KeyboardState
     {
@@ -107,7 +103,7 @@ namespace Leviathan
 
     struct InputVisualizer
     {
-        static void Draw(ID2D1RenderTarget* D2_RenderTarget, ID2D1Brush* InBrush);
+        static void DrawKeyboard(ID2D1RenderTarget* D2_RenderTarget, ID2D1Brush* InBrush);
     };
 }
 

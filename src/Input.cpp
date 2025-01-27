@@ -20,8 +20,8 @@ namespace Leviathan
         LV_KEY_ENTER, // VK_RETURN                 0x0D    ENTER key
         LV_KEY_NONE, // ----                       0x0E    Unassigned
         LV_KEY_NONE, // ----                       0x0F    Unassigned
-        LV_KEY_NONE, // VK_SHIFT                   0x10    SHIFT key
-        LV_KEY_NONE, // VK_CONTROL                 0x11    CTRL key
+        LV_KEY_SHIFT, // VK_SHIFT                  0x10    SHIFT key
+        LV_KEY_CTRL, // VK_CONTROL                 0x11    CTRL key
         LV_KEY_NONE, // VK_MENU                    0x12    ALT key
         LV_KEY_NONE, // VK_PAUSE                   0x13    PAUSE key
         LV_KEY_CAPSLOCK, // VK_CAPITAL             0x14    CAPS LOCK key
@@ -36,7 +36,7 @@ namespace Leviathan
         LV_KEY_NONE, // VK_NONCONVERT              0x1D    IME nonconvert
         LV_KEY_NONE, // VK_ACCEPT                  0x1E    IME accept
         LV_KEY_NONE, // VK_MODECHANGE              0x1F    IME mode change request
-        LV_KEY_SPACE, // VK_SPACE                   0x20    SPACEBAR
+        LV_KEY_SPACE, // VK_SPACE                  0x20    SPACEBAR
         LV_KEY_NONE, // VK_PRIOR                   0x21    PAGE UP key
         LV_KEY_NONE, // VK_NEXT                    0x22    PAGE DOWN key
         LV_KEY_NONE, // VK_END                     0x23    END key
@@ -95,8 +95,8 @@ namespace Leviathan
         LV_KEY_X, //                               0x58    X key
         LV_KEY_Y, //                               0x59    Y key
         LV_KEY_Z, //                               0x5A    Z key
-        LV_KEY_LEFT_SUPER, // VK_LWIN              0x5B    Left Windows key
-        LV_KEY_RIGHT_SUPER, // VK_RWIN             0x5C    Right Windows key
+        LV_KEY_SUPER, // VK_LWIN                   0x5B    Left Windows key
+        LV_KEY_SUPER, // VK_RWIN                   0x5C    Right Windows key
         LV_KEY_NONE, // VK_APPS                    0x5D    Applications key
         LV_KEY_NONE, // ----                       0x5E    Reserved
         LV_KEY_NONE, // VK_SLEEP                   0x5F    Computer Sleep key
@@ -164,12 +164,12 @@ namespace Leviathan
         LV_KEY_NONE, // ----                       0x9D    Unassigned
         LV_KEY_NONE, // ----                       0x9E    Unassigned
         LV_KEY_NONE, // ----                       0x9F    Unassigned
-        LV_KEY_LEFT_SHIFT, // VK_LSHIFT            0xA0    Left SHIFT key
-        LV_KEY_RIGHT_SHIFT, // VK_RSHIFT           0xA1    Right SHIFT key
-        LV_KEY_LEFT_CTRL, // VK_LCONTROL           0xA2    Left CONTROL key
-        LV_KEY_RIGHT_CTRL, // VK_RCONTROL          0xA3    Right CONTROL key
-        LV_KEY_LEFT_ALT, // VK_LMENU               0xA4    Left ALT key
-        LV_KEY_RIGHT_ALT, // VK_RMENU              0xA5    Right ALT key
+        LV_KEY_SHIFT, // VK_LSHIFT                 0xA0    Left SHIFT key
+        LV_KEY_SHIFT, // VK_RSHIFT                 0xA1    Right SHIFT key
+        LV_KEY_CTRL, // VK_LCONTROL                0xA2    Left CONTROL key
+        LV_KEY_CTRL, // VK_RCONTROL                0xA3    Right CONTROL key
+        LV_KEY_ALT, // VK_LMENU                    0xA4    Left ALT key
+        LV_KEY_ALT, // VK_RMENU                    0xA5    Right ALT key
         LV_KEY_NONE, // VK_BROWSER_BACK            0xA6    Browser Back key
         LV_KEY_NONE, // VK_BROWSER_FORWARD         0xA7    Browser Forward key
         LV_KEY_NONE, // VK_BROWSER_REFRESH         0xA8    Browser Refresh key
@@ -311,11 +311,12 @@ namespace Leviathan
         }
         while (KeyIdx < ActiveCount)
         {
+            // Clear 'last' active key
             if (KeyIdx == ActiveCount - 1)
             {
                 ActiveKeys[KeyIdx] = LV_KEY_NONE;
             }
-            else
+            else // Shift ActiveKeys down
             {
                 ActiveKeys[KeyIdx] = ActiveKeys[KeyIdx + 1];
             }
@@ -352,115 +353,110 @@ namespace Leviathan
     {
         LvKeyCode LvCode = LV_KEY_NONE;
         v2f Size{ 1.0f, 1.0f };
+        v2f Pos{ 0.0f, 0.0f };
     };
 
     struct VisualKeyboard
     {
-        static constexpr float KeySize = 25.0f;
-        static VisualKey Row0[LV_KEY_F12 - LV_KEY_ESC + 1];
-        static VisualKey Row1[LV_KEY_BACKSPACE - LV_KEY_GRAVE + 1];
-        static VisualKey Row2[LV_KEY_BACKSLASH - LV_KEY_TAB + 1];
-        static VisualKey Row3[LV_KEY_ENTER - LV_KEY_CAPSLOCK + 1];
-        static VisualKey Row4[LV_KEY_RIGHT_SHIFT - LV_KEY_LEFT_SHIFT + 1];
-        static VisualKey Row5[LV_KEY_RIGHT_CTRL - LV_KEY_LEFT_CTRL + 1];
-        static void DrawKey(ID2D1RenderTarget* D2_RenderTarget, ID2D1Brush* InBrush, bool bIsDown, float Scale, const v2f KeySize, const v2f& KeyPos);
-        static void DrawRow(ID2D1RenderTarget* InRT, ID2D1Brush* InBrush, const VisualKey* Row, int KeyCount, const v2f& Pos);
-        static void DrawKeyboard(ID2D1RenderTarget* InRT, ID2D1Brush* InBrush);
+        bool bInit = false;
+        VisualKey KeyList[LV_KEY_COUNT];
+
+        void Init();
+        static void DrawKey(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush, const VisualKey& Key, const v2f& Origin, float Scale);
+        static void Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush);
     };
 
-    VisualKey VisualKeyboard::Row0[] = { {LV_KEY_ESC},
-        {LV_KEY_F1}, {LV_KEY_F2}, {LV_KEY_F3}, {LV_KEY_F4},
-        {LV_KEY_F5}, {LV_KEY_F6}, {LV_KEY_F7}, {LV_KEY_F8},
-        {LV_KEY_F9}, {LV_KEY_F10}, {LV_KEY_F11}, {LV_KEY_F12},
-    };
-    VisualKey VisualKeyboard::Row1[] = { {LV_KEY_GRAVE},
-        {LV_KEY_1}, {LV_KEY_2}, {LV_KEY_3}, {LV_KEY_4}, {LV_KEY_5},
-        {LV_KEY_6}, {LV_KEY_7}, {LV_KEY_8}, {LV_KEY_9}, {LV_KEY_0},
-        {LV_KEY_MINUS}, {LV_KEY_EQUALS}, {LV_KEY_BACKSPACE, 2.0f, 1.0f}
-    };
-    VisualKey VisualKeyboard::Row2[] = { {LV_KEY_TAB, v2f{1.5f, 1.0f}},
-        {LV_KEY_Q}, {LV_KEY_W}, {LV_KEY_E}, {LV_KEY_R}, {LV_KEY_T},
-        {LV_KEY_Y}, {LV_KEY_U}, {LV_KEY_I}, {LV_KEY_O}, {LV_KEY_P},
-        {LV_KEY_LEFT_BRACKET}, {LV_KEY_RIGHT_BRACKET}, {LV_KEY_BACKSLASH, 1.5f, 1.0f}
-    };
-    VisualKey VisualKeyboard::Row3[] = { {LV_KEY_CAPSLOCK, 1.75f, 1.0f},
-        {LV_KEY_A}, {LV_KEY_S}, {LV_KEY_D}, {LV_KEY_F}, {LV_KEY_G},
-        {LV_KEY_H}, {LV_KEY_J}, {LV_KEY_K}, {LV_KEY_L},
-        {LV_KEY_SEMICOLON}, {LV_KEY_QUOTE}, {LV_KEY_ENTER, 2.25f, 1.0f},
-    };
-    VisualKey VisualKeyboard::Row4[] = { {LV_KEY_LEFT_SHIFT, 2.25f, 1.0f},
-        {LV_KEY_Z}, {LV_KEY_X}, {LV_KEY_C}, {LV_KEY_V}, {LV_KEY_B}, {LV_KEY_N}, {LV_KEY_M},
-        {LV_KEY_COMMA}, {LV_KEY_PERIOD}, {LV_KEY_SLASH}, {LV_KEY_RIGHT_SHIFT, 2.75f, 1.0f},
-    };
-    VisualKey VisualKeyboard::Row5[] = {
-        {LV_KEY_LEFT_CTRL, 1.25f, 1.0f}, {LV_KEY_LEFT_SUPER, 1.25f, 1.0f}, {LV_KEY_LEFT_ALT, 1.25f, 1.0f},
-        {LV_KEY_SPACE, 6.0f, 1.0f},
-        {LV_KEY_RIGHT_ALT, 1.25f, 1.0f}, {LV_KEY_RIGHT_SUPER, 1.25f, 1.0f}, {LV_KEY_RIGHT_CTRL, 1.25f, 1.0f}
-    };
-
-    void VisualKeyboard::DrawKey(ID2D1RenderTarget* D2_RenderTarget, ID2D1Brush* InBrush, bool bIsDown, float Scale, const v2f KeySize, const v2f& KeyPos)
+    void VisualKeyboard::Init()
     {
-        D2D1_RECT_F KeyRect
+        float fModWidth = 1.25f;
+        for (int KeyIdx = LV_KEY_NONE; KeyIdx < LV_KEY_COUNT; KeyIdx++) { KeyList[KeyIdx].LvCode = (LvKeyCode)KeyIdx; }
+        KeyList[LV_KEY_BACKSPACE].Size.X = 2.0f;
+        KeyList[LV_KEY_TAB].Size.X = 1.5f;
+        KeyList[LV_KEY_BACKSLASH].Size.X = 1.5f;
+        KeyList[LV_KEY_CAPSLOCK].Size.X = 1.75f;
+        KeyList[LV_KEY_ENTER].Size.X = 2.25f;
+        KeyList[LV_KEY_SHIFT].Size.X = 2.25f;
+        KeyList[LV_KEY_CTRL].Size.X = fModWidth;
+        KeyList[LV_KEY_SUPER].Size.X = fModWidth;
+        KeyList[LV_KEY_ALT].Size.X = fModWidth;
+        KeyList[LV_KEY_SPACE].Size.X = 6.0f;
+        float FuncRowGap = 2.0f / 3.0f; // RowWidth = 15, NumRowKeys = 12, NumGaps = 3, FuncGap = (RowWidth - NumRowKeys) / NumGaps
+        float RowX = 1.0f + FuncRowGap;
+        for (int KeyIdx = LV_KEY_F1; KeyIdx <= LV_KEY_F12; KeyIdx++)
         {
-            KeyPos.X, KeyPos.Y,
-            KeyPos.X + (KeySize.X * Scale), KeyPos.Y + (KeySize.Y * Scale)
-        };
-        if (bIsDown)
-        {
-            D2_RenderTarget->FillRectangle(&KeyRect, InBrush);
+            KeyList[KeyIdx].Pos = v2f{ RowX, 0.0f };
+            RowX += KeyList[KeyIdx].Size.X;
+            if (KeyIdx == LV_KEY_F4 || KeyIdx == LV_KEY_F8) { RowX += FuncRowGap; }
         }
-        else
+        float FuncRowPadding = 0.25f;
+        float RowY = 1.0f + FuncRowPadding;
+        RowX = 0.0f;
+        v2f RightRegionOrigin{ 15.0f, 0.0f };
+        for (int KeyIdx = LV_KEY_GRAVE; KeyIdx <= LV_KEY_SLASH; KeyIdx++)
         {
-            D2_RenderTarget->DrawRectangle(&KeyRect, InBrush, 1.0f, nullptr);
+            KeyList[KeyIdx].Pos = v2f{RowX, RowY};
+            RowX += KeyList[KeyIdx].Size.X;
+            switch (KeyIdx)
+            {
+                case LV_KEY_ENTER:
+                {
+                    RowY += 1.0f;
+                    RowX = KeyList[LV_KEY_SHIFT].Size.X;
+                } break;
+                case LV_KEY_BACKSPACE:
+                case LV_KEY_BACKSLASH:
+                case LV_KEY_SLASH:
+                {
+                    RowY += 1.0f;
+                    RowX = 0.0f;
+                } break;
+            }
+        }
+        KeyList[LV_KEY_SPACE].Pos = v2f{ fModWidth * 3, RowY };
+        KeyList[LV_KEY_ARROW_UP].Pos = v2f{ RightRegionOrigin.X + 1.0f, RightRegionOrigin.Y + RowY - 1.0f };
+        KeyList[LV_KEY_ARROW_LEFT].Pos = v2f{ RightRegionOrigin.X, RightRegionOrigin.Y + RowY };
+        KeyList[LV_KEY_ARROW_DOWN].Pos = v2f{ RightRegionOrigin.X + 1.0f, RightRegionOrigin.Y + RowY };
+        KeyList[LV_KEY_ARROW_RIGHT].Pos = v2f{ RightRegionOrigin.X + 2.0f, RightRegionOrigin.Y + RowY };
+
+        bInit = true;
+    }
+
+    void VisualKeyboard::DrawKey(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush, const VisualKey& Key, const v2f& Origin, float Scale)
+    {
+        float Left = Origin.X + (Key.Pos.X * Scale);
+        float Top = Origin.Y + (Key.Pos.Y * Scale);
+        float Right = Left + (Key.Size.X * Scale);
+        float Bottom = Top + (Key.Size.Y * Scale);
+        D2D1_RECT_F KeyRect{ Left, Top, Right, Bottom };
+        bool bIsDown = KeyboardState::GetKeyState(Key.LvCode);
+        if (bIsDown) { InD2RT->FillRectangle(&KeyRect, InBrush); }
+        else { InD2RT->DrawRectangle(&KeyRect, InBrush, 1.0f, nullptr); }
+    }
+
+    void VisualKeyboard::Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush)
+    {
+        static VisualKeyboard vKeyboard;
+        if (!vKeyboard.bInit) { vKeyboard.Init(); }
+        v2f Origin{800.0f, 25.0};
+        float Scale = 25.0f;
+        for (int KeyIdx = LV_KEY_ESC; KeyIdx < LV_KEY_COUNT; KeyIdx++)
+        {
+            switch (KeyIdx)
+            {
+                case LV_KEY_SHIFT:
+                case LV_KEY_CTRL:
+                case LV_KEY_SUPER:
+                case LV_KEY_ALT:
+                {
+                    continue;
+                } break;
+            }
+            DrawKey(InD2RT, InBrush, vKeyboard.KeyList[KeyIdx], Origin, Scale);
         }
     }
 
-    void VisualKeyboard::DrawRow(ID2D1RenderTarget* InRT, ID2D1Brush* InBrush, const VisualKey* Row, int KeyCount, const v2f& Pos)
+    void InputVisualizer::DrawKeyboard(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush)
     {
-        float Scale = KeySize;
-        float KeyX = Pos.X;
-        for (int KeyIdx = 0; KeyIdx < KeyCount; KeyIdx++)
-        {
-            const VisualKey& CurrKey = Row[KeyIdx];
-            v2f CurrKeyPos{ KeyX, Pos.Y };
-            float Width = CurrKey.Size.X;
-            DrawKey(InRT, InBrush, KeyboardState::GetKeyState(CurrKey.LvCode), Scale, CurrKey.Size, CurrKeyPos);
-            KeyX += KeySize * Width;
-        }
-    }
-
-    void VisualKeyboard::DrawKeyboard(ID2D1RenderTarget* InRT, ID2D1Brush* InBrush)
-    {
-        float StartX = 800.0f;
-        v2f Row0_Pos{ StartX, KeySize };
-        v2f Row1_Pos{ StartX, KeySize * 2.0f };
-        v2f Row2_Pos{ StartX, KeySize * 3.0f };
-        v2f Row3_Pos{ StartX, KeySize * 4.0f };
-        v2f Row4_Pos{ StartX, KeySize * 5.0f };
-        v2f Row5_Pos{ StartX, KeySize * 6.0f };
-        DrawRow(InRT, InBrush, Row0, ARRAY_SIZE(Row0), Row0_Pos);
-        DrawRow(InRT, InBrush, Row1, ARRAY_SIZE(Row1), Row1_Pos);
-        DrawRow(InRT, InBrush, Row2, ARRAY_SIZE(Row2), Row2_Pos);
-        DrawRow(InRT, InBrush, Row3, ARRAY_SIZE(Row3), Row3_Pos);
-        DrawRow(InRT, InBrush, Row4, ARRAY_SIZE(Row4), Row4_Pos);
-        DrawRow(InRT, InBrush, Row5, ARRAY_SIZE(Row5), Row5_Pos);
-    }
-
-    void InputVisualizer::Draw(ID2D1RenderTarget* D2_RenderTarget, ID2D1Brush* InBrush)
-    {
-        float KeySize = 25.0f;
-        float HalfKeySize = KeySize * 0.5f;
-        v2f BaseKeyPos{AppWidth - 75.0f, 125.0f};
-        v2f ArrowUpPos = BaseKeyPos;
-        v2f ArrowLeftPos{ BaseKeyPos.X - KeySize, BaseKeyPos.Y + KeySize };
-        v2f ArrowDownPos{ ArrowLeftPos.X + KeySize, ArrowLeftPos.Y };
-        v2f ArrowRightPos{ ArrowDownPos.X + KeySize, ArrowLeftPos.Y };
-        v2f ArrowKeySize{ 1.0f, 1.0f };
-        VisualKeyboard::DrawKey(D2_RenderTarget, InBrush, KeyboardState::GetKeyState(LV_KEY_ARROW_UP), KeySize, ArrowKeySize, ArrowUpPos);
-        VisualKeyboard::DrawKey(D2_RenderTarget, InBrush, KeyboardState::GetKeyState(LV_KEY_ARROW_LEFT), KeySize, ArrowKeySize, ArrowLeftPos);
-        VisualKeyboard::DrawKey(D2_RenderTarget, InBrush, KeyboardState::GetKeyState(LV_KEY_ARROW_DOWN), KeySize, ArrowKeySize, ArrowDownPos);
-        VisualKeyboard::DrawKey(D2_RenderTarget, InBrush, KeyboardState::GetKeyState(LV_KEY_ARROW_RIGHT), KeySize, ArrowKeySize, ArrowRightPos);
-
-        VisualKeyboard::DrawKeyboard(D2_RenderTarget, InBrush);
+        VisualKeyboard::Draw(InD2RT, InBrush);
     }
 }

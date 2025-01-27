@@ -623,7 +623,7 @@ namespace Leviathan
             static bool bDrawInputVisualizerBG = true;
             if (bDrawInputVisualizerBG)
             {
-                InputVisualizer::Draw(D2_RenderTarget, D2_LightYellowBrush);
+                InputVisualizer::DrawKeyboard(D2_RenderTarget, D2_LightYellowBrush);
             }
 
             DX_CHECK(D2_RenderTarget->EndDraw());
