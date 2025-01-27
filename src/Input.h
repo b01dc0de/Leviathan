@@ -102,9 +102,24 @@ namespace Leviathan
         static void Win32_KeyMsg(UINT Msg, WPARAM wParam, LPARAM lParam);
     };
 
+    struct MouseState
+    {
+        static constexpr int MouseOffscreen = -1;
+        static bool bMousePosValid;
+        static int MouseX;
+        static int MouseY;
+        static bool bLeftKey;
+        static bool bRightKey;
+        static bool bMiddleKey;
+
+        static void SetMousePos(int X, int Y);
+        static void Win32_MouseMsg(UINT Msg, WPARAM wParam, LPARAM lParam);
+    };
+
     struct InputVisualizer
     {
-        static void DrawKeyboard(ID2D1RenderTarget* D2_RenderTarget, ID2D1Brush* InBrush);
+        static void DrawKeyboard(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush);
+        static void DrawMouse(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2);
     };
 }
 

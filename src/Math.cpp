@@ -49,15 +49,24 @@ namespace Leviathan
         v3f Result{ A.X + B.X, A.Y + B.Y, A.Z + B.Z };
         return Result;
     }
-
-    v3f Subtract(const v3f& A, const v3f& B)
+    v4f Add(const v4f& A, const v4f& B)
     {
-        v3f Result{ A.X - B.X, A.Y - B.Y, A.Z - B.Z };
+        v4f Result{ A.X + B.X, A.Y + B.Y, A.Z + B.Z, A.W + B.W };
         return Result;
     }
     v2f Subtract(const v2f& A, const v2f& B)
     {
         v2f Result{ A.X - B.X, A.Y - B.Y };
+        return Result;
+    }
+    v3f Subtract(const v3f& A, const v3f& B)
+    {
+        v3f Result{ A.X - B.X, A.Y - B.Y, A.Z - B.Z };
+        return Result;
+    }
+    v4f Subtract(const v4f& A, const v4f& B)
+    {
+        v4f Result{ A.X - B.X, A.Y - B.Y, A.Z - B.Z, A.W - B.W };
         return Result;
     }
 
@@ -69,12 +78,20 @@ namespace Leviathan
     {
         return Add(A, B);
     }
+    v4f operator+(const v4f& A, const v4f& B)
+    {
+        return Add(A, B);
+    }
 
     v2f operator-(const v2f& A, const v2f& B)
     {
         return Subtract(A, B);
     }
     v3f operator-(const v3f& A, const v3f& B)
+    {
+        return Subtract(A, B);
+    }
+    v4f operator-(const v4f& A, const v4f& B)
     {
         return Subtract(A, B);
     }

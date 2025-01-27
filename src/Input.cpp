@@ -348,6 +348,64 @@ namespace Leviathan
         }
     }
 
+    bool MouseState::bMousePosValid = false;
+    int MouseState::MouseX = MouseState::MouseOffscreen;
+    int MouseState::MouseY = MouseState::MouseOffscreen;
+    bool MouseState::bLeftKey = false;
+    bool MouseState::bRightKey = false;
+    bool MouseState::bMiddleKey = false;
+
+    void MouseState::SetMousePos(int X, int Y)
+    {
+        bool bMouseXValid = 0 <= X && X <= AppWidth;
+        bool bMouseYValid = 0 <= Y && Y <= AppHeight;
+        bMousePosValid = bMouseXValid && bMouseYValid;
+        if (bMousePosValid)
+        {
+            MouseX = X;
+            MouseY = Y;
+        }
+        else
+        {
+            MouseX = MouseOffscreen;
+            MouseY = MouseOffscreen;
+        }
+    }
+
+    void MouseState::Win32_MouseMsg(UINT Msg, WPARAM wParam, LPARAM lParam)
+    {
+        switch (Msg)
+        {
+            case WM_MOUSEMOVE:
+            {
+                int X = GET_X_LPARAM(lParam);
+                int Y = GET_Y_LPARAM(lParam);
+                SetMousePos(X, Y);
+            } break;
+            case WM_MOUSELEAVE:
+            {
+                SetMousePos(MouseOffscreen, MouseOffscreen);
+            } break;
+            case WM_LBUTTONDOWN: { bLeftKey = true; } break;
+            case WM_LBUTTONUP: { bLeftKey = false; } break;
+            case WM_RBUTTONDOWN: { bRightKey = true; } break;
+            case WM_RBUTTONUP: { bRightKey = false; } break;
+            case WM_MBUTTONDOWN: { bMiddleKey = true; } break;
+            case WM_MBUTTONUP: { bMiddleKey = false; } break;
+            case WM_LBUTTONDBLCLK:
+            case WM_RBUTTONDBLCLK:
+            case WM_MBUTTONDBLCLK:
+            case WM_MOUSEWHEEL:
+            {
+                // TODO: Handle
+            } break;
+            default:
+            {
+                ASSERT(false);
+            } break;
+        }
+    }
+
     void KeyboardState::Win32_KeyMsg(UINT Msg, WPARAM wParam, LPARAM lParam)
     {
         LV_UNUSED(lParam);
@@ -475,5 +533,63 @@ namespace Leviathan
     void InputVisualizer::DrawKeyboard(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush)
     {
         VisualKeyboard::Draw(InD2RT, InBrush);
+    }
+
+    struct VisualMouse
+    {
+        static void Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2);
+    };
+
+    void VisualMouse::Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
+    {
+        static v2f ButtonOrigin{ 1100.0f, AppHeight - 200.0f };
+        static v2f ButtonSize{ 25.0f, 50.0f };
+        static D2D1_RECT_F LeftRect{ ButtonOrigin.X, ButtonOrigin.Y, ButtonOrigin.X + ButtonSize.X, ButtonOrigin.Y + ButtonSize.Y };
+        static D2D1_RECT_F MiddleRect{ LeftRect.left + ButtonSize.X, LeftRect.top, LeftRect.right + ButtonSize.X, LeftRect.bottom };
+        static D2D1_RECT_F RightRect{ MiddleRect.left + ButtonSize.X, MiddleRect.top, MiddleRect.right + ButtonSize.X, MiddleRect.bottom };
+
+        { // Buttons
+
+            if (MouseState::bLeftKey) { InD2RT->FillRectangle(&LeftRect, InBrush1); }
+            else { InD2RT->DrawRectangle(&LeftRect, InBrush1, 1.0f, nullptr); }
+            if (MouseState::bRightKey) { InD2RT->FillRectangle(&RightRect, InBrush1); }
+            else { InD2RT->DrawRectangle(&RightRect, InBrush1, 1.0f, nullptr); }
+            if (MouseState::bMiddleKey) { InD2RT->FillRectangle(&MiddleRect, InBrush1); }
+            else { InD2RT->DrawRectangle(&MiddleRect, InBrush1, 1.0f, nullptr); }
+        }
+
+        static v2f MouseWindowSize{ 128.0f, 72.0f };
+        static v2f MouseWindowOrigin{
+            (LeftRect.left + RightRect.right - MouseWindowSize.X) * 0.5f,
+            ButtonOrigin.Y + ButtonSize.Y};
+        static float CursorSize = 5.0f;
+        static float HalfCursorSize = CursorSize * 0.5f;
+        { // Cursor
+            static D2D1_RECT_F MouseWindowRect{ MouseWindowOrigin.X, MouseWindowOrigin.Y, MouseWindowOrigin.X + MouseWindowSize.X, MouseWindowOrigin.Y + MouseWindowSize.Y };
+            if (MouseState::bMousePosValid)
+            {
+                v2f CursorPos = {
+                    ((float)MouseState::MouseX / (float)AppWidth * MouseWindowSize.X) + MouseWindowOrigin.X,
+                    ((float)MouseState::MouseY / (float)AppHeight * MouseWindowSize.Y) + MouseWindowOrigin.Y
+                };
+                D2D1_RECT_F CursorRect{
+                    CursorPos.X - HalfCursorSize,
+                    CursorPos.Y - HalfCursorSize,
+                    CursorPos.X + HalfCursorSize,
+                    CursorPos.Y + HalfCursorSize
+                };
+                InD2RT->FillRectangle(&MouseWindowRect, InBrush1);
+                InD2RT->FillRectangle(&CursorRect, InBrush2);
+            }
+            else
+            {
+                InD2RT->DrawRectangle(&MouseWindowRect, InBrush1, 1.0f, nullptr);
+            }
+        }
+    }
+
+    void InputVisualizer::DrawMouse(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
+    {
+        VisualMouse::Draw(InD2RT, InBrush1, InBrush2);
     }
 }

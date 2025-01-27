@@ -13,6 +13,10 @@ namespace Leviathan
         LRESULT lResult = 0;
         switch (uMsg)
         {
+            case WM_CLOSE:
+            {
+                bAppRunning = false;
+            } break;
             case WM_KEYUP:
             case WM_SYSKEYUP:
             case WM_KEYDOWN:
@@ -20,10 +24,21 @@ namespace Leviathan
             {
                 KeyboardState::Win32_KeyMsg(uMsg, wParam, lParam);
             } break;
-            case WM_CLOSE:
+            case WM_MOUSEMOVE:
+            case WM_MOUSELEAVE:
+            case WM_LBUTTONDOWN:
+            case WM_LBUTTONUP:
+            case WM_LBUTTONDBLCLK:
+            case WM_RBUTTONDOWN:
+            case WM_RBUTTONUP:
+            case WM_RBUTTONDBLCLK:
+            case WM_MBUTTONDOWN:
+            case WM_MBUTTONUP:
+            case WM_MBUTTONDBLCLK:
+            case WM_MOUSEWHEEL:
             {
-                bAppRunning = false;
-            }
+                MouseState::Win32_MouseMsg(uMsg, wParam, lParam);
+            } break;
             default:
             {
                 lResult = DefWindowProc(hWnd, uMsg, wParam, lParam);

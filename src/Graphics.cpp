@@ -55,6 +55,7 @@ namespace Leviathan
     ID2D1GradientStopCollection* D2_GradientStops = nullptr;
     ID2D1SolidColorBrush* D2_LightGrayBrush = nullptr;
     ID2D1SolidColorBrush* D2_LightYellowBrush = nullptr;
+    ID2D1SolidColorBrush* D2_BlackBrush = nullptr;
 
     struct VxColor
     {
@@ -500,6 +501,8 @@ namespace Leviathan
 
             D2D1_COLOR_F LightYellowColor = D2D1::ColorF(0xDCD086);
             D2_RenderTarget->CreateSolidColorBrush(LightYellowColor, &D2_LightYellowBrush);
+
+            D2_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &D2_BlackBrush);
         }
     }
 
@@ -616,7 +619,7 @@ namespace Leviathan
         }
 
         static bool bD2Foreground = true;
-        if (bD2Background)
+        if (bD2Foreground)
         {
             D2_RenderTarget->BeginDraw();
 
@@ -624,6 +627,7 @@ namespace Leviathan
             if (bDrawInputVisualizerBG)
             {
                 InputVisualizer::DrawKeyboard(D2_RenderTarget, D2_LightYellowBrush);
+                InputVisualizer::DrawMouse(D2_RenderTarget, D2_LightYellowBrush, D2_BlackBrush);
             }
 
             DX_CHECK(D2_RenderTarget->EndDraw());
@@ -646,6 +650,7 @@ namespace Leviathan
             DX_SAFE_RELEASE(D2_GradientStops);
             DX_SAFE_RELEASE(D2_LightGrayBrush);
             DX_SAFE_RELEASE(D2_LightYellowBrush);
+            DX_SAFE_RELEASE(D2_BlackBrush);
         }
 
         DX_SAFE_RELEASE(DX_VertexBufferTriangle);
