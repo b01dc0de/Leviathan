@@ -751,4 +751,60 @@ namespace Leviathan
     {
         VisualMouse::Draw(InD2RT, InBrush1, InBrush2);
     }
+
+    struct VisualGamepad
+    {
+        static void Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush);
+    };
+
+    void VisualGamepad::Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush)
+    {
+        static const v2f GamepadOrigin{0.0f, AppHeight - 200.0f};
+        static const v2f ButtonSize{ 25.0f, 25.0f };
+        static const v2f DPadOrigin = GamepadOrigin + v2f{ 50.0f, 50.0f };
+        static const v2f FaceOrigin = DPadOrigin + v2f{ ButtonSize.X * 8.0f, 0.0f };
+        static v2f ButtonPos[] = {
+            DPadOrigin + v2f{ButtonSize.X, 0.0f},
+            DPadOrigin + v2f{ButtonSize.X, ButtonSize.Y * 2.0f},
+            DPadOrigin + v2f{0.0f, ButtonSize.Y},
+            DPadOrigin + v2f{ButtonSize.X * 2.0f, ButtonSize.Y},
+            DPadOrigin + v2f{ButtonSize.X * 6.0f, 0.0f},
+            DPadOrigin + v2f{ButtonSize.X * 4.0f, 0.0f},
+            DPadOrigin + v2f{ButtonSize.X, ButtonSize.Y * 4.0f},
+            FaceOrigin + v2f{ButtonSize.X, ButtonSize.Y * 4.0f},
+            DPadOrigin + v2f{ButtonSize.X, ButtonSize.Y * -2.0f},
+            FaceOrigin + v2f{ButtonSize.X, ButtonSize.Y * -2.0f},
+            FaceOrigin + v2f{ButtonSize.X, 0.0f},
+            FaceOrigin + v2f{ButtonSize.X, ButtonSize.Y * 2.0f},
+            FaceOrigin + v2f{0.0f, ButtonSize.Y},
+            FaceOrigin + v2f{ButtonSize.X * 2.0f, ButtonSize.Y},
+        };
+        for (int ButtonIdx = LV_GAMEPAD_DPAD_UP; ButtonIdx < LV_GAMEPAD_BUTTON_COUNT; ButtonIdx++)
+        {
+            D2D1_RECT_F ButtonRect = {
+                ButtonPos[ButtonIdx].X,
+                ButtonPos[ButtonIdx].Y,
+                ButtonPos[ButtonIdx].X + ButtonSize.X,
+                ButtonPos[ButtonIdx].Y + ButtonSize.Y,
+            };
+            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx))
+            {
+                InD2RT->FillRectangle(&ButtonRect, InBrush);
+            }
+            else
+            {
+                InD2RT->DrawRectangle(&ButtonRect, InBrush, 1.0f, nullptr);
+            }
+        }
+
+        float LTrigger = GamepadState::GetLeftTrigger();
+        float RTrigger = GamepadState::GetRightTrigger();
+        v2f LStick = GamepadState::GetLeftStick();
+        v2f RStick = GamepadState::GetRightStick();
+    }
+
+    void InputVisualizer::DrawGamepad(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush)
+    {
+        VisualGamepad::Draw(InD2RT, InBrush);
+    }
 }
