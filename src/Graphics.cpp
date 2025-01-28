@@ -1,12 +1,8 @@
 #include "Graphics.h"
+#include "UserInterface.h"
 
 namespace Leviathan
 {
-
-#define DX_CHECK(DXResult) if (FAILED(DXResult)) { DebugBreak(); }
-#define DX_SAFE_RELEASE(Ptr) if (Ptr) { Ptr->Release(); Ptr = nullptr; }
-#define DX_UUID_HELPER(Type, Ptr) __uuidof(Type), (void**)&Ptr
-
     IDXGIFactory2* DXGI_Factory2 = nullptr;
     ID3D11Device* DX_Device = nullptr;
     ID3D11DeviceContext* DX_ImmediateContext = nullptr;
@@ -504,26 +500,12 @@ namespace Leviathan
 
             D2_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &D2_BlackBrush);
         }
+
+        UserInterface::Init(D2_RenderTarget);
     }
 
-    bool bVisualizeKeyboard = true;
-    bool bVisualizeMouse = true;
-    bool bVisualizeGamepad = true;
     void Graphics::UpdateAndDraw()
     {
-        if (KeyboardState::GetKeyState(LV_KEY_F1))
-        {
-            bVisualizeKeyboard = !bVisualizeKeyboard;
-        }
-        if (KeyboardState::GetKeyState(LV_KEY_F2))
-        {
-            bVisualizeMouse = !bVisualizeMouse;
-        }
-        if (KeyboardState::GetKeyState(LV_KEY_F3))
-        {
-            bVisualizeGamepad = !bVisualizeGamepad;
-        }
-
         DX_ImmediateContext->RSSetState(DX_RasterizerState);
         DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
         v4f ClearColor = { 30.0f / 255.0f, 30.0f / 255.0f, 45.0f / 255.0f, 1.0f };
@@ -634,22 +616,11 @@ namespace Leviathan
             DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Quad), 0u, 0u);
         }
 
-        static bool bD2Foreground = true;
-        if (bD2Foreground)
+        static bool bDrawUI = true;
+        if (bDrawUI)
         {
-            D2_RenderTarget->BeginDraw();
-
-            static bool bDrawInputVisualizerBG = true;
-            if (bDrawInputVisualizerBG)
-            {
-                if (bVisualizeKeyboard) { InputVisualizer::DrawKeyboard(D2_RenderTarget, D2_LightYellowBrush); }
-                if (bVisualizeMouse) { InputVisualizer::DrawMouse(D2_RenderTarget, D2_LightYellowBrush, D2_BlackBrush); }
-                if (bVisualizeGamepad) { InputVisualizer::DrawGamepad(D2_RenderTarget, D2_LightYellowBrush, D2_BlackBrush); }
-            }
-
-            DX_CHECK(D2_RenderTarget->EndDraw());
+            UserInterface::Draw(D2_RenderTarget);
         }
-
 
         UINT SyncInterval = 0;
         UINT PresentFlags = 0;
@@ -659,6 +630,8 @@ namespace Leviathan
 
     void Graphics::Term()
     {
+        UserInterface::Term();
+
         { // Direct2D:
             DX_SAFE_RELEASE(D2_Factory);
             DX_SAFE_RELEASE(DXGI_Surface);

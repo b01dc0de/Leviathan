@@ -761,7 +761,7 @@ namespace Leviathan
         }
 
         static float WheelAngle = 0.0f;
-        static float VisualSpeed = 1.0f / 6.0f;
+        static float VisualSpeed = 0.25f;
         WheelAngle += MouseState::MouseWheel * VisualSpeed;
         { // Wheel
             static float WheelSize = 25.0f;

@@ -141,6 +141,7 @@ namespace Leviathan
 
             KeyboardState::Tick();
             MouseState::Tick();
+            GamepadState::Tick();
         }
     }
 
