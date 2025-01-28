@@ -133,14 +133,14 @@ namespace Leviathan
         {
             WindowMsgLoop(AppWindow);
             Graphics::UpdateAndDraw();
-            GamepadState::Win32_UpdateXInput();
 
             if (KeyboardState::GetKeyState(LV_KEY_ESC))
             {
                 bAppRunning = false;
             }
 
-            MouseState::MouseWheel = 0.0f;
+            KeyboardState::Tick();
+            MouseState::Tick();
         }
     }
 

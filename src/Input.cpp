@@ -188,86 +188,82 @@ namespace Leviathan
         LV_KEY_NONE, // VK_LAUNCH_MEDIA_SELECT     0xB5    Select Media key
         LV_KEY_NONE, // VK_LAUNCH_APP1             0xB6    Start Application 1 key
         LV_KEY_NONE, // VK_LAUNCH_APP2             0xB7    Start Application 2 key
-        LV_KEY_NONE, // ----                       0xB8    Reserved
-        LV_KEY_NONE, // ----                       0xB9    Reserved
-        LV_KEY_SEMICOLON, // VK_OEM_1              0xBA    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ;: key
-        LV_KEY_EQUALS, // VK_OEM_PLUS              0xBB    For any country/region, the + key
-        LV_KEY_COMMA, // VK_OEM_COMMA              0xBC    For any country/region, the , key
-        LV_KEY_MINUS, // VK_OEM_MINUS              0xBD    For any country/region, the - key
-        LV_KEY_PERIOD, // VK_OEM_PERIOD            0xBE    For any country/region, the . key
-        LV_KEY_SLASH, // VK_OEM_2                  0xBF    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the /? key
-        LV_KEY_GRAVE, // VK_OEM_3                  0xC0    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the `~ key
-        LV_KEY_NONE, // ----                       0xC1    Reserved
-        LV_KEY_NONE, // ----                       0xC2    Reserved
-        LV_KEY_NONE, // ----                       0xC3    Reserved
-        LV_KEY_NONE, // ----                       0xC4    Reserved
-        LV_KEY_NONE, // ----                       0xC5    Reserved
-        LV_KEY_NONE, // ----                       0xC6    Reserved
-        LV_KEY_NONE, // ----                       0xC7    Reserved
-        LV_KEY_NONE, // ----                       0xC8    Reserved
-        LV_KEY_NONE, // ----                       0xC9    Reserved
-        LV_KEY_NONE, // ----                       0xCA    Reserved
-        LV_KEY_NONE, // ----                       0xCB    Reserved
-        LV_KEY_NONE, // ----                       0xCC    Reserved
-        LV_KEY_NONE, // ----                       0xCD    Reserved
-        LV_KEY_NONE, // ----                       0xCE    Reserved
-        LV_KEY_NONE, // ----                       0xCF    Reserved
-        LV_KEY_NONE, // ----                       0xD0    Reserved
-        LV_KEY_NONE, // ----                       0xD1    Reserved
-        LV_KEY_NONE, // ----                       0xD2    Reserved
-        LV_KEY_NONE, // ----                       0xD3    Reserved
-        LV_KEY_NONE, // ----                       0xD4    Reserved
-        LV_KEY_NONE, // ----                       0xD5    Reserved
-        LV_KEY_NONE, // ----                       0xD6    Reserved
-        LV_KEY_NONE, // ----                       0xD7    Reserved
-        LV_KEY_NONE, // ----                       0xD8    Reserved
-        LV_KEY_NONE, // ----                       0xD9    Reserved
-        LV_KEY_NONE, // ----                       0xDA    Reserved
-        LV_KEY_LEFT_BRACKET, // VK_OEM_4           0xDB    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the [{ key
-        LV_KEY_BACKSLASH, // VK_OEM_5              0xDC    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the \\| key
-        LV_KEY_RIGHT_BRACKET, // VK_OEM_6          0xDD    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ]} key
-        LV_KEY_QUOTE, // VK_OEM_7                  0xDE    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '" key
-        LV_KEY_NONE, // VK_OEM_8                   0xDF    Used for miscellaneous characters; it can vary by keyboard.
-        LV_KEY_NONE, // ----                       0xE0    Reserved
-        LV_KEY_NONE, // ----                       0xE1    OEM specific
-        LV_KEY_NONE, // VK_OEM_102                 0xE2    The <> keys on the US standard keyboard, or the \\| key on the non-US 102-key keyboard
-        LV_KEY_NONE, // ----                       0xE3    OEM specific
-        LV_KEY_NONE, // ----                       0xE4    OEM specific
-        LV_KEY_NONE, // VK_PROCESSLV_KEY           0xE5    IME PROCESS key
-        LV_KEY_NONE, // ----                       0xE6    OEM specific
-        LV_KEY_NONE, // VK_PACKET                  0xE7    Used to pass Unicode characters as if they were keystrokes. The VK_PACKET key is the low word of a 32-bit Virtual Key value used for non-keyboard input methods. For more information, see Remark in LV_KEYBDINPUT, SendInput, WM_LV_KEYDOWN, and WM_LV_KEYUP
-        LV_KEY_NONE, // ----                       0xE8    Unassigned
-        LV_KEY_NONE, // ----                       0xE9    OEM specific
-        LV_KEY_NONE, // ----                       0xEA    OEM specific
-        LV_KEY_NONE, // ----                       0xEB    OEM specific
-        LV_KEY_NONE, // ----                       0xEC    OEM specific
-        LV_KEY_NONE, // ----                       0xED    OEM specific
-        LV_KEY_NONE, // ----                       0xEE    OEM specific
-        LV_KEY_NONE, // ----                       0xEF    OEM specific
-        LV_KEY_NONE, // ----                       0xF0    OEM specific
-        LV_KEY_NONE, // ----                       0xF1    OEM specific
-        LV_KEY_NONE, // ----                       0xF2    OEM specific
-        LV_KEY_NONE, // ----                       0xF3    OEM specific
-        LV_KEY_NONE, // ----                       0xF4    OEM specific
-        LV_KEY_NONE, // ----                       0xF5    OEM specific
-        LV_KEY_NONE, // VK_ATTN                    0xF6    Attn key
-        LV_KEY_NONE, // VK_CRSEL                   0xF7    CrSel key
-        LV_KEY_NONE, // VK_EXSEL                   0xF8    ExSel key
-        LV_KEY_NONE, // VK_EREOF                   0xF9    Erase EOF key
-        LV_KEY_NONE, // VK_PLAY                    0xFA    Play key
-        LV_KEY_NONE, // VK_ZOOM                    0xFB    Zoom key
-        LV_KEY_NONE, // VK_NONAME                  0xFC    Reserved
-        LV_KEY_NONE, // VK_PA1                     0xFD    PA1 key
-        LV_KEY_NONE, // VK_OEM_CLEAR               0xFE    Clear key
-        LV_KEY_NONE, // -                          0xFF    Unused
+            LV_KEY_NONE, // ----                       0xB8    Reserved
+            LV_KEY_NONE, // ----                       0xB9    Reserved
+            LV_KEY_SEMICOLON, // VK_OEM_1              0xBA    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ;: key
+            LV_KEY_EQUALS, // VK_OEM_PLUS              0xBB    For any country/region, the + key
+            LV_KEY_COMMA, // VK_OEM_COMMA              0xBC    For any country/region, the , key
+            LV_KEY_MINUS, // VK_OEM_MINUS              0xBD    For any country/region, the - key
+            LV_KEY_PERIOD, // VK_OEM_PERIOD            0xBE    For any country/region, the . key
+            LV_KEY_SLASH, // VK_OEM_2                  0xBF    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the /? key
+            LV_KEY_GRAVE, // VK_OEM_3                  0xC0    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the `~ key
+            LV_KEY_NONE, // ----                       0xC1    Reserved
+            LV_KEY_NONE, // ----                       0xC2    Reserved
+            LV_KEY_NONE, // ----                       0xC3    Reserved
+            LV_KEY_NONE, // ----                       0xC4    Reserved
+            LV_KEY_NONE, // ----                       0xC5    Reserved
+            LV_KEY_NONE, // ----                       0xC6    Reserved
+            LV_KEY_NONE, // ----                       0xC7    Reserved
+            LV_KEY_NONE, // ----                       0xC8    Reserved
+            LV_KEY_NONE, // ----                       0xC9    Reserved
+            LV_KEY_NONE, // ----                       0xCA    Reserved
+            LV_KEY_NONE, // ----                       0xCB    Reserved
+            LV_KEY_NONE, // ----                       0xCC    Reserved
+            LV_KEY_NONE, // ----                       0xCD    Reserved
+            LV_KEY_NONE, // ----                       0xCE    Reserved
+            LV_KEY_NONE, // ----                       0xCF    Reserved
+            LV_KEY_NONE, // ----                       0xD0    Reserved
+            LV_KEY_NONE, // ----                       0xD1    Reserved
+            LV_KEY_NONE, // ----                       0xD2    Reserved
+            LV_KEY_NONE, // ----                       0xD3    Reserved
+            LV_KEY_NONE, // ----                       0xD4    Reserved
+            LV_KEY_NONE, // ----                       0xD5    Reserved
+            LV_KEY_NONE, // ----                       0xD6    Reserved
+            LV_KEY_NONE, // ----                       0xD7    Reserved
+            LV_KEY_NONE, // ----                       0xD8    Reserved
+            LV_KEY_NONE, // ----                       0xD9    Reserved
+            LV_KEY_NONE, // ----                       0xDA    Reserved
+            LV_KEY_LEFT_BRACKET, // VK_OEM_4           0xDB    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the [{ key
+            LV_KEY_BACKSLASH, // VK_OEM_5              0xDC    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the \\| key
+            LV_KEY_RIGHT_BRACKET, // VK_OEM_6          0xDD    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ]} key
+            LV_KEY_QUOTE, // VK_OEM_7                  0xDE    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '" key
+            LV_KEY_NONE, // VK_OEM_8                   0xDF    Used for miscellaneous characters; it can vary by keyboard.
+            LV_KEY_NONE, // ----                       0xE0    Reserved
+            LV_KEY_NONE, // ----                       0xE1    OEM specific
+            LV_KEY_NONE, // VK_OEM_102                 0xE2    The <> keys on the US standard keyboard, or the \\| key on the non-US 102-key keyboard
+            LV_KEY_NONE, // ----                       0xE3    OEM specific
+            LV_KEY_NONE, // ----                       0xE4    OEM specific
+            LV_KEY_NONE, // VK_PROCESSLV_KEY           0xE5    IME PROCESS key
+            LV_KEY_NONE, // ----                       0xE6    OEM specific
+            LV_KEY_NONE, // VK_PACKET                  0xE7    Used to pass Unicode characters as if they were keystrokes. The VK_PACKET key is the low word of a 32-bit Virtual Key value used for non-keyboard input methods. For more information, see Remark in LV_KEYBDINPUT, SendInput, WM_LV_KEYDOWN, and WM_LV_KEYUP
+            LV_KEY_NONE, // ----                       0xE8    Unassigned
+            LV_KEY_NONE, // ----                       0xE9    OEM specific
+            LV_KEY_NONE, // ----                       0xEA    OEM specific
+            LV_KEY_NONE, // ----                       0xEB    OEM specific
+            LV_KEY_NONE, // ----                       0xEC    OEM specific
+            LV_KEY_NONE, // ----                       0xED    OEM specific
+            LV_KEY_NONE, // ----                       0xEE    OEM specific
+            LV_KEY_NONE, // ----                       0xEF    OEM specific
+            LV_KEY_NONE, // ----                       0xF0    OEM specific
+            LV_KEY_NONE, // ----                       0xF1    OEM specific
+            LV_KEY_NONE, // ----                       0xF2    OEM specific
+            LV_KEY_NONE, // ----                       0xF3    OEM specific
+            LV_KEY_NONE, // ----                       0xF4    OEM specific
+            LV_KEY_NONE, // ----                       0xF5    OEM specific
+            LV_KEY_NONE, // VK_ATTN                    0xF6    Attn key
+            LV_KEY_NONE, // VK_CRSEL                   0xF7    CrSel key
+            LV_KEY_NONE, // VK_EXSEL                   0xF8    ExSel key
+            LV_KEY_NONE, // VK_EREOF                   0xF9    Erase EOF key
+            LV_KEY_NONE, // VK_PLAY                    0xFA    Play key
+            LV_KEY_NONE, // VK_ZOOM                    0xFB    Zoom key
+            LV_KEY_NONE, // VK_NONAME                  0xFC    Reserved
+            LV_KEY_NONE, // VK_PA1                     0xFD    PA1 key
+            LV_KEY_NONE, // VK_OEM_CLEAR               0xFE    Clear key
+            LV_KEY_NONE, // -                          0xFF    Unused
     };
     int VKCodeMapSize = ARRAY_SIZE(VKCodeMap);
 
-    LvKeyCode KeyboardState::ActiveKeys[] =
-    {
-        LV_KEY_NONE, LV_KEY_NONE, LV_KEY_NONE, LV_KEY_NONE,
-        LV_KEY_NONE, LV_KEY_NONE, LV_KEY_NONE, LV_KEY_NONE
-    };
+    KeyState KeyboardState::ActiveKeys[] = {};
     int KeyboardState::ActiveCount = 0;
     bool KeyboardState::bRawInput = true;
 
@@ -280,13 +276,14 @@ namespace Leviathan
         return VKCodeMap[VkCode];
     }
 
-    bool KeyboardState::GetKeyState(LvKeyCode KeyCode)
+    bool KeyboardState::GetKeyState(LvKeyCode KeyCode, bool bHeld)
     {
         for (int KeyIdx = 0; KeyIdx < ActiveCount; KeyIdx++)
         {
-            if (ActiveKeys[KeyIdx] == KeyCode)
+            if (ActiveKeys[KeyIdx].Code == KeyCode)
             {
-                return true;
+                bool bResult = bHeld ? true : ActiveKeys[KeyIdx].FramesHeld == 0;
+                return bResult;
             }
         }
         return false;
@@ -303,7 +300,7 @@ namespace Leviathan
         int KeyIdx = 0;
         while (KeyIdx < ActiveCount)
         {
-            if (ActiveKeys[KeyIdx] == LvCode)
+            if (ActiveKeys[KeyIdx].Code == LvCode)
             {
                 bKeyFound = true;
                 break;
@@ -315,7 +312,7 @@ namespace Leviathan
             // Clear 'last' active key
             if (KeyIdx == ActiveCount - 1)
             {
-                ActiveKeys[KeyIdx] = LV_KEY_NONE;
+                ActiveKeys[KeyIdx] = KeyState{};
             }
             else // Shift ActiveKeys down
             {
@@ -335,13 +332,13 @@ namespace Leviathan
 
         for (int KeyIdx = 0; KeyIdx < KeyCount; KeyIdx++)
         {
-            if (ActiveKeys[KeyIdx] == LvCode)
+            if (ActiveKeys[KeyIdx].Code == LvCode)
             {
                 return;
             }
-            if (ActiveKeys[KeyIdx] == LV_KEY_NONE)
+            if (ActiveKeys[KeyIdx].Code == LV_KEY_NONE)
             {
-                ActiveKeys[KeyIdx] = LvCode;
+                ActiveKeys[KeyIdx] = KeyState{ LvCode };
                 ActiveCount++;
                 return;
             }
@@ -397,6 +394,17 @@ namespace Leviathan
         }
     }
 
+    void KeyboardState::Tick()
+    {
+        for (int KeyIdx = 0; KeyIdx < ActiveCount; KeyIdx++)
+        {
+            if (ActiveKeys[KeyIdx].Code != LV_KEY_NONE)
+            {
+                ActiveKeys[KeyIdx].FramesHeld++;
+            }
+        }
+    }
+
     bool MouseState::bInit = false;
     bool MouseState::bRawInput = false;
     int MouseState::MouseX = 0;
@@ -435,6 +443,7 @@ namespace Leviathan
 
     void MouseState::Win32_MouseMsg(UINT Msg, WPARAM wParam, LPARAM lParam)
     {
+        static constexpr float WheelFactor = 1.0f / 120.0f;
         if (bRawInput) { return; }
         switch (Msg)
         {
@@ -451,12 +460,6 @@ namespace Leviathan
             case WM_RBUTTONUP: { bRightKey = false; } break;
             case WM_MBUTTONDOWN: { bMiddleKey = true; } break;
             case WM_MBUTTONUP: { bMiddleKey = false; } break;
-            case WM_LBUTTONDBLCLK:
-            case WM_RBUTTONDBLCLK:
-            case WM_MBUTTONDBLCLK:
-            {
-                // TODO: Doubleclick (do we care?)
-            } break;
             case WM_MOUSEWHEEL:
             {
                 MouseWheel = ((float)GET_WHEEL_DELTA_WPARAM(wParam)) * WheelFactor;
@@ -483,9 +486,6 @@ namespace Leviathan
         {
             SetMousePosRel(RawMouse.lLastX, RawMouse.lLastY);
         }
-        // MOUSE_VIRTUAL_DESKTOP:
-        // MOUSE_ATTRIBUTES_CHANGED:
-        // MOUSE_MOVE_NOCOALESCE:
 
         if (RawMouse.usButtonData & RI_MOUSE_LEFT_BUTTON_DOWN) { bLeftKey = true; }
         else if (RawMouse.usButtonData & RI_MOUSE_LEFT_BUTTON_UP) { bLeftKey = false; }
@@ -493,6 +493,11 @@ namespace Leviathan
         else if (RawMouse.usButtonData & RI_MOUSE_RIGHT_BUTTON_UP) { bRightKey = false; }
         if (RawMouse.usButtonData & RI_MOUSE_MIDDLE_BUTTON_DOWN) { bMiddleKey = true; }
         else if (RawMouse.usButtonData & RI_MOUSE_MIDDLE_BUTTON_UP) { bMiddleKey = false; }
+    }
+
+    void MouseState::Tick()
+    {
+        MouseState::MouseWheel = 0.0f;
     }
 
     bool GamepadState::Buttons[] = {};
@@ -564,6 +569,11 @@ namespace Leviathan
 
             LastReading = Controller0.dwPacketNumber;
         }
+    }
+
+    void GamepadState::Tick()
+    {
+        GamepadState::Win32_UpdateXInput();
     }
 
     void RawInputHandler::Init()
@@ -687,7 +697,7 @@ namespace Leviathan
         float Right = Left + (Key.Size.X * Scale);
         float Bottom = Top + (Key.Size.Y * Scale);
         D2D1_RECT_F KeyRect{ Left, Top, Right, Bottom };
-        bool bIsDown = KeyboardState::GetKeyState(Key.LvCode);
+        bool bIsDown = KeyboardState::GetKeyState(Key.LvCode, true);
         if (bIsDown) { InD2RT->FillRectangle(&KeyRect, InBrush); }
         else { InD2RT->DrawRectangle(&KeyRect, InBrush, 1.0f, nullptr); }
     }
@@ -883,7 +893,6 @@ namespace Leviathan
                 InD2RT->DrawLine(RStickPos, RStickInput, InBrush1, 1.0f, nullptr);
             }
         }
-
     }
 
     void InputVisualizer::DrawGamepad(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)

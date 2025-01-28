@@ -506,8 +506,24 @@ namespace Leviathan
         }
     }
 
+    bool bVisualizeKeyboard = true;
+    bool bVisualizeMouse = true;
+    bool bVisualizeGamepad = true;
     void Graphics::UpdateAndDraw()
     {
+        if (KeyboardState::GetKeyState(LV_KEY_F1))
+        {
+            bVisualizeKeyboard = !bVisualizeKeyboard;
+        }
+        if (KeyboardState::GetKeyState(LV_KEY_F2))
+        {
+            bVisualizeMouse = !bVisualizeMouse;
+        }
+        if (KeyboardState::GetKeyState(LV_KEY_F3))
+        {
+            bVisualizeGamepad = !bVisualizeGamepad;
+        }
+
         DX_ImmediateContext->RSSetState(DX_RasterizerState);
         DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
         v4f ClearColor = { 30.0f / 255.0f, 30.0f / 255.0f, 45.0f / 255.0f, 1.0f };
@@ -626,9 +642,9 @@ namespace Leviathan
             static bool bDrawInputVisualizerBG = true;
             if (bDrawInputVisualizerBG)
             {
-                InputVisualizer::DrawKeyboard(D2_RenderTarget, D2_LightYellowBrush);
-                InputVisualizer::DrawMouse(D2_RenderTarget, D2_LightYellowBrush, D2_BlackBrush);
-                InputVisualizer::DrawGamepad(D2_RenderTarget, D2_LightYellowBrush, D2_BlackBrush);
+                if (bVisualizeKeyboard) { InputVisualizer::DrawKeyboard(D2_RenderTarget, D2_LightYellowBrush); }
+                if (bVisualizeMouse) { InputVisualizer::DrawMouse(D2_RenderTarget, D2_LightYellowBrush, D2_BlackBrush); }
+                if (bVisualizeGamepad) { InputVisualizer::DrawGamepad(D2_RenderTarget, D2_LightYellowBrush, D2_BlackBrush); }
             }
 
             DX_CHECK(D2_RenderTarget->EndDraw());

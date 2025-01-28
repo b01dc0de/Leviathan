@@ -91,19 +91,26 @@ namespace Leviathan
         LV_KEY_COUNT,
     };
 
+    struct KeyState
+    {
+        LvKeyCode Code = LV_KEY_NONE;
+        int FramesHeld = 0;
+    };
+
     struct KeyboardState
     {
         static constexpr int KeyCount = 16;
-        static LvKeyCode ActiveKeys[KeyCount];
+        static KeyState ActiveKeys[KeyCount];
         static int ActiveCount;
         static bool bRawInput;
 
         static LvKeyCode VkToLv(int VkCode);
-        static bool GetKeyState(LvKeyCode LvCode);
+        static bool GetKeyState(LvKeyCode LvCode, bool bHeld = false);
         static void SetKeyUp(int VkCode);
         static void SetKeyDown(int VkCode);
         static void Win32_KeyMsg(UINT Msg, WPARAM wParam, LPARAM lParam);
         static void Win32_RawInput(RAWINPUT* pRawInput);
+        static void Tick();
     };
 
     struct MouseState
@@ -113,7 +120,6 @@ namespace Leviathan
 
         static int MouseX;
         static int MouseY;
-        static constexpr float WheelFactor = 1.0f / 120.0f;
         static float MouseWheel;
         static bool bLeftKey;
         static bool bRightKey;
@@ -124,6 +130,7 @@ namespace Leviathan
         static void SetMousePosAbs(int X, int Y);
         static void Win32_MouseMsg(UINT Msg, WPARAM wParam, LPARAM lParam);
         static void Win32_RawInput(RAWINPUT* pRawInput);
+        static void Tick();
     };
 
     enum LvGamepadButton
@@ -162,6 +169,7 @@ namespace Leviathan
         static v2f GetRightStick();
         static bool GetButton(LvGamepadButton LvButton);
         static void Win32_UpdateXInput();
+        static void Tick();
     };
 
     struct RawInputHandler
