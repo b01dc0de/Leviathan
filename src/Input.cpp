@@ -553,10 +553,10 @@ namespace Leviathan
             LeftTrigger = (float)Controller0.Gamepad.bLeftTrigger / MaxTriggerValue;
             RightTrigger = (float)Controller0.Gamepad.bRightTrigger / MaxTriggerValue;
 
-            LeftStickX = (float)Controller0.Gamepad.sThumbLX;
-            LeftStickY = (float)Controller0.Gamepad.sThumbLY;
-            RightStickX = (float)Controller0.Gamepad.sThumbRX;
-            RightStickY = (float)Controller0.Gamepad.sThumbRY;
+            LeftStickX = (float)Controller0.Gamepad.sThumbLX / MaxStickValue;
+            LeftStickY = (float)Controller0.Gamepad.sThumbLY / MaxStickValue;
+            RightStickX = (float)Controller0.Gamepad.sThumbRX / MaxStickValue;
+            RightStickY = (float)Controller0.Gamepad.sThumbRY / MaxStickValue;
 
             LastReading = Controller0.dwPacketNumber;
         }
@@ -754,10 +754,10 @@ namespace Leviathan
 
     struct VisualGamepad
     {
-        static void Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush);
+        static void Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2);
     };
 
-    void VisualGamepad::Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush)
+    void VisualGamepad::Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
     {
         static const v2f GamepadOrigin{0.0f, AppHeight - 200.0f};
         static const v2f ButtonSize{ 25.0f, 25.0f };
@@ -789,22 +789,79 @@ namespace Leviathan
             };
             if (GamepadState::GetButton((LvGamepadButton)ButtonIdx))
             {
-                InD2RT->FillRectangle(&ButtonRect, InBrush);
+                InD2RT->FillRectangle(&ButtonRect, InBrush1);
             }
             else
             {
-                InD2RT->DrawRectangle(&ButtonRect, InBrush, 1.0f, nullptr);
+                InD2RT->DrawRectangle(&ButtonRect, InBrush1, 1.0f, nullptr);
             }
         }
 
         float LTrigger = GamepadState::GetLeftTrigger();
         float RTrigger = GamepadState::GetRightTrigger();
+        { // Triggers
+            static constexpr float TriggerDeadzone = 0.05f;
+            static const v2f LTriggerPos = ButtonPos[LV_GAMEPAD_LEFT_SHOULDER] + v2f{ ButtonSize.X * 2.0f, ButtonSize.Y * -1.0f };
+            static const v2f RTriggerPos = ButtonPos[LV_GAMEPAD_RIGHT_SHOULDER] + v2f{ ButtonSize.X * -2.0f, ButtonSize.Y * -1.0f };
+            static const v2f TriggerSize{ 25.0f, 50.0f };
+            D2D1_RECT_F LeftTriggerRect{ LTriggerPos.X, LTriggerPos.Y,
+                LTriggerPos.X + TriggerSize.X, LTriggerPos.Y + TriggerSize.Y };
+            D2D1_RECT_F RightTriggerRect{ RTriggerPos.X, RTriggerPos.Y,
+                RTriggerPos.X + TriggerSize.X, RTriggerPos.Y + TriggerSize.Y };
+            InD2RT->DrawRectangle(&LeftTriggerRect, InBrush1, 1.0f, nullptr);
+            InD2RT->DrawRectangle(&RightTriggerRect, InBrush1, 1.0f, nullptr);
+            if (LTrigger > TriggerDeadzone)
+            {
+                LeftTriggerRect.bottom = LTriggerPos.Y + (TriggerSize.Y * LTrigger);
+                InD2RT->FillRectangle(&LeftTriggerRect, InBrush2);
+            }
+            if (RTrigger > TriggerDeadzone)
+            {
+                RightTriggerRect.bottom = RTriggerPos.Y + (TriggerSize.Y * RTrigger);
+                InD2RT->FillRectangle(&RightTriggerRect, InBrush2);
+            }
+        }
+
+        static float StickDeadzone = 0.025f;
         v2f LStick = GamepadState::GetLeftStick();
         v2f RStick = GamepadState::GetRightStick();
+        { // Sticks
+            static const float StickSize = 25.0f;
+            static const D2D1_POINT_2F LStickPos { ButtonPos[LV_GAMEPAD_SELECT].X, ButtonPos[LV_GAMEPAD_DPAD_DOWN].Y + StickSize };
+            static const D2D1_POINT_2F RStickPos{ ButtonPos[LV_GAMEPAD_START].X + StickSize, ButtonPos[LV_GAMEPAD_FACE_DOWN].Y + StickSize };
+            D2D1_ELLIPSE LeftEllipse{ LStickPos, StickSize, StickSize };
+            D2D1_ELLIPSE RightEllipse{ RStickPos, StickSize, StickSize };
+            InD2RT->DrawEllipse(&LeftEllipse, InBrush1, 1.0f, nullptr);
+            InD2RT->DrawEllipse(&RightEllipse, InBrush1, 1.0f, nullptr);
+
+            bool bLX = LStick.X > StickDeadzone || LStick.X < -StickDeadzone;
+            bool bLY = LStick.Y > StickDeadzone || LStick.Y < -StickDeadzone;
+            bool bRX = RStick.X > StickDeadzone || RStick.X < -StickDeadzone;
+            bool bRY = RStick.Y > StickDeadzone || RStick.Y < -StickDeadzone;
+            if (bLX || bLY)
+            {
+                D2D1_POINT_2F LStickInput{
+                    LStickPos.x + (bLX ? LStick.X : 0.0f) * StickSize,
+                    LStickPos.y + (bLY ? -LStick.Y : 0.0f) * StickSize
+                };
+
+                InD2RT->DrawLine(LStickPos, LStickInput, InBrush1, 1.0f, nullptr);
+            }
+            if (bRX || bRY)
+            {
+                D2D1_POINT_2F RStickInput{
+                    RStickPos.x + (bRX ? RStick.X : 0.0f) * StickSize,
+                    RStickPos.y + (bRY ? -RStick.Y : 0.0f) * StickSize
+                };
+
+                InD2RT->DrawLine(RStickPos, RStickInput, InBrush1, 1.0f, nullptr);
+            }
+        }
+
     }
 
-    void InputVisualizer::DrawGamepad(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush)
+    void InputVisualizer::DrawGamepad(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
     {
-        VisualGamepad::Draw(InD2RT, InBrush);
+        VisualGamepad::Draw(InD2RT, InBrush1, InBrush2);
     }
 }

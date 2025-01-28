@@ -628,7 +628,7 @@ namespace Leviathan
             {
                 InputVisualizer::DrawKeyboard(D2_RenderTarget, D2_LightYellowBrush);
                 InputVisualizer::DrawMouse(D2_RenderTarget, D2_LightYellowBrush, D2_BlackBrush);
-                InputVisualizer::DrawGamepad(D2_RenderTarget, D2_LightYellowBrush);
+                InputVisualizer::DrawGamepad(D2_RenderTarget, D2_LightYellowBrush, D2_BlackBrush);
             }
 
             DX_CHECK(D2_RenderTarget->EndDraw());
