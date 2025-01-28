@@ -269,6 +269,7 @@ namespace Leviathan
         LV_KEY_NONE, LV_KEY_NONE, LV_KEY_NONE, LV_KEY_NONE
     };
     int KeyboardState::ActiveCount = 0;
+    bool KeyboardState::bRawInput = true;
 
     LvKeyCode KeyboardState::VkToLv(int VkCode)
     {
@@ -297,7 +298,6 @@ namespace Leviathan
 
         LvKeyCode LvCode = VkToLv(VkCode);
         if (LvCode == LV_KEY_NONE) { return; }
-
 
         bool bKeyFound = false;
         int KeyIdx = 0;
@@ -350,6 +350,7 @@ namespace Leviathan
 
     void KeyboardState::Win32_KeyMsg(UINT Msg, WPARAM wParam, LPARAM lParam)
     {
+        if (bRawInput) { return; }
         LV_UNUSED(lParam);
         WORD vkCode = LOWORD(wParam);
         switch (Msg)
@@ -373,18 +374,31 @@ namespace Leviathan
 
     void KeyboardState::Win32_RawInput(RAWINPUT* pRawInput)
     {
+        if (!bRawInput) { return; }
         ASSERT(pRawInput);
         ASSERT(pRawInput->header.dwType == RIM_TYPEKEYBOARD);
         RAWKEYBOARD RawKbd = pRawInput->data.keyboard;
-
-        Win32_KeyMsg(RawKbd.Message, RawKbd.VKey, 0);
+        switch (RawKbd.Message)
+        {
+            case WM_KEYDOWN:
+            case WM_SYSKEYDOWN:
+            {
+                KeyboardState::SetKeyDown(RawKbd.VKey);
+            } break;
+            case WM_KEYUP:
+            case WM_SYSKEYUP:
+            {
+                KeyboardState::SetKeyUp(RawKbd.VKey);
+            } break;
+            default:
+            {
+                ASSERT(false);
+            } break;
+        }
     }
 
     bool MouseState::bInit = false;
-    int MouseState::Speed = 0;
-    int MouseState::ThresholdA = 0;
-    int MouseState::ThresholdB = 0;
-    int MouseState::Accel = 0;
+    bool MouseState::bRawInput = false;
     int MouseState::MouseX = 0;
     int MouseState::MouseY = 0;
     bool MouseState::bLeftKey = false;
@@ -393,19 +407,6 @@ namespace Leviathan
 
     void MouseState::Init()
     {
-        { // Get mouse parameters from SystemParameters
-            int MouseParams[] = { 0, 0, 0 };
-            int OutMouseSpeed = 0;
-
-            ASSERT(SystemParametersInfoA(SPI_GETMOUSE, 0, MouseParams, 0) == TRUE);
-            ASSERT(SystemParametersInfoA(SPI_GETMOUSESPEED, 0, &OutMouseSpeed, 0) == TRUE);
-
-            Speed = OutMouseSpeed;
-            ThresholdA = MouseParams[0];
-            ThresholdB = MouseParams[1];
-            Accel = MouseParams[2];
-        }
-
         POINT OutPos = {};
         ASSERT(GetCursorPos(&OutPos) == TRUE);
 
@@ -419,48 +420,21 @@ namespace Leviathan
     {
         if (!bInit) { Init(); }
 
-        /*
-            NOTE: From https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput#remarks
-            The system applies two tests to the specified relative mouse movement.
-            If...
-                 1) the specified distance along either the x or y axis is greater than the first mouse threshold value
-                 2) and the mouse speed is not zero
-                 => the system doubles the distance.
-            If...
-                1) the specified distance along either the x or y axis is greater than the second mouse threshold value
-                2) and the mouse speed is equal to two
-                => the system doubles the distance that resulted from applying the first threshold test.
-            It is thus possible for the system to multiply specified relative mouse movement along the x or y axis by up to four times.
-        */
-        int NewDX = dX;
-        int NewDY = dY;
-        if ((dX > ThresholdA || dY > ThresholdB) && (Accel != 0))
-        {
-            NewDX *= 2;
-            NewDY *= 2;
-        }
-        if ((dX > ThresholdB || dY > ThresholdB) && (Accel == 2))
-        {
-            NewDX *= 2;
-            NewDY *= 2;
-        }
-
-
-        MouseX += NewDX;
-        MouseY += NewDY;
-
-        //MouseX += dX;
-        //MouseY += dY;
+        MouseX += dX;
+        MouseY += dY;
     }
 
     void MouseState::SetMousePosAbs(int X, int Y)
     {
+        if (!bInit) { Init(); }
+
         MouseX = X;
         MouseY = Y;
     }
 
     void MouseState::Win32_MouseMsg(UINT Msg, WPARAM wParam, LPARAM lParam)
     {
+        if (bRawInput) { return; }
         switch (Msg)
         {
             case WM_MOUSEMOVE:
@@ -492,53 +466,108 @@ namespace Leviathan
 
     void MouseState::Win32_RawInput(RAWINPUT* pRawInput)
     {
+        if (!bRawInput) { return; }
         ASSERT(pRawInput);
         ASSERT(pRawInput->header.dwType == RIM_TYPEMOUSE);
 
         RAWMOUSE RawMouse = pRawInput->data.mouse;
-        switch (RawMouse.usFlags)
+        if (RawMouse.usFlags & MOUSE_MOVE_ABSOLUTE)
         {
-            case MOUSE_MOVE_RELATIVE:
-            {
-                SetMousePosRel(RawMouse.lLastX, RawMouse.lLastY);
-            } break;
-            case MOUSE_MOVE_ABSOLUTE:
-            {
-                SetMousePosAbs(RawMouse.lLastX, RawMouse.lLastY);
-            } break;
-            case MOUSE_VIRTUAL_DESKTOP:
-            case MOUSE_ATTRIBUTES_CHANGED:
-            case MOUSE_MOVE_NOCOALESCE:
-            {
-            } break;
-            default:
-            {
-                ASSERT(false);
-            } break;
+            SetMousePosAbs(RawMouse.lLastX, RawMouse.lLastY);
         }
-        if ((RawMouse.usButtonData & RI_MOUSE_LEFT_BUTTON_DOWN) == RI_MOUSE_LEFT_BUTTON_DOWN) { bLeftKey = true; }
-        else if ((RawMouse.usButtonData & RI_MOUSE_LEFT_BUTTON_UP) == RI_MOUSE_LEFT_BUTTON_UP) { bLeftKey = false; }
-        if ((RawMouse.usButtonData & RI_MOUSE_RIGHT_BUTTON_DOWN) == RI_MOUSE_RIGHT_BUTTON_DOWN) { bRightKey = true; }
-        else if ((RawMouse.usButtonData & RI_MOUSE_RIGHT_BUTTON_UP) == RI_MOUSE_RIGHT_BUTTON_UP) { bRightKey = false; }
-        if ((RawMouse.usButtonData & RI_MOUSE_MIDDLE_BUTTON_DOWN) == RI_MOUSE_MIDDLE_BUTTON_DOWN) { bMiddleKey = true; }
-        else if ((RawMouse.usButtonData & RI_MOUSE_MIDDLE_BUTTON_UP) == RI_MOUSE_MIDDLE_BUTTON_UP) { bMiddleKey = false; }
+        else if (RawMouse.lLastX != 0 || RawMouse.lLastY != 0)
+        {
+            SetMousePosRel(RawMouse.lLastX, RawMouse.lLastY);
+        }
+        // MOUSE_VIRTUAL_DESKTOP:
+        // MOUSE_ATTRIBUTES_CHANGED:
+        // MOUSE_MOVE_NOCOALESCE:
+
+        if (RawMouse.usButtonData & RI_MOUSE_LEFT_BUTTON_DOWN) { bLeftKey = true; }
+        else if (RawMouse.usButtonData & RI_MOUSE_LEFT_BUTTON_UP) { bLeftKey = false; }
+        if (RawMouse.usButtonData & RI_MOUSE_RIGHT_BUTTON_DOWN) { bRightKey = true; }
+        else if (RawMouse.usButtonData & RI_MOUSE_RIGHT_BUTTON_UP) { bRightKey = false; }
+        if (RawMouse.usButtonData & RI_MOUSE_MIDDLE_BUTTON_DOWN) { bMiddleKey = true; }
+        else if (RawMouse.usButtonData & RI_MOUSE_MIDDLE_BUTTON_UP) { bMiddleKey = false; }
     }
 
-    void GamepadState::Win32_RawInput(RAWINPUT* pRawInput)
-    {
-        ASSERT(pRawInput);
-        ASSERT(pRawInput->header.dwType == RIM_TYPEHID);
+    bool GamepadState::Buttons[] = {};
+    float GamepadState::LeftStickX = 0.0f;
+    float GamepadState::LeftStickY = 0.0f;
+    float GamepadState::RightStickX = 0.0f;
+    float GamepadState::RightStickY = 0.0f;
+    float GamepadState::LeftTrigger = 0.0f;
+    float GamepadState::RightTrigger = 0.0f;
+    unsigned int GamepadState::LastReading = 0;
 
+    bool GamepadState::GetButton(LvGamepadButton LvButton)
+    {
+        return Buttons[LvButton];
+    }
+
+    float GamepadState::GetLeftTrigger()
+    {
+        return LeftTrigger;
+    }
+
+    float GamepadState::GetRightTrigger()
+    {
+        return RightTrigger;
+    }
+
+    v2f GamepadState::GetLeftStick()
+    {
+        return v2f{LeftStickX, LeftStickY};
+    }
+
+    v2f GamepadState::GetRightStick()
+    {
+        return v2f{RightStickX, RightStickY};
+    }
+
+    void GamepadState::Win32_UpdateXInput()
+    {
+        constexpr float MaxTriggerValue = 255.0f;
+        constexpr float MaxStickValue = 32767.0f;
+
+        XINPUT_STATE Controller0 = {};
+        DWORD dwResult = XInputGetState(0, &Controller0);
+        if (dwResult == ERROR_SUCCESS && LastReading != Controller0.dwPacketNumber)
+        {
+            WORD& wButtons = Controller0.Gamepad.wButtons;
+            Buttons[LV_GAMEPAD_DPAD_UP] = wButtons & XINPUT_GAMEPAD_DPAD_UP;
+            Buttons[LV_GAMEPAD_DPAD_DOWN] = wButtons & XINPUT_GAMEPAD_DPAD_DOWN;
+            Buttons[LV_GAMEPAD_DPAD_LEFT] = wButtons & XINPUT_GAMEPAD_DPAD_LEFT;
+            Buttons[LV_GAMEPAD_DPAD_RIGHT] = wButtons & XINPUT_GAMEPAD_DPAD_RIGHT;
+            Buttons[LV_GAMEPAD_START] = wButtons & XINPUT_GAMEPAD_START;
+            Buttons[LV_GAMEPAD_SELECT] = wButtons & XINPUT_GAMEPAD_BACK;
+            Buttons[LV_GAMEPAD_LEFT_THUMB] = wButtons & XINPUT_GAMEPAD_LEFT_THUMB;
+            Buttons[LV_GAMEPAD_RIGHT_THUMB] = wButtons & XINPUT_GAMEPAD_RIGHT_THUMB;
+            Buttons[LV_GAMEPAD_LEFT_SHOULDER] = wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER;
+            Buttons[LV_GAMEPAD_RIGHT_SHOULDER] = wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER;
+            Buttons[LV_GAMEPAD_FACE_UP] = wButtons & XINPUT_GAMEPAD_Y;
+            Buttons[LV_GAMEPAD_FACE_DOWN] = wButtons & XINPUT_GAMEPAD_A;
+            Buttons[LV_GAMEPAD_FACE_LEFT] = wButtons & XINPUT_GAMEPAD_X;
+            Buttons[LV_GAMEPAD_FACE_RIGHT] = wButtons & XINPUT_GAMEPAD_B;
+
+            LeftTrigger = (float)Controller0.Gamepad.bLeftTrigger / MaxTriggerValue;
+            RightTrigger = (float)Controller0.Gamepad.bRightTrigger / MaxTriggerValue;
+
+            LeftStickX = (float)Controller0.Gamepad.sThumbLX;
+            LeftStickY = (float)Controller0.Gamepad.sThumbLY;
+            RightStickX = (float)Controller0.Gamepad.sThumbRX;
+            RightStickY = (float)Controller0.Gamepad.sThumbRY;
+
+            LastReading = Controller0.dwPacketNumber;
+        }
     }
 
     void RawInputHandler::Init()
     {
-        DWORD  KeyboardMouseFlags = RIDEV_NOLEGACY | RIDEV_NOHOTKEYS | RIDEV_DEVNOTIFY;
-        DWORD GamepadFlags = RIDEV_DEVNOTIFY;
+        DWORD Flags = RIDEV_DEVNOTIFY;
         RAWINPUTDEVICE RIDevDescs[] = {
-            { HID_USAGE_PAGE_GENERIC, HID_USAGE_GENERIC_MOUSE, KeyboardMouseFlags, AppWindow },
-            { HID_USAGE_PAGE_GENERIC, HID_USAGE_GENERIC_KEYBOARD, KeyboardMouseFlags, AppWindow },
-            { HID_USAGE_PAGE_GENERIC, HID_USAGE_GENERIC_GAMEPAD, GamepadFlags, AppWindow }
+            { HID_USAGE_PAGE_GENERIC, HID_USAGE_GENERIC_MOUSE, Flags, AppWindow },
+            { HID_USAGE_PAGE_GENERIC, HID_USAGE_GENERIC_KEYBOARD, Flags | RIDEV_NOHOTKEYS, AppWindow },
         };
         ASSERT(RegisterRawInputDevices(
             RIDevDescs,
@@ -556,10 +585,6 @@ namespace Leviathan
         GetRawInputData(hRawInput, RID_INPUT, nullptr, &RequiredDataSize, sizeof(RAWINPUTHEADER));
 
         RAWINPUT OutData = {};
-        //UINT RequiredHeaderSize = 0;
-        //GetRawInputData(hRawInput, RID_HEADER, nullptr, &RequiredHeaderSize, sizeof(RAWINPUTHEADER));
-        //RAWINPUT OutHeader = {};
-        //GetRawInputData(hRawInput, RID_HEADER, &OutHeader, &RequiredHeaderSize, sizeof(RAWINPUTHEADER));
         if (GetRawInputData(hRawInput, RID_INPUT, &OutData, &RequiredDataSize, sizeof(RAWINPUTHEADER)) > 0)
         {
             DWORD Type = OutData.header.dwType;
@@ -567,13 +592,11 @@ namespace Leviathan
             {
                 case RIM_TYPEMOUSE: { MouseState::Win32_RawInput(&OutData); } break;
                 case RIM_TYPEKEYBOARD: { KeyboardState::Win32_RawInput(&OutData); } break;
-                case RIM_TYPEHID: { GamepadState::Win32_RawInput(&OutData); } break;
             }
         }
     }
     void RawInputHandler::Win32_DeviceChange(WPARAM wParam, LPARAM lParam)
     {
-        // TODO:
     }
 
     struct VisualKey

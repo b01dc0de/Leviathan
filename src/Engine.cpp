@@ -133,6 +133,7 @@ namespace Leviathan
         {
             WindowMsgLoop(AppWindow);
             Graphics::UpdateAndDraw();
+            GamepadState::Win32_UpdateXInput();
 
             if (KeyboardState::GetKeyState(LV_KEY_ESC))
             {

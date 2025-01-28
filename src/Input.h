@@ -1,6 +1,8 @@
 #ifndef LEVIATHAN_INPUT_H
 #define LEVIATHAN_INPUT_H
 
+#include "Math.h"
+
 namespace Leviathan
 {
     enum LvKeyCode
@@ -94,6 +96,7 @@ namespace Leviathan
         static constexpr int KeyCount = 16;
         static LvKeyCode ActiveKeys[KeyCount];
         static int ActiveCount;
+        static bool bRawInput;
 
         static LvKeyCode VkToLv(int VkCode);
         static bool GetKeyState(LvKeyCode LvCode);
@@ -106,10 +109,7 @@ namespace Leviathan
     struct MouseState
     {
         static bool bInit;
-        static int Speed;
-        static int ThresholdA;
-        static int ThresholdB;
-        static int Accel;
+        static bool bRawInput;
 
         static int MouseX;
         static int MouseY;
@@ -124,15 +124,49 @@ namespace Leviathan
         static void Win32_RawInput(RAWINPUT* pRawInput);
     };
 
+    enum LvGamepadButton
+    {
+        LV_GAMEPAD_DPAD_UP,
+        LV_GAMEPAD_DPAD_DOWN,
+        LV_GAMEPAD_DPAD_LEFT,
+        LV_GAMEPAD_DPAD_RIGHT,
+        LV_GAMEPAD_START,
+        LV_GAMEPAD_SELECT,
+        LV_GAMEPAD_LEFT_THUMB,
+        LV_GAMEPAD_RIGHT_THUMB,
+        LV_GAMEPAD_LEFT_SHOULDER,
+        LV_GAMEPAD_RIGHT_SHOULDER,
+        LV_GAMEPAD_FACE_UP,
+        LV_GAMEPAD_FACE_DOWN,
+        LV_GAMEPAD_FACE_LEFT,
+        LV_GAMEPAD_FACE_RIGHT,
+        LV_GAMEPAD_BUTTON_COUNT,
+    };
+
     struct GamepadState
     {
-        static void Win32_RawInput(RAWINPUT* pRawInput);
+        static bool Buttons[LV_GAMEPAD_BUTTON_COUNT];
+        static float LeftTrigger;
+        static float RightTrigger;
+        static float LeftStickX;
+        static float LeftStickY;
+        static float RightStickX;
+        static float RightStickY;
+        static unsigned int LastReading;
+
+        static float GetLeftTrigger();
+        static float GetRightTrigger();
+        static v2f GetLeftStick();
+        static v2f GetRightStick();
+        static bool GetButton(LvGamepadButton LvButton);
+        static void Win32_UpdateXInput();
+        
     };
 
     struct RawInputHandler
     {
         static void Init();
-        static void Win32_ProcessInput(WPARAM wParam, LPARAM lParam); // TODO
+        static void Win32_ProcessInput(WPARAM wParam, LPARAM lParam);
         static void Win32_DeviceChange(WPARAM wParam, LPARAM lParam);
     };
 

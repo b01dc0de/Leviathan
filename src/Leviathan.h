@@ -16,6 +16,8 @@
 #include <dxgi1_2.h>
 // Direct2D
 #include <d2d1.h>
+// XInput
+#include <Xinput.h>
 
 namespace Leviathan
 {
