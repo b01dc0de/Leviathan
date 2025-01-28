@@ -39,6 +39,14 @@ namespace Leviathan
             {
                 MouseState::Win32_MouseMsg(uMsg, wParam, lParam);
             } break;
+            case WM_INPUT:
+            {
+                RawInputHandler::Win32_ProcessInput(wParam, lParam);
+            } break;
+            case WM_INPUT_DEVICE_CHANGE:
+            {
+                RawInputHandler::Win32_DeviceChange(wParam, lParam);
+            } break;
             default:
             {
                 lResult = DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -114,6 +122,7 @@ namespace Leviathan
             ShowWindow(AppWindow, WndShowFlag);
 
             Graphics::Init();
+            RawInputHandler::Init();
         }
     }
 

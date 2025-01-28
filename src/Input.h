@@ -100,20 +100,40 @@ namespace Leviathan
         static void SetKeyUp(int VkCode);
         static void SetKeyDown(int VkCode);
         static void Win32_KeyMsg(UINT Msg, WPARAM wParam, LPARAM lParam);
+        static void Win32_RawInput(RAWINPUT* pRawInput);
     };
 
     struct MouseState
     {
-        static constexpr int MouseOffscreen = -1;
-        static bool bMousePosValid;
+        static bool bInit;
+        static int Speed;
+        static int ThresholdA;
+        static int ThresholdB;
+        static int Accel;
+
         static int MouseX;
         static int MouseY;
         static bool bLeftKey;
         static bool bRightKey;
         static bool bMiddleKey;
 
-        static void SetMousePos(int X, int Y);
+        static void Init();
+        static void SetMousePosRel(int dX, int dY);
+        static void SetMousePosAbs(int X, int Y);
         static void Win32_MouseMsg(UINT Msg, WPARAM wParam, LPARAM lParam);
+        static void Win32_RawInput(RAWINPUT* pRawInput);
+    };
+
+    struct GamepadState
+    {
+        static void Win32_RawInput(RAWINPUT* pRawInput);
+    };
+
+    struct RawInputHandler
+    {
+        static void Init();
+        static void Win32_ProcessInput(WPARAM wParam, LPARAM lParam); // TODO
+        static void Win32_DeviceChange(WPARAM wParam, LPARAM lParam);
     };
 
     struct InputVisualizer
