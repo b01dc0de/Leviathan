@@ -401,6 +401,7 @@ namespace Leviathan
     bool MouseState::bRawInput = false;
     int MouseState::MouseX = 0;
     int MouseState::MouseY = 0;
+    float MouseState::MouseWheel = 0.0f;
     bool MouseState::bLeftKey = false;
     bool MouseState::bRightKey = false;
     bool MouseState::bMiddleKey = false;
@@ -453,9 +454,12 @@ namespace Leviathan
             case WM_LBUTTONDBLCLK:
             case WM_RBUTTONDBLCLK:
             case WM_MBUTTONDBLCLK:
+            {
+                // TODO: Doubleclick (do we care?)
+            } break;
             case WM_MOUSEWHEEL:
             {
-                // TODO: Handle
+                MouseWheel = ((float)GET_WHEEL_DELTA_WPARAM(wParam)) * WheelFactor;
             } break;
             default:
             {
@@ -745,6 +749,26 @@ namespace Leviathan
             InD2RT->FillRectangle(&MouseWindowRect, InBrush1);
             InD2RT->FillRectangle(&CursorRect, InBrush2);
         }
+
+        static float WheelAngle = 0.0f;
+        static float VisualSpeed = 1.0f / 6.0f;
+        WheelAngle += MouseState::MouseWheel * VisualSpeed;
+        { // Wheel
+            static float WheelSize = 25.0f;
+            static D2D1_POINT_2F WheelPos =
+            {
+                (LeftRect.left + RightRect.right) / 2.0f,
+                LeftRect.top - WheelSize
+            };
+            static D2D1_ELLIPSE WheelEllipse{ WheelPos, WheelSize, WheelSize };
+            InD2RT->DrawEllipse(WheelEllipse, InBrush1, 1.0f, nullptr);
+            D2D1_POINT_2F WheelLineEnd =
+            {
+                WheelPos.x + (cosf(WheelAngle) * WheelSize),
+                WheelPos.y + (sinf(WheelAngle) * WheelSize),
+            };
+            InD2RT->DrawLine(WheelPos, WheelLineEnd, InBrush1, 1.0f, nullptr);
+        }
     }
 
     void InputVisualizer::DrawMouse(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
@@ -763,7 +787,8 @@ namespace Leviathan
         static const v2f ButtonSize{ 25.0f, 25.0f };
         static const v2f DPadOrigin = GamepadOrigin + v2f{ 50.0f, 50.0f };
         static const v2f FaceOrigin = DPadOrigin + v2f{ ButtonSize.X * 8.0f, 0.0f };
-        static v2f ButtonPos[] = {
+        static v2f ButtonPos[] =
+        {
             DPadOrigin + v2f{ButtonSize.X, 0.0f},
             DPadOrigin + v2f{ButtonSize.X, ButtonSize.Y * 2.0f},
             DPadOrigin + v2f{0.0f, ButtonSize.Y},
@@ -781,7 +806,8 @@ namespace Leviathan
         };
         for (int ButtonIdx = LV_GAMEPAD_DPAD_UP; ButtonIdx < LV_GAMEPAD_BUTTON_COUNT; ButtonIdx++)
         {
-            D2D1_RECT_F ButtonRect = {
+            D2D1_RECT_F ButtonRect =
+            {
                 ButtonPos[ButtonIdx].X,
                 ButtonPos[ButtonIdx].Y,
                 ButtonPos[ButtonIdx].X + ButtonSize.X,

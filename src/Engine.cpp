@@ -139,6 +139,8 @@ namespace Leviathan
             {
                 bAppRunning = false;
             }
+
+            MouseState::MouseWheel = 0.0f;
         }
     }
 

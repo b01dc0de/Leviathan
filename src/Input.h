@@ -113,6 +113,8 @@ namespace Leviathan
 
         static int MouseX;
         static int MouseY;
+        static constexpr float WheelFactor = 1.0f / 120.0f;
+        static float MouseWheel;
         static bool bLeftKey;
         static bool bRightKey;
         static bool bMiddleKey;
