@@ -255,7 +255,6 @@ namespace Leviathan
             {},//LV_GAMEPAD_RIGHT_THUMB,
         };
 
-
         v2f AdjRegionSize{ GamepadRegionSize.X * Scale, GamepadRegionSize.Y * Scale };
 
         static constexpr bool bDrawBG = true;
@@ -311,12 +310,12 @@ namespace Leviathan
             if (LTrigger > TriggerDeadzone)
             {
                 LeftTriggerRect.right = LeftTriggerRect.left + (AdjTriggerSize.X * LTrigger);
-                InD2RT->FillRectangle(&LeftTriggerRect, InBrush2);
+                InD2RT->FillRectangle(&LeftTriggerRect, InBrush1);
             }
             if (RTrigger > TriggerDeadzone)
             {
                 RightTriggerRect.left = RightTriggerRect.right - (AdjTriggerSize.X * RTrigger);
-                InD2RT->FillRectangle(&RightTriggerRect, InBrush2);
+                InD2RT->FillRectangle(&RightTriggerRect, InBrush1);
             }
         }
 
