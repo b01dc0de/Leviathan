@@ -114,6 +114,7 @@ namespace Leviathan
                 Origin.Y + vKeyboard.KeyList[LV_KEY_NONE].Size.Y * Scale
             };
             InD2RT->FillRectangle(&BGRect, InBrush2);
+            InD2RT->DrawRectangle(&BGRect, InBrush1, InputVisualizer::LineWidth);
         }
         for (int KeyIdx = LV_KEY_ESC; KeyIdx < LV_KEY_COUNT; KeyIdx++)
         {
@@ -151,6 +152,7 @@ namespace Leviathan
                 Origin.Y + RegionSize.Y * Scale
             };
             InD2RT->FillRectangle(&RegionBGRect, InBrush2);
+            InD2RT->DrawRectangle(&RegionBGRect, InBrush1, InputVisualizer::LineWidth);
         }
 
         const v2f AdjButtonSize{ ButtonSize.X * Scale, ButtonSize.Y * Scale };
@@ -159,11 +161,11 @@ namespace Leviathan
         D2D1_RECT_F MiddleRect{ RightRect.right, LeftRect.top + AdjButtonSize.Y / 3.0f * 2.0f, RightRect.right + AdjButtonSize.X, RightRect.bottom };
         { // Buttons
             if (MouseState::bLeftKey) { InD2RT->FillRectangle(&LeftRect, InBrush1); }
-            else { InD2RT->DrawRectangle(&LeftRect, InBrush1, InputVisualizer::LineWidth, nullptr); }
+            else { InD2RT->DrawRectangle(&LeftRect, InBrush1, InputVisualizer::LineWidth); }
             if (MouseState::bRightKey) { InD2RT->FillRectangle(&RightRect, InBrush1); }
-            else { InD2RT->DrawRectangle(&RightRect, InBrush1, InputVisualizer::LineWidth, nullptr); }
+            else { InD2RT->DrawRectangle(&RightRect, InBrush1, InputVisualizer::LineWidth); }
             if (MouseState::bMiddleKey) { InD2RT->FillRectangle(&MiddleRect, InBrush1); }
-            else { InD2RT->DrawRectangle(&MiddleRect, InBrush1, InputVisualizer::LineWidth, nullptr); }
+            else { InD2RT->DrawRectangle(&MiddleRect, InBrush1, InputVisualizer::LineWidth); }
         }
 
         static constexpr v2f MouseAreaSize{ RegionSize.X, RegionSize.Y / 2.0f };
@@ -201,13 +203,13 @@ namespace Leviathan
         { // Wheel
             D2D1_POINT_2F AdjWheelPos{ WheelPos.X * Scale + Origin.X, WheelPos.Y * Scale + Origin.Y };
             D2D1_ELLIPSE WheelEllipse{ AdjWheelPos, WheelSize*Scale, WheelSize*Scale };
-            InD2RT->DrawEllipse(WheelEllipse, InBrush1, InputVisualizer::LineWidth, nullptr);
+            InD2RT->DrawEllipse(WheelEllipse, InBrush1, InputVisualizer::LineWidth);
             D2D1_POINT_2F WheelLineEnd =
             {
                 AdjWheelPos.x + (cosf(WheelAngle) * WheelSize * Scale),
                 AdjWheelPos.y + (sinf(WheelAngle) * WheelSize * Scale),
             };
-            InD2RT->DrawLine(AdjWheelPos, WheelLineEnd, InBrush1, InputVisualizer::LineWidth, nullptr);
+            InD2RT->DrawLine(AdjWheelPos, WheelLineEnd, InBrush1, InputVisualizer::LineWidth);
         }
     }
 
@@ -225,6 +227,61 @@ namespace Leviathan
 
     void VisualGamepad::Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2, const v2f& Origin, float Scale)
     {
+        static constexpr v2f GamepadRegionSize{ 16.0f, 16.0f };
+        static constexpr v2f DPadButtonsCenter{ 0.25f, 0.5f };
+        static constexpr v2f FaceButtonsCenter{ 0.75f, 0.5f };
+        static constexpr v2f MenuButtonsCenter{ 0.5f, 0.25f };
+        static constexpr float FaceButtonsSize{ 0.05f };
+        static constexpr v2f ControlButtonsSize{ FaceButtonsSize * 2.0f, FaceButtonsSize };
+        static constexpr float ButtonsOffset{ FaceButtonsSize * 2.0f };
+        static constexpr v2f ButtonPos[LV_GAMEPAD_BUTTON_COUNT] =
+        {
+            {DPadButtonsCenter.X, DPadButtonsCenter.Y - ButtonsOffset},
+            {DPadButtonsCenter.X, DPadButtonsCenter.Y + ButtonsOffset},
+            {DPadButtonsCenter.X - ButtonsOffset, DPadButtonsCenter.Y},
+            {DPadButtonsCenter.X + ButtonsOffset, DPadButtonsCenter.Y},
+            {FaceButtonsCenter.X, FaceButtonsCenter.Y - ButtonsOffset},
+            {FaceButtonsCenter.X, FaceButtonsCenter.Y + ButtonsOffset},
+            {FaceButtonsCenter.X - ButtonsOffset, FaceButtonsCenter.Y},
+            {FaceButtonsCenter.X + ButtonsOffset, FaceButtonsCenter.Y},
+            {MenuButtonsCenter.X + ControlButtonsSize.X, MenuButtonsCenter.Y},
+            {MenuButtonsCenter.X - ControlButtonsSize.X, MenuButtonsCenter.Y},
+            {DPadButtonsCenter.X - ControlButtonsSize.X * 2.0f, DPadButtonsCenter.Y - ControlButtonsSize.Y * 2.0f},//LV_GAMEPAD_LEFT_SHOULDER,
+            {FaceButtonsCenter.X + ControlButtonsSize.X * 2.0f, FaceButtonsCenter.Y - ControlButtonsSize.Y * 2.0f},//LV_GAMEPAD_RIGHT_SHOULDER,
+            {},//LV_GAMEPAD_LEFT_THUMB,
+            {},//LV_GAMEPAD_RIGHT_THUMB,
+        };
+
+        v2f AdjRegionSize{ GamepadRegionSize.X * Scale, GamepadRegionSize.Y * Scale };
+        v2f AdjDPadOrigin{ DPadButtonsCenter.X * AdjRegionSize.X + Origin.X, DPadButtonsCenter.Y * AdjRegionSize.Y + Origin.Y };
+        v2f AdjFaceOrigin{ FaceButtonsCenter.X * AdjRegionSize.X + Origin.X, FaceButtonsCenter.Y * AdjRegionSize.Y + Origin.Y };
+        float AdjFaceButtonsSize = FaceButtonsSize * AdjRegionSize.X;
+        float AdjButtonsOffset = ButtonsOffset * AdjRegionSize.X;
+        for (int ButtonIdx = LV_GAMEPAD_DPAD_UP; ButtonIdx < LV_GAMEPAD_START; ButtonIdx++)
+        {
+            D2D1_ELLIPSE ButtonEllipse
+            {
+                ButtonPos[ButtonIdx].X * GamepadRegionSize.X * Scale + Origin.X,
+                ButtonPos[ButtonIdx].Y * GamepadRegionSize.Y * Scale + Origin.Y,
+                AdjFaceButtonsSize, AdjFaceButtonsSize
+            };
+            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx)) { InD2RT->FillEllipse(&ButtonEllipse, InBrush1); }
+            else { InD2RT->DrawEllipse(&ButtonEllipse, InBrush1, InputVisualizer::LineWidth); }
+        }
+        for (int ButtonIdx = LV_GAMEPAD_START; ButtonIdx < LV_GAMEPAD_LEFT_THUMB; ButtonIdx++)
+        {
+            D2D1_RECT_F ButtonRect
+            {
+                (ButtonPos[ButtonIdx].X - ControlButtonsSize.X) * GamepadRegionSize.X * Scale + Origin.X,
+                (ButtonPos[ButtonIdx].Y - ControlButtonsSize.Y) * GamepadRegionSize.Y * Scale + Origin.Y,
+                (ButtonPos[ButtonIdx].X + ControlButtonsSize.X) * GamepadRegionSize.X * Scale + Origin.X,
+                (ButtonPos[ButtonIdx].Y + ControlButtonsSize.Y) * GamepadRegionSize.X * Scale + Origin.Y,
+            };
+            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx)) { InD2RT->FillRectangle(&ButtonRect, InBrush1); }
+            else { InD2RT->DrawRectangle(&ButtonRect, InBrush1, InputVisualizer::LineWidth); }
+        }
+
+        /*
         const v2f ButtonSize{ Scale, Scale };
         const v2f DPadOrigin = Origin + v2f{ Scale * 2.0f, Scale * 2.0f };
         const v2f FaceOrigin = DPadOrigin + v2f{ ButtonSize.X * 8.0f, 0.0f };
@@ -259,10 +316,12 @@ namespace Leviathan
             }
             else
             {
-                InD2RT->DrawRectangle(&ButtonRect, InBrush1, InputVisualizer::LineWidth, nullptr);
+                InD2RT->DrawRectangle(&ButtonRect, InBrush1, InputVisualizer::LineWidth);
             }
         }
+        */
 
+        /*
         float LTrigger = GamepadState::GetLeftTrigger();
         float RTrigger = GamepadState::GetRightTrigger();
         { // Triggers
@@ -274,8 +333,8 @@ namespace Leviathan
                 LTriggerPos.X + TriggerSize.X, LTriggerPos.Y + TriggerSize.Y };
             D2D1_RECT_F RightTriggerRect{ RTriggerPos.X, RTriggerPos.Y,
                 RTriggerPos.X + TriggerSize.X, RTriggerPos.Y + TriggerSize.Y };
-            InD2RT->DrawRectangle(&LeftTriggerRect, InBrush1, InputVisualizer::LineWidth, nullptr);
-            InD2RT->DrawRectangle(&RightTriggerRect, InBrush1, InputVisualizer::LineWidth, nullptr);
+            InD2RT->DrawRectangle(&LeftTriggerRect, InBrush1, InputVisualizer::LineWidth);
+            InD2RT->DrawRectangle(&RightTriggerRect, InBrush1, InputVisualizer::LineWidth);
             if (LTrigger > TriggerDeadzone)
             {
                 LeftTriggerRect.bottom = LTriggerPos.Y + (TriggerSize.Y * LTrigger);
@@ -298,9 +357,9 @@ namespace Leviathan
             D2D1_ELLIPSE RightEllipse{ RStickPos, StickSize, StickSize };
 
             if (GamepadState::GetButton(LV_GAMEPAD_LEFT_THUMB)) { InD2RT->FillEllipse(&LeftEllipse, InBrush1); }
-            else { InD2RT->DrawEllipse(&LeftEllipse, InBrush1, InputVisualizer::LineWidth, nullptr); }
+            else { InD2RT->DrawEllipse(&LeftEllipse, InBrush1, InputVisualizer::LineWidth); }
             if (GamepadState::GetButton(LV_GAMEPAD_RIGHT_THUMB)) { InD2RT->FillEllipse(&RightEllipse, InBrush1); }
-            else { InD2RT->DrawEllipse(&RightEllipse, InBrush1, InputVisualizer::LineWidth, nullptr); }
+            else { InD2RT->DrawEllipse(&RightEllipse, InBrush1, InputVisualizer::LineWidth); }
 
             D2D1_POINT_2F LStickInput
             {
@@ -312,15 +371,16 @@ namespace Leviathan
                 RStickPos.x + RStick.X * StickSize,
                 RStickPos.y + -RStick.Y * StickSize
             };
-            InD2RT->DrawLine(LStickPos, LStickInput, InBrush2, InputVisualizer::LineWidth, nullptr);
-            InD2RT->DrawLine(RStickPos, RStickInput, InBrush2, InputVisualizer::LineWidth, nullptr);
+            InD2RT->DrawLine(LStickPos, LStickInput, InBrush2, InputVisualizer::LineWidth);
+            InD2RT->DrawLine(RStickPos, RStickInput, InBrush2, InputVisualizer::LineWidth);
         }
+        */
     }
 
     void InputVisualizer::DrawGamepad(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
     {
-        static const v2f Origin{ 925.0f, AppHeight - 350.0f };
-        static const float Scale = 25.0f;
+        static const v2f Origin{ 1100.0f, 200.0f };
+        static const float Scale = 7.5f;
         VisualGamepad::Draw(InD2RT, InBrush1, InBrush2, Origin, Scale);
     }
 }
