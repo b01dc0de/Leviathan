@@ -50,7 +50,7 @@ namespace Leviathan
         {
             In2DRT->BeginDraw();
 
-            if (bVisualizeKeyboard) { InputVisualizer::DrawKeyboard(In2DRT, D2_WhiteBrush); }
+            if (bVisualizeKeyboard) { InputVisualizer::DrawKeyboard(In2DRT, D2_WhiteBrush, D2_BlackBrush); }
             if (bVisualizeMouse) { InputVisualizer::DrawMouse(In2DRT, D2_WhiteBrush, D2_BlackBrush); }
             if (bVisualizeGamepad) { InputVisualizer::DrawGamepad(In2DRT, D2_WhiteBrush, D2_BlackBrush); }
 

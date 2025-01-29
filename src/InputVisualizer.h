@@ -8,7 +8,7 @@ namespace Leviathan
     struct InputVisualizer
     {
         static constexpr float LineWidth = 2.0f;
-        static void DrawKeyboard(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush);
+        static void DrawKeyboard(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2);
         static void DrawMouse(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2);
         static void DrawGamepad(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2);
     };
