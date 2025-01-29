@@ -125,6 +125,19 @@ namespace Leviathan
         static constexpr float WheelSize = RegionSize.X / 6.0f;
         static constexpr v2f WheelPos = { RegionSize.X - WheelSize, WheelSize };
 
+        static constexpr bool bDrawBG = true;
+        if (bDrawBG)
+        {
+            D2D1_RECT_F RegionBGRect
+            {
+                Origin.X,
+                Origin.Y,
+                Origin.X + RegionSize.X * Scale,
+                Origin.Y + RegionSize.Y * Scale
+            };
+            InD2RT->FillRectangle(&RegionBGRect, InBrush2);
+        }
+
         const v2f AdjButtonSize{ ButtonSize.X * Scale, ButtonSize.Y * Scale };
         D2D1_RECT_F LeftRect{ Origin.X, Origin.Y, Origin.X + AdjButtonSize.X, Origin.Y + AdjButtonSize.Y };
         D2D1_RECT_F RightRect{ LeftRect.left + AdjButtonSize.X, LeftRect.top, LeftRect.right + AdjButtonSize.X, LeftRect.bottom };
