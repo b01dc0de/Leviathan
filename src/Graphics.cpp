@@ -50,8 +50,9 @@ namespace Leviathan
     ID2D1LinearGradientBrush* D2_LinearGradientBrush = nullptr;
     ID2D1GradientStopCollection* D2_GradientStops = nullptr;
     ID2D1SolidColorBrush* D2_LightGrayBrush = nullptr;
-    ID2D1SolidColorBrush* D2_LightYellowBrush = nullptr;
-    ID2D1SolidColorBrush* D2_BlackBrush = nullptr;
+    // DirectWrite
+    IDWriteFactory* DW_Factory = nullptr;
+    IDWriteTextFormat* DW_DefaultTextFormat = nullptr;
 
     struct VxColor
     {
@@ -494,11 +495,22 @@ namespace Leviathan
 
             D2D1_COLOR_F LightGrayColor = D2D1::ColorF(0xE1E6EF);
             D2_RenderTarget->CreateSolidColorBrush(LightGrayColor, &D2_LightGrayBrush);
+        }
 
-            D2D1_COLOR_F LightYellowColor = D2D1::ColorF(0xDCD086);
-            D2_RenderTarget->CreateSolidColorBrush(LightYellowColor, &D2_LightYellowBrush);
-
-            D2_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &D2_BlackBrush);
+        { // DirectWrite
+            DX_CHECK(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (IUnknown**)&DW_Factory));
+            DX_CHECK(DW_Factory->CreateTextFormat(
+                L"Consolas",
+                NULL,
+                DWRITE_FONT_WEIGHT_REGULAR,
+                DWRITE_FONT_STYLE_NORMAL,
+                DWRITE_FONT_STRETCH_NORMAL,
+                16.0f,
+                L"en-us",
+                &DW_DefaultTextFormat
+            ));
+            DW_DefaultTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+            DW_DefaultTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
         }
 
         UserInterface::Init(D2_RenderTarget);
@@ -622,6 +634,26 @@ namespace Leviathan
             UserInterface::Draw(D2_RenderTarget);
         }
 
+        // DirectWrite Test
+        {
+            D2_RenderTarget->BeginDraw();
+
+            static const wchar_t const* TestMsg = L"DirectWrite TEST!";
+            static const unsigned int TestMsgLength = wcslen(TestMsg);
+
+            D2D1_RECT_F TextLayoutRect { 0.0f, 0.0f, 200.0f, 100.0f };
+            D2_RenderTarget->DrawText
+            (
+                TestMsg,
+                TestMsgLength,
+                DW_DefaultTextFormat,
+                &TextLayoutRect,
+                D2_LightGrayBrush
+            );
+
+            DX_CHECK(D2_RenderTarget->EndDraw());
+        }
+
         UINT SyncInterval = 0;
         UINT PresentFlags = 0;
         DXGI_PRESENT_PARAMETERS PresentParams = {};
@@ -632,6 +664,11 @@ namespace Leviathan
     {
         UserInterface::Term();
 
+        { // DirectWrite:
+            DX_SAFE_RELEASE(DW_Factory);
+            DX_SAFE_RELEASE(DW_DefaultTextFormat);
+        }
+
         { // Direct2D:
             DX_SAFE_RELEASE(D2_Factory);
             DX_SAFE_RELEASE(DXGI_Surface);
@@ -639,8 +676,6 @@ namespace Leviathan
             DX_SAFE_RELEASE(D2_LinearGradientBrush);
             DX_SAFE_RELEASE(D2_GradientStops);
             DX_SAFE_RELEASE(D2_LightGrayBrush);
-            DX_SAFE_RELEASE(D2_LightYellowBrush);
-            DX_SAFE_RELEASE(D2_BlackBrush);
         }
 
         DX_SAFE_RELEASE(DX_VertexBufferTriangle);

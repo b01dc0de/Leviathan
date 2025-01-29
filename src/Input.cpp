@@ -548,16 +548,16 @@ namespace Leviathan
             Buttons[LV_GAMEPAD_DPAD_DOWN] = wButtons & XINPUT_GAMEPAD_DPAD_DOWN;
             Buttons[LV_GAMEPAD_DPAD_LEFT] = wButtons & XINPUT_GAMEPAD_DPAD_LEFT;
             Buttons[LV_GAMEPAD_DPAD_RIGHT] = wButtons & XINPUT_GAMEPAD_DPAD_RIGHT;
-            Buttons[LV_GAMEPAD_START] = wButtons & XINPUT_GAMEPAD_START;
-            Buttons[LV_GAMEPAD_SELECT] = wButtons & XINPUT_GAMEPAD_BACK;
-            Buttons[LV_GAMEPAD_LEFT_THUMB] = wButtons & XINPUT_GAMEPAD_LEFT_THUMB;
-            Buttons[LV_GAMEPAD_RIGHT_THUMB] = wButtons & XINPUT_GAMEPAD_RIGHT_THUMB;
-            Buttons[LV_GAMEPAD_LEFT_SHOULDER] = wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER;
-            Buttons[LV_GAMEPAD_RIGHT_SHOULDER] = wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER;
             Buttons[LV_GAMEPAD_FACE_UP] = wButtons & XINPUT_GAMEPAD_Y;
             Buttons[LV_GAMEPAD_FACE_DOWN] = wButtons & XINPUT_GAMEPAD_A;
             Buttons[LV_GAMEPAD_FACE_LEFT] = wButtons & XINPUT_GAMEPAD_X;
             Buttons[LV_GAMEPAD_FACE_RIGHT] = wButtons & XINPUT_GAMEPAD_B;
+            Buttons[LV_GAMEPAD_START] = wButtons & XINPUT_GAMEPAD_START;
+            Buttons[LV_GAMEPAD_SELECT] = wButtons & XINPUT_GAMEPAD_BACK;
+            Buttons[LV_GAMEPAD_LEFT_SHOULDER] = wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER;
+            Buttons[LV_GAMEPAD_RIGHT_SHOULDER] = wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER;
+            Buttons[LV_GAMEPAD_LEFT_THUMB] = wButtons & XINPUT_GAMEPAD_LEFT_THUMB;
+            Buttons[LV_GAMEPAD_RIGHT_THUMB] = wButtons & XINPUT_GAMEPAD_RIGHT_THUMB;
 
             LeftTrigger = (float)Controller0.Gamepad.bLeftTrigger / MaxTriggerValue;
             RightTrigger = (float)Controller0.Gamepad.bRightTrigger / MaxTriggerValue;
@@ -566,6 +566,11 @@ namespace Leviathan
             LeftStickY = (float)Controller0.Gamepad.sThumbLY / MaxStickValue;
             RightStickX = (float)Controller0.Gamepad.sThumbRX / MaxStickValue;
             RightStickY = (float)Controller0.Gamepad.sThumbRY / MaxStickValue;
+
+            if (LeftStickX < 0.0f ? (LeftStickX > -StickDeadzone) : (LeftStickX < StickDeadzone)) { LeftStickX = 0.0f; }
+            if (LeftStickY < 0.0f ? (LeftStickY > -StickDeadzone) : (LeftStickY < StickDeadzone)) { LeftStickY = 0.0f; }
+            if (RightStickX < 0.0f ? (RightStickX > -StickDeadzone) : (RightStickX < StickDeadzone)) { RightStickX = 0.0f; }
+            if (RightStickY < 0.0f ? (RightStickY > -StickDeadzone) : (RightStickY < StickDeadzone)) { RightStickY = 0.0f; }
 
             LastReading = Controller0.dwPacketNumber;
         }
@@ -797,24 +802,23 @@ namespace Leviathan
         static const v2f ButtonSize{ 25.0f, 25.0f };
         static const v2f DPadOrigin = GamepadOrigin + v2f{ 50.0f, 50.0f };
         static const v2f FaceOrigin = DPadOrigin + v2f{ ButtonSize.X * 8.0f, 0.0f };
-        static v2f ButtonPos[] =
-        {
-            DPadOrigin + v2f{ButtonSize.X, 0.0f},
-            DPadOrigin + v2f{ButtonSize.X, ButtonSize.Y * 2.0f},
-            DPadOrigin + v2f{0.0f, ButtonSize.Y},
-            DPadOrigin + v2f{ButtonSize.X * 2.0f, ButtonSize.Y},
-            DPadOrigin + v2f{ButtonSize.X * 6.0f, 0.0f},
-            DPadOrigin + v2f{ButtonSize.X * 4.0f, 0.0f},
-            DPadOrigin + v2f{ButtonSize.X, ButtonSize.Y * 4.0f},
-            FaceOrigin + v2f{ButtonSize.X, ButtonSize.Y * 4.0f},
-            DPadOrigin + v2f{ButtonSize.X, ButtonSize.Y * -2.0f},
-            FaceOrigin + v2f{ButtonSize.X, ButtonSize.Y * -2.0f},
-            FaceOrigin + v2f{ButtonSize.X, 0.0f},
-            FaceOrigin + v2f{ButtonSize.X, ButtonSize.Y * 2.0f},
-            FaceOrigin + v2f{0.0f, ButtonSize.Y},
-            FaceOrigin + v2f{ButtonSize.X * 2.0f, ButtonSize.Y},
-        };
-        for (int ButtonIdx = LV_GAMEPAD_DPAD_UP; ButtonIdx < LV_GAMEPAD_BUTTON_COUNT; ButtonIdx++)
+        static v2f ButtonPos[LV_GAMEPAD_BUTTON_COUNT];
+        ButtonPos[LV_GAMEPAD_DPAD_UP] = DPadOrigin + v2f{ ButtonSize.X, 0.0f };
+        ButtonPos[LV_GAMEPAD_DPAD_DOWN] = DPadOrigin + v2f{ ButtonSize.X, ButtonSize.Y * 2.0f };
+        ButtonPos[LV_GAMEPAD_DPAD_LEFT] = DPadOrigin + v2f{ 0.0f, ButtonSize.Y };
+        ButtonPos[LV_GAMEPAD_DPAD_RIGHT] = DPadOrigin + v2f{ ButtonSize.X * 2.0f, ButtonSize.Y };
+        ButtonPos[LV_GAMEPAD_FACE_UP] = FaceOrigin + v2f{ ButtonSize.X, 0.0f };
+        ButtonPos[LV_GAMEPAD_FACE_DOWN] = FaceOrigin + v2f{ ButtonSize.X, ButtonSize.Y * 2.0f };
+        ButtonPos[LV_GAMEPAD_FACE_LEFT] = FaceOrigin + v2f{ 0.0f, ButtonSize.Y };
+        ButtonPos[LV_GAMEPAD_FACE_RIGHT] = FaceOrigin + v2f{ ButtonSize.X * 2.0f, ButtonSize.Y };
+        ButtonPos[LV_GAMEPAD_START] = DPadOrigin + v2f{ ButtonSize.X * 6.0f, 0.0f };
+        ButtonPos[LV_GAMEPAD_SELECT] = DPadOrigin + v2f{ ButtonSize.X * 4.0f, 0.0f };
+        ButtonPos[LV_GAMEPAD_LEFT_SHOULDER] = DPadOrigin + v2f{ ButtonSize.X, ButtonSize.Y * -2.0f };
+        ButtonPos[LV_GAMEPAD_RIGHT_SHOULDER] = FaceOrigin + v2f{ ButtonSize.X, ButtonSize.Y * -2.0f };
+        ButtonPos[LV_GAMEPAD_LEFT_THUMB] = DPadOrigin + v2f{ ButtonSize.X, ButtonSize.Y * 4.0f };
+        ButtonPos[LV_GAMEPAD_RIGHT_THUMB] = FaceOrigin + v2f{ ButtonSize.X, ButtonSize.Y * 4.0f };
+
+        for (int ButtonIdx = LV_GAMEPAD_DPAD_UP; ButtonIdx < LV_GAMEPAD_LEFT_THUMB; ButtonIdx++)
         {
             D2D1_RECT_F ButtonRect =
             {
@@ -858,7 +862,6 @@ namespace Leviathan
             }
         }
 
-        static float StickDeadzone = 0.025f;
         v2f LStick = GamepadState::GetLeftStick();
         v2f RStick = GamepadState::GetRightStick();
         { // Sticks
@@ -867,31 +870,24 @@ namespace Leviathan
             static const D2D1_POINT_2F RStickPos{ ButtonPos[LV_GAMEPAD_START].X + StickSize, ButtonPos[LV_GAMEPAD_FACE_DOWN].Y + StickSize };
             D2D1_ELLIPSE LeftEllipse{ LStickPos, StickSize, StickSize };
             D2D1_ELLIPSE RightEllipse{ RStickPos, StickSize, StickSize };
-            InD2RT->DrawEllipse(&LeftEllipse, InBrush1, 1.0f, nullptr);
-            InD2RT->DrawEllipse(&RightEllipse, InBrush1, 1.0f, nullptr);
 
-            bool bLX = LStick.X > StickDeadzone || LStick.X < -StickDeadzone;
-            bool bLY = LStick.Y > StickDeadzone || LStick.Y < -StickDeadzone;
-            bool bRX = RStick.X > StickDeadzone || RStick.X < -StickDeadzone;
-            bool bRY = RStick.Y > StickDeadzone || RStick.Y < -StickDeadzone;
-            if (bLX || bLY)
+            if (GamepadState::GetButton(LV_GAMEPAD_LEFT_THUMB)) { InD2RT->FillEllipse(&LeftEllipse, InBrush1); }
+            else { InD2RT->DrawEllipse(&LeftEllipse, InBrush1, 1.0f, nullptr); }
+            if (GamepadState::GetButton(LV_GAMEPAD_RIGHT_THUMB)) { InD2RT->FillEllipse(&RightEllipse, InBrush1); }
+            else { InD2RT->DrawEllipse(&RightEllipse, InBrush1, 1.0f, nullptr); }
+
+            D2D1_POINT_2F LStickInput
             {
-                D2D1_POINT_2F LStickInput{
-                    LStickPos.x + (bLX ? LStick.X : 0.0f) * StickSize,
-                    LStickPos.y + (bLY ? -LStick.Y : 0.0f) * StickSize
-                };
-
-                InD2RT->DrawLine(LStickPos, LStickInput, InBrush1, 1.0f, nullptr);
-            }
-            if (bRX || bRY)
+                LStickPos.x + LStick.X * StickSize,
+                LStickPos.y + -LStick.Y * StickSize
+            };
+            D2D1_POINT_2F RStickInput
             {
-                D2D1_POINT_2F RStickInput{
-                    RStickPos.x + (bRX ? RStick.X : 0.0f) * StickSize,
-                    RStickPos.y + (bRY ? -RStick.Y : 0.0f) * StickSize
-                };
-
-                InD2RT->DrawLine(RStickPos, RStickInput, InBrush1, 1.0f, nullptr);
-            }
+                RStickPos.x + RStick.X * StickSize,
+                RStickPos.y + -RStick.Y * StickSize
+            };
+            InD2RT->DrawLine(LStickPos, LStickInput, InBrush2, 1.0f, nullptr);
+            InD2RT->DrawLine(RStickPos, RStickInput, InBrush2, 1.0f, nullptr);
         }
     }
 

@@ -139,21 +139,22 @@ namespace Leviathan
         LV_GAMEPAD_DPAD_DOWN,
         LV_GAMEPAD_DPAD_LEFT,
         LV_GAMEPAD_DPAD_RIGHT,
-        LV_GAMEPAD_START,
-        LV_GAMEPAD_SELECT,
-        LV_GAMEPAD_LEFT_THUMB,
-        LV_GAMEPAD_RIGHT_THUMB,
-        LV_GAMEPAD_LEFT_SHOULDER,
-        LV_GAMEPAD_RIGHT_SHOULDER,
         LV_GAMEPAD_FACE_UP,
         LV_GAMEPAD_FACE_DOWN,
         LV_GAMEPAD_FACE_LEFT,
         LV_GAMEPAD_FACE_RIGHT,
+        LV_GAMEPAD_START,
+        LV_GAMEPAD_SELECT,
+        LV_GAMEPAD_LEFT_SHOULDER,
+        LV_GAMEPAD_RIGHT_SHOULDER,
+        LV_GAMEPAD_LEFT_THUMB,
+        LV_GAMEPAD_RIGHT_THUMB,
         LV_GAMEPAD_BUTTON_COUNT,
     };
 
     struct GamepadState
     {
+        static constexpr float StickDeadzone = 0.025f;
         static bool Buttons[LV_GAMEPAD_BUTTON_COUNT];
         static float LeftTrigger;
         static float RightTrigger;
