@@ -27,21 +27,25 @@ namespace Leviathan
         KeyList[LV_KEY_BACKSLASH].Size.X = 1.5f;
         KeyList[LV_KEY_CAPSLOCK].Size.X = 1.75f;
         KeyList[LV_KEY_ENTER].Size.X = 2.25f;
-        const v2f ModSize{ 2.0f, 1.0f };
-        KeyList[LV_KEY_SHIFT].Size = ModSize;
-        KeyList[LV_KEY_CTRL].Size = ModSize;
-        KeyList[LV_KEY_SUPER].Size = ModSize;
-        KeyList[LV_KEY_ALT].Size = ModSize;
+        KeyList[LV_KEY_SHIFT].Size.X = 2.25f;
+        KeyList[LV_KEY_CTRL].Size.X = 1.25f;
+        KeyList[LV_KEY_SUPER].Size.X = 1.25f;
+        KeyList[LV_KEY_ALT].Size.X = 1.25f;
         KeyList[LV_KEY_SPACE].Size.X = 6.0f;
+
         float FuncRowGap = 2.0f / 3.0f; // RowWidth = 15, NumRowKeys = 12, NumGaps = 3, FuncGap = (RowWidth - NumRowKeys) / NumGaps
         float RowX = 1.0f + FuncRowGap;
+        float FuncRowPadding = 0.25f;
+
+        // Setup function row:
         for (int KeyIdx = LV_KEY_F1; KeyIdx <= LV_KEY_F12; KeyIdx++)
         {
             KeyList[KeyIdx].Pos = v2f{ RowX, 0.0f };
             RowX += KeyList[KeyIdx].Size.X;
             if (KeyIdx == LV_KEY_F4 || KeyIdx == LV_KEY_F8) { RowX += FuncRowGap; }
         }
-        float FuncRowPadding = 0.25f;
+
+        // Setup rest of 'main' keyboard:
         float RowY = 1.0f + FuncRowPadding;
         RowX = 0.0f;
         v2f RightRegionOrigin{ 15.0f, 0.0f };
@@ -66,15 +70,16 @@ namespace Leviathan
             }
         }
         KeyList[LV_KEY_SPACE].Pos = v2f{ 3.75f, RowY };
+
         v2f ModOrigin = RightRegionOrigin + v2f{ 1.0f, 0.0f };
-        KeyList[LV_KEY_SHIFT].Pos = ModOrigin;
-        KeyList[LV_KEY_CTRL].Pos = ModOrigin + v2f{ 0.0f, 1.0f };
-        KeyList[LV_KEY_SUPER].Pos = ModOrigin + v2f{ 0.0f, 2.0f };;
-        KeyList[LV_KEY_ALT].Pos = ModOrigin + v2f{ 0.0f, 3.0f };
-        KeyList[LV_KEY_ARROW_UP].Pos = RightRegionOrigin + v2f{ 1.0f, RowY - 1.0f };
-        KeyList[LV_KEY_ARROW_LEFT].Pos = RightRegionOrigin + v2f{ 0.0f, RowY };
-        KeyList[LV_KEY_ARROW_DOWN].Pos = RightRegionOrigin + v2f{ 1.0f, RowY };
-        KeyList[LV_KEY_ARROW_RIGHT].Pos = RightRegionOrigin + v2f{ 2.0f, RowY };
+        KeyList[LV_KEY_SHIFT].Pos = v2f{0.0f, RowY - 1.0f};
+        KeyList[LV_KEY_CTRL].Pos = v2f{ 0.0f, RowY };
+        KeyList[LV_KEY_SUPER].Pos = KeyList[LV_KEY_CTRL].Pos + v2f{ KeyList[LV_KEY_CTRL].Size.X };
+        KeyList[LV_KEY_ALT].Pos = KeyList[LV_KEY_SUPER].Pos + v2f{ KeyList[LV_KEY_SUPER].Size.X };
+        KeyList[LV_KEY_ARROW_UP].Pos = RightRegionOrigin + v2f{ -2.0f, RowY - 1.0f };
+        KeyList[LV_KEY_ARROW_LEFT].Pos = RightRegionOrigin + v2f{ -3.0f, RowY };
+        KeyList[LV_KEY_ARROW_DOWN].Pos = RightRegionOrigin + v2f{ -2.0f, RowY };
+        KeyList[LV_KEY_ARROW_RIGHT].Pos = RightRegionOrigin + v2f{ -1.0f, RowY };
 
         bInit = true;
     }
@@ -103,7 +108,7 @@ namespace Leviathan
 
     void InputVisualizer::DrawKeyboard(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush)
     {
-        v2f Origin{800.0f, 10.0};
+        v2f Origin{975.0f, 10.0};
         float Scale = 20.0f;
         VisualKeyboard::Draw(InD2RT, InBrush, Origin, Scale);
     }
@@ -115,10 +120,15 @@ namespace Leviathan
 
     void VisualMouse::Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2, const v2f& Origin, float Scale)
     {
-        static v2f ButtonSize{ Scale, Scale * 2.0f };
-        static D2D1_RECT_F LeftRect{ Origin.X, Origin.Y, Origin.X + ButtonSize.X, Origin.Y + ButtonSize.Y };
-        static D2D1_RECT_F MiddleRect{ LeftRect.left + ButtonSize.X, LeftRect.top, LeftRect.right + ButtonSize.X, LeftRect.bottom };
-        static D2D1_RECT_F RightRect{ MiddleRect.left + ButtonSize.X, MiddleRect.top, MiddleRect.right + ButtonSize.X, MiddleRect.bottom };
+        static constexpr v2f RegionSize{ 16.0f, 9.0f * 2.0f };
+        static constexpr v2f ButtonSize{ RegionSize.X / 3.0f, RegionSize.Y / 2.0f };
+        static constexpr float WheelSize = RegionSize.X / 6.0f;
+        static constexpr v2f WheelPos = { RegionSize.X - WheelSize, WheelSize };
+
+        const v2f AdjButtonSize{ ButtonSize.X * Scale, ButtonSize.Y * Scale };
+        D2D1_RECT_F LeftRect{ Origin.X, Origin.Y, Origin.X + AdjButtonSize.X, Origin.Y + AdjButtonSize.Y };
+        D2D1_RECT_F RightRect{ LeftRect.left + AdjButtonSize.X, LeftRect.top, LeftRect.right + AdjButtonSize.X, LeftRect.bottom };
+        D2D1_RECT_F MiddleRect{ RightRect.right, LeftRect.top + AdjButtonSize.Y / 3.0f * 2.0f, RightRect.right + AdjButtonSize.X, RightRect.bottom };
         { // Buttons
             if (MouseState::bLeftKey) { InD2RT->FillRectangle(&LeftRect, InBrush1); }
             else { InD2RT->DrawRectangle(&LeftRect, InBrush1, InputVisualizer::LineWidth, nullptr); }
@@ -128,17 +138,26 @@ namespace Leviathan
             else { InD2RT->DrawRectangle(&MiddleRect, InBrush1, InputVisualizer::LineWidth, nullptr); }
         }
 
-        static v2f MouseWindowSize{ 128.0f, 72.0f };
-        static v2f MouseWindowOrigin{ (LeftRect.left + RightRect.right - MouseWindowSize.X) * 0.5f, Origin.Y + ButtonSize.Y};
-        static D2D1_RECT_F MouseWindowRect{ MouseWindowOrigin.X, MouseWindowOrigin.Y, MouseWindowOrigin.X + MouseWindowSize.X, MouseWindowOrigin.Y + MouseWindowSize.Y };
-        static float CursorSize = 5.0f;
-        static float HalfCursorSize = CursorSize * 0.5f;
+        static constexpr v2f MouseAreaSize{ RegionSize.X, RegionSize.Y / 2.0f };
+        static constexpr v2f MouseAreaPos{ 0.0f, RegionSize.Y / 2.0f };
+        D2D1_RECT_F MouseWindowRect
+        {
+            MouseAreaPos.X + Origin.X,
+            MouseAreaPos.Y * Scale + Origin.Y,
+            MouseAreaPos.X + MouseAreaSize.X * Scale + Origin.X,
+            (MouseAreaPos.Y + MouseAreaSize.Y) * Scale + Origin.Y
+        };
+        float MouseWindowAdjWidth = MouseWindowRect.right - MouseWindowRect.left;
+        float MouseWindowAdjHeight = MouseWindowRect.bottom - MouseWindowRect.top;
+        static float HalfCursorSize = Scale * 0.5f;
         { // Cursor
-            v2f CursorPos = {
-                ((float)MouseState::MouseX / (float)AppWidth * MouseWindowSize.X) + MouseWindowOrigin.X,
-                ((float)MouseState::MouseY / (float)AppHeight * MouseWindowSize.Y) + MouseWindowOrigin.Y
+            v2f CursorPos =
+            {
+                ((float)MouseState::MouseX / (float)AppWidth * MouseWindowAdjWidth) + MouseWindowRect.left,
+                ((float)MouseState::MouseY / (float)AppHeight * MouseWindowAdjHeight) + MouseWindowRect.top
             };
-            D2D1_RECT_F CursorRect{
+            D2D1_RECT_F CursorRect
+            {
                 CursorPos.X - HalfCursorSize,
                 CursorPos.Y - HalfCursorSize,
                 CursorPos.X + HalfCursorSize,
@@ -152,27 +171,22 @@ namespace Leviathan
         static float VisualSpeed = 0.25f;
         WheelAngle += MouseState::MouseWheel * VisualSpeed;
         { // Wheel
-            static float WheelSize = 25.0f;
-            static D2D1_POINT_2F WheelPos =
-            {
-                (LeftRect.left + RightRect.right) / 2.0f,
-                LeftRect.top - WheelSize
-            };
-            static D2D1_ELLIPSE WheelEllipse{ WheelPos, WheelSize, WheelSize };
+            D2D1_POINT_2F AdjWheelPos{ WheelPos.X * Scale + Origin.X, WheelPos.Y * Scale + Origin.Y };
+            D2D1_ELLIPSE WheelEllipse{ AdjWheelPos, WheelSize*Scale, WheelSize*Scale };
             InD2RT->DrawEllipse(WheelEllipse, InBrush1, InputVisualizer::LineWidth, nullptr);
             D2D1_POINT_2F WheelLineEnd =
             {
-                WheelPos.x + (cosf(WheelAngle) * WheelSize),
-                WheelPos.y + (sinf(WheelAngle) * WheelSize),
+                AdjWheelPos.x + (cosf(WheelAngle) * WheelSize * Scale),
+                AdjWheelPos.y + (sinf(WheelAngle) * WheelSize * Scale),
             };
-            InD2RT->DrawLine(WheelPos, WheelLineEnd, InBrush1, InputVisualizer::LineWidth, nullptr);
+            InD2RT->DrawLine(AdjWheelPos, WheelLineEnd, InBrush1, InputVisualizer::LineWidth, nullptr);
         }
     }
 
     void InputVisualizer::DrawMouse(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
     {
-        static v2f Origin{ 1100.0f, AppHeight - 200.0f };
-        static float Scale = 25.0f;
+        static v2f Origin{ 1000.0f, 200.0f };
+        static float Scale = 5.0f;
         VisualMouse::Draw(InD2RT, InBrush1, InBrush2, Origin, Scale);
     }
 
@@ -184,7 +198,7 @@ namespace Leviathan
     void VisualGamepad::Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2, const v2f& Origin, float Scale)
     {
         const v2f ButtonSize{ Scale, Scale };
-        const v2f DPadOrigin = Origin + v2f{ 50.0f, 50.0f };
+        const v2f DPadOrigin = Origin + v2f{ Scale * 2.0f, Scale * 2.0f };
         const v2f FaceOrigin = DPadOrigin + v2f{ ButtonSize.X * 8.0f, 0.0f };
         v2f ButtonPos[LV_GAMEPAD_BUTTON_COUNT];
         ButtonPos[LV_GAMEPAD_DPAD_UP] = DPadOrigin + v2f{ ButtonSize.X, 0.0f };
@@ -277,7 +291,7 @@ namespace Leviathan
 
     void InputVisualizer::DrawGamepad(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
     {
-        static const v2f Origin{ 0.0f, AppHeight - 200.0f };
+        static const v2f Origin{ 925.0f, AppHeight - 350.0f };
         static const float Scale = 25.0f;
         VisualGamepad::Draw(InD2RT, InBrush1, InBrush2, Origin, Scale);
     }
