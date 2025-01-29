@@ -179,13 +179,6 @@ namespace Leviathan
         static void Win32_ProcessInput(WPARAM wParam, LPARAM lParam);
         static void Win32_DeviceChange(WPARAM wParam, LPARAM lParam);
     };
-
-    struct InputVisualizer
-    {
-        static void DrawKeyboard(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush);
-        static void DrawMouse(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2);
-        static void DrawGamepad(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2);
-    };
 }
 
 #endif // LEVIATHAN_INPUT_H

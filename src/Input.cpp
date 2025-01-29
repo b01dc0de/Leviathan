@@ -188,78 +188,78 @@ namespace Leviathan
         LV_KEY_NONE, // VK_LAUNCH_MEDIA_SELECT     0xB5    Select Media key
         LV_KEY_NONE, // VK_LAUNCH_APP1             0xB6    Start Application 1 key
         LV_KEY_NONE, // VK_LAUNCH_APP2             0xB7    Start Application 2 key
-            LV_KEY_NONE, // ----                       0xB8    Reserved
-            LV_KEY_NONE, // ----                       0xB9    Reserved
-            LV_KEY_SEMICOLON, // VK_OEM_1              0xBA    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ;: key
-            LV_KEY_EQUALS, // VK_OEM_PLUS              0xBB    For any country/region, the + key
-            LV_KEY_COMMA, // VK_OEM_COMMA              0xBC    For any country/region, the , key
-            LV_KEY_MINUS, // VK_OEM_MINUS              0xBD    For any country/region, the - key
-            LV_KEY_PERIOD, // VK_OEM_PERIOD            0xBE    For any country/region, the . key
-            LV_KEY_SLASH, // VK_OEM_2                  0xBF    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the /? key
-            LV_KEY_GRAVE, // VK_OEM_3                  0xC0    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the `~ key
-            LV_KEY_NONE, // ----                       0xC1    Reserved
-            LV_KEY_NONE, // ----                       0xC2    Reserved
-            LV_KEY_NONE, // ----                       0xC3    Reserved
-            LV_KEY_NONE, // ----                       0xC4    Reserved
-            LV_KEY_NONE, // ----                       0xC5    Reserved
-            LV_KEY_NONE, // ----                       0xC6    Reserved
-            LV_KEY_NONE, // ----                       0xC7    Reserved
-            LV_KEY_NONE, // ----                       0xC8    Reserved
-            LV_KEY_NONE, // ----                       0xC9    Reserved
-            LV_KEY_NONE, // ----                       0xCA    Reserved
-            LV_KEY_NONE, // ----                       0xCB    Reserved
-            LV_KEY_NONE, // ----                       0xCC    Reserved
-            LV_KEY_NONE, // ----                       0xCD    Reserved
-            LV_KEY_NONE, // ----                       0xCE    Reserved
-            LV_KEY_NONE, // ----                       0xCF    Reserved
-            LV_KEY_NONE, // ----                       0xD0    Reserved
-            LV_KEY_NONE, // ----                       0xD1    Reserved
-            LV_KEY_NONE, // ----                       0xD2    Reserved
-            LV_KEY_NONE, // ----                       0xD3    Reserved
-            LV_KEY_NONE, // ----                       0xD4    Reserved
-            LV_KEY_NONE, // ----                       0xD5    Reserved
-            LV_KEY_NONE, // ----                       0xD6    Reserved
-            LV_KEY_NONE, // ----                       0xD7    Reserved
-            LV_KEY_NONE, // ----                       0xD8    Reserved
-            LV_KEY_NONE, // ----                       0xD9    Reserved
-            LV_KEY_NONE, // ----                       0xDA    Reserved
-            LV_KEY_LEFT_BRACKET, // VK_OEM_4           0xDB    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the [{ key
-            LV_KEY_BACKSLASH, // VK_OEM_5              0xDC    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the \\| key
-            LV_KEY_RIGHT_BRACKET, // VK_OEM_6          0xDD    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ]} key
-            LV_KEY_QUOTE, // VK_OEM_7                  0xDE    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '" key
-            LV_KEY_NONE, // VK_OEM_8                   0xDF    Used for miscellaneous characters; it can vary by keyboard.
-            LV_KEY_NONE, // ----                       0xE0    Reserved
-            LV_KEY_NONE, // ----                       0xE1    OEM specific
-            LV_KEY_NONE, // VK_OEM_102                 0xE2    The <> keys on the US standard keyboard, or the \\| key on the non-US 102-key keyboard
-            LV_KEY_NONE, // ----                       0xE3    OEM specific
-            LV_KEY_NONE, // ----                       0xE4    OEM specific
-            LV_KEY_NONE, // VK_PROCESSLV_KEY           0xE5    IME PROCESS key
-            LV_KEY_NONE, // ----                       0xE6    OEM specific
-            LV_KEY_NONE, // VK_PACKET                  0xE7    Used to pass Unicode characters as if they were keystrokes. The VK_PACKET key is the low word of a 32-bit Virtual Key value used for non-keyboard input methods. For more information, see Remark in LV_KEYBDINPUT, SendInput, WM_LV_KEYDOWN, and WM_LV_KEYUP
-            LV_KEY_NONE, // ----                       0xE8    Unassigned
-            LV_KEY_NONE, // ----                       0xE9    OEM specific
-            LV_KEY_NONE, // ----                       0xEA    OEM specific
-            LV_KEY_NONE, // ----                       0xEB    OEM specific
-            LV_KEY_NONE, // ----                       0xEC    OEM specific
-            LV_KEY_NONE, // ----                       0xED    OEM specific
-            LV_KEY_NONE, // ----                       0xEE    OEM specific
-            LV_KEY_NONE, // ----                       0xEF    OEM specific
-            LV_KEY_NONE, // ----                       0xF0    OEM specific
-            LV_KEY_NONE, // ----                       0xF1    OEM specific
-            LV_KEY_NONE, // ----                       0xF2    OEM specific
-            LV_KEY_NONE, // ----                       0xF3    OEM specific
-            LV_KEY_NONE, // ----                       0xF4    OEM specific
-            LV_KEY_NONE, // ----                       0xF5    OEM specific
-            LV_KEY_NONE, // VK_ATTN                    0xF6    Attn key
-            LV_KEY_NONE, // VK_CRSEL                   0xF7    CrSel key
-            LV_KEY_NONE, // VK_EXSEL                   0xF8    ExSel key
-            LV_KEY_NONE, // VK_EREOF                   0xF9    Erase EOF key
-            LV_KEY_NONE, // VK_PLAY                    0xFA    Play key
-            LV_KEY_NONE, // VK_ZOOM                    0xFB    Zoom key
-            LV_KEY_NONE, // VK_NONAME                  0xFC    Reserved
-            LV_KEY_NONE, // VK_PA1                     0xFD    PA1 key
-            LV_KEY_NONE, // VK_OEM_CLEAR               0xFE    Clear key
-            LV_KEY_NONE, // -                          0xFF    Unused
+        LV_KEY_NONE, // ----                       0xB8    Reserved
+        LV_KEY_NONE, // ----                       0xB9    Reserved
+        LV_KEY_SEMICOLON, // VK_OEM_1              0xBA    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ;: key
+        LV_KEY_EQUALS, // VK_OEM_PLUS              0xBB    For any country/region, the + key
+        LV_KEY_COMMA, // VK_OEM_COMMA              0xBC    For any country/region, the , key
+        LV_KEY_MINUS, // VK_OEM_MINUS              0xBD    For any country/region, the - key
+        LV_KEY_PERIOD, // VK_OEM_PERIOD            0xBE    For any country/region, the . key
+        LV_KEY_SLASH, // VK_OEM_2                  0xBF    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the /? key
+        LV_KEY_GRAVE, // VK_OEM_3                  0xC0    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the `~ key
+        LV_KEY_NONE, // ----                       0xC1    Reserved
+        LV_KEY_NONE, // ----                       0xC2    Reserved
+        LV_KEY_NONE, // ----                       0xC3    Reserved
+        LV_KEY_NONE, // ----                       0xC4    Reserved
+        LV_KEY_NONE, // ----                       0xC5    Reserved
+        LV_KEY_NONE, // ----                       0xC6    Reserved
+        LV_KEY_NONE, // ----                       0xC7    Reserved
+        LV_KEY_NONE, // ----                       0xC8    Reserved
+        LV_KEY_NONE, // ----                       0xC9    Reserved
+        LV_KEY_NONE, // ----                       0xCA    Reserved
+        LV_KEY_NONE, // ----                       0xCB    Reserved
+        LV_KEY_NONE, // ----                       0xCC    Reserved
+        LV_KEY_NONE, // ----                       0xCD    Reserved
+        LV_KEY_NONE, // ----                       0xCE    Reserved
+        LV_KEY_NONE, // ----                       0xCF    Reserved
+        LV_KEY_NONE, // ----                       0xD0    Reserved
+        LV_KEY_NONE, // ----                       0xD1    Reserved
+        LV_KEY_NONE, // ----                       0xD2    Reserved
+        LV_KEY_NONE, // ----                       0xD3    Reserved
+        LV_KEY_NONE, // ----                       0xD4    Reserved
+        LV_KEY_NONE, // ----                       0xD5    Reserved
+        LV_KEY_NONE, // ----                       0xD6    Reserved
+        LV_KEY_NONE, // ----                       0xD7    Reserved
+        LV_KEY_NONE, // ----                       0xD8    Reserved
+        LV_KEY_NONE, // ----                       0xD9    Reserved
+        LV_KEY_NONE, // ----                       0xDA    Reserved
+        LV_KEY_LEFT_BRACKET, // VK_OEM_4           0xDB    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the [{ key
+        LV_KEY_BACKSLASH, // VK_OEM_5              0xDC    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the \\| key
+        LV_KEY_RIGHT_BRACKET, // VK_OEM_6          0xDD    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ]} key
+        LV_KEY_QUOTE, // VK_OEM_7                  0xDE    Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '" key
+        LV_KEY_NONE, // VK_OEM_8                   0xDF    Used for miscellaneous characters; it can vary by keyboard.
+        LV_KEY_NONE, // ----                       0xE0    Reserved
+        LV_KEY_NONE, // ----                       0xE1    OEM specific
+        LV_KEY_NONE, // VK_OEM_102                 0xE2    The <> keys on the US standard keyboard, or the \\| key on the non-US 102-key keyboard
+        LV_KEY_NONE, // ----                       0xE3    OEM specific
+        LV_KEY_NONE, // ----                       0xE4    OEM specific
+        LV_KEY_NONE, // VK_PROCESSLV_KEY           0xE5    IME PROCESS key
+        LV_KEY_NONE, // ----                       0xE6    OEM specific
+        LV_KEY_NONE, // VK_PACKET                  0xE7    Used to pass Unicode characters as if they were keystrokes. The VK_PACKET key is the low word of a 32-bit Virtual Key value used for non-keyboard input methods. For more information, see Remark in LV_KEYBDINPUT, SendInput, WM_LV_KEYDOWN, and WM_LV_KEYUP
+        LV_KEY_NONE, // ----                       0xE8    Unassigned
+        LV_KEY_NONE, // ----                       0xE9    OEM specific
+        LV_KEY_NONE, // ----                       0xEA    OEM specific
+        LV_KEY_NONE, // ----                       0xEB    OEM specific
+        LV_KEY_NONE, // ----                       0xEC    OEM specific
+        LV_KEY_NONE, // ----                       0xED    OEM specific
+        LV_KEY_NONE, // ----                       0xEE    OEM specific
+        LV_KEY_NONE, // ----                       0xEF    OEM specific
+        LV_KEY_NONE, // ----                       0xF0    OEM specific
+        LV_KEY_NONE, // ----                       0xF1    OEM specific
+        LV_KEY_NONE, // ----                       0xF2    OEM specific
+        LV_KEY_NONE, // ----                       0xF3    OEM specific
+        LV_KEY_NONE, // ----                       0xF4    OEM specific
+        LV_KEY_NONE, // ----                       0xF5    OEM specific
+        LV_KEY_NONE, // VK_ATTN                    0xF6    Attn key
+        LV_KEY_NONE, // VK_CRSEL                   0xF7    CrSel key
+        LV_KEY_NONE, // VK_EXSEL                   0xF8    ExSel key
+        LV_KEY_NONE, // VK_EREOF                   0xF9    Erase EOF key
+        LV_KEY_NONE, // VK_PLAY                    0xFA    Play key
+        LV_KEY_NONE, // VK_ZOOM                    0xFB    Zoom key
+        LV_KEY_NONE, // VK_NONAME                  0xFC    Reserved
+        LV_KEY_NONE, // VK_PA1                     0xFD    PA1 key
+        LV_KEY_NONE, // VK_OEM_CLEAR               0xFE    Clear key
+        LV_KEY_NONE, // -                          0xFF    Unused
     };
     int VKCodeMapSize = ARRAY_SIZE(VKCodeMap);
 
@@ -593,6 +593,7 @@ namespace Leviathan
             ARRAY_SIZE(RIDevDescs),
             sizeof(RAWINPUTDEVICE)) == TRUE);
     }
+
     void RawInputHandler::Win32_ProcessInput(WPARAM wParam, LPARAM lParam)
     {
         int InputCode = GET_RAWINPUT_CODE_WPARAM(wParam);
@@ -614,285 +615,8 @@ namespace Leviathan
             }
         }
     }
+
     void RawInputHandler::Win32_DeviceChange(WPARAM wParam, LPARAM lParam)
     {
-    }
-
-    struct VisualKey
-    {
-        LvKeyCode LvCode = LV_KEY_NONE;
-        v2f Size{ 1.0f, 1.0f };
-        v2f Pos{ 0.0f, 0.0f };
-    };
-
-    struct VisualKeyboard
-    {
-        bool bInit = false;
-        VisualKey KeyList[LV_KEY_COUNT];
-
-        void Init();
-        static void DrawKey(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush, const VisualKey& Key, const v2f& Origin, float Scale);
-        static void Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush);
-    };
-
-    void VisualKeyboard::Init()
-    {
-        for (int KeyIdx = LV_KEY_NONE; KeyIdx < LV_KEY_COUNT; KeyIdx++) { KeyList[KeyIdx].LvCode = (LvKeyCode)KeyIdx; }
-        KeyList[LV_KEY_BACKSPACE].Size.X = 2.0f;
-        KeyList[LV_KEY_TAB].Size.X = 1.5f;
-        KeyList[LV_KEY_BACKSLASH].Size.X = 1.5f;
-        KeyList[LV_KEY_CAPSLOCK].Size.X = 1.75f;
-        KeyList[LV_KEY_ENTER].Size.X = 2.25f;
-        const v2f ModSize{ 2.0f, 1.0f };
-        KeyList[LV_KEY_SHIFT].Size = ModSize;
-        KeyList[LV_KEY_CTRL].Size = ModSize;
-        KeyList[LV_KEY_SUPER].Size = ModSize;
-        KeyList[LV_KEY_ALT].Size = ModSize;
-        KeyList[LV_KEY_SPACE].Size.X = 6.0f;
-        float FuncRowGap = 2.0f / 3.0f; // RowWidth = 15, NumRowKeys = 12, NumGaps = 3, FuncGap = (RowWidth - NumRowKeys) / NumGaps
-        float RowX = 1.0f + FuncRowGap;
-        for (int KeyIdx = LV_KEY_F1; KeyIdx <= LV_KEY_F12; KeyIdx++)
-        {
-            KeyList[KeyIdx].Pos = v2f{ RowX, 0.0f };
-            RowX += KeyList[KeyIdx].Size.X;
-            if (KeyIdx == LV_KEY_F4 || KeyIdx == LV_KEY_F8) { RowX += FuncRowGap; }
-        }
-        float FuncRowPadding = 0.25f;
-        float RowY = 1.0f + FuncRowPadding;
-        RowX = 0.0f;
-        v2f RightRegionOrigin{ 15.0f, 0.0f };
-        for (int KeyIdx = LV_KEY_GRAVE; KeyIdx <= LV_KEY_SLASH; KeyIdx++)
-        {
-            KeyList[KeyIdx].Pos = v2f{RowX, RowY};
-            RowX += KeyList[KeyIdx].Size.X;
-            switch (KeyIdx)
-            {
-                case LV_KEY_ENTER:
-                {
-                    RowY += 1.0f;
-                    RowX = KeyList[LV_KEY_SHIFT].Size.X;
-                } break;
-                case LV_KEY_BACKSPACE:
-                case LV_KEY_BACKSLASH:
-                case LV_KEY_SLASH:
-                {
-                    RowY += 1.0f;
-                    RowX = 0.0f;
-                } break;
-            }
-        }
-        KeyList[LV_KEY_SPACE].Pos = v2f{ 3.75f, RowY };
-        v2f ModOrigin = RightRegionOrigin + v2f{ 1.0f, 0.0f };
-        KeyList[LV_KEY_SHIFT].Pos = ModOrigin;
-        KeyList[LV_KEY_CTRL].Pos = ModOrigin + v2f{ 0.0f, 1.0f };
-        KeyList[LV_KEY_SUPER].Pos = ModOrigin + v2f{ 0.0f, 2.0f };;
-        KeyList[LV_KEY_ALT].Pos = ModOrigin + v2f{ 0.0f, 3.0f };
-        KeyList[LV_KEY_ARROW_UP].Pos = RightRegionOrigin + v2f{ 1.0f, RowY - 1.0f };
-        KeyList[LV_KEY_ARROW_LEFT].Pos = RightRegionOrigin + v2f{ 0.0f, RowY };
-        KeyList[LV_KEY_ARROW_DOWN].Pos = RightRegionOrigin + v2f{ 1.0f, RowY };
-        KeyList[LV_KEY_ARROW_RIGHT].Pos = RightRegionOrigin + v2f{ 2.0f, RowY };
-
-        bInit = true;
-    }
-
-    void VisualKeyboard::DrawKey(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush, const VisualKey& Key, const v2f& Origin, float Scale)
-    {
-        float Left = Origin.X + (Key.Pos.X * Scale);
-        float Top = Origin.Y + (Key.Pos.Y * Scale);
-        float Right = Left + (Key.Size.X * Scale);
-        float Bottom = Top + (Key.Size.Y * Scale);
-        D2D1_RECT_F KeyRect{ Left, Top, Right, Bottom };
-        bool bIsDown = KeyboardState::GetKeyState(Key.LvCode, true);
-        if (bIsDown) { InD2RT->FillRectangle(&KeyRect, InBrush); }
-        else { InD2RT->DrawRectangle(&KeyRect, InBrush, 1.0f, nullptr); }
-    }
-
-    void VisualKeyboard::Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush)
-    {
-        static VisualKeyboard vKeyboard;
-        if (!vKeyboard.bInit) { vKeyboard.Init(); }
-        v2f Origin{800.0f, 10.0};
-        float Scale = 20.0f;
-        for (int KeyIdx = LV_KEY_ESC; KeyIdx < LV_KEY_COUNT; KeyIdx++)
-        {
-            DrawKey(InD2RT, InBrush, vKeyboard.KeyList[KeyIdx], Origin, Scale);
-        }
-    }
-
-    void InputVisualizer::DrawKeyboard(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush)
-    {
-        VisualKeyboard::Draw(InD2RT, InBrush);
-    }
-
-    struct VisualMouse
-    {
-        static void Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2);
-    };
-
-    void VisualMouse::Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
-    {
-        static v2f ButtonOrigin{ 1100.0f, AppHeight - 200.0f };
-        static v2f ButtonSize{ 25.0f, 50.0f };
-        static D2D1_RECT_F LeftRect{ ButtonOrigin.X, ButtonOrigin.Y, ButtonOrigin.X + ButtonSize.X, ButtonOrigin.Y + ButtonSize.Y };
-        static D2D1_RECT_F MiddleRect{ LeftRect.left + ButtonSize.X, LeftRect.top, LeftRect.right + ButtonSize.X, LeftRect.bottom };
-        static D2D1_RECT_F RightRect{ MiddleRect.left + ButtonSize.X, MiddleRect.top, MiddleRect.right + ButtonSize.X, MiddleRect.bottom };
-        { // Buttons
-            if (MouseState::bLeftKey) { InD2RT->FillRectangle(&LeftRect, InBrush1); }
-            else { InD2RT->DrawRectangle(&LeftRect, InBrush1, 1.0f, nullptr); }
-            if (MouseState::bRightKey) { InD2RT->FillRectangle(&RightRect, InBrush1); }
-            else { InD2RT->DrawRectangle(&RightRect, InBrush1, 1.0f, nullptr); }
-            if (MouseState::bMiddleKey) { InD2RT->FillRectangle(&MiddleRect, InBrush1); }
-            else { InD2RT->DrawRectangle(&MiddleRect, InBrush1, 1.0f, nullptr); }
-        }
-
-        static v2f MouseWindowSize{ 128.0f, 72.0f };
-        static v2f MouseWindowOrigin{ (LeftRect.left + RightRect.right - MouseWindowSize.X) * 0.5f, ButtonOrigin.Y + ButtonSize.Y};
-        static D2D1_RECT_F MouseWindowRect{ MouseWindowOrigin.X, MouseWindowOrigin.Y, MouseWindowOrigin.X + MouseWindowSize.X, MouseWindowOrigin.Y + MouseWindowSize.Y };
-        static float CursorSize = 5.0f;
-        static float HalfCursorSize = CursorSize * 0.5f;
-        { // Cursor
-            v2f CursorPos = {
-                ((float)MouseState::MouseX / (float)AppWidth * MouseWindowSize.X) + MouseWindowOrigin.X,
-                ((float)MouseState::MouseY / (float)AppHeight * MouseWindowSize.Y) + MouseWindowOrigin.Y
-            };
-            D2D1_RECT_F CursorRect{
-                CursorPos.X - HalfCursorSize,
-                CursorPos.Y - HalfCursorSize,
-                CursorPos.X + HalfCursorSize,
-                CursorPos.Y + HalfCursorSize
-            };
-            InD2RT->FillRectangle(&MouseWindowRect, InBrush1);
-            InD2RT->FillRectangle(&CursorRect, InBrush2);
-        }
-
-        static float WheelAngle = 0.0f;
-        static float VisualSpeed = 0.25f;
-        WheelAngle += MouseState::MouseWheel * VisualSpeed;
-        { // Wheel
-            static float WheelSize = 25.0f;
-            static D2D1_POINT_2F WheelPos =
-            {
-                (LeftRect.left + RightRect.right) / 2.0f,
-                LeftRect.top - WheelSize
-            };
-            static D2D1_ELLIPSE WheelEllipse{ WheelPos, WheelSize, WheelSize };
-            InD2RT->DrawEllipse(WheelEllipse, InBrush1, 1.0f, nullptr);
-            D2D1_POINT_2F WheelLineEnd =
-            {
-                WheelPos.x + (cosf(WheelAngle) * WheelSize),
-                WheelPos.y + (sinf(WheelAngle) * WheelSize),
-            };
-            InD2RT->DrawLine(WheelPos, WheelLineEnd, InBrush1, 1.0f, nullptr);
-        }
-    }
-
-    void InputVisualizer::DrawMouse(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
-    {
-        VisualMouse::Draw(InD2RT, InBrush1, InBrush2);
-    }
-
-    struct VisualGamepad
-    {
-        static void Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2);
-    };
-
-    void VisualGamepad::Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
-    {
-        static const v2f GamepadOrigin{0.0f, AppHeight - 200.0f};
-        static const v2f ButtonSize{ 25.0f, 25.0f };
-        static const v2f DPadOrigin = GamepadOrigin + v2f{ 50.0f, 50.0f };
-        static const v2f FaceOrigin = DPadOrigin + v2f{ ButtonSize.X * 8.0f, 0.0f };
-        static v2f ButtonPos[LV_GAMEPAD_BUTTON_COUNT];
-        ButtonPos[LV_GAMEPAD_DPAD_UP] = DPadOrigin + v2f{ ButtonSize.X, 0.0f };
-        ButtonPos[LV_GAMEPAD_DPAD_DOWN] = DPadOrigin + v2f{ ButtonSize.X, ButtonSize.Y * 2.0f };
-        ButtonPos[LV_GAMEPAD_DPAD_LEFT] = DPadOrigin + v2f{ 0.0f, ButtonSize.Y };
-        ButtonPos[LV_GAMEPAD_DPAD_RIGHT] = DPadOrigin + v2f{ ButtonSize.X * 2.0f, ButtonSize.Y };
-        ButtonPos[LV_GAMEPAD_FACE_UP] = FaceOrigin + v2f{ ButtonSize.X, 0.0f };
-        ButtonPos[LV_GAMEPAD_FACE_DOWN] = FaceOrigin + v2f{ ButtonSize.X, ButtonSize.Y * 2.0f };
-        ButtonPos[LV_GAMEPAD_FACE_LEFT] = FaceOrigin + v2f{ 0.0f, ButtonSize.Y };
-        ButtonPos[LV_GAMEPAD_FACE_RIGHT] = FaceOrigin + v2f{ ButtonSize.X * 2.0f, ButtonSize.Y };
-        ButtonPos[LV_GAMEPAD_START] = DPadOrigin + v2f{ ButtonSize.X * 6.0f, 0.0f };
-        ButtonPos[LV_GAMEPAD_SELECT] = DPadOrigin + v2f{ ButtonSize.X * 4.0f, 0.0f };
-        ButtonPos[LV_GAMEPAD_LEFT_SHOULDER] = DPadOrigin + v2f{ ButtonSize.X, ButtonSize.Y * -2.0f };
-        ButtonPos[LV_GAMEPAD_RIGHT_SHOULDER] = FaceOrigin + v2f{ ButtonSize.X, ButtonSize.Y * -2.0f };
-        ButtonPos[LV_GAMEPAD_LEFT_THUMB] = DPadOrigin + v2f{ ButtonSize.X, ButtonSize.Y * 4.0f };
-        ButtonPos[LV_GAMEPAD_RIGHT_THUMB] = FaceOrigin + v2f{ ButtonSize.X, ButtonSize.Y * 4.0f };
-
-        for (int ButtonIdx = LV_GAMEPAD_DPAD_UP; ButtonIdx < LV_GAMEPAD_LEFT_THUMB; ButtonIdx++)
-        {
-            D2D1_RECT_F ButtonRect =
-            {
-                ButtonPos[ButtonIdx].X,
-                ButtonPos[ButtonIdx].Y,
-                ButtonPos[ButtonIdx].X + ButtonSize.X,
-                ButtonPos[ButtonIdx].Y + ButtonSize.Y,
-            };
-            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx))
-            {
-                InD2RT->FillRectangle(&ButtonRect, InBrush1);
-            }
-            else
-            {
-                InD2RT->DrawRectangle(&ButtonRect, InBrush1, 1.0f, nullptr);
-            }
-        }
-
-        float LTrigger = GamepadState::GetLeftTrigger();
-        float RTrigger = GamepadState::GetRightTrigger();
-        { // Triggers
-            static constexpr float TriggerDeadzone = 0.05f;
-            static const v2f LTriggerPos = ButtonPos[LV_GAMEPAD_LEFT_SHOULDER] + v2f{ ButtonSize.X * 2.0f, ButtonSize.Y * -1.0f };
-            static const v2f RTriggerPos = ButtonPos[LV_GAMEPAD_RIGHT_SHOULDER] + v2f{ ButtonSize.X * -2.0f, ButtonSize.Y * -1.0f };
-            static const v2f TriggerSize{ 25.0f, 50.0f };
-            D2D1_RECT_F LeftTriggerRect{ LTriggerPos.X, LTriggerPos.Y,
-                LTriggerPos.X + TriggerSize.X, LTriggerPos.Y + TriggerSize.Y };
-            D2D1_RECT_F RightTriggerRect{ RTriggerPos.X, RTriggerPos.Y,
-                RTriggerPos.X + TriggerSize.X, RTriggerPos.Y + TriggerSize.Y };
-            InD2RT->DrawRectangle(&LeftTriggerRect, InBrush1, 1.0f, nullptr);
-            InD2RT->DrawRectangle(&RightTriggerRect, InBrush1, 1.0f, nullptr);
-            if (LTrigger > TriggerDeadzone)
-            {
-                LeftTriggerRect.bottom = LTriggerPos.Y + (TriggerSize.Y * LTrigger);
-                InD2RT->FillRectangle(&LeftTriggerRect, InBrush2);
-            }
-            if (RTrigger > TriggerDeadzone)
-            {
-                RightTriggerRect.bottom = RTriggerPos.Y + (TriggerSize.Y * RTrigger);
-                InD2RT->FillRectangle(&RightTriggerRect, InBrush2);
-            }
-        }
-
-        v2f LStick = GamepadState::GetLeftStick();
-        v2f RStick = GamepadState::GetRightStick();
-        { // Sticks
-            static const float StickSize = 25.0f;
-            static const D2D1_POINT_2F LStickPos { ButtonPos[LV_GAMEPAD_SELECT].X, ButtonPos[LV_GAMEPAD_DPAD_DOWN].Y + StickSize };
-            static const D2D1_POINT_2F RStickPos{ ButtonPos[LV_GAMEPAD_START].X + StickSize, ButtonPos[LV_GAMEPAD_FACE_DOWN].Y + StickSize };
-            D2D1_ELLIPSE LeftEllipse{ LStickPos, StickSize, StickSize };
-            D2D1_ELLIPSE RightEllipse{ RStickPos, StickSize, StickSize };
-
-            if (GamepadState::GetButton(LV_GAMEPAD_LEFT_THUMB)) { InD2RT->FillEllipse(&LeftEllipse, InBrush1); }
-            else { InD2RT->DrawEllipse(&LeftEllipse, InBrush1, 1.0f, nullptr); }
-            if (GamepadState::GetButton(LV_GAMEPAD_RIGHT_THUMB)) { InD2RT->FillEllipse(&RightEllipse, InBrush1); }
-            else { InD2RT->DrawEllipse(&RightEllipse, InBrush1, 1.0f, nullptr); }
-
-            D2D1_POINT_2F LStickInput
-            {
-                LStickPos.x + LStick.X * StickSize,
-                LStickPos.y + -LStick.Y * StickSize
-            };
-            D2D1_POINT_2F RStickInput
-            {
-                RStickPos.x + RStick.X * StickSize,
-                RStickPos.y + -RStick.Y * StickSize
-            };
-            InD2RT->DrawLine(LStickPos, LStickInput, InBrush2, 1.0f, nullptr);
-            InD2RT->DrawLine(RStickPos, RStickInput, InBrush2, 1.0f, nullptr);
-        }
-    }
-
-    void InputVisualizer::DrawGamepad(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
-    {
-        VisualGamepad::Draw(InD2RT, InBrush1, InBrush2);
     }
 }

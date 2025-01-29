@@ -134,6 +134,7 @@
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
     <ClCompile Include="src\Input.cpp" />
+    <ClCompile Include="src\InputVisualizer.cpp" />
     <ClCompile Include="src\Leviathan.cpp" />
     <ClCompile Include="src\Math.cpp" />
     <ClCompile Include="src\UserInterface.cpp" />
@@ -142,6 +143,7 @@
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Graphics.h" />
     <ClInclude Include="src\Input.h" />
+    <ClInclude Include="src\InputVisualizer.h" />
     <ClInclude Include="src\Leviathan.h" />
     <ClInclude Include="src\Math.h" />
     <ClInclude Include="src\UserInterface.h" />

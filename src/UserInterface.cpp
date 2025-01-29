@@ -1,5 +1,6 @@
 #include "UserInterface.h"
 #include "Graphics.h"
+#include "InputVisualizer.h"
 
 namespace Leviathan
 {

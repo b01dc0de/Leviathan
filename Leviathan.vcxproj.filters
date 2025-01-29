@@ -27,6 +27,9 @@
     <ClCompile Include="src\UserInterface.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\InputVisualizer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -45,6 +48,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\UserInterface.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputVisualizer.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
