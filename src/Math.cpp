@@ -2,6 +2,33 @@
 
 namespace Leviathan
 {
+    m2f m2f::Identity()
+    {
+        m2f Result;
+        Result.R0 = { 1.0f, 0.0f };
+        Result.R1 = { 0.0f, 1.0f };
+        return Result;
+    }
+
+    m3f m3f::Identity()
+    {
+        m3f Result;
+        Result.R0 = { 1.0f, 0.0f, 0.0f };
+        Result.R1 = { 0.0f, 1.0f, 0.0f };
+        Result.R2 = { 0.0f, 0.0f, 1.0f };
+        return Result;
+    }
+
+    m4f m4f::Identity()
+    {
+        m4f Result;
+        Result.R0 = { 1.0f, 0.0f, 0.0f, 0.0f };
+        Result.R1 = { 0.0f, 1.0f, 0.0f, 0.0f };
+        Result.R2 = { 0.0f, 0.0f, 1.0f, 0.0f };
+        Result.R3 = { 0.0f, 0.0f, 0.0f, 1.0f };
+        return Result;
+    }
+
     float LengthSq(const v2f& A)
     {
         float Result = A.X*A.X + A.Y*A.Y;
@@ -96,6 +123,18 @@ namespace Leviathan
         return Subtract(A, B);
     }
 
+    v2f operator-(const v2f& A)
+    {
+        v2f Result{ -A.X, -A.Y };
+        return Result;
+    }
+
+    v3f operator-(const v3f& A)
+    {
+        v3f Result{ -A.X, -A.Y, -A.Z };
+        return Result;
+    }
+
     float Dot(const v2f& A, const v2f& B)
     {
         float Result = A.X*B.X + A.Y*B.Y;
@@ -115,5 +154,79 @@ namespace Leviathan
             A.X*B.Y - A.Y*B.X,
         };
         return Result;
+    }
+
+    m2f Mult(const m2f& A, const m2f& B)
+    {
+        m2f Result;
+
+        Result.R0.X = A.R0.X * B.R0.X + A.R0.Y * B.R1.X;
+        Result.R0.Y = A.R0.X * B.R0.Y + A.R0.Y * B.R1.Y;
+
+        Result.R1.X = A.R1.X * B.R0.X + A.R1.Y * B.R1.X;
+        Result.R1.Y = A.R1.X * B.R0.Y + A.R1.Y * B.R1.Y;
+
+        return Result;
+    }
+
+    m3f Mult(const m3f& A, const m3f& B)
+    {
+        m3f Result;
+
+        Result.R0.X = A.R0.X * B.R0.X + A.R0.Y * B.R1.X + A.R0.Z * B.R2.X;
+        Result.R0.Y = A.R0.X * B.R0.Y + A.R0.Y * B.R1.Y + A.R0.Z * B.R2.Y;
+        Result.R0.Z = A.R0.X * B.R0.Z + A.R0.Y * B.R1.Z + A.R0.Z * B.R2.Z;
+
+        Result.R1.X = A.R1.X * B.R0.X + A.R1.Y * B.R1.X + A.R1.Z * B.R2.X;
+        Result.R1.Y = A.R1.X * B.R0.Y + A.R1.Y * B.R1.Y + A.R1.Z * B.R2.Y;
+        Result.R1.Z = A.R1.X * B.R0.Z + A.R1.Y * B.R1.Z + A.R1.Z * B.R2.Z;
+
+        Result.R2.X = A.R2.X * B.R0.X + A.R2.Y * B.R1.X + A.R2.Z * B.R2.X;
+        Result.R2.Y = A.R2.X * B.R0.Y + A.R2.Y * B.R1.Y + A.R2.Z * B.R2.Y;
+        Result.R2.Z = A.R2.X * B.R0.Z + A.R2.Y * B.R1.Z + A.R2.Z * B.R2.Z;
+
+        return Result;
+    }
+
+    m4f Mult(const m4f& A, const m4f& B)
+    {
+        m4f Result;
+
+        Result.R0.X = A.R0.X * B.R0.X + A.R0.Y * B.R1.X + A.R0.Z * B.R2.X + A.R0.W * B.R3.X;
+        Result.R0.Y = A.R0.X * B.R0.Y + A.R0.Y * B.R1.Y + A.R0.Z * B.R2.Y + A.R0.W * B.R3.Y;
+        Result.R0.Z = A.R0.X * B.R0.Z + A.R0.Y * B.R1.Z + A.R0.Z * B.R2.Z + A.R0.W * B.R3.Z;
+        Result.R0.W = A.R0.X * B.R0.W + A.R0.Y * B.R1.W + A.R0.Z * B.R2.W + A.R0.W * B.R3.W;
+
+        Result.R1.X = A.R1.X * B.R0.X + A.R1.Y * B.R1.X + A.R1.Z * B.R2.X + A.R1.W * B.R3.X;
+        Result.R1.Y = A.R1.X * B.R0.Y + A.R1.Y * B.R1.Y + A.R1.Z * B.R2.Y + A.R1.W * B.R3.Y;
+        Result.R1.Z = A.R1.X * B.R0.Z + A.R1.Y * B.R1.Z + A.R1.Z * B.R2.Z + A.R1.W * B.R3.Z;
+        Result.R1.W = A.R1.X * B.R0.W + A.R1.Y * B.R1.W + A.R1.Z * B.R2.W + A.R1.W * B.R3.W;
+
+        Result.R2.X = A.R2.X * B.R0.X + A.R2.Y * B.R1.X + A.R2.Z * B.R2.X + A.R2.W * B.R3.X;
+        Result.R2.Y = A.R2.X * B.R0.Y + A.R2.Y * B.R1.Y + A.R2.Z * B.R2.Y + A.R2.W * B.R3.Y;
+        Result.R2.Z = A.R2.X * B.R0.Z + A.R2.Y * B.R1.Z + A.R2.Z * B.R2.Z + A.R2.W * B.R3.Z;
+        Result.R2.W = A.R2.X * B.R0.W + A.R2.Y * B.R1.W + A.R2.Z * B.R2.W + A.R2.W * B.R3.W;
+
+        Result.R3.X = A.R3.X * B.R0.X + A.R3.Y * B.R1.X + A.R3.Z * B.R2.X + A.R3.W * B.R3.X;
+        Result.R3.Y = A.R3.X * B.R0.Y + A.R3.Y * B.R1.Y + A.R3.Z * B.R2.Y + A.R3.W * B.R3.Y;
+        Result.R3.Z = A.R3.X * B.R0.Z + A.R3.Y * B.R1.Z + A.R3.Z * B.R2.Z + A.R3.W * B.R3.Z;
+        Result.R3.W = A.R3.X * B.R0.W + A.R3.Y * B.R1.W + A.R3.Z * B.R2.W + A.R3.W * B.R3.W;
+
+        return Result;
+    }
+
+    m2f operator*(const m2f& A, const m2f& B)
+    {
+        return Mult(A, B);
+    }
+
+    m3f operator*(const m3f& A, const m3f& B)
+    {
+        return Mult(A, B);
+    }
+
+    m4f operator*(const m4f& A, const m4f& B)
+    {
+        return Mult(A, B);
     }
 }

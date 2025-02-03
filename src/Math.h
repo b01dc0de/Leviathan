@@ -24,12 +24,28 @@ namespace Leviathan
         float W = 0.0f;
     };
 
+    struct m2f
+    {
+        v2f R0;
+        v2f R1;
+        static m2f Identity();
+    };
+
+    struct m3f
+    {
+        v3f R0;
+        v3f R1;
+        v3f R2;
+        static m3f Identity();
+    };
+
     struct m4f
     {
         v4f R0;
         v4f R1;
         v4f R2;
         v4f R3;
+        static m4f Identity();
     };
 
     float LengthSq(const v2f& A);
@@ -53,9 +69,19 @@ namespace Leviathan
     v3f operator-(const v3f& A, const v3f& B);
     v4f operator-(const v4f& A, const v4f& B);
 
+    v2f operator-(const v2f& A);
+    v3f operator-(const v3f& A);
+
     float Dot(const v2f& A, const v2f& B);
     float Dot(const v3f& A, const v3f& B);
     v3f Cross(const v3f& A, const v3f& B);
+
+    m2f Mult(const m2f& A, const m2f& B);
+    m3f Mult(const m3f& A, const m3f& B);
+    m4f Mult(const m4f& A, const m4f& B);
+    m2f operator*(const m2f& A, const m2f& B);
+    m3f operator*(const m3f& A, const m3f& B);
+    m4f operator*(const m4f& A, const m4f& B);
 }
 
 #endif // LEVIATHAN_MATH_H
