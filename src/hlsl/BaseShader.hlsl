@@ -2,6 +2,8 @@
 // BaseShader.hlsl //
 /////////////////////
 
+#pragma pack_matrix(row_major)
+
 #ifndef ENABLE_VERTEX_COLOR
     #define ENABLE_VERTEX_COLOR (0)
 #endif // ENABLE_VERTEX_COLOR

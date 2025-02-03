@@ -244,7 +244,7 @@ namespace Leviathan
     {
         v3f Result = {
             A.Y*B.Z - A.Z*B.Y,
-            A.X*B.Z - A.Z*B.X,
+            A.Z*B.X - A.X*B.Z,
             A.X*B.Y - A.Y*B.X,
         };
         return Result;
