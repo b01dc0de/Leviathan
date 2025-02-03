@@ -21,7 +21,7 @@ namespace Leviathan
     ID3D11PixelShader* DX_PixelShaderTexture = nullptr;
     ID3D11InputLayout* DX_InputLayoutTexture = nullptr;
 
-#define DX_COMBINED_WVP_BUFFER() (1)
+#define DX_COMBINED_WVP_BUFFER() (0)
 #if DX_COMBINED_WVP_BUFFER()
     ID3D11Buffer* DX_WVPBuffer = nullptr;
     const int WVPBufferSlot = 0;
@@ -34,6 +34,9 @@ namespace Leviathan
 
     ID3D11Buffer* DX_VertexBufferTriangle = nullptr;
     ID3D11Buffer* DX_IndexBufferTriangle = nullptr;
+
+    ID3D11Buffer* DX_VertexBufferCube = nullptr;
+    ID3D11Buffer* DX_IndexBufferCube = nullptr;
 
     ID3D11Texture2D* DX_DebugTexture = nullptr;
     ID3D11ShaderResourceView* DX_DebugTextureSRV = nullptr;
@@ -106,6 +109,9 @@ namespace Leviathan
         0, 1, 2
     };
 
+    VxColor Vertices_Cube[] = { {} };
+    unsigned int Indices_Cube[] = { {} };
+
     VxTexture Vertices_Quad[] =
     {
         { {-0.5f, +0.5f, +0.5f, +1.0f}, { 0.0f, 0.0f } },
@@ -118,6 +124,64 @@ namespace Leviathan
         0, 2, 1,
         1, 2, 3
     };
+
+    struct Camera
+    {
+        m4f View;
+        m4f Proj;
+        void Ortho();
+        void Persp(const v3f& InPos, const v3f& InLookAt);
+    };
+
+    void Camera::Ortho()
+    {
+        float ResX = (float)AppWidth;
+        float ResY = (float)AppHeight;
+        float fDepth = 1.0f;
+        View = m4f::Identity();
+        Proj = m4f::Identity();
+        Proj.R0.X = +2.0f / ResX;
+        Proj.R1.Y = +2.0f / ResY;
+        View.R2.Z = -2.0f / fDepth;
+    }
+
+    void Camera::Persp(const v3f& InPos, const v3f& InLookAt)
+    {
+        View = m4f::Identity();
+        Proj = m4f::Identity();
+
+        {
+            static const m4f NDC = Mult(m4f::Trans(v3f{0.0f, 0.0f, 1.0f}), m4f::Scale(1.0f, 1.0f, 0.5f));
+
+            constexpr v3f AbsUp{ 0.0f, 1.0f, 0.0f };
+            v3f Forward = Norm(-(InLookAt - InPos));
+            v3f Right = Norm(Cross(AbsUp, Forward));
+            v3f Up = Norm(Cross(Forward, Right));
+
+            constexpr float fFOV = 45.0f;
+            constexpr float fAspectRatio = 16.0f / 9.0f;
+            const float fD = 1.0f / tanf(fFOV / 2.0f);
+
+            constexpr float fNearDist = -1.0f;
+            constexpr float fFarDist = 1000.0f;
+            constexpr float fDistDelta = fFarDist - fNearDist;
+
+            Proj.R0.X = fD / fAspectRatio;
+            Proj.R1.Y = fD;
+            Proj.R2.Z = -(fFarDist + fNearDist) / fDistDelta;
+            Proj = Proj * NDC;
+
+            View.R0 = { Right.X, Up.X, Forward.X, 0.0f };
+            View.R1 = { Right.Y, Up.Y, Forward.Y, 0.0f };
+            View.R2 = { Right.Z, Up.Z, Forward.Z, 0.0f };
+            View.R3.X = -Dot(InPos, Right);
+            View.R3.Y = -Dot(InPos, Up);
+            View.R3.Z = -Dot(InPos, Forward);
+            View.R3.W = 1.0f;
+        }
+    }
+
+    Camera GameCamera;
 
     void GetDebugImage(ImageT& OutImage)
     {
@@ -425,6 +489,16 @@ namespace Leviathan
         }
 
         {
+            D3D11_BUFFER_DESC VertexBufferDesc = { sizeof(Vertices_Cube), D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0 };
+            D3D11_SUBRESOURCE_DATA VertexBufferInitData = { Vertices_Cube, 0, 0 };
+            DX_CHECK(DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_VertexBufferCube));
+
+            D3D11_BUFFER_DESC IndexBufferDesc = { sizeof(Indices_Cube), D3D11_USAGE_DEFAULT, D3D11_BIND_INDEX_BUFFER, 0, 0 };
+            D3D11_SUBRESOURCE_DATA IndexBufferInitData = { Indices_Cube, 0, 0 };
+            DX_CHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBufferCube));
+        }
+
+        {
             ImageT DebugImage = {};
             GetDebugImage(DebugImage);
 
@@ -516,6 +590,10 @@ namespace Leviathan
             DW_DefaultTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
         }
 
+        v3f CameraPos{-10.0f, 50.0f, -25.0f};
+        v3f CameraLookAt{ 0.0f, 0.0f, 0.0f };
+        GameCamera.Persp(CameraPos, CameraLookAt);
+
         UserInterface::Init(D2_RenderTarget);
     }
 
@@ -589,6 +667,8 @@ namespace Leviathan
             DX_CHECK(D2_RenderTarget->EndDraw());
         }
 
+        static bool bDrawTriangle = false;
+        if (bDrawTriangle)
         { // Draw triangle
             UINT Offset = 0;
             const UINT Stride = sizeof(VxColor);
@@ -609,6 +689,8 @@ namespace Leviathan
             DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Triangle), 0u, 0u);
         }
 
+        static bool bDrawTexQuad = false;
+        if (bDrawTexQuad)
         { // Draw tex quad
             UINT Offset = 0;
             const UINT Stride = sizeof(VxTexture);
@@ -629,6 +711,28 @@ namespace Leviathan
             DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
 
             DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Quad), 0u, 0u);
+        }
+
+        { // Draw cube
+            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &GameCamera.View, sizeof(Camera), 0);
+
+            UINT Offset = 0;
+            const UINT Stride = sizeof(VxColor);
+            DX_ImmediateContext->IASetInputLayout(DX_InputLayoutColor);
+            DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBufferCube, &Stride, &Offset);
+            DX_ImmediateContext->IASetIndexBuffer(DX_IndexBufferCube, DXGI_FORMAT_R32_UINT, 0);
+            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            DX_ImmediateContext->VSSetShader(DX_VertexShaderColor, nullptr, 0);
+        #if DX_COMBINED_WVP_BUFFER()
+            DX_ImmediateContext->VSSetConstantBuffers(WVPBufferSlot, 1, &DX_WVPBuffer);
+        #else // DX_COMBINED_WVP_BUFFER()
+            DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
+            DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
+        #endif // DX_COMBINED_WVP_BUFFER()
+            DX_ImmediateContext->PSSetShader(DX_PixelShaderColor, nullptr, 0);
+
+            DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Cube), 0u, 0u);
         }
 
         static bool bDrawUI = true;
