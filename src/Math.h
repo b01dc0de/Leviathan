@@ -28,6 +28,7 @@ namespace Leviathan
     {
         v2f R0;
         v2f R1;
+        static m2f Zero();
         static m2f Identity();
     };
 
@@ -36,6 +37,7 @@ namespace Leviathan
         v3f R0;
         v3f R1;
         v3f R2;
+        static m3f Zero();
         static m3f Identity();
     };
 
@@ -45,7 +47,16 @@ namespace Leviathan
         v4f R1;
         v4f R2;
         v4f R3;
+        static m4f Zero();
         static m4f Identity();
+        static m4f Trans(float X, float Y, float Z);
+        static m4f Trans(const v3f& InV);
+        static m4f Scale(float X, float Y, float Z);
+        static m4f Scale(float InS);
+        static m4f Scale(const v3f& InV);
+        static m4f RotAxisX(float Angle);
+        static m4f RotAxisY(float Angle);
+        static m4f RotAxisZ(float Angle);
     };
 
     float LengthSq(const v2f& A);

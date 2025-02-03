@@ -2,11 +2,28 @@
 
 namespace Leviathan
 {
+    m2f m2f::Zero()
+    {
+        m2f Result;
+        Result.R0 = { 0.0f, 0.0f };
+        Result.R1 = { 0.0f, 0.0f };
+        return Result;
+    }
+
     m2f m2f::Identity()
     {
         m2f Result;
         Result.R0 = { 1.0f, 0.0f };
         Result.R1 = { 0.0f, 1.0f };
+        return Result;
+    }
+
+    m3f m3f::Zero()
+    {
+        m3f Result;
+        Result.R0 = { 0.0f, 0.0f, 0.0f };
+        Result.R1 = { 0.0f, 0.0f, 0.0f };
+        Result.R2 = { 0.0f, 0.0f, 0.0f };
         return Result;
     }
 
@@ -19,6 +36,16 @@ namespace Leviathan
         return Result;
     }
 
+    m4f m4f::Zero()
+    {
+        m4f Result;
+        Result.R0 = { 0.0f, 0.0f, 0.0f, 0.0f };
+        Result.R1 = { 0.0f, 0.0f, 0.0f, 0.0f };
+        Result.R2 = { 0.0f, 0.0f, 0.0f, 0.0f };
+        Result.R3 = { 0.0f, 0.0f, 0.0f, 0.0f };
+        return Result;
+    }
+
     m4f m4f::Identity()
     {
         m4f Result;
@@ -26,6 +53,73 @@ namespace Leviathan
         Result.R1 = { 0.0f, 1.0f, 0.0f, 0.0f };
         Result.R2 = { 0.0f, 0.0f, 1.0f, 0.0f };
         Result.R3 = { 0.0f, 0.0f, 0.0f, 1.0f };
+        return Result;
+    }
+
+    m4f m4f::Trans(float X, float Y, float Z)
+    {
+        m4f Result = Identity();
+        Result.R3 = { X, Y, Z, 1.0f };
+        return Result;
+    }
+
+    m4f m4f::Trans(const v3f& InV)
+    {
+        return Trans(InV.X, InV.Y, InV.Z);
+    }
+
+    m4f m4f::Scale(float X, float Y, float Z)
+    {
+        m4f Result = Identity();
+        Result.R0.X = X;
+        Result.R1.Y = Y;
+        Result.R2.Z = Z;
+        return Result;
+    }
+
+    m4f m4f::Scale(float InS)
+    {
+        return Scale(InS, InS, InS);
+    }
+
+    m4f m4f::Scale(const v3f& InV)
+    {
+        return Scale(InV.X, InV.Y, InV.Z);
+    }
+
+    m4f m4f::RotAxisX(float Angle)
+    {
+		const float fCos = cosf(Angle);
+		const float fSin = sinf(Angle);
+
+        m4f Result = Identity();
+        Result.R0 = { 1.0f,  0.0f,  0.0f, 0.0f };
+        Result.R1 = { 0.0f,  fCos, -fSin, 0.0f };
+        Result.R2 = { 0.0f,  fSin,  fCos, 0.0f };
+        return Result;
+    }
+
+    m4f m4f::RotAxisY(float Angle)
+    {
+		const float fCos = cosf(Angle);
+		const float fSin = sinf(Angle);
+
+        m4f Result = Identity();
+        Result.R0 = {  fCos, 0.0f,  fSin, 0.0f };
+        Result.R1 = {  0.0f, 1.0f,  0.0f, 0.0f };
+        Result.R2 = { -fSin, 0.0f,  fCos, 0.0f };
+        return Result;
+    }
+
+    m4f m4f::RotAxisZ(float Angle)
+    {
+		const float fCos = cosf(Angle);
+		const float fSin = sinf(Angle);
+
+        m4f Result = Identity();
+        Result.R0 = { fCos,  -fSin, 0.0f, 0.0f };
+        Result.R1 = { fSin,   fCos, 0.0f, 0.0f };
+        Result.R2 = { 0.0f,   0.0f, 1.0f, 0.0f };
         return Result;
     }
 
