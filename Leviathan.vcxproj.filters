@@ -36,6 +36,9 @@
     <ClCompile Include="src\DrawState.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Image.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -63,6 +66,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\DrawState.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Image.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
