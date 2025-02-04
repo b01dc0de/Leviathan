@@ -5,7 +5,7 @@
 
 namespace Leviathan
 {
-    struct MeshState
+    struct MeshStateT
     {
         size_t VertexSize = 0;
         size_t NumVerts = 0;
@@ -14,7 +14,7 @@ namespace Leviathan
         ID3D11Buffer* IxBuffer = nullptr;
     };
 
-    MeshState CreateMeshState
+    MeshStateT CreateMeshState
     (
         ID3D11Device* InDevice,
         size_t VertexSize,
@@ -23,7 +23,24 @@ namespace Leviathan
         size_t NumIndices,
         unsigned int* IndexData
     );
-    void SafeRelease(MeshState& InMeshState);
+    void SafeRelease(MeshStateT& InMeshState);
+
+    struct DrawStateT
+    {
+        ID3D11InputLayout* InputLayout = nullptr;
+        ID3D11VertexShader* VertexShader = nullptr;
+        ID3D11PixelShader* PixelShader = nullptr;
+    };
+
+    DrawStateT CreateDrawState
+    (
+        ID3D11Device* InDevice,
+        const wchar_t* ShaderFilename,
+        const D3D_SHADER_MACRO* Defines,
+        const D3D11_INPUT_ELEMENT_DESC* InputElements,
+        size_t NumInputElements
+    );
+    void SafeRelease(DrawStateT& InDrawState);
 }
 
 #endif // LEVIATHAN_DRAWSTATE_H

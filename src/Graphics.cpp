@@ -15,22 +15,17 @@ namespace Leviathan
     ID3D11Texture2D* DX_DepthStencil = nullptr;
     ID3D11DepthStencilView* DX_DepthStencilView = nullptr;
 
-    ID3D11VertexShader* DX_VertexShaderColor = nullptr;
-    ID3D11PixelShader* DX_PixelShaderColor = nullptr;
-    ID3D11InputLayout* DX_InputLayoutColor = nullptr;
-
-    ID3D11VertexShader* DX_VertexShaderTexture = nullptr;
-    ID3D11PixelShader* DX_PixelShaderTexture = nullptr;
-    ID3D11InputLayout* DX_InputLayoutTexture = nullptr;
+    DrawStateT DrawStateColor;
+    DrawStateT DrawStateTexture;
 
     ID3D11Buffer* DX_WBuffer = nullptr;
     ID3D11Buffer* DX_VPBuffer = nullptr;
     const int WBufferSlot = 0;
     const int VPBufferSlot = 1;
 
-    MeshState MeshStateTriangle;
-    MeshState MeshStateCube;
-    MeshState MeshStateQuad;
+    MeshStateT MeshStateTriangle;
+    MeshStateT MeshStateCube;
+    MeshStateT MeshStateQuad;
 
     ID3D11Texture2D* DX_DebugTexture = nullptr;
     ID3D11ShaderResourceView* DX_DebugTextureSRV = nullptr;
@@ -212,17 +207,17 @@ namespace Leviathan
         { // Draw triangle
             UINT Offset = 0;
             const UINT Stride = sizeof(VxColor);
-            DX_ImmediateContext->IASetInputLayout(DX_InputLayoutColor);
+            DX_ImmediateContext->IASetInputLayout(DrawStateColor.InputLayout);
             DX_ImmediateContext->IASetVertexBuffers(0, 1, &MeshStateTriangle.VxBuffer, &Stride, &Offset);
             DX_ImmediateContext->IASetIndexBuffer(MeshStateTriangle.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
             DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-            DX_ImmediateContext->VSSetShader(DX_VertexShaderColor, nullptr, 0);
+            DX_ImmediateContext->VSSetShader(DrawStateColor.VertexShader, nullptr, 0);
             DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
-            DX_ImmediateContext->PSSetShader(DX_PixelShaderColor, nullptr, 0);
+            DX_ImmediateContext->PSSetShader(DrawStateColor.PixelShader, nullptr, 0);
 
-            DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Triangle), 0u, 0u);
+            DX_ImmediateContext->DrawIndexed(MeshStateTriangle.NumInds, 0u, 0u);
         }
 
         static bool bDrawTexQuad = false;
@@ -230,19 +225,19 @@ namespace Leviathan
         { // Draw tex quad
             UINT Offset = 0;
             const UINT Stride = sizeof(VxTexture);
-            DX_ImmediateContext->IASetInputLayout(DX_InputLayoutTexture);
+            DX_ImmediateContext->IASetInputLayout(DrawStateTexture.InputLayout);
             DX_ImmediateContext->IASetVertexBuffers(0, 1, &MeshStateQuad.VxBuffer, &Stride, &Offset);
             DX_ImmediateContext->IASetIndexBuffer(MeshStateQuad.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
             DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-            DX_ImmediateContext->VSSetShader(DX_VertexShaderTexture, nullptr, 0);
+            DX_ImmediateContext->VSSetShader(DrawStateTexture.VertexShader, nullptr, 0);
             DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
-            DX_ImmediateContext->PSSetShader(DX_PixelShaderTexture, nullptr, 0);
+            DX_ImmediateContext->PSSetShader(DrawStateTexture.PixelShader, nullptr, 0);
             DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_DebugTextureSRV);
             DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
 
-            DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Quad), 0u, 0u);
+            DX_ImmediateContext->DrawIndexed(MeshStateQuad.NumInds, 0u, 0u);
         }
 
         { // Draw cube
@@ -257,17 +252,17 @@ namespace Leviathan
 
             UINT Offset = 0;
             const UINT Stride = sizeof(VxColor);
-            DX_ImmediateContext->IASetInputLayout(DX_InputLayoutColor);
+            DX_ImmediateContext->IASetInputLayout(DrawStateColor.InputLayout);
             DX_ImmediateContext->IASetVertexBuffers(0, 1, &MeshStateCube.VxBuffer, &Stride, &Offset);
             DX_ImmediateContext->IASetIndexBuffer(MeshStateCube.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
             DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-            DX_ImmediateContext->VSSetShader(DX_VertexShaderColor, nullptr, 0);
+            DX_ImmediateContext->VSSetShader(DrawStateColor.VertexShader, nullptr, 0);
             DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
-            DX_ImmediateContext->PSSetShader(DX_PixelShaderColor, nullptr, 0);
+            DX_ImmediateContext->PSSetShader(DrawStateColor.PixelShader, nullptr, 0);
 
-            DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Cube), 0u, 0u);
+            DX_ImmediateContext->DrawIndexed(MeshStateCube.NumInds, 0u, 0u);
         }
 
         static bool bDrawUI = true;
@@ -322,60 +317,6 @@ namespace Leviathan
                 OutImage.PxBuffer[PxIdx] = bEvenCell ? Black : Pink;
             }
         }
-    }
-
-    int CompileShaderHelper
-    (
-        LPCWSTR SourceFileName,
-        LPCSTR EntryPointFunction,
-        LPCSTR ShaderProfile,
-        ID3DBlob** OutShaderBlob,
-        const D3D_SHADER_MACRO* Defines
-    )
-    {
-        if (SourceFileName == nullptr || EntryPointFunction == nullptr || ShaderProfile == nullptr || OutShaderBlob == nullptr)
-        {
-            return E_INVALIDARG;
-        }
-        
-        HRESULT Result = S_OK;
-
-        UINT ShaderCompileFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-    #if _DEBUG
-        ShaderCompileFlags |= D3DCOMPILE_DEBUG;
-        ShaderCompileFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
-    #endif // _DEBUG
-
-        ID3DBlob* ShaderBlob = nullptr;
-        ID3DBlob* ErrorBlob = nullptr;
-
-        Result = D3DCompileFromFile
-        (
-            SourceFileName,
-            Defines,
-            D3D_COMPILE_STANDARD_FILE_INCLUDE,
-            EntryPointFunction,
-            ShaderProfile,
-            ShaderCompileFlags,
-            0,
-            &ShaderBlob,
-            &ErrorBlob
-        );
-
-        if (FAILED(Result) && ShaderBlob)
-        {
-            ShaderBlob->Release();
-            ShaderBlob = nullptr;
-        }
-        if (ErrorBlob)
-        {
-            OutputDebugStringA((char*)ErrorBlob->GetBufferPointer());
-            ErrorBlob->Release();
-        }
-
-        *OutShaderBlob = ShaderBlob;
-
-        return Result;
     }
 
     void Graphics::Init()
@@ -491,9 +432,6 @@ namespace Leviathan
         DX_ImmediateContext->RSSetViewports(1, &ViewportDesc);
 
         {
-            ID3DBlob* VSBlob = nullptr;
-            ID3DBlob* PSBlob = nullptr;
-
             const D3D_SHADER_MACRO DefinesVxColor[] =
             {
                 "ENABLE_VERTEX_COLOR", "1",
@@ -501,30 +439,17 @@ namespace Leviathan
                 "ENABLE_WVP_TRANSFORM", "1",
                 nullptr, nullptr
             };
-            DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "VSMain", "vs_5_0", &VSBlob, DefinesVxColor));
-            DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "PSMain", "ps_5_0", &PSBlob, DefinesVxColor));
-
-            if (VSBlob && PSBlob)
+            const wchar_t* ShaderFilename = L"src/hlsl/BaseShader.hlsl";
+            D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
             {
-                DX_CHECK(DX_Device->CreateVertexShader(VSBlob->GetBufferPointer(), VSBlob->GetBufferSize(), nullptr, &DX_VertexShaderColor));
-                DX_CHECK(DX_Device->CreatePixelShader(PSBlob->GetBufferPointer(), PSBlob->GetBufferSize(), nullptr, &DX_PixelShaderColor));
+                { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+                { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            };
 
-                D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
-                {
-                    { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-                    { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-                };
-                UINT NumInputElements = ARRAY_SIZE(InputLayoutDesc);
-                DX_CHECK(DX_Device->CreateInputLayout(InputLayoutDesc, NumInputElements, VSBlob->GetBufferPointer(), VSBlob->GetBufferSize(), &DX_InputLayoutColor));
-            }
-            DX_SAFE_RELEASE(VSBlob);
-            DX_SAFE_RELEASE(PSBlob);
+            DrawStateColor = CreateDrawState(DX_Device, ShaderFilename, DefinesVxColor, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
         }
 
         {
-            ID3DBlob* VSBlob = nullptr;
-            ID3DBlob* PSBlob = nullptr;
-
             const D3D_SHADER_MACRO DefinesVxTexture[] =
             {
                 "ENABLE_VERTEX_COLOR", "0",
@@ -532,24 +457,14 @@ namespace Leviathan
                 "ENABLE_WVP_TRANSFORM", "1",
                 nullptr, nullptr
             };
-            DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "VSMain", "vs_5_0", &VSBlob, DefinesVxTexture));
-            DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "PSMain", "ps_5_0", &PSBlob, DefinesVxTexture));
-
-            if (VSBlob && PSBlob)
+            const wchar_t* ShaderFilename = L"src/hlsl/BaseShader.hlsl";
+            D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
             {
-                DX_CHECK(DX_Device->CreateVertexShader(VSBlob->GetBufferPointer(), VSBlob->GetBufferSize(), nullptr, &DX_VertexShaderTexture));
-                DX_CHECK(DX_Device->CreatePixelShader(PSBlob->GetBufferPointer(), PSBlob->GetBufferSize(), nullptr, &DX_PixelShaderTexture));
+                { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+                { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            };
 
-                D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
-                {
-                    { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-                    { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-                };
-                UINT NumInputElements = ARRAY_SIZE(InputLayoutDesc);
-                DX_CHECK(DX_Device->CreateInputLayout(InputLayoutDesc, NumInputElements, VSBlob->GetBufferPointer(), VSBlob->GetBufferSize(), &DX_InputLayoutTexture));
-            }
-            DX_SAFE_RELEASE(VSBlob);
-            DX_SAFE_RELEASE(PSBlob);
+            DrawStateTexture = CreateDrawState(DX_Device, ShaderFilename, DefinesVxTexture, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
         }
 
         D3D11_BUFFER_DESC WorldBufferDesc = {};
@@ -685,13 +600,8 @@ namespace Leviathan
         DX_SAFE_RELEASE(DX_WBuffer);
         DX_SAFE_RELEASE(DX_VPBuffer);
 
-        DX_SAFE_RELEASE(DX_VertexShaderColor);
-        DX_SAFE_RELEASE(DX_PixelShaderColor);
-        DX_SAFE_RELEASE(DX_InputLayoutColor);
-
-        DX_SAFE_RELEASE(DX_VertexShaderTexture);
-        DX_SAFE_RELEASE(DX_PixelShaderTexture);
-        DX_SAFE_RELEASE(DX_InputLayoutTexture);
+        SafeRelease(DrawStateColor);
+        SafeRelease(DrawStateTexture);
 
         DX_SAFE_RELEASE(DXGI_SwapChain1);
         DX_SAFE_RELEASE(DX_Backbuffer);
