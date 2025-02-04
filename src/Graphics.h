@@ -7,8 +7,8 @@ namespace Leviathan
 {
     struct Graphics
     {
-        static void Init();
         static void UpdateAndDraw();
+        static void Init();
         static void Term();
     };
 

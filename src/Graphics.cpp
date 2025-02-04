@@ -1,4 +1,5 @@
 #include "Graphics.h"
+#include "Camera.h"
 #include "UserInterface.h"
 
 namespace Leviathan
@@ -21,16 +22,10 @@ namespace Leviathan
     ID3D11PixelShader* DX_PixelShaderTexture = nullptr;
     ID3D11InputLayout* DX_InputLayoutTexture = nullptr;
 
-#define DX_COMBINED_WVP_BUFFER() (0)
-#if DX_COMBINED_WVP_BUFFER()
-    ID3D11Buffer* DX_WVPBuffer = nullptr;
-    const int WVPBufferSlot = 0;
-#else // DX_COMBINED_WVP_BUFFER()
     ID3D11Buffer* DX_WBuffer = nullptr;
     ID3D11Buffer* DX_VPBuffer = nullptr;
     const int WBufferSlot = 0;
     const int VPBufferSlot = 1;
-#endif // DX_COMBINED_WVP_BUFFER()
 
     ID3D11Buffer* DX_VertexBufferTriangle = nullptr;
     ID3D11Buffer* DX_IndexBufferTriangle = nullptr;
@@ -53,10 +48,6 @@ namespace Leviathan
     ID2D1LinearGradientBrush* D2_LinearGradientBrush = nullptr;
     ID2D1GradientStopCollection* D2_GradientStops = nullptr;
     ID2D1SolidColorBrush* D2_LightGrayBrush = nullptr;
-    ID2D1SolidColorBrush* D2_BlackBrush = nullptr;
-    // DirectWrite
-    IDWriteFactory* DW_Factory = nullptr;
-    IDWriteTextFormat* DW_DefaultTextFormat = nullptr;
 
     struct VxColor
     {
@@ -70,12 +61,6 @@ namespace Leviathan
         v2f TexUV;
     };
 
-    struct WVPData
-    {
-        m4f World;
-        m4f View;
-        m4f Proj;
-    };
     struct VPData
     {
         m4f View;
@@ -89,6 +74,7 @@ namespace Leviathan
         unsigned char B;
         unsigned char A;
     };
+
     struct ImageT
     {
         unsigned int Width;
@@ -157,65 +143,147 @@ namespace Leviathan
         1, 2, 3
     };
 
-    struct Camera
-    {
-        m4f View;
-        m4f Proj;
-        void Ortho();
-        void Persp(const v3f& InPos, const v3f& InLookAt);
-    };
-
-    void Camera::Ortho()
-    {
-        float ResX = (float)AppWidth;
-        float ResY = (float)AppHeight;
-        float fDepth = 1.0f;
-        View = m4f::Identity();
-        Proj = m4f::Identity();
-        Proj.R0.X = +2.0f / ResX;
-        Proj.R1.Y = +2.0f / ResY;
-        View.R2.Z = -2.0f / fDepth;
-    }
-
-    void Camera::Persp(const v3f& InPos, const v3f& InLookAt)
-    {
-        View = m4f::Zero();
-        Proj = m4f::Zero();
-
-        {
-            static const m4f NDC = Mult(m4f::Trans(v3f{0.0f, 0.0f, 1.0f}), m4f::Scale(1.0f, 1.0f, 0.5f));
-
-            constexpr v3f AbsUp{ 0.0f, 1.0f, 0.0f };
-            v3f Forward = Norm(-(InLookAt - InPos));
-            v3f Right = Norm(Cross(AbsUp, Forward));
-            v3f Up = Norm(Cross(Forward, Right));
-
-            constexpr float fFOV = 45.0f;
-            constexpr float fAspectRatio = 16.0f / 9.0f;
-            const float fD = 1.0f / tanf(fFOV / 2.0f);
-
-            constexpr float fNearDist = 1.0f;
-            constexpr float fFarDist = 1000.0f;
-            constexpr float fDistDelta = fFarDist - fNearDist;
-
-            Proj.R0.X = fD / fAspectRatio;
-            Proj.R1.Y = fD;
-            Proj.R2.Z = -(fFarDist + fNearDist) / fDistDelta;
-            Proj.R2.W = -1.0f;
-            Proj.R3.Z = (-2.0f * fFarDist * fNearDist) / fDistDelta;
-            Proj = Proj * NDC;
-
-            View.R0 = { Right.X, Up.X, Forward.X, 0.0f };
-            View.R1 = { Right.Y, Up.Y, Forward.Y, 0.0f };
-            View.R2 = { Right.Z, Up.Z, Forward.Z, 0.0f };
-            View.R3.X = -Dot(InPos, Right);
-            View.R3.Y = -Dot(InPos, Up);
-            View.R3.Z = -Dot(InPos, Forward);
-            View.R3.W = 1.0f;
-        }
-    }
-
     Camera GameCamera;
+
+    void Graphics::UpdateAndDraw()
+    {
+        DX_ImmediateContext->RSSetState(DX_RasterizerState);
+        DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
+        v4f ClearColor = { 30.0f / 255.0f, 30.0f / 255.0f, 45.0f / 255.0f, 1.0f };
+        float fClearDepth = 1.0f;
+        DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, &ClearColor.X);
+        DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, fClearDepth, 0);
+
+        m4f IdentityMatrix = {
+            { 1.0f, 0.0f, 0.0f, 0.0f },
+            { 0.0f, 1.0f, 0.0f, 0.0f },
+            { 0.0f, 0.0f, 1.0f, 0.0f },
+            { 0.0f, 0.0f, 0.0f, 1.0f },
+        };
+
+        m4f W = IdentityMatrix;
+        VPData VP = { IdentityMatrix, IdentityMatrix };
+        DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &W, sizeof(m4f), 0);
+        DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &VP, sizeof(VPData), 0);
+
+        static bool bD2Background = true;
+        if (bD2Background)
+        { // Direct2D background
+            DXGI_SWAP_CHAIN_DESC SwapChainDesc = {};
+            DX_CHECK(DXGI_SwapChain1->GetDesc(&SwapChainDesc));
+
+            D2D1_SIZE_F TargetSize = D2_RenderTarget->GetSize();
+
+            D2_RenderTarget->BeginDraw();
+
+            static bool bDrawGradientBG = true;
+            if (bDrawGradientBG)
+            {
+                D2_LinearGradientBrush->SetTransform(D2D1::Matrix3x2F::Scale(TargetSize));
+                D2D1_RECT_F Rect = D2D1::RectF(0.0f, 0.0f, TargetSize.width, TargetSize.height);
+                D2_RenderTarget->FillRectangle(&Rect, D2_LinearGradientBrush);
+            }
+
+            static bool bDrawGridBG = true;
+            if (bDrawGridBG)
+            {
+                const int GridX = 16;
+                const int GridY = 9;
+                const float CellSizeX = TargetSize.width / (float)GridX;
+                const float CellSizeY = TargetSize.height / (float)GridY;
+                const FLOAT StrokeWidth = 1.0f;
+                ID2D1StrokeStyle* StrokeStyle = nullptr;
+                for (int ColIdx = 1; ColIdx < GridX; ColIdx++)
+                {
+                    D2D1_POINT_2F StartPoint = D2D1::Point2F(CellSizeX * ColIdx, 0.0f);
+                    D2D1_POINT_2F EndPoint = D2D1::Point2F(CellSizeX * ColIdx, TargetSize.height);
+                    D2_RenderTarget->DrawLine(StartPoint, EndPoint, D2_LightGrayBrush, StrokeWidth, StrokeStyle);
+                }
+                for (int RowIdx = 1; RowIdx < GridY; RowIdx++)
+                {
+                    D2D1_POINT_2F StartPoint = D2D1::Point2F(0.0f, CellSizeY * RowIdx);
+                    D2D1_POINT_2F EndPoint = D2D1::Point2F(TargetSize.width, CellSizeY * RowIdx);
+                    D2_RenderTarget->DrawLine(StartPoint, EndPoint, D2_LightGrayBrush, StrokeWidth, StrokeStyle);
+                }
+            }
+
+            DX_CHECK(D2_RenderTarget->EndDraw());
+        }
+
+        static bool bDrawTriangle = false;
+        if (bDrawTriangle)
+        { // Draw triangle
+            UINT Offset = 0;
+            const UINT Stride = sizeof(VxColor);
+            DX_ImmediateContext->IASetInputLayout(DX_InputLayoutColor);
+            DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBufferTriangle, &Stride, &Offset);
+            DX_ImmediateContext->IASetIndexBuffer(DX_IndexBufferTriangle, DXGI_FORMAT_R32_UINT, 0);
+            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            DX_ImmediateContext->VSSetShader(DX_VertexShaderColor, nullptr, 0);
+            DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
+            DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
+            DX_ImmediateContext->PSSetShader(DX_PixelShaderColor, nullptr, 0);
+
+            DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Triangle), 0u, 0u);
+        }
+
+        static bool bDrawTexQuad = false;
+        if (bDrawTexQuad)
+        { // Draw tex quad
+            UINT Offset = 0;
+            const UINT Stride = sizeof(VxTexture);
+            DX_ImmediateContext->IASetInputLayout(DX_InputLayoutTexture);
+            DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBufferQuad, &Stride, &Offset);
+            DX_ImmediateContext->IASetIndexBuffer(DX_IndexBufferQuad, DXGI_FORMAT_R32_UINT, 0);
+            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            DX_ImmediateContext->VSSetShader(DX_VertexShaderTexture, nullptr, 0);
+            DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
+            DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
+            DX_ImmediateContext->PSSetShader(DX_PixelShaderTexture, nullptr, 0);
+            DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_DebugTextureSRV);
+            DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
+
+            DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Quad), 0u, 0u);
+        }
+
+        { // Draw cube
+            static float RotationX = 0.0f;
+            static float RotationY = 0.0f;
+            static constexpr float RotSpeed = (1.0f / 60.0f) / 10.0f;
+            RotationX += RotSpeed;
+            RotationY += RotSpeed * 0.5f;
+            m4f CubeWorld = m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
+            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &CubeWorld, sizeof(m4f), 0);
+            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &GameCamera.View, sizeof(Camera), 0);
+
+            UINT Offset = 0;
+            const UINT Stride = sizeof(VxColor);
+            DX_ImmediateContext->IASetInputLayout(DX_InputLayoutColor);
+            DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBufferCube, &Stride, &Offset);
+            DX_ImmediateContext->IASetIndexBuffer(DX_IndexBufferCube, DXGI_FORMAT_R32_UINT, 0);
+            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            DX_ImmediateContext->VSSetShader(DX_VertexShaderColor, nullptr, 0);
+            DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
+            DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
+            DX_ImmediateContext->PSSetShader(DX_PixelShaderColor, nullptr, 0);
+
+            DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Cube), 0u, 0u);
+        }
+
+        static bool bDrawUI = true;
+        if (bDrawUI)
+        {
+            UserInterface::Draw(D2_RenderTarget);
+        }
+
+        UINT SyncInterval = 0, PresentFlags = 0;
+        DXGI_PRESENT_PARAMETERS PresentParams = {};
+        DXGI_SwapChain1->Present1(SyncInterval, PresentFlags, &PresentParams);
+    }
+
 
     void GetDebugImage(ImageT& OutImage)
     {
@@ -435,7 +503,6 @@ namespace Leviathan
                 "ENABLE_VERTEX_COLOR", "1",
                 "ENABLE_VERTEX_TEXTURE", "0",
                 "ENABLE_WVP_TRANSFORM", "1",
-                "COMBINED_WVP_BUFFER", DX_COMBINED_WVP_BUFFER() ? "1" : "0",
                 nullptr, nullptr
             };
             DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "VSMain", "vs_5_0", &VSBlob, DefinesVxColor));
@@ -467,7 +534,6 @@ namespace Leviathan
                 "ENABLE_VERTEX_COLOR", "0",
                 "ENABLE_VERTEX_TEXTURE", "1",
                 "ENABLE_WVP_TRANSFORM", "1",
-                "COMBINED_WVP_BUFFER", DX_COMBINED_WVP_BUFFER() ? "1" : "0",
                 nullptr, nullptr
             };
             DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "VSMain", "vs_5_0", &VSBlob, DefinesVxTexture));
@@ -490,14 +556,6 @@ namespace Leviathan
             DX_SAFE_RELEASE(PSBlob);
         }
 
-    #if DX_COMBINED_WVP_BUFFER()
-        D3D11_BUFFER_DESC WVPBufferDesc = {};
-        WVPBufferDesc.ByteWidth = sizeof(WVPData);
-        WVPBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-        WVPBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        WVPBufferDesc.CPUAccessFlags = 0;
-        DX_CHECK(DX_Device->CreateBuffer(&WVPBufferDesc, nullptr, &DX_WVPBuffer));
-    #else // DX_COMBINED_WVP_BUFFER()
         D3D11_BUFFER_DESC WorldBufferDesc = {};
         WorldBufferDesc.ByteWidth = sizeof(m4f);
         WorldBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -510,7 +568,6 @@ namespace Leviathan
         ViewProjBufferDesc.CPUAccessFlags = 0;
         DX_CHECK(DX_Device->CreateBuffer(&WorldBufferDesc, nullptr, &DX_WBuffer));
         DX_CHECK(DX_Device->CreateBuffer(&ViewProjBufferDesc, nullptr, &DX_VPBuffer));
-    #endif // DX_COMBINED_WVP_BUFFER()
 
         {
             D3D11_BUFFER_DESC VertexBufferDesc = { sizeof(Vertices_Triangle), D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0 };
@@ -604,24 +661,6 @@ namespace Leviathan
 
             D2D1_COLOR_F LightGrayColor = D2D1::ColorF(0xE1E6EF);
             D2_RenderTarget->CreateSolidColorBrush(LightGrayColor, &D2_LightGrayBrush);
-
-            D2_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &D2_BlackBrush);
-        }
-
-        { // DirectWrite
-            DX_CHECK(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (IUnknown**)&DW_Factory));
-            DX_CHECK(DW_Factory->CreateTextFormat(
-                L"Consolas",
-                NULL,
-                DWRITE_FONT_WEIGHT_REGULAR,
-                DWRITE_FONT_STYLE_NORMAL,
-                DWRITE_FONT_STRETCH_NORMAL,
-                16.0f,
-                L"en-us",
-                &DW_DefaultTextFormat
-            ));
-            DW_DefaultTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-            DW_DefaultTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
         }
 
         v3f CameraPos{5.0f, 5.0f, -5.0f};
@@ -631,200 +670,9 @@ namespace Leviathan
         UserInterface::Init(D2_RenderTarget);
     }
 
-    void Graphics::UpdateAndDraw()
-    {
-        DX_ImmediateContext->RSSetState(DX_RasterizerState);
-        DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
-        v4f ClearColor = { 30.0f / 255.0f, 30.0f / 255.0f, 45.0f / 255.0f, 1.0f };
-        float fClearDepth = 1.0f;
-        DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, &ClearColor.X);
-        DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, fClearDepth, 0);
-
-        m4f IdentityMatrix = {
-            { 1.0f, 0.0f, 0.0f, 0.0f },
-            { 0.0f, 1.0f, 0.0f, 0.0f },
-            { 0.0f, 0.0f, 1.0f, 0.0f },
-            { 0.0f, 0.0f, 0.0f, 1.0f },
-        };
-
-    #if DX_COMBINED_WVP_BUFFER()
-        WVPData WVP = { IdentityMatrix, IdentityMatrix, IdentityMatrix };
-        DX_ImmediateContext->UpdateSubresource(DX_WVPBuffer, 0, nullptr, &WVP, sizeof(WVPData), 0);
-    #else // DX_COMBINED_WVP_BUFFER()
-        m4f W = IdentityMatrix;
-        VPData VP = { IdentityMatrix, IdentityMatrix };
-        DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &W, sizeof(m4f), 0);
-        DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &VP, sizeof(VPData), 0);
-    #endif // DX_COMBINED_WVP_BUFFER()
-
-        static bool bD2Background = true;
-        if (bD2Background)
-        { // Direct2D background
-            DXGI_SWAP_CHAIN_DESC SwapChainDesc = {};
-            DX_CHECK(DXGI_SwapChain1->GetDesc(&SwapChainDesc));
-
-            D2D1_SIZE_F TargetSize = D2_RenderTarget->GetSize();
-
-            D2_RenderTarget->BeginDraw();
-
-            static bool bDrawGradientBG = true;
-            if (bDrawGradientBG)
-            {
-                D2_LinearGradientBrush->SetTransform(D2D1::Matrix3x2F::Scale(TargetSize));
-                D2D1_RECT_F Rect = D2D1::RectF(0.0f, 0.0f, TargetSize.width, TargetSize.height);
-                D2_RenderTarget->FillRectangle(&Rect, D2_LinearGradientBrush);
-            }
-
-            static bool bDrawGridBG = true;
-            if (bDrawGridBG)
-            {
-                const int GridX = 16;
-                const int GridY = 9;
-                const float CellSizeX = TargetSize.width / (float)GridX;
-                const float CellSizeY = TargetSize.height / (float)GridY;
-                const FLOAT StrokeWidth = 1.0f;
-                ID2D1StrokeStyle* StrokeStyle = nullptr;
-                for (int ColIdx = 1; ColIdx < GridX; ColIdx++)
-                {
-                    D2D1_POINT_2F StartPoint = D2D1::Point2F(CellSizeX * ColIdx, 0.0f);
-                    D2D1_POINT_2F EndPoint = D2D1::Point2F(CellSizeX * ColIdx, TargetSize.height);
-                    D2_RenderTarget->DrawLine(StartPoint, EndPoint, D2_LightGrayBrush, StrokeWidth, StrokeStyle);
-                }
-                for (int RowIdx = 1; RowIdx < GridY; RowIdx++)
-                {
-                    D2D1_POINT_2F StartPoint = D2D1::Point2F(0.0f, CellSizeY * RowIdx);
-                    D2D1_POINT_2F EndPoint = D2D1::Point2F(TargetSize.width, CellSizeY * RowIdx);
-                    D2_RenderTarget->DrawLine(StartPoint, EndPoint, D2_LightGrayBrush, StrokeWidth, StrokeStyle);
-                }
-            }
-
-            DX_CHECK(D2_RenderTarget->EndDraw());
-        }
-
-        static bool bDrawTriangle = false;
-        if (bDrawTriangle)
-        { // Draw triangle
-            UINT Offset = 0;
-            const UINT Stride = sizeof(VxColor);
-            DX_ImmediateContext->IASetInputLayout(DX_InputLayoutColor);
-            DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBufferTriangle, &Stride, &Offset);
-            DX_ImmediateContext->IASetIndexBuffer(DX_IndexBufferTriangle, DXGI_FORMAT_R32_UINT, 0);
-            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-            DX_ImmediateContext->VSSetShader(DX_VertexShaderColor, nullptr, 0);
-        #if DX_COMBINED_WVP_BUFFER()
-            DX_ImmediateContext->VSSetConstantBuffers(WVPBufferSlot, 1, &DX_WVPBuffer);
-        #else // DX_COMBINED_WVP_BUFFER()
-            DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
-            DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
-        #endif // DX_COMBINED_WVP_BUFFER()
-            DX_ImmediateContext->PSSetShader(DX_PixelShaderColor, nullptr, 0);
-
-            DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Triangle), 0u, 0u);
-        }
-
-        static bool bDrawTexQuad = false;
-        if (bDrawTexQuad)
-        { // Draw tex quad
-            UINT Offset = 0;
-            const UINT Stride = sizeof(VxTexture);
-            DX_ImmediateContext->IASetInputLayout(DX_InputLayoutTexture);
-            DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBufferQuad, &Stride, &Offset);
-            DX_ImmediateContext->IASetIndexBuffer(DX_IndexBufferQuad, DXGI_FORMAT_R32_UINT, 0);
-            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-            DX_ImmediateContext->VSSetShader(DX_VertexShaderTexture, nullptr, 0);
-        #if DX_COMBINED_WVP_BUFFER()
-            DX_ImmediateContext->VSSetConstantBuffers(WVPBufferSlot, 1, &DX_WVPBuffer);
-        #else // DX_COMBINED_WVP_BUFFER()
-            DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
-            DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
-        #endif // DX_COMBINED_WVP_BUFFER()
-            DX_ImmediateContext->PSSetShader(DX_PixelShaderTexture, nullptr, 0);
-            DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_DebugTextureSRV);
-            DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
-
-            DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Quad), 0u, 0u);
-        }
-
-        { // Draw cube
-            static float RotationX = 0.0f;
-            static float RotationY = 0.0f;
-            static constexpr float RotSpeed = (1.0f / 60.0f) / 10.0f;
-            RotationX += RotSpeed;
-            RotationY += RotSpeed * 0.5f;
-            m4f CubeWorld = m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
-            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &CubeWorld, sizeof(m4f), 0);
-            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &GameCamera.View, sizeof(Camera), 0);
-
-            UINT Offset = 0;
-            const UINT Stride = sizeof(VxColor);
-            DX_ImmediateContext->IASetInputLayout(DX_InputLayoutColor);
-            DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBufferCube, &Stride, &Offset);
-            DX_ImmediateContext->IASetIndexBuffer(DX_IndexBufferCube, DXGI_FORMAT_R32_UINT, 0);
-            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-            DX_ImmediateContext->VSSetShader(DX_VertexShaderColor, nullptr, 0);
-        #if DX_COMBINED_WVP_BUFFER()
-            DX_ImmediateContext->VSSetConstantBuffers(WVPBufferSlot, 1, &DX_WVPBuffer);
-        #else // DX_COMBINED_WVP_BUFFER()
-            DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
-            DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
-        #endif // DX_COMBINED_WVP_BUFFER()
-            DX_ImmediateContext->PSSetShader(DX_PixelShaderColor, nullptr, 0);
-
-            DX_ImmediateContext->DrawIndexed(ARRAY_SIZE(Indices_Cube), 0u, 0u);
-        }
-
-        static bool bDrawUI = true;
-        if (bDrawUI)
-        {
-            UserInterface::Draw(D2_RenderTarget);
-        }
-
-        // DirectWrite Test
-        {
-            D2_RenderTarget->BeginDraw();
-
-            static const wchar_t const* TestMsg = L"DirectWrite TEST!";
-            static const unsigned int TestMsgLength = wcslen(TestMsg);
-
-            D2D1_RECT_F ShadowTextLayoutRect{ 1.0f, 1.0f, 200.0f, 100.0f };
-            D2_RenderTarget->DrawText
-            (
-                TestMsg,
-                TestMsgLength,
-                DW_DefaultTextFormat,
-                &ShadowTextLayoutRect,
-                D2_BlackBrush
-            );
-            D2D1_RECT_F TextLayoutRect { 0.0f, 0.0f, 200.0f, 100.0f };
-            D2_RenderTarget->DrawText
-            (
-                TestMsg,
-                TestMsgLength,
-                DW_DefaultTextFormat,
-                &TextLayoutRect,
-                D2_LightGrayBrush
-            );
-
-            DX_CHECK(D2_RenderTarget->EndDraw());
-        }
-
-        UINT SyncInterval = 0;
-        UINT PresentFlags = 0;
-        DXGI_PRESENT_PARAMETERS PresentParams = {};
-        DXGI_SwapChain1->Present1(SyncInterval, PresentFlags, &PresentParams);
-    }
-
     void Graphics::Term()
     {
         UserInterface::Term();
-
-        { // DirectWrite:
-            DX_SAFE_RELEASE(DW_Factory);
-            DX_SAFE_RELEASE(DW_DefaultTextFormat);
-        }
 
         { // Direct2D:
             DX_SAFE_RELEASE(D2_Factory);
@@ -833,7 +681,6 @@ namespace Leviathan
             DX_SAFE_RELEASE(D2_LinearGradientBrush);
             DX_SAFE_RELEASE(D2_GradientStops);
             DX_SAFE_RELEASE(D2_LightGrayBrush);
-            DX_SAFE_RELEASE(D2_BlackBrush);
         }
 
         DX_SAFE_RELEASE(DX_VertexBufferTriangle);
@@ -842,12 +689,8 @@ namespace Leviathan
         DX_SAFE_RELEASE(DX_VertexBufferQuad);
         DX_SAFE_RELEASE(DX_IndexBufferQuad);
 
-    #if DX_COMBINED_WVP_BUFFER()
-        DX_SAFE_RELEASE(DX_WVPBuffer);
-    #else // DX_COMBINED_WVP_BUFFER()
         DX_SAFE_RELEASE(DX_WBuffer);
         DX_SAFE_RELEASE(DX_VPBuffer);
-    #endif // DX_COMBINED_WVP_BUFFER()
 
         DX_SAFE_RELEASE(DX_VertexShaderColor);
         DX_SAFE_RELEASE(DX_PixelShaderColor);

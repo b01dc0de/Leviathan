@@ -13,19 +13,8 @@
 #ifndef ENABLE_WVP_TRANSFORM
     #define ENABLE_WVP_TRANSFORM (0)
 #endif // ENABLE_WVP_TRANSFORM
-#ifndef COMBINED_WVP_BUFFER
-    #define COMBINED_WVP_BUFFER (1)
-#endif // COMBINED_WVP_BUFFER
 
 #if ENABLE_WVP_TRANSFORM
-#if COMBINED_WVP_BUFFER
-    cbuffer WorldViewProjBuffer : register(b0)
-    {
-        matrix World;
-        matrix View;
-        matrix Proj;
-    }
-#else // COMBINED_WVP_BUFFER
     cbuffer WorldBuffer : register(b0)
     {
         matrix World;
@@ -35,7 +24,6 @@
         matrix View;
         matrix Proj;
     }
-#endif // COMBINED_WVP_BUFFER
 #endif // ENABLE_WVP_TRANSFORM
 
 #if ENABLE_VERTEX_TEXTURE
