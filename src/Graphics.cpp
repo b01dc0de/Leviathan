@@ -624,7 +624,7 @@ namespace Leviathan
             DW_DefaultTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
         }
 
-        v3f CameraPos{10.0f, 10.0f, -10.0f};
+        v3f CameraPos{5.0f, 5.0f, -5.0f};
         v3f CameraLookAt{ 0.0f, 0.0f, 0.0f };
         GameCamera.Persp(CameraPos, CameraLookAt);
 
@@ -748,6 +748,13 @@ namespace Leviathan
         }
 
         { // Draw cube
+            static float RotationX = 0.0f;
+            static float RotationY = 0.0f;
+            static constexpr float RotSpeed = (1.0f / 60.0f) / 10.0f;
+            RotationX += RotSpeed;
+            RotationY += RotSpeed * 0.5f;
+            m4f CubeWorld = m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
+            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &CubeWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &GameCamera.View, sizeof(Camera), 0);
 
             UINT Offset = 0;
