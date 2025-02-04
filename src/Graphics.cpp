@@ -1,5 +1,6 @@
 #include "Graphics.h"
 #include "Camera.h"
+#include "DrawState.h"
 #include "UserInterface.h"
 
 namespace Leviathan
@@ -27,17 +28,13 @@ namespace Leviathan
     const int WBufferSlot = 0;
     const int VPBufferSlot = 1;
 
-    ID3D11Buffer* DX_VertexBufferTriangle = nullptr;
-    ID3D11Buffer* DX_IndexBufferTriangle = nullptr;
-
-    ID3D11Buffer* DX_VertexBufferCube = nullptr;
-    ID3D11Buffer* DX_IndexBufferCube = nullptr;
+    MeshState MeshStateTriangle;
+    MeshState MeshStateCube;
+    MeshState MeshStateQuad;
 
     ID3D11Texture2D* DX_DebugTexture = nullptr;
     ID3D11ShaderResourceView* DX_DebugTextureSRV = nullptr;
     ID3D11SamplerState* DX_DefaultSamplerState = nullptr;
-    ID3D11Buffer* DX_VertexBufferQuad = nullptr;
-    ID3D11Buffer* DX_IndexBufferQuad = nullptr;
 
     D3D_FEATURE_LEVEL UsedFeatureLevel;
 
@@ -216,8 +213,8 @@ namespace Leviathan
             UINT Offset = 0;
             const UINT Stride = sizeof(VxColor);
             DX_ImmediateContext->IASetInputLayout(DX_InputLayoutColor);
-            DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBufferTriangle, &Stride, &Offset);
-            DX_ImmediateContext->IASetIndexBuffer(DX_IndexBufferTriangle, DXGI_FORMAT_R32_UINT, 0);
+            DX_ImmediateContext->IASetVertexBuffers(0, 1, &MeshStateTriangle.VxBuffer, &Stride, &Offset);
+            DX_ImmediateContext->IASetIndexBuffer(MeshStateTriangle.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
             DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
             DX_ImmediateContext->VSSetShader(DX_VertexShaderColor, nullptr, 0);
@@ -234,8 +231,8 @@ namespace Leviathan
             UINT Offset = 0;
             const UINT Stride = sizeof(VxTexture);
             DX_ImmediateContext->IASetInputLayout(DX_InputLayoutTexture);
-            DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBufferQuad, &Stride, &Offset);
-            DX_ImmediateContext->IASetIndexBuffer(DX_IndexBufferQuad, DXGI_FORMAT_R32_UINT, 0);
+            DX_ImmediateContext->IASetVertexBuffers(0, 1, &MeshStateQuad.VxBuffer, &Stride, &Offset);
+            DX_ImmediateContext->IASetIndexBuffer(MeshStateQuad.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
             DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
             DX_ImmediateContext->VSSetShader(DX_VertexShaderTexture, nullptr, 0);
@@ -261,8 +258,8 @@ namespace Leviathan
             UINT Offset = 0;
             const UINT Stride = sizeof(VxColor);
             DX_ImmediateContext->IASetInputLayout(DX_InputLayoutColor);
-            DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VertexBufferCube, &Stride, &Offset);
-            DX_ImmediateContext->IASetIndexBuffer(DX_IndexBufferCube, DXGI_FORMAT_R32_UINT, 0);
+            DX_ImmediateContext->IASetVertexBuffers(0, 1, &MeshStateCube.VxBuffer, &Stride, &Offset);
+            DX_ImmediateContext->IASetIndexBuffer(MeshStateCube.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
             DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
             DX_ImmediateContext->VSSetShader(DX_VertexShaderColor, nullptr, 0);
@@ -283,7 +280,6 @@ namespace Leviathan
         DXGI_PRESENT_PARAMETERS PresentParams = {};
         DXGI_SwapChain1->Present1(SyncInterval, PresentFlags, &PresentParams);
     }
-
 
     void GetDebugImage(ImageT& OutImage)
     {
@@ -569,25 +565,24 @@ namespace Leviathan
         DX_CHECK(DX_Device->CreateBuffer(&WorldBufferDesc, nullptr, &DX_WBuffer));
         DX_CHECK(DX_Device->CreateBuffer(&ViewProjBufferDesc, nullptr, &DX_VPBuffer));
 
-        {
-            D3D11_BUFFER_DESC VertexBufferDesc = { sizeof(Vertices_Triangle), D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0 };
-            D3D11_SUBRESOURCE_DATA VertexBufferInitData = { Vertices_Triangle, 0, 0 };
-            DX_CHECK(DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_VertexBufferTriangle));
-
-            D3D11_BUFFER_DESC IndexBufferDesc = { sizeof(Indices_Triangle), D3D11_USAGE_DEFAULT, D3D11_BIND_INDEX_BUFFER, 0, 0 };
-            D3D11_SUBRESOURCE_DATA IndexBufferInitData = { Indices_Triangle, 0, 0 };
-            DX_CHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBufferTriangle));
-        }
-
-        {
-            D3D11_BUFFER_DESC VertexBufferDesc = { sizeof(Vertices_Cube), D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0 };
-            D3D11_SUBRESOURCE_DATA VertexBufferInitData = { Vertices_Cube, 0, 0 };
-            DX_CHECK(DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_VertexBufferCube));
-
-            D3D11_BUFFER_DESC IndexBufferDesc = { sizeof(Indices_Cube), D3D11_USAGE_DEFAULT, D3D11_BIND_INDEX_BUFFER, 0, 0 };
-            D3D11_SUBRESOURCE_DATA IndexBufferInitData = { Indices_Cube, 0, 0 };
-            DX_CHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBufferCube));
-        }
+        MeshStateTriangle = CreateMeshState
+        (
+            DX_Device,
+            sizeof(VxColor),
+            ARRAY_SIZE(Vertices_Triangle),
+            Vertices_Triangle,
+            ARRAY_SIZE(Indices_Triangle),
+            Indices_Triangle
+        );
+        MeshStateCube = CreateMeshState
+        (
+            DX_Device,
+            sizeof(VxColor),
+            ARRAY_SIZE(Vertices_Cube),
+            Vertices_Cube,
+            ARRAY_SIZE(Indices_Cube),
+            Indices_Cube
+        );
 
         {
             ImageT DebugImage = {};
@@ -626,15 +621,15 @@ namespace Leviathan
             DX_CHECK(DX_Device->CreateSamplerState(&DefaultSamplerDesc, &DX_DefaultSamplerState));
         }
 
-        {
-            D3D11_BUFFER_DESC VertexBufferDesc = { sizeof(Vertices_Quad), D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0 };
-            D3D11_SUBRESOURCE_DATA VertexBufferInitData = { Vertices_Quad, 0, 0 };
-            DX_CHECK(DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_VertexBufferQuad));
-
-            D3D11_BUFFER_DESC IndexBufferDesc = { sizeof(Indices_Quad), D3D11_USAGE_DEFAULT, D3D11_BIND_INDEX_BUFFER, 0, 0 };
-            D3D11_SUBRESOURCE_DATA IndexBufferInitData = { Indices_Quad, 0, 0 };
-            DX_CHECK(DX_Device->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &DX_IndexBufferQuad));
-        }
+        MeshStateQuad = CreateMeshState
+        (
+            DX_Device,
+            sizeof(VxTexture),
+            ARRAY_SIZE(Vertices_Quad),
+            Vertices_Quad,
+            ARRAY_SIZE(Indices_Quad),
+            Indices_Quad
+        );
 
         { // Direct2D
             DX_CHECK(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &D2_Factory));
@@ -683,11 +678,9 @@ namespace Leviathan
             DX_SAFE_RELEASE(D2_LightGrayBrush);
         }
 
-        DX_SAFE_RELEASE(DX_VertexBufferTriangle);
-        DX_SAFE_RELEASE(DX_IndexBufferTriangle);
-
-        DX_SAFE_RELEASE(DX_VertexBufferQuad);
-        DX_SAFE_RELEASE(DX_IndexBufferQuad);
+        SafeRelease(MeshStateTriangle);
+        SafeRelease(MeshStateCube);
+        SafeRelease(MeshStateQuad);
 
         DX_SAFE_RELEASE(DX_WBuffer);
         DX_SAFE_RELEASE(DX_VPBuffer);
