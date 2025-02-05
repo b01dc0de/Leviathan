@@ -2,11 +2,8 @@
 
 namespace Leviathan
 {
-    void Camera::Ortho()
+    void Camera::Ortho(float ResX, float ResY, float fDepth)
     {
-        float ResX = (float)AppWidth;
-        float ResY = (float)AppHeight;
-        float fDepth = 1.0f;
         View = m4f::Identity();
         Proj = m4f::Identity();
         Proj.R0.X = +2.0f / ResX;

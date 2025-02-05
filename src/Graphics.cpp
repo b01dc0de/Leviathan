@@ -6,41 +6,46 @@
 
 namespace Leviathan
 {
-    IDXGIFactory2* DXGI_Factory2 = nullptr;
-    ID3D11Device* DX_Device = nullptr;
-    ID3D11DeviceContext* DX_ImmediateContext = nullptr;
-    IDXGISwapChain1* DXGI_SwapChain1 = nullptr;
-    ID3D11Texture2D* DX_Backbuffer = nullptr;
-    ID3D11RenderTargetView* DX_RenderTargetView = nullptr;
-    ID3D11RasterizerState* DX_RasterizerState = nullptr;
-    ID3D11Texture2D* DX_DepthStencil = nullptr;
-    ID3D11DepthStencilView* DX_DepthStencilView = nullptr;
+    namespace GraphicsState
+    {
+        IDXGIFactory2* DXGI_Factory2 = nullptr;
+        ID3D11Device* DX_Device = nullptr;
+        ID3D11DeviceContext* DX_ImmediateContext = nullptr;
+        IDXGISwapChain1* DXGI_SwapChain1 = nullptr;
+        ID3D11Texture2D* DX_Backbuffer = nullptr;
+        ID3D11RenderTargetView* DX_RenderTargetView = nullptr;
+        ID3D11RasterizerState* DX_RasterizerState = nullptr;
+        ID3D11Texture2D* DX_DepthStencil = nullptr;
+        ID3D11DepthStencilView* DX_DepthStencilView = nullptr;
 
-    DrawStateT DrawStateColor;
-    DrawStateT DrawStateTexture;
+        DrawStateT DrawStateColor;
+        DrawStateT DrawStateTexture;
 
-    ID3D11Buffer* DX_WBuffer = nullptr;
-    ID3D11Buffer* DX_VPBuffer = nullptr;
-    const int WBufferSlot = 0;
-    const int VPBufferSlot = 1;
+        ID3D11Buffer* DX_WBuffer = nullptr;
+        ID3D11Buffer* DX_VPBuffer = nullptr;
+        const int WBufferSlot = 0;
+        const int VPBufferSlot = 1;
 
-    MeshStateT MeshStateTriangle;
-    MeshStateT MeshStateCube;
-    MeshStateT MeshStateQuad;
+        MeshStateT MeshStateTriangle;
+        MeshStateT MeshStateCube;
+        MeshStateT MeshStateQuad;
 
-    ID3D11Texture2D* DX_DebugTexture = nullptr;
-    ID3D11ShaderResourceView* DX_DebugTextureSRV = nullptr;
-    ID3D11SamplerState* DX_DefaultSamplerState = nullptr;
+        ID3D11Texture2D* DX_DebugTexture = nullptr;
+        ID3D11ShaderResourceView* DX_DebugTextureSRV = nullptr;
+        ID3D11SamplerState* DX_DefaultSamplerState = nullptr;
 
-    D3D_FEATURE_LEVEL UsedFeatureLevel;
+        D3D_FEATURE_LEVEL UsedFeatureLevel;
 
-    // Direct2D:
-    ID2D1Factory* D2_Factory = nullptr;
-    IDXGISurface* DXGI_Surface = nullptr;
-    ID2D1RenderTarget* D2_RenderTarget = nullptr;
-    ID2D1LinearGradientBrush* D2_LinearGradientBrush = nullptr;
-    ID2D1GradientStopCollection* D2_GradientStops = nullptr;
-    ID2D1SolidColorBrush* D2_LightGrayBrush = nullptr;
+        // Direct2D:
+        ID2D1Factory* D2_Factory = nullptr;
+        IDXGISurface* DXGI_Surface = nullptr;
+        ID2D1RenderTarget* D2_RenderTarget = nullptr;
+        ID2D1LinearGradientBrush* D2_LinearGradientBrush = nullptr;
+        ID2D1GradientStopCollection* D2_GradientStops = nullptr;
+        ID2D1SolidColorBrush* D2_LightGrayBrush = nullptr;
+    }
+
+    using namespace GraphicsState;
 
     struct VxColor
     {
@@ -119,6 +124,7 @@ namespace Leviathan
         1, 2, 3
     };
 
+    Camera OrthoCamera;
     Camera GameCamera;
 
     void Graphics::UpdateAndDraw()
@@ -129,18 +135,6 @@ namespace Leviathan
         float fClearDepth = 1.0f;
         DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, &ClearColor.X);
         DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, fClearDepth, 0);
-
-        m4f IdentityMatrix = {
-            { 1.0f, 0.0f, 0.0f, 0.0f },
-            { 0.0f, 1.0f, 0.0f, 0.0f },
-            { 0.0f, 0.0f, 1.0f, 0.0f },
-            { 0.0f, 0.0f, 0.0f, 1.0f },
-        };
-
-        m4f W = IdentityMatrix;
-        VPData VP = { IdentityMatrix, IdentityMatrix };
-        DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &W, sizeof(m4f), 0);
-        DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &VP, sizeof(VPData), 0);
 
         static bool bD2Background = true;
         if (bD2Background)
@@ -186,9 +180,14 @@ namespace Leviathan
             DX_CHECK(D2_RenderTarget->EndDraw());
         }
 
-        static bool bDrawTriangle = false;
+
+        static bool bDrawTriangle = true;
         if (bDrawTriangle)
         { // Draw triangle
+            m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(256.0f, -256.0f, 0.0f);
+            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &TriangleWorld, sizeof(m4f), 0);
+            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
+
             UINT Offset = 0;
             const UINT Stride = sizeof(VxColor);
             DX_ImmediateContext->IASetInputLayout(DrawStateColor.InputLayout);
@@ -204,9 +203,13 @@ namespace Leviathan
             DX_ImmediateContext->DrawIndexed(MeshStateTriangle.NumInds, 0u, 0u);
         }
 
-        static bool bDrawTexQuad = false;
+        static bool bDrawTexQuad = true;
         if (bDrawTexQuad)
         { // Draw tex quad
+            m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(-256.0f, +256.0f, 0.0f);
+            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &TexQuadWorld, sizeof(m4f), 0);
+            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
+
             UINT Offset = 0;
             const UINT Stride = sizeof(VxTexture);
             DX_ImmediateContext->IASetInputLayout(DrawStateTexture.InputLayout);
@@ -224,6 +227,8 @@ namespace Leviathan
             DX_ImmediateContext->DrawIndexed(MeshStateQuad.NumInds, 0u, 0u);
         }
 
+        static bool bDrawCube = true;
+        if (bDrawCube)
         { // Draw cube
             static float RotationX = 0.0f;
             static float RotationY = 0.0f;
@@ -517,6 +522,8 @@ namespace Leviathan
         v3f CameraPos{5.0f, 5.0f, -5.0f};
         v3f CameraLookAt{ 0.0f, 0.0f, 0.0f };
         GameCamera.Persp(CameraPos, CameraLookAt);
+
+        OrthoCamera.Ortho((float)AppWidth, (float)AppHeight, -2.0f);
 
         UserInterface::Init(D2_RenderTarget);
     }

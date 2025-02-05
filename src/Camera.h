@@ -9,7 +9,7 @@ namespace Leviathan
     {
         m4f View;
         m4f Proj;
-        void Ortho();
+        void Ortho(float ResX, float ResY, float fDepth = 1.0f);
         void Persp(const v3f& InPos, const v3f& InLookAt);
     };
 }

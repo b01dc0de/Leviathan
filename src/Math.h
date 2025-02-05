@@ -85,7 +85,15 @@ namespace Leviathan
 
     float Dot(const v2f& A, const v2f& B);
     float Dot(const v3f& A, const v3f& B);
+    float Dot(const v4f& A, const v4f& B);
     v3f Cross(const v3f& A, const v3f& B);
+
+    v2f Mult(const m2f& M, const v2f& V);
+    v3f Mult(const m3f& M, const v3f& V);
+    v4f Mult(const m4f& M, const v4f& V);
+    v2f operator*(const m2f& M, const v2f& V);
+    v3f operator*(const m3f& M, const v3f& V);
+    v4f operator*(const m4f& M, const v4f& V);
 
     m2f Mult(const m2f& A, const m2f& B);
     m3f Mult(const m3f& A, const m3f& B);

@@ -234,9 +234,16 @@ namespace Leviathan
         float Result = A.X*B.X + A.Y*B.Y;
         return Result;
     }
+
     float Dot(const v3f& A, const v3f& B)
     {
         float Result = A.X*B.X + A.Y*B.Y + A.Z*B.Z;
+        return Result;
+    }
+
+    float Dot(const v4f& A, const v4f& B)
+    {
+        float Result = A.X*B.X + A.Y*B.Y + A.Z*B.Z + A.W*B.W;
         return Result;
     }
 
@@ -248,6 +255,48 @@ namespace Leviathan
             A.X*B.Y - A.Y*B.X,
         };
         return Result;
+    }
+
+    v2f Mult(const m2f& M, const v2f& V)
+    {
+        v2f Result;
+        Result.X = Dot(M.R0, V);
+        Result.Y = Dot(M.R1, V);
+        return Result;
+    }
+
+    v3f Mult(const m3f& M, const v3f& V)
+    {
+        v3f Result;
+        Result.X = Dot(M.R0, V);
+        Result.Y = Dot(M.R1, V);
+        Result.Z = Dot(M.R2, V);
+        return Result;
+    }
+
+    v4f Mult(const m4f& M, const v4f& V)
+    {
+        v4f Result;
+        Result.X = Dot(M.R0, V);
+        Result.Y = Dot(M.R1, V);
+        Result.Z = Dot(M.R2, V);
+        Result.W = Dot(M.R3, V);
+        return Result;
+    }
+
+    v2f operator*(const m2f& M, const v2f& V)
+    {
+        return Mult(M, V);
+    }
+
+    v3f operator*(const m3f& M, const v3f& V)
+    {
+        return Mult(M, V);
+    }
+
+    v4f operator*(const m4f& M, const v4f& V)
+    {
+        return Mult(M, V);
     }
 
     m2f Mult(const m2f& A, const m2f& B)
