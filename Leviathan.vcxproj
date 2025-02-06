@@ -87,6 +87,7 @@
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\DrawState.cpp" />
     <ClCompile Include="src\Engine.cpp" />
+    <ClCompile Include="src\Game\Tetris.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
     <ClCompile Include="src\Image.cpp" />
     <ClCompile Include="src\Input.cpp" />
@@ -99,6 +100,7 @@
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\DrawState.h" />
     <ClInclude Include="src\Engine.h" />
+    <ClInclude Include="src\Game\Tetris.h" />
     <ClInclude Include="src\Graphics.h" />
     <ClInclude Include="src\Image.h" />
     <ClInclude Include="src\Input.h" />

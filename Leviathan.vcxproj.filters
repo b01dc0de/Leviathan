@@ -7,6 +7,9 @@
     <Filter Include="src\hlsl">
       <UniqueIdentifier>{bb33e0c7-7c2b-4a5c-a1ec-20e35a58fb75}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Game">
+      <UniqueIdentifier>{2a7e032a-a3ef-4381-9cb6-1ee097ac686c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Leviathan.cpp">
@@ -39,6 +42,9 @@
     <ClCompile Include="src\Image.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Game\Tetris.cpp">
+      <Filter>src\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -70,6 +76,9 @@
     </ClInclude>
     <ClInclude Include="src\Image.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Game\Tetris.h">
+      <Filter>src\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
