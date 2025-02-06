@@ -1,5 +1,6 @@
 #include "Leviathan.h" // NOTE: Engine.h is included in Leviathan.h
 #include "Graphics.h"
+#include "Clock.h"
 
 namespace Leviathan
 {
@@ -123,6 +124,7 @@ namespace Leviathan
 
             Graphics::Init();
             RawInputHandler::Init();
+            Clock::Init();
         }
     }
 
@@ -142,6 +144,7 @@ namespace Leviathan
             KeyboardState::Tick();
             MouseState::Tick();
             GamepadState::Tick();
+            Clock::Tick();
         }
     }
 

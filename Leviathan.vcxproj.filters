@@ -45,6 +45,9 @@
     <ClCompile Include="src\Game\Tetris.cpp">
       <Filter>src\Game</Filter>
     </ClCompile>
+    <ClCompile Include="src\Clock.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -79,6 +82,9 @@
     </ClInclude>
     <ClInclude Include="src\Game\Tetris.h">
       <Filter>src\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Clock.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

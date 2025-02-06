@@ -3,6 +3,7 @@
 
 // C/C++ std lib
 #include <cmath>
+#include <cstdio>
 
 // Win32
 #define WIN32_LEAN_AND_MEAN

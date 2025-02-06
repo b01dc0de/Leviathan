@@ -1,4 +1,5 @@
 #include "UserInterface.h"
+#include "Clock.h"
 #include "Graphics.h"
 #include "InputVisualizer.h"
 
@@ -82,23 +83,30 @@ namespace Leviathan
         {
             In2DRT->BeginDraw();
 
-            static const wchar_t const* TestMsg = L"DirectWrite TEST!";
-            static const unsigned int TestMsgLength = wcslen(TestMsg);
+            static constexpr int MsgBufferSize = 64;
+            wchar_t MsgBuffer[MsgBufferSize];
+            double CurrTime = Clock::Time();
+            swprintf_s(MsgBuffer, MsgBufferSize, L"CurrTime: %.02f", CurrTime);
+            size_t MsgLength = wcslen(MsgBuffer);
 
-            D2D1_RECT_F ShadowTextLayoutRect{ 1.0f, 1.0f, 200.0f, 100.0f };
-            In2DRT->DrawText
-            (
-                TestMsg,
-                TestMsgLength,
-                DW_DefaultTextFormat,
-                &ShadowTextLayoutRect,
-                D2_BlackBrush
-            );
+            static bool bDrawShadow = false;
+            if (bDrawShadow)
+            {
+                D2D1_RECT_F ShadowTextLayoutRect{ 1.0f, 1.0f, 200.0f, 100.0f };
+                In2DRT->DrawText
+                (
+                    MsgBuffer,
+                    MsgLength,
+                    DW_DefaultTextFormat,
+                    &ShadowTextLayoutRect,
+                    D2_BlackBrush
+                );
+            }
             D2D1_RECT_F TextLayoutRect { 0.0f, 0.0f, 200.0f, 100.0f };
             In2DRT->DrawText
             (
-                TestMsg,
-                TestMsgLength,
+                MsgBuffer,
+                MsgLength,
                 DW_DefaultTextFormat,
                 &TextLayoutRect,
                 D2_WhiteBrush
