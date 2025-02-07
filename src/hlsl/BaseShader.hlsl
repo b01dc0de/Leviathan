@@ -13,6 +13,9 @@
 #ifndef ENABLE_WVP_TRANSFORM
     #define ENABLE_WVP_TRANSFORM (0)
 #endif // ENABLE_WVP_TRANSFORM
+#ifndef ENABLE_UNICOLOR
+    #define ENABLE_UNICOLOR (0)
+#endif // ENABLE_WVP_TRANSFORM
 
 #if ENABLE_WVP_TRANSFORM
     cbuffer WorldBuffer : register(b0)
@@ -25,6 +28,12 @@
         matrix Proj;
     }
 #endif // ENABLE_WVP_TRANSFORM
+#if ENABLE_UNICOLOR
+    cbuffer UnicolorBuffer : register(b2)
+    {
+        float4 Unicolor;
+    }
+#endif // ENABLE_UNICOLOR
 
 #if ENABLE_VERTEX_TEXTURE
     Texture2D MainTexture : register(t0);
@@ -51,6 +60,9 @@ struct VS_OUTPUT
 #if ENABLE_VERTEX_TEXTURE
     float2 TexUV : TEXCOORD;
 #endif // ENABLE_VERTEX_TEXTURE
+#if ENABLE_UNICOLOR
+    float4 Unicolor : COLOR;
+#endif // ENABLE_UNICOLOR
 };
 
 VS_OUTPUT VSMain(VS_INPUT Input)
@@ -68,6 +80,9 @@ VS_OUTPUT VSMain(VS_INPUT Input)
 #if ENABLE_VERTEX_TEXTURE
     Output.TexUV = Input.TexUV;
 #endif // ENABLE_VERTEX_TEXTURE
+#if ENABLE_UNICOLOR
+    Output.Unicolor = Unicolor;
+#endif // ENABLE_UNICOLOR
     return Output;
 }
 
@@ -79,5 +94,8 @@ float4 PSMain(VS_OUTPUT Input) : SV_Target
 #if ENABLE_VERTEX_TEXTURE
     return MainTexture.Sample(MainSampler, Input.TexUV);
 #endif // ENABLE_VERTEX_TEXTURE
+#if ENABLE_UNICOLOR
+    return Input.Unicolor;
+#endif // ENABLE_UNICOLOR
 }
 
