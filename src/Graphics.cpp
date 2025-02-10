@@ -140,6 +140,37 @@ namespace Leviathan
         1, 2, 3
     };
 
+    struct SpriteTransform
+    {
+        v2f Scale{1.0f, 1.0f};
+        v2f Pos{0.0f, 0.0f};
+        float RotAngle = 0.0f;
+
+        m4f GetMatrix();
+    };
+
+    m4f SpriteTransform::GetMatrix()
+    {
+        return m4f::Scale(Scale.X, Scale.Y, 1.0f) * m4f::RotAxisZ(RotAngle) * m4f::Trans(Pos.X, Pos.Y, 0.0f);
+    }
+
+    struct RectF
+    {
+        float Left = 0.0f;
+        float Top = 0.0f;
+        float Right = 0.0f;
+        float Bottom = 0.0f;
+
+        m4f GetMatrix();
+    };
+
+    m4f RectF::GetMatrix()
+    {
+        float Width = Right - Left;
+        float Height = Bottom - Top;
+        return m4f::Scale(Width, Height, 1.0f) * m4f::Trans(Left, Top, 0.0f);
+    }
+
     Camera OrthoCamera;
     Camera GameCamera;
 
