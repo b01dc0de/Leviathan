@@ -112,8 +112,8 @@ namespace Leviathan
         ID3DBlob* VSBlob = nullptr;
         ID3DBlob* PSBlob = nullptr;
 
-        DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "VSMain", "vs_5_0", &VSBlob, Defines));
-        DX_CHECK(CompileShaderHelper(L"src/hlsl/BaseShader.hlsl", "PSMain", "ps_5_0", &PSBlob, Defines));
+        DX_CHECK(CompileShaderHelper(ShaderFilename, "VSMain", "vs_5_0", &VSBlob, Defines));
+        DX_CHECK(CompileShaderHelper(ShaderFilename, "PSMain", "ps_5_0", &PSBlob, Defines));
 
         DrawStateT Result;
 

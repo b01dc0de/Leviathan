@@ -21,6 +21,7 @@ namespace Leviathan
         DrawStateT DrawStateColor;
         DrawStateT DrawStateTexture;
         DrawStateT DrawStateUnicolor;
+        DrawStateT DrawStateInstRect;
 
         ID3D11Buffer* DX_WBuffer = nullptr;
         ID3D11Buffer* DX_VPBuffer = nullptr;
@@ -33,6 +34,9 @@ namespace Leviathan
         MeshStateT MeshStateCube;
         MeshStateT MeshStateQuad;
         MeshStateT MeshStateMinQuad;
+        MeshStateT MeshStateSpriteQuad;
+
+        ID3D11Buffer* DX_InstRectBuffer = nullptr;
 
         ID3D11Texture2D* DX_DebugTexture = nullptr;
         ID3D11ShaderResourceView* DX_DebugTextureSRV = nullptr;
@@ -140,19 +144,20 @@ namespace Leviathan
         1, 2, 3
     };
 
+    VxMin Vertices_SpriteQuad[] =
+    {
+        { { 0.0f, 1.0f, +0.5f, +1.0f } },
+        { { 1.0f, 1.0f, +0.5f, +1.0f } },
+        { { 0.0f, 0.0f, +0.5f, +1.0f } },
+        { { 1.0f, 0.0f, +0.5f, +1.0f } },
+    };
+
     struct SpriteTransform
     {
         v2f Scale{1.0f, 1.0f};
         v2f Pos{0.0f, 0.0f};
         float RotAngle = 0.0f;
-
-        m4f GetMatrix();
     };
-
-    m4f SpriteTransform::GetMatrix()
-    {
-        return m4f::Scale(Scale.X, Scale.Y, 1.0f) * m4f::RotAxisZ(RotAngle) * m4f::Trans(Pos.X, Pos.Y, 0.0f);
-    }
 
     struct RectF
     {
@@ -160,15 +165,43 @@ namespace Leviathan
         float Top = 0.0f;
         float Right = 0.0f;
         float Bottom = 0.0f;
-
-        m4f GetMatrix();
     };
 
-    m4f RectF::GetMatrix()
+    struct RGBA
     {
-        float Width = Right - Left;
-        float Height = Bottom - Top;
-        return m4f::Scale(Width, Height, 1.0f) * m4f::Trans(Left, Top, 0.0f);
+        float R = 0.0f;
+        float G = 0.0f;
+        float B = 0.0f;
+        float A = 0.0f;
+    };
+
+    struct InstRectData
+    {
+        RectF Rect;
+        RGBA Color;
+    };
+
+    const float TestInstRectSize = 50.0f;
+    const float RightRectX = (float)AppWidth - TestInstRectSize;
+    const float BottomRectY = (float)AppHeight - TestInstRectSize;
+    InstRectData InstRectDataArray[] =
+    {
+        { {0.0f, 0.0f, TestInstRectSize, TestInstRectSize}, {0.0f, 1.0f, 1.0f, 1.0f} },
+        { {RightRectX, 0.0f, RightRectX + TestInstRectSize, TestInstRectSize}, {1.0f, 0.0f, 1.0f, 1.0f} },
+        { {0.0f, BottomRectY, TestInstRectSize, BottomRectY + TestInstRectSize}, { 1.0f, 1.0f, 0.0f, 1.0f } },
+        { {RightRectX, BottomRectY, RightRectX + TestInstRectSize, BottomRectY + TestInstRectSize}, {0.0f, 0.0f, 0.0f, 1.0f} }
+    };
+
+
+    m4f GetMatrix(const SpriteTransform& InSprTrans)
+    {
+        return m4f::Scale(InSprTrans.Scale.X, InSprTrans.Scale.Y, 1.0f) * m4f::RotAxisZ(InSprTrans.RotAngle) * m4f::Trans(InSprTrans.Pos.X, InSprTrans.Pos.Y, 0.0f);
+    }
+    m4f GetMatrix(RectF& InRectF)
+    {
+        float Width = InRectF.Right - InRectF.Left;
+        float Height = InRectF.Bottom - InRectF.Top;
+        return m4f::Scale(Width, Height, 1.0f) * m4f::Trans(InRectF.Left, InRectF.Top, 0.0f);
     }
 
     Camera OrthoCamera;
@@ -297,6 +330,27 @@ namespace Leviathan
             DX_ImmediateContext->PSSetShader(DrawStateUnicolor.PixelShader, nullptr, 0);
 
             DX_ImmediateContext->DrawIndexed(MeshStateMinQuad.NumInds, 0u, 0u);
+        }
+
+        static bool bDrawInstRects = true;
+        if (bDrawInstRects)
+        { // Draw Instanced Rects
+            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
+
+            ID3D11Buffer* VxInstBuffers[] = { MeshStateSpriteQuad.VxBuffer, DX_InstRectBuffer };
+            const UINT Strides[] = { sizeof(VxMin), sizeof(InstRectData) };
+            const UINT Offsets[] = { 0, 0 };
+            ASSERT((ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Strides)) && (ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Offsets)));
+            DX_ImmediateContext->IASetInputLayout(DrawStateInstRect.InputLayout);
+            DX_ImmediateContext->IASetVertexBuffers(0, ARRAY_SIZE(VxInstBuffers), VxInstBuffers, Strides, Offsets);
+            DX_ImmediateContext->IASetIndexBuffer(MeshStateSpriteQuad.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
+            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            DX_ImmediateContext->VSSetShader(DrawStateInstRect.VertexShader, nullptr, 0);
+            DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
+            DX_ImmediateContext->PSSetShader(DrawStateInstRect.PixelShader, nullptr, 0);
+
+            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, ARRAY_SIZE(InstRectDataArray), 0u, 0, 0u);
         }
 
         static bool bDrawCube = true;
@@ -503,6 +557,55 @@ namespace Leviathan
             DrawStateUnicolor = CreateDrawState(DX_Device, BaseShaderFilename, DefinesVxMin, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
         }
 
+        {
+            const D3D_SHADER_MACRO DefinesVxMin[] =
+            {
+                "ENABLE_VERTEX_COLOR", "0",
+                "ENABLE_VERTEX_TEXTURE", "0",
+                "ENABLE_WVP_TRANSFORM", "1",
+                "ENABLE_UNICOLOR", "1",
+                nullptr, nullptr
+            };
+            D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
+            {
+                { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+            };
+
+            DrawStateUnicolor = CreateDrawState(DX_Device, BaseShaderFilename, DefinesVxMin, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
+        }
+
+        { // InstRect
+            const wchar_t* InstRectShaderFilename = L"src/hlsl/InstRectShader.hlsl";
+            const D3D_SHADER_MACRO DefinesInst[] =
+            {
+                nullptr, nullptr
+            };
+            D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
+            {
+                { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+                { "RECT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+                { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+            };
+
+            DrawStateInstRect = CreateDrawState(DX_Device, InstRectShaderFilename, DefinesInst, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
+        }
+
+        for (int Idx = 0; Idx < ARRAY_SIZE(InstRectDataArray); Idx++)
+        {
+            InstRectDataArray[Idx].Rect.Left -= AppWidth / 2.0f;
+            InstRectDataArray[Idx].Rect.Right -= AppWidth / 2.0f;
+            InstRectDataArray[Idx].Rect.Top -= AppHeight / 2.0f;
+            InstRectDataArray[Idx].Rect.Bottom -= AppHeight / 2.0f;
+        }
+        D3D11_BUFFER_DESC InstRectBufferDesc = {};
+        InstRectBufferDesc.ByteWidth = sizeof(InstRectDataArray);
+        InstRectBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+        InstRectBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+        InstRectBufferDesc.CPUAccessFlags = 0;
+        InstRectBufferDesc.StructureByteStride = 0;
+        D3D11_SUBRESOURCE_DATA InstRectBufferInitData = { InstRectDataArray, 0, 0 };
+        DX_CHECK(DX_Device->CreateBuffer(&InstRectBufferDesc, &InstRectBufferInitData, &DX_InstRectBuffer));
+
         D3D11_BUFFER_DESC WorldBufferDesc = {};
         WorldBufferDesc.ByteWidth = sizeof(m4f);
         WorldBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -548,6 +651,16 @@ namespace Leviathan
             sizeof(VxMin),
             ARRAY_SIZE(Vertices_MinQuad),
             Vertices_MinQuad,
+            ARRAY_SIZE(Indices_Quad),
+            Indices_Quad
+        );
+
+        MeshStateSpriteQuad = CreateMeshState
+        (
+            DX_Device,
+            sizeof(VxMin),
+            ARRAY_SIZE(Vertices_SpriteQuad),
+            Vertices_SpriteQuad,
             ARRAY_SIZE(Indices_Quad),
             Indices_Quad
         );
