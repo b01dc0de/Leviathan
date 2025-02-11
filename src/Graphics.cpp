@@ -765,14 +765,17 @@ namespace Leviathan
         SafeRelease(MeshStateCube);
         SafeRelease(MeshStateQuad);
         SafeRelease(MeshStateMinQuad);
+        SafeRelease(MeshStateSpriteQuad);
 
         DX_SAFE_RELEASE(DX_WBuffer);
         DX_SAFE_RELEASE(DX_VPBuffer);
         DX_SAFE_RELEASE(DX_UnicolorBuffer);
+        DX_SAFE_RELEASE(DX_InstRectBuffer);
 
         SafeRelease(DrawStateColor);
         SafeRelease(DrawStateTexture);
         SafeRelease(DrawStateUnicolor);
+        SafeRelease(DrawStateInstRect);
 
         DX_SAFE_RELEASE(DXGI_SwapChain1);
         DX_SAFE_RELEASE(DX_Backbuffer);
