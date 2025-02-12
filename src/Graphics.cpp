@@ -157,12 +157,12 @@ namespace Leviathan
         float RotAngle = 0.0f;
     };
 
-    struct RectF
+    struct QuadF
     {
-        float Left = 0.0f;
-        float Top = 0.0f;
-        float Right = 0.0f;
-        float Bottom = 0.0f;
+        float PosX = 0.0f;
+        float PosY = 0.0f;
+        float SizeX = 0.0f;
+        float SizeY = 0.0f;
     };
 
     struct RGBA
@@ -175,7 +175,7 @@ namespace Leviathan
 
     struct InstRectData
     {
-        RectF Rect;
+        QuadF Rect;
         RGBA Color;
     };
 
@@ -185,21 +185,14 @@ namespace Leviathan
     InstRectData InstRectDataArray[] =
     {
         { {0.0f, 0.0f, TestInstRectSize, TestInstRectSize}, {0.0f, 1.0f, 1.0f, 1.0f} },
-        { {RightRectX, 0.0f, RightRectX + TestInstRectSize, TestInstRectSize}, {1.0f, 0.0f, 1.0f, 1.0f} },
-        { {0.0f, BottomRectY, TestInstRectSize, BottomRectY + TestInstRectSize}, { 1.0f, 1.0f, 0.0f, 1.0f } },
-        { {RightRectX, BottomRectY, RightRectX + TestInstRectSize, BottomRectY + TestInstRectSize}, {0.0f, 0.0f, 0.0f, 1.0f} }
+        { {RightRectX, 0.0f, TestInstRectSize, TestInstRectSize}, {1.0f, 0.0f, 1.0f, 1.0f} },
+        { {0.0f, BottomRectY, TestInstRectSize, TestInstRectSize}, { 1.0f, 1.0f, 0.0f, 1.0f } },
+        { {RightRectX, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.0f, 0.0f, 0.0f, 1.0f} }
     };
-
 
     m4f GetMatrix(const SpriteTransform& InSprTrans)
     {
         return m4f::Scale(InSprTrans.Scale.X, InSprTrans.Scale.Y, 1.0f) * m4f::RotAxisZ(InSprTrans.RotAngle) * m4f::Trans(InSprTrans.Pos.X, InSprTrans.Pos.Y, 0.0f);
-    }
-    m4f GetMatrix(RectF& InRectF)
-    {
-        float Width = InRectF.Right - InRectF.Left;
-        float Height = InRectF.Bottom - InRectF.Top;
-        return m4f::Scale(Width, Height, 1.0f) * m4f::Trans(InRectF.Left, InRectF.Top, 0.0f);
     }
 
     Camera OrthoCamera;
