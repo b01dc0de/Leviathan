@@ -36,6 +36,8 @@ namespace Leviathan
         MeshStateT MeshStateMinQuad;
         MeshStateT MeshStateSpriteQuad;
 
+        ID3D11Buffer* DX_VxBufferLines = nullptr;
+
         ID3D11Buffer* DX_InstRectBuffer = nullptr;
 
         ID3D11Texture2D* DX_DebugTexture = nullptr;
@@ -190,6 +192,23 @@ namespace Leviathan
         { {RightRectX, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.0f, 0.0f, 0.0f, 1.0f} }
     };
 
+    float HalfWidth = (float)AppWidth / 2.0f;
+    float HalfHeight = (float)AppHeight / 2.0f;
+    VxColor Vertices_Lines[] =
+    {
+        { {0.0f, 0.0f, +0.5f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f} },
+        { {AppWidth, AppHeight, +0.5f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f} },
+
+        { {0.0f, AppHeight, +0.5f, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },
+        { {AppWidth, 0.0f, +0.5f, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },
+
+        { {HalfWidth, 0.0f, +0.5f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
+        { {HalfWidth, AppHeight, +0.5f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
+
+        { {0.0f, HalfHeight, +0.5f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f} },
+        { {AppWidth, HalfHeight, +0.5f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f} },
+    };
+
     m4f GetMatrix(const SpriteTransform& InSprTrans)
     {
         return m4f::Scale(InSprTrans.Scale.X, InSprTrans.Scale.Y, 1.0f) * m4f::RotAxisZ(InSprTrans.RotAngle) * m4f::Trans(InSprTrans.Pos.X, InSprTrans.Pos.Y, 0.0f);
@@ -249,6 +268,27 @@ namespace Leviathan
             }
 
             DX_CHECK(D2_RenderTarget->EndDraw());
+        }
+
+        static bool bDrawLines = true;
+        if (bDrawLines)
+        {
+            const m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
+            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
+            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
+            
+            UINT Offset = 0;
+            const UINT Stride = sizeof(VxColor);
+            DX_ImmediateContext->IASetInputLayout(DrawStateColor.InputLayout);
+            DX_ImmediateContext->IASetVertexBuffers(0, 1, &DX_VxBufferLines, &Stride, &Offset);
+            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+
+            DX_ImmediateContext->VSSetShader(DrawStateColor.VertexShader, nullptr, 0);
+            DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
+            DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
+            DX_ImmediateContext->PSSetShader(DrawStateColor.PixelShader, nullptr, 0);
+
+            DX_ImmediateContext->Draw(ARRAY_SIZE(Vertices_Lines), 0u);
         }
 
 
@@ -652,6 +692,12 @@ namespace Leviathan
             ARRAY_SIZE(Indices_Quad),
             Indices_Quad
         );
+
+        { // Lines Vertex Buffer
+            D3D11_BUFFER_DESC VertexBufferDesc = { sizeof(Vertices_Lines), D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0};
+            D3D11_SUBRESOURCE_DATA VertexBufferInitData = { Vertices_Lines, 0, 0 };
+            DX_CHECK(DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_VxBufferLines));
+        }
 
         {
             ImageT DebugImage = {};
