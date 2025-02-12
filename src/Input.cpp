@@ -22,7 +22,7 @@ namespace Leviathan
         LV_KEY_NONE, // ----                       0x0F    Unassigned
         LV_KEY_SHIFT, // VK_SHIFT                  0x10    SHIFT key
         LV_KEY_CTRL, // VK_CONTROL                 0x11    CTRL key
-        LV_KEY_ALT, // VK_MENU                    0x12    ALT key
+        LV_KEY_ALT, // VK_MENU                     0x12    ALT key
         LV_KEY_NONE, // VK_PAUSE                   0x13    PAUSE key
         LV_KEY_CAPSLOCK, // VK_CAPITAL             0x14    CAPS LOCK key
         LV_KEY_NONE, // VK_KANA | VK_HANGUL        0x15    IME Kana mode | IME Hangul mode

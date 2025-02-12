@@ -91,5 +91,8 @@
     <FxCompile Include="src\hlsl\BaseShader.hlsl">
       <Filter>src\hlsl</Filter>
     </FxCompile>
+    <FxCompile Include="src\hlsl\InstRectShader.hlsl">
+      <Filter>src\hlsl</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

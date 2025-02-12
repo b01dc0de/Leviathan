@@ -6,7 +6,7 @@
 
 namespace Leviathan
 {
-    namespace GraphicsState
+    inline namespace GraphicsState
     {
         IDXGIFactory2* DXGI_Factory2 = nullptr;
         ID3D11Device* DX_Device = nullptr;
@@ -52,8 +52,6 @@ namespace Leviathan
         ID2D1GradientStopCollection* D2_GradientStops = nullptr;
         ID2D1SolidColorBrush* D2_LightGrayBrush = nullptr;
     }
-
-    using namespace GraphicsState;
 
     struct VxMin
     {
@@ -332,9 +330,13 @@ namespace Leviathan
             DX_ImmediateContext->DrawIndexed(MeshStateMinQuad.NumInds, 0u, 0u);
         }
 
+        const float HalfWidth = (float)AppWidth / 2.0f;
+        const float HalfHeight = (float)AppHeight / 2.0f;
+        const m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
         static bool bDrawInstRects = true;
         if (bDrawInstRects)
         { // Draw Instanced Rects
+            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
 
             ID3D11Buffer* VxInstBuffers[] = { MeshStateSpriteQuad.VxBuffer, DX_InstRectBuffer };
@@ -590,13 +592,6 @@ namespace Leviathan
             DrawStateInstRect = CreateDrawState(DX_Device, InstRectShaderFilename, DefinesInst, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
         }
 
-        for (int Idx = 0; Idx < ARRAY_SIZE(InstRectDataArray); Idx++)
-        {
-            InstRectDataArray[Idx].Rect.Left -= AppWidth / 2.0f;
-            InstRectDataArray[Idx].Rect.Right -= AppWidth / 2.0f;
-            InstRectDataArray[Idx].Rect.Top -= AppHeight / 2.0f;
-            InstRectDataArray[Idx].Rect.Bottom -= AppHeight / 2.0f;
-        }
         D3D11_BUFFER_DESC InstRectBufferDesc = {};
         InstRectBufferDesc.ByteWidth = sizeof(InstRectDataArray);
         InstRectBufferDesc.Usage = D3D11_USAGE_DEFAULT;
