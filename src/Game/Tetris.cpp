@@ -1,5 +1,4 @@
 #include "Tetris.h"
-#include "../Leviathan.h"
 
 namespace Game
 {
@@ -181,7 +180,7 @@ namespace Game
         constexpr int GridSize = GridWidth * GridHeight;
         BlockType PlayField[GridSize];
 
-        void UpdateAndDraw()
+        void UpdateAndDraw(Array<InstQuadColorData>& OutDrawCmds)
         {
         }
 

@@ -159,32 +159,12 @@ namespace Leviathan
         float RotAngle = 0.0f;
     };
 
-    struct QuadF
-    {
-        float PosX = 0.0f;
-        float PosY = 0.0f;
-        float SizeX = 0.0f;
-        float SizeY = 0.0f;
-    };
-
-    struct RGBA
-    {
-        float R = 0.0f;
-        float G = 0.0f;
-        float B = 0.0f;
-        float A = 0.0f;
-    };
-
-    struct InstRectData
-    {
-        QuadF Rect;
-        RGBA Color;
-    };
+    Array<InstQuadColorData> DrawCmds;
 
     const float TestInstRectSize = 50.0f;
     const float RightRectX = (float)AppWidth - TestInstRectSize;
     const float BottomRectY = (float)AppHeight - TestInstRectSize;
-    InstRectData InstRectDataArray[] =
+    InstQuadColorData InstRectDataArray[] =
     {
         { {0.0f, 0.0f, TestInstRectSize, TestInstRectSize}, {0.0f, 1.0f, 1.0f, 1.0f} },
         { {RightRectX, 0.0f, TestInstRectSize, TestInstRectSize}, {1.0f, 0.0f, 1.0f, 1.0f} },
@@ -373,7 +353,7 @@ namespace Leviathan
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
 
             ID3D11Buffer* VxInstBuffers[] = { MeshStateSpriteQuad.VxBuffer, DX_InstRectBuffer };
-            const UINT Strides[] = { sizeof(VxMin), sizeof(InstRectData) };
+            const UINT Strides[] = { sizeof(VxMin), sizeof(InstQuadColorData) };
             const UINT Offsets[] = { 0, 0 };
             ASSERT((ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Strides)) && (ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Offsets)));
             DX_ImmediateContext->IASetInputLayout(DrawStateInstRect.InputLayout);

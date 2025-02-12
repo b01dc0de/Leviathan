@@ -86,6 +86,9 @@
     <ClInclude Include="src\Clock.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\Array.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\hlsl\BaseShader.hlsl">
@@ -94,5 +97,10 @@
     <FxCompile Include="src\hlsl\InstRectShader.hlsl">
       <Filter>src\hlsl</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Array.inl">
+      <Filter>src</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -41,6 +41,7 @@ namespace Leviathan
     #define APPNAME() APPNAMEA()
 #endif // UNICODE
 
+#include "Array.h"
 #include "Engine.h"
 #include "Graphics.h"
 #include "Input.h"
