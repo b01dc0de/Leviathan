@@ -4,6 +4,8 @@
 #include "Image.h"
 #include "UserInterface.h"
 
+#include "Game/Tetris.h"
+
 namespace Leviathan
 {
     inline namespace GraphicsState
@@ -39,6 +41,7 @@ namespace Leviathan
         ID3D11Buffer* DX_VxBufferLines = nullptr;
 
         ID3D11Buffer* DX_InstRectBuffer = nullptr;
+        ID3D11Buffer* DX_BatchedQuadCmdsBuffer = nullptr;
 
         ID3D11Texture2D* DX_DebugTexture = nullptr;
         ID3D11ShaderResourceView* DX_DebugTextureSRV = nullptr;
@@ -197,8 +200,13 @@ namespace Leviathan
     Camera OrthoCamera;
     Camera GameCamera;
 
+    Array<InstQuadColorData> BatchedQuadCmds(256);
     void Graphics::UpdateAndDraw()
     {
+        // Get instanced draw commands from game (Tetris):
+        BatchedQuadCmds.Empty();
+        Game::Tetris::UpdateAndDraw(BatchedQuadCmds);
+
         DX_ImmediateContext->RSSetState(DX_RasterizerState);
         DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
         v4f ClearColor = { 30.0f / 255.0f, 30.0f / 255.0f, 45.0f / 255.0f, 1.0f };
@@ -206,7 +214,9 @@ namespace Leviathan
         DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, &ClearColor.X);
         DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, fClearDepth, 0);
 
-        static bool bD2Background = true;
+        const m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
+
+        static bool bD2Background = false;
         if (bD2Background)
         { // Direct2D background
             DXGI_SWAP_CHAIN_DESC SwapChainDesc = {};
@@ -250,10 +260,9 @@ namespace Leviathan
             DX_CHECK(D2_RenderTarget->EndDraw());
         }
 
-        static bool bDrawLines = true;
+        static bool bDrawLines = false;
         if (bDrawLines)
         {
-            const m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
             
@@ -272,7 +281,7 @@ namespace Leviathan
         }
 
 
-        static bool bDrawTriangle = true;
+        static bool bDrawTriangle = false;
         if (bDrawTriangle)
         { // Draw triangle
             m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(256.0f, -256.0f, 0.0f);
@@ -294,7 +303,7 @@ namespace Leviathan
             DX_ImmediateContext->DrawIndexed(MeshStateTriangle.NumInds, 0u, 0u);
         }
 
-        static bool bDrawTexQuad = true;
+        static bool bDrawTexQuad = false;
         if (bDrawTexQuad)
         { // Draw tex quad
             m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(-256.0f, +256.0f, 0.0f);
@@ -318,7 +327,7 @@ namespace Leviathan
             DX_ImmediateContext->DrawIndexed(MeshStateQuad.NumInds, 0u, 0u);
         }
 
-        static bool bDrawUnicolorQuad = true;
+        static bool bDrawUnicolorQuad = false;
         if (bDrawUnicolorQuad)
         {
             m4f UnicolorQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(-256.0f, -256.0f, 0.0f);
@@ -345,7 +354,6 @@ namespace Leviathan
 
         const float HalfWidth = (float)AppWidth / 2.0f;
         const float HalfHeight = (float)AppHeight / 2.0f;
-        const m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
         static bool bDrawInstRects = true;
         if (bDrawInstRects)
         { // Draw Instanced Rects
@@ -366,6 +374,35 @@ namespace Leviathan
             DX_ImmediateContext->PSSetShader(DrawStateInstRect.PixelShader, nullptr, 0);
 
             DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, ARRAY_SIZE(InstRectDataArray), 0u, 0, 0u);
+        }
+
+        static bool bDrawTetris = true;
+        if (bDrawTetris && BatchedQuadCmds.Num > 0)
+        {
+            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
+            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
+
+            { // Send BatchedCmds state to GPU
+                D3D11_MAPPED_SUBRESOURCE MappedBatchCmds = {};
+                DX_ImmediateContext->Map(DX_BatchedQuadCmdsBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedBatchCmds);
+                memcpy(MappedBatchCmds.pData, BatchedQuadCmds.Data, sizeof(InstQuadColorData) * BatchedQuadCmds.Num);
+                DX_ImmediateContext->Unmap(DX_BatchedQuadCmdsBuffer, 0);
+            }
+
+            ID3D11Buffer* VxInstBuffers[] = { MeshStateSpriteQuad.VxBuffer, DX_BatchedQuadCmdsBuffer };
+            const UINT Strides[] = { sizeof(VxMin), sizeof(InstQuadColorData) };
+            const UINT Offsets[] = { 0, 0 };
+            ASSERT((ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Strides)) && (ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Offsets)));
+            DX_ImmediateContext->IASetInputLayout(DrawStateInstRect.InputLayout);
+            DX_ImmediateContext->IASetVertexBuffers(0, ARRAY_SIZE(VxInstBuffers), VxInstBuffers, Strides, Offsets);
+            DX_ImmediateContext->IASetIndexBuffer(MeshStateSpriteQuad.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
+            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            DX_ImmediateContext->VSSetShader(DrawStateInstRect.VertexShader, nullptr, 0);
+            DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
+            DX_ImmediateContext->PSSetShader(DrawStateInstRect.PixelShader, nullptr, 0);
+
+            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, BatchedQuadCmds.Num, 0u, 0, 0u);
         }
 
         static bool bDrawCube = true;
@@ -614,6 +651,15 @@ namespace Leviathan
         D3D11_SUBRESOURCE_DATA InstRectBufferInitData = { InstRectDataArray, 0, 0 };
         DX_CHECK(DX_Device->CreateBuffer(&InstRectBufferDesc, &InstRectBufferInitData, &DX_InstRectBuffer));
 
+        D3D11_BUFFER_DESC BatchedQuadCmdsBufferDesc = {};
+        BatchedQuadCmdsBufferDesc.ByteWidth = sizeof(InstQuadColorData) * BatchedQuadCmds.Capacity;
+        BatchedQuadCmdsBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+        BatchedQuadCmdsBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+        BatchedQuadCmdsBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        BatchedQuadCmdsBufferDesc.MiscFlags = 0;
+        BatchedQuadCmdsBufferDesc.StructureByteStride = 0;
+        DX_CHECK(DX_Device->CreateBuffer(&BatchedQuadCmdsBufferDesc, nullptr, &DX_BatchedQuadCmdsBuffer));
+
         D3D11_BUFFER_DESC WorldBufferDesc = {};
         WorldBufferDesc.ByteWidth = sizeof(m4f);
         WorldBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -760,10 +806,14 @@ namespace Leviathan
         OrthoCamera.Ortho((float)AppWidth, (float)AppHeight, -2.0f);
 
         UserInterface::Init(D2_RenderTarget);
+
+        Game::Tetris::Init();
     }
 
     void Graphics::Term()
     {
+        Game::Tetris::Term();
+
         UserInterface::Term();
 
         { // Direct2D:

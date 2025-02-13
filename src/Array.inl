@@ -18,6 +18,8 @@ namespace Leviathan
             ASSERT(Data == nullptr);
 
             Data = new T[InitCapacity];
+            Num = 0;
+            Capacity = InitCapacity;
         }
         void Term()
         {
@@ -34,6 +36,51 @@ namespace Leviathan
             ASSERT(Data);
             ASSERT(Capacity > 0);
             Num = 0;
+        }
+        bool CheckIdx(int Idx)
+        {
+            bool bValidIdx = (0 <= Idx) && (Idx < Num);
+            ASSERT(bValidIdx);
+            return bValidIdx;
+        }
+        void Add(const T& Item)
+        {
+            if (Num == Capacity)
+            {
+                Inc();
+            }
+            Data[Num++] = Item;
+        }
+        void Remove(int Idx)
+        {
+            if (CheckIdx(Idx))
+            {
+                int RemoveIdx = Idx;
+                while (RemoveIdx < Num - 1)
+                {
+                    Data[RemoveIdx] = Data[RemoveIdx + 1];
+
+                    RemoveIdx++;
+                }
+                // Clear out previously last valid Idx
+                //Data[RemoveIdx] = {};
+
+                Num--;
+            }
+        }
+        void Inc()
+        {
+            int OldCapacity = Capacity;
+            T* OldData = Data;
+
+            Capacity = (int)(Capacity * Array_IncRate);
+            Data = new T[Capacity];
+            for (int ItemIdx = 0; ItemIdx < Num; ItemIdx++)
+            {
+                Data[ItemIdx] = OldData[ItemIdx];
+            }
+
+            delete[] OldData;
         }
 
         Array(int InitSize)

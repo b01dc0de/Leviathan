@@ -4,6 +4,8 @@ namespace Game
 {
     namespace Tetris
     {
+        using namespace Leviathan;
+
         enum BlockType
         {
             BLOCK_NONE,
@@ -180,8 +182,25 @@ namespace Game
         constexpr int GridSize = GridWidth * GridHeight;
         BlockType PlayField[GridSize];
 
+        RGBA BackgroundColor{1.0f, 1.0f, 1.0f, 1.0f};
+
+        void DrawGrid(Array<InstQuadColorData>& OutDrawCmds)
+        {
+            /*
+                - Draw grid BG
+                - Draw grid cells
+                - Draw grid lines
+            */
+            const float VisualGridHeight = Leviathan::AppHeight;
+            const float VisualGridWidth = VisualGridHeight / 2.0f;
+            const v2f VisualGridPos{100.0f, 0.0f};
+
+            OutDrawCmds.Add(InstQuadColorData{ QuadF{VisualGridPos.X, VisualGridPos.Y, VisualGridWidth, VisualGridHeight}, BackgroundColor });
+        }
+
         void UpdateAndDraw(Array<InstQuadColorData>& OutDrawCmds)
         {
+            DrawGrid(OutDrawCmds);
         }
 
         void Init()
