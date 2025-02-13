@@ -170,10 +170,10 @@ namespace Leviathan
     const float BottomRectY = (float)AppHeight - TestInstRectSize;
     InstQuadColorData InstRectDataArray[] =
     {
-        { {0.0f, 0.0f, TestInstRectSize, TestInstRectSize}, {0.0f, 1.0f, 1.0f, 1.0f} },
-        { {RightRectX, 0.0f, TestInstRectSize, TestInstRectSize}, {1.0f, 0.0f, 1.0f, 1.0f} },
-        { {0.0f, BottomRectY, TestInstRectSize, TestInstRectSize}, { 1.0f, 1.0f, 0.0f, 1.0f } },
-        { {RightRectX, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.0f, 0.0f, 0.0f, 1.0f} }
+        { {0.0f, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.0f, 1.0f, 1.0f, 1.0f} },
+        { {RightRectX, BottomRectY, TestInstRectSize, TestInstRectSize}, {1.0f, 0.0f, 1.0f, 1.0f} },
+        { {0.0f, 0.0f, TestInstRectSize, TestInstRectSize}, { 1.0f, 1.0f, 0.0f, 1.0f } },
+        { {RightRectX, 0.0f, TestInstRectSize, TestInstRectSize}, {0.0f, 0.0f, 0.0f, 1.0f} }
     };
 
     float HalfWidth = (float)AppWidth / 2.0f;
@@ -675,7 +675,6 @@ namespace Leviathan
         InstRectBufferDesc.StructureByteStride = 0;
         D3D11_SUBRESOURCE_DATA InstRectBufferInitData = { InstRectDataArray, 0, 0 };
         DX_CHECK(DX_Device->CreateBuffer(&InstRectBufferDesc, &InstRectBufferInitData, &DX_InstRectBuffer));
-
 
         Draw2D.BatchCmds.Reserve(DefaultSize_BatchDraw2D);
         D3D11_BUFFER_DESC BatchedQuadCmdsBufferDesc = {};
