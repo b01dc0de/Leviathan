@@ -197,10 +197,19 @@ namespace Leviathan
         return m4f::Scale(InSprTrans.Scale.X, InSprTrans.Scale.Y, 1.0f) * m4f::RotAxisZ(InSprTrans.RotAngle) * m4f::Trans(InSprTrans.Pos.X, InSprTrans.Pos.Y, 0.0f);
     }
 
+    RGBA Norm8Bit(unsigned char R, unsigned char G, unsigned char B)
+    {
+        float fR = (float)R / 255.0f;
+        float fG = (float)G / 255.0f;
+        float fB = (float)B / 255.0f;
+        return RGBA{ fR, fG, fB, 1.0f };
+    }
+
     Camera OrthoCamera;
     Camera GameCamera;
 
-    Array<InstQuadColorData> BatchedQuadCmds(256);
+    constexpr int DefaultSize_BatchedQuadCmds = 256;
+    Array<InstQuadColorData> BatchedQuadCmds(DefaultSize_BatchedQuadCmds);
     void Graphics::UpdateAndDraw()
     {
         // Get instanced draw commands from game (Tetris):
@@ -402,7 +411,9 @@ namespace Leviathan
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
             DX_ImmediateContext->PSSetShader(DrawStateInstRect.PixelShader, nullptr, 0);
 
-            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, BatchedQuadCmds.Num, 0u, 0, 0u);
+
+            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, BatchedQuadCmds.Num-1, 0u, 0, 1u);
+            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, 1, 0u, 0, 0u);
         }
 
         static bool bDrawCube = true;

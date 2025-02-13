@@ -28,6 +28,8 @@ namespace Leviathan
         float A = 0.0f;
     };
 
+    RGBA Norm8Bit(unsigned char R, unsigned char G, unsigned char B);
+
     struct InstQuadColorData
     {
         QuadF Rect;
