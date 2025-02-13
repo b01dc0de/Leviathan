@@ -182,11 +182,8 @@ namespace Game
             constexpr int GridWidth = 10;
             constexpr int GridHeight = 20;
             constexpr int GridSize = GridWidth * GridHeight;
-            BlockType PlayField[GridSize];
-
-            RGBA BackgroundColor{ Norm8Bit(30, 30, 46) };
-            RGBA LineColor{ Norm8Bit(200, 200, 200) };
-
+            const RGBA BackgroundColor{ Norm8Bit(30, 30, 46) };
+            const RGBA LineColor{ Norm8Bit(200, 200, 200) };
             RGBA CellColors[BLOCKTYPE_COUNT] =
             {
                 BackgroundColor, // BLOCK_NONE
@@ -199,48 +196,50 @@ namespace Game
                 Norm8Bit(250, 163, 100), // BLOCK_L / ORANGE
             };
 
-            void DrawGrid(BatchDraw2D& Draw2D)
+            BlockType PlayField[GridSize];
+        }
+
+        void DrawGrid(BatchDraw2D& Draw2D)
+        {
+            const float VisualGridHeight = Leviathan::AppHeight;
+            const float VisualGridWidth = VisualGridHeight / 2.0f;
+            const v2f VisualGridPos{ 100.0f, 0.0f };
+            const float VisualCellSize = VisualGridHeight / (float)GridHeight;
+
+            // Draw grid background
+            Draw2D.AddQuad(QuadF{ VisualGridPos.X, VisualGridPos.Y, VisualGridWidth, VisualGridHeight }, BackgroundColor);
+
+            // Draw cells
+            for (int CellIdx = 0; CellIdx < GridSize; CellIdx++)
             {
-                const float VisualGridHeight = Leviathan::AppHeight;
-                const float VisualGridWidth = VisualGridHeight / 2.0f;
-                const v2f VisualGridPos{ 100.0f, 0.0f };
-                const float VisualCellSize = VisualGridHeight / (float)GridHeight;
+                int CellCol = CellIdx % GridWidth;
+                int CellRow = CellIdx / GridWidth;
 
-                // Draw grid background
-                Draw2D.AddQuad(QuadF{ VisualGridPos.X, VisualGridPos.Y, VisualGridWidth, VisualGridHeight }, BackgroundColor);
+                float CellX = VisualGridPos.X + CellCol * VisualCellSize;
+                float CellY = AppHeight - (VisualGridPos.Y + CellRow * VisualCellSize) - VisualCellSize;
+                int ColorIdx = CellIdx % BLOCKTYPE_COUNT;
+                RGBA CellColor = CellColors[ColorIdx];
+                //RGBA CellColor = CellColors[PlayField[CellIdx]];
 
-                // Draw cells
-                for (int CellIdx = 0; CellIdx < GridSize; CellIdx++)
-                {
-                    int CellCol = CellIdx % GridWidth;
-                    int CellRow = CellIdx / GridWidth;
-
-                    float CellX = VisualGridPos.X + CellCol * VisualCellSize;
-                    float CellY = AppHeight - (VisualGridPos.Y + CellRow * VisualCellSize) - VisualCellSize;
-                    int ColorIdx = CellIdx % BLOCKTYPE_COUNT;
-                    RGBA CellColor = CellColors[ColorIdx];
-                    //RGBA CellColor = CellColors[PlayField[CellIdx]];
-
-                    Draw2D.AddQuad(QuadF{ CellX, CellY, VisualCellSize, VisualCellSize }, CellColor);
-                }
-
-                // Draw grid lines
-                constexpr float LineThickness = 2.0f;
-                constexpr float HalfLineThickness = LineThickness / 2.0f;
-                for (int RowIdx = 0; RowIdx < GridHeight + 1; RowIdx++)
-                {
-                    float LineY = VisualGridPos.Y + RowIdx * VisualCellSize - HalfLineThickness;
-                    Draw2D.AddQuad(QuadF{ VisualGridPos.X, LineY, VisualGridWidth, LineThickness }, LineColor);
-                }
-                for (int ColIdx = 0; ColIdx < GridWidth + 1; ColIdx++)
-                {
-                    float LineX = VisualGridPos.X + ColIdx * VisualCellSize - HalfLineThickness;
-                    Draw2D.AddQuad(QuadF{ LineX, VisualGridPos.Y, LineThickness, VisualGridHeight }, LineColor);
-                }
+                Draw2D.AddQuad(QuadF{ CellX, CellY, VisualCellSize, VisualCellSize }, CellColor);
             }
 
-
+            // Draw grid lines
+            constexpr float LineThickness = 2.0f;
+            constexpr float HalfLineThickness = LineThickness / 2.0f;
+            for (int RowIdx = 0; RowIdx < GridHeight + 1; RowIdx++)
+            {
+                float LineY = VisualGridPos.Y + RowIdx * VisualCellSize - HalfLineThickness;
+                Draw2D.AddQuad(QuadF{ VisualGridPos.X, LineY, VisualGridWidth, LineThickness }, LineColor);
+            }
+            for (int ColIdx = 0; ColIdx < GridWidth + 1; ColIdx++)
+            {
+                float LineX = VisualGridPos.X + ColIdx * VisualCellSize - HalfLineThickness;
+                Draw2D.AddQuad(QuadF{ LineX, VisualGridPos.Y, LineThickness, VisualGridHeight }, LineColor);
+            }
         }
+
+
         void UpdateAndDraw(BatchDraw2D& OutDraw2D)
         {
             /* NOTE:

@@ -55,15 +55,15 @@ namespace Leviathan
         }
     }
 
-    bool bVisualizeInput = true;
+    bool bVisualizeInput = false;
     bool bDrawTimeStats = true;
 
     void UserInterface::Draw(ID2D1RenderTarget* In2DRT)
     {
         ASSERT(In2DRT);
 
-        if (KeyboardState::GetKeyState(LV_KEY_F1)) { bVisualizeInput = !bVisualizeInput; }
-        if (KeyboardState::GetKeyState(LV_KEY_F2)) { bDrawTimeStats = !bDrawTimeStats; }
+        //if (KeyboardState::GetKeyState(LV_KEY_F1)) { bVisualizeInput = !bVisualizeInput; }
+        //if (KeyboardState::GetKeyState(LV_KEY_F2)) { bDrawTimeStats = !bDrawTimeStats; }
 
         if (bVisualizeInput)
         {

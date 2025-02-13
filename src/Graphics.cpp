@@ -2,6 +2,7 @@
 #include "Camera.h"
 #include "DrawState.h"
 #include "Image.h"
+#include "InputVisualizer.h"
 #include "UserInterface.h"
 
 #include "Game/Tetris.h"
@@ -210,7 +211,7 @@ namespace Leviathan
     Camera GameCamera;
     BatchDraw2D Draw2D;
 
-    constexpr int DefaultSize_BatchDraw2D = 256;
+    constexpr int DefaultSize_BatchDraw2D = 512;
     void Graphics::UpdateAndDraw()
     {
         // Get instanced draw commands from game (Tetris):
@@ -416,9 +417,40 @@ namespace Leviathan
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
             DX_ImmediateContext->PSSetShader(DrawStateInstRect.PixelShader, nullptr, 0);
 
-            //DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, BatchedQuadCmds.Num-1, 0u, 0, 1u);
-            //DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, 1, 0u, 0, 0u);
             DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, Draw2D.BatchCmds.Num, 0u, 0, 0u);
+        }
+
+        Draw2D.Clear();
+        static bool bDrawKeyboardInput = true;
+        if (bDrawKeyboardInput)
+        {
+            InputVisualizer::DrawKeyboard(Draw2D);
+
+            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
+            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
+
+            { // Send BatchedCmds state to GPU
+                D3D11_MAPPED_SUBRESOURCE MappedBatchCmds = {};
+                DX_ImmediateContext->Map(DX_BatchedQuadCmdsBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedBatchCmds);
+                memcpy(MappedBatchCmds.pData, Draw2D.BatchCmds.Data, sizeof(InstQuadColorData) * Draw2D.BatchCmds.Num);
+                DX_ImmediateContext->Unmap(DX_BatchedQuadCmdsBuffer, 0);
+            }
+
+            ID3D11Buffer* VxInstBuffers[] = { MeshStateSpriteQuad.VxBuffer, DX_BatchedQuadCmdsBuffer };
+            const UINT Strides[] = { sizeof(VxMin), sizeof(InstQuadColorData) };
+            const UINT Offsets[] = { 0, 0 };
+            ASSERT((ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Strides)) && (ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Offsets)));
+            DX_ImmediateContext->IASetInputLayout(DrawStateInstRect.InputLayout);
+            DX_ImmediateContext->IASetVertexBuffers(0, ARRAY_SIZE(VxInstBuffers), VxInstBuffers, Strides, Offsets);
+            DX_ImmediateContext->IASetIndexBuffer(MeshStateSpriteQuad.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
+            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            DX_ImmediateContext->VSSetShader(DrawStateInstRect.VertexShader, nullptr, 0);
+            DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
+            DX_ImmediateContext->PSSetShader(DrawStateInstRect.PixelShader, nullptr, 0);
+
+            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, Draw2D.BatchCmds.Num, 0u, 0, 0u);
+
         }
 
         DX_ImmediateContext->OMSetDepthStencilState(nullptr, 0);

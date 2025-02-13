@@ -17,6 +17,9 @@ namespace Leviathan
         void Init();
         static void DrawKey(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush, const VisualKey& Key, const v2f& Origin, float Scale);
         static void Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2, const v2f& Origin, float Scale);
+
+        static void DrawKey(BatchDraw2D& Draw2D, const VisualKey& Key, const v2f& Origin, float Scale);
+        static void Draw(BatchDraw2D& Draw2D, const v2f& Origin, float Scale);
     };
 
     void VisualKeyboard::Init()
@@ -122,11 +125,63 @@ namespace Leviathan
         }
     }
 
+    void VisualKeyboard::DrawKey(BatchDraw2D& Draw2D, const VisualKey& Key, const v2f& Origin, float Scale)
+    {
+        float SizeX = (Key.Size.X * Scale);
+        float SizeY = (Key.Size.Y * Scale);
+        float PosX = Origin.X + (Key.Pos.X * Scale);
+        float PosY = Origin.Y - (Key.Pos.Y * Scale) - SizeY;
+        QuadF KeyQuad = { PosX, PosY, SizeX, SizeY };
+        bool bIsDown = KeyboardState::GetKeyState(Key.LvCode, true);
+        RGBA ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
+        if (bIsDown)
+        {
+            //KeyQuad.PosY -= SizeY;
+            Draw2D.AddQuad(KeyQuad, ColorWhite);
+        }
+        else
+        {
+            Draw2D.AddBox(KeyQuad, ColorWhite, InputVisualizer::LineWidth);
+        }
+    }
+
+    void VisualKeyboard::Draw(BatchDraw2D& Draw2D, const v2f& Origin, float Scale)
+    {
+        static VisualKeyboard vKeyboard;
+        if (!vKeyboard.bInit) { vKeyboard.Init(); }
+        /*
+        static bool bDrawBG = true;
+        if (bDrawBG)
+        {
+            D2D1_RECT_F BGRect
+            {
+                Origin.X,
+                Origin.Y,
+                Origin.X + vKeyboard.KeyList[LV_KEY_NONE].Size.X * Scale,
+                Origin.Y + vKeyboard.KeyList[LV_KEY_NONE].Size.Y * Scale
+            };
+            InD2RT->FillRectangle(&BGRect, InBrush2);
+            InD2RT->DrawRectangle(&BGRect, InBrush1, InputVisualizer::LineWidth);
+        }
+        */
+        for (int KeyIdx = LV_KEY_ESC; KeyIdx < LV_KEY_COUNT; KeyIdx++)
+        {
+            DrawKey(Draw2D, vKeyboard.KeyList[KeyIdx], Origin, Scale);
+        }
+    }
+
     void InputVisualizer::DrawKeyboard(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
     {
         v2f Origin{975.0f, 10.0};
         float Scale = 20.0f;
         VisualKeyboard::Draw(InD2RT, InBrush1, InBrush2, Origin, Scale);
+    }
+
+    void InputVisualizer::DrawKeyboard(BatchDraw2D& Draw2D)
+    {
+        v2f Origin{975.0f, (float)AppHeight - 10.0f};
+        float Scale = 20.0f;
+        VisualKeyboard::Draw(Draw2D, Origin, Scale);
     }
 
     struct VisualMouse

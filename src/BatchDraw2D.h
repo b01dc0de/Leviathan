@@ -26,6 +26,7 @@ namespace Leviathan
         void Clear();
         void AddQuad(const InstQuadColorData& InInstQuadColorData);
         void AddQuad(const QuadF& InQuad, const RGBA& InColor);
+        void AddBox(const QuadF& InQuad, const RGBA& InColor, float LineWeight = 1.0f);
     };
 }
 
