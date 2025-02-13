@@ -204,20 +204,8 @@ namespace Game
             const v2f VisualGridPos{100.0f, 0.0f};
             const float VisualCellSize = VisualGridHeight / (float)GridHeight;
 
-            // Draw grid lines
-            constexpr float LineThickness = 2.0f;
-            constexpr float HalfLineThickness = LineThickness / 2.0f;
-            for (int RowIdx = 0; RowIdx < GridHeight; RowIdx++)
-            {
-                float LineY = VisualGridPos.Y + RowIdx * VisualCellSize - HalfLineThickness;
-                OutDrawCmds.Add({ QuadF{VisualGridPos.X, LineY, VisualGridWidth, LineThickness}, LineColor });
-            }
-
-            for (int ColIdx = 0; ColIdx < GridWidth; ColIdx++)
-            {
-                float LineX = VisualGridPos.X + ColIdx * VisualCellSize - HalfLineThickness;
-                OutDrawCmds.Add({ QuadF{LineX, VisualGridPos.Y, LineThickness, VisualGridHeight}, LineColor });
-            }
+            // Draw grid background
+            OutDrawCmds.Add(InstQuadColorData{ QuadF{VisualGridPos.X, VisualGridPos.Y, VisualGridWidth, VisualGridHeight}, BackgroundColor });
 
             // Draw cells
             for (int CellIdx = 0; CellIdx < GridSize; CellIdx++)
@@ -233,8 +221,19 @@ namespace Game
                 OutDrawCmds.Add({ QuadF{ CellX, CellY, VisualCellSize, VisualCellSize }, CellColor });
             }
 
-            // Draw grid background
-            OutDrawCmds.Add(InstQuadColorData{ QuadF{VisualGridPos.X, VisualGridPos.Y, VisualGridWidth, VisualGridHeight}, BackgroundColor });
+            // Draw grid lines
+            constexpr float LineThickness = 2.0f;
+            constexpr float HalfLineThickness = LineThickness / 2.0f;
+            for (int RowIdx = 0; RowIdx < GridHeight + 1; RowIdx++)
+            {
+                float LineY = VisualGridPos.Y + RowIdx * VisualCellSize - HalfLineThickness;
+                OutDrawCmds.Add({ QuadF{VisualGridPos.X, LineY, VisualGridWidth, LineThickness}, LineColor });
+            }
+            for (int ColIdx = 0; ColIdx < GridWidth + 1; ColIdx++)
+            {
+                float LineX = VisualGridPos.X + ColIdx * VisualCellSize - HalfLineThickness;
+                OutDrawCmds.Add({ QuadF{LineX, VisualGridPos.Y, LineThickness, VisualGridHeight}, LineColor });
+            }
         }
 
         void UpdateAndDraw(Array<InstQuadColorData>& OutDrawCmds)

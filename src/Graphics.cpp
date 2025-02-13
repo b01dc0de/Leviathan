@@ -19,6 +19,7 @@ namespace Leviathan
         ID3D11RasterizerState* DX_RasterizerState = nullptr;
         ID3D11Texture2D* DX_DepthStencil = nullptr;
         ID3D11DepthStencilView* DX_DepthStencilView = nullptr;
+        ID3D11DepthStencilState* DX_2DInstancedDepthStencilState = nullptr;
 
         DrawStateT DrawStateColor;
         DrawStateT DrawStateTexture;
@@ -217,6 +218,7 @@ namespace Leviathan
         Game::Tetris::UpdateAndDraw(BatchedQuadCmds);
 
         DX_ImmediateContext->RSSetState(DX_RasterizerState);
+        DX_ImmediateContext->OMSetDepthStencilState(nullptr, 0);
         DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
         v4f ClearColor = { 30.0f / 255.0f, 30.0f / 255.0f, 45.0f / 255.0f, 1.0f };
         float fClearDepth = 1.0f;
@@ -224,6 +226,7 @@ namespace Leviathan
         DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, fClearDepth, 0);
 
         const m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
+
 
         static bool bD2Background = false;
         if (bD2Background)
@@ -361,6 +364,8 @@ namespace Leviathan
             DX_ImmediateContext->DrawIndexed(MeshStateMinQuad.NumInds, 0u, 0u);
         }
 
+        DX_ImmediateContext->OMSetDepthStencilState(DX_2DInstancedDepthStencilState, 0);
+
         const float HalfWidth = (float)AppWidth / 2.0f;
         const float HalfHeight = (float)AppHeight / 2.0f;
         static bool bDrawInstRects = true;
@@ -411,10 +416,12 @@ namespace Leviathan
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
             DX_ImmediateContext->PSSetShader(DrawStateInstRect.PixelShader, nullptr, 0);
 
-
-            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, BatchedQuadCmds.Num-1, 0u, 0, 1u);
-            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, 1, 0u, 0, 0u);
+            //DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, BatchedQuadCmds.Num-1, 0u, 0, 1u);
+            //DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, 1, 0u, 0, 0u);
+            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, BatchedQuadCmds.Num, 0u, 0, 0u);
         }
+
+        DX_ImmediateContext->OMSetDepthStencilState(nullptr, 0);
 
         static bool bDrawCube = true;
         if (bDrawCube)
@@ -542,6 +549,13 @@ namespace Leviathan
         DepthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
         DepthStencilViewDesc.Texture2D.MipSlice = 0;
         DX_CHECK(DX_Device->CreateDepthStencilView(DX_DepthStencil, &DepthStencilViewDesc, &DX_DepthStencilView));
+
+        D3D11_DEPTH_STENCIL_DESC Instanced2DDepthStencilStateDesc = {};
+        Instanced2DDepthStencilStateDesc.DepthEnable = TRUE;
+        Instanced2DDepthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+        Instanced2DDepthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+        Instanced2DDepthStencilStateDesc.StencilEnable = FALSE;
+        DX_Device->CreateDepthStencilState(&Instanced2DDepthStencilStateDesc, &DX_2DInstancedDepthStencilState);
 
         D3D11_RENDER_TARGET_BLEND_DESC RenderTargetBlendDesc = {};
         RenderTargetBlendDesc.BlendEnable = TRUE;
@@ -858,6 +872,7 @@ namespace Leviathan
         DX_SAFE_RELEASE(DX_RasterizerState);
         DX_SAFE_RELEASE(DX_DepthStencil);
         DX_SAFE_RELEASE(DX_DepthStencilView);
+        DX_SAFE_RELEASE(DX_2DInstancedDepthStencilState);
 
         DX_SAFE_RELEASE(DXGI_Factory2);
         DX_SAFE_RELEASE(DX_ImmediateContext);
