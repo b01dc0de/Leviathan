@@ -12,12 +12,6 @@ namespace Leviathan
         // D2D
         ID2D1SolidColorBrush* D2_WhiteBrush = nullptr;
         ID2D1SolidColorBrush* D2_BlackBrush = nullptr;
-        ID2D1SolidColorBrush* D2_RedBrush = nullptr;
-        ID2D1SolidColorBrush* D2_GreenBrush = nullptr;
-        ID2D1SolidColorBrush* D2_BlueBrush = nullptr;
-        ID2D1SolidColorBrush* D2_CyanBrush = nullptr;
-        ID2D1SolidColorBrush* D2_MagentaBrush = nullptr;
-        ID2D1SolidColorBrush* D2_YellowBrush = nullptr;
 
         // DirectWrite
         IDWriteFactory* DW_Factory = nullptr;
@@ -31,12 +25,6 @@ namespace Leviathan
         ASSERT(In2DRT);
         DX_CHECK(In2DRT->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &D2_WhiteBrush));
         DX_CHECK(In2DRT->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &D2_BlackBrush));
-        DX_CHECK(In2DRT->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red), &D2_RedBrush));
-        DX_CHECK(In2DRT->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Green), &D2_GreenBrush));
-        DX_CHECK(In2DRT->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Blue), &D2_BlueBrush));
-        DX_CHECK(In2DRT->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Cyan), &D2_CyanBrush));
-        DX_CHECK(In2DRT->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Magenta), &D2_MagentaBrush));
-        DX_CHECK(In2DRT->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Yellow), &D2_YellowBrush));
 
         { // DirectWrite
             DX_CHECK(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (IUnknown**)&DW_Factory));
@@ -126,11 +114,5 @@ namespace Leviathan
 
         DX_SAFE_RELEASE(D2_WhiteBrush);
         DX_SAFE_RELEASE(D2_BlackBrush);
-        DX_SAFE_RELEASE(D2_RedBrush);
-        DX_SAFE_RELEASE(D2_GreenBrush);
-        DX_SAFE_RELEASE(D2_BlueBrush);
-        DX_SAFE_RELEASE(D2_CyanBrush);
-        DX_SAFE_RELEASE(D2_MagentaBrush);
-        DX_SAFE_RELEASE(D2_YellowBrush);
     }
 }
