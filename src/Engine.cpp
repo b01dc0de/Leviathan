@@ -4,6 +4,8 @@
 
 namespace Leviathan
 {
+    unsigned int FrameNumber = 0u;
+
     LRESULT WindowProc(
         HWND hWnd,
         UINT uMsg,
@@ -131,6 +133,7 @@ namespace Leviathan
     void Engine::MainLoop()
     {
         bAppRunning = true;
+        FrameNumber++;
         while (bAppRunning)
         {
             WindowMsgLoop(AppWindow);

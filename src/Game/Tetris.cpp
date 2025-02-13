@@ -197,7 +197,7 @@ namespace Game
             Norm8Bit(250, 163, 100), // BLOCK_L / ORANGE
         };
 
-        void DrawGrid(Array<InstQuadColorData>& OutDrawCmds)
+        void DrawGrid(BatchDraw2D& Draw2D)
         {
             const float VisualGridHeight = Leviathan::AppHeight;
             const float VisualGridWidth = VisualGridHeight / 2.0f;
@@ -205,7 +205,7 @@ namespace Game
             const float VisualCellSize = VisualGridHeight / (float)GridHeight;
 
             // Draw grid background
-            OutDrawCmds.Add(InstQuadColorData{ QuadF{VisualGridPos.X, VisualGridPos.Y, VisualGridWidth, VisualGridHeight}, BackgroundColor });
+            Draw2D.AddQuad(QuadF{VisualGridPos.X, VisualGridPos.Y, VisualGridWidth, VisualGridHeight}, BackgroundColor);
 
             // Draw cells
             for (int CellIdx = 0; CellIdx < GridSize; CellIdx++)
@@ -217,8 +217,9 @@ namespace Game
                 float CellY = VisualGridPos.Y + CellRow * VisualCellSize;
                 int ColorIdx = CellIdx % BLOCKTYPE_COUNT;
                 RGBA CellColor = CellColors[ColorIdx];
+                //RGBA CellColor = CellColors[PlayField[CellIdx]];
 
-                OutDrawCmds.Add({ QuadF{ CellX, CellY, VisualCellSize, VisualCellSize }, CellColor });
+                Draw2D.AddQuad(QuadF{ CellX, CellY, VisualCellSize, VisualCellSize }, CellColor);
             }
 
             // Draw grid lines
@@ -227,18 +228,33 @@ namespace Game
             for (int RowIdx = 0; RowIdx < GridHeight + 1; RowIdx++)
             {
                 float LineY = VisualGridPos.Y + RowIdx * VisualCellSize - HalfLineThickness;
-                OutDrawCmds.Add({ QuadF{VisualGridPos.X, LineY, VisualGridWidth, LineThickness}, LineColor });
+                Draw2D.AddQuad(QuadF{VisualGridPos.X, LineY, VisualGridWidth, LineThickness}, LineColor);
             }
             for (int ColIdx = 0; ColIdx < GridWidth + 1; ColIdx++)
             {
                 float LineX = VisualGridPos.X + ColIdx * VisualCellSize - HalfLineThickness;
-                OutDrawCmds.Add({ QuadF{LineX, VisualGridPos.Y, LineThickness, VisualGridHeight}, LineColor });
+                Draw2D.AddQuad(QuadF{LineX, VisualGridPos.Y, LineThickness, VisualGridHeight}, LineColor);
             }
         }
 
-        void UpdateAndDraw(Array<InstQuadColorData>& OutDrawCmds)
+        void UpdateAndDraw(BatchDraw2D& OutDraw2D)
         {
-            DrawGrid(OutDrawCmds);
+            /* NOTE:
+                - For the 'current piece'
+                    - Check if piece is timed to fall
+                        - If can fall... Fall
+                        - If blocked... Stick
+                    - Check for player input
+                        - Move input: Check for collision -> move if valid
+                        - Orientation input: Check for collision w/ next orientation -> turn if valid
+                        - FastFall input: Same as fall
+                        - Lock input: Drop piece to lowest possible point, then Stick
+                - If need next piece:
+                    - If more pieces in current bag, select next random piece
+                    - If no more pieces, shuffle new bag
+            */
+            
+            DrawGrid(OutDraw2D);
         }
 
         void Init()

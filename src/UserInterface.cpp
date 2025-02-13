@@ -55,31 +55,32 @@ namespace Leviathan
         }
     }
 
-    bool bVisualizeKeyboard = true;
-    bool bVisualizeMouse = true;
-    bool bVisualizeGamepad = true;
+    bool bVisualizeInput = true;
+    bool bDrawTimeStats = true;
 
     void UserInterface::Draw(ID2D1RenderTarget* In2DRT)
     {
         ASSERT(In2DRT);
 
-        if (KeyboardState::GetKeyState(LV_KEY_F1)) { bVisualizeKeyboard = !bVisualizeKeyboard; }
-        if (KeyboardState::GetKeyState(LV_KEY_F2)) { bVisualizeMouse = !bVisualizeMouse; }
-        if (KeyboardState::GetKeyState(LV_KEY_F3)) { bVisualizeGamepad = !bVisualizeGamepad; }
+        if (KeyboardState::GetKeyState(LV_KEY_F1)) { bVisualizeInput = !bVisualizeInput; }
+        if (KeyboardState::GetKeyState(LV_KEY_F2)) { bDrawTimeStats = !bDrawTimeStats; }
 
-        static bool bD2Foreground = true;
-        if (bVisualizeKeyboard || bVisualizeMouse || bVisualizeGamepad)
+        if (bVisualizeInput)
         {
             In2DRT->BeginDraw();
 
-            if (bVisualizeKeyboard) { InputVisualizer::DrawKeyboard(In2DRT, D2_WhiteBrush, D2_BlackBrush); }
-            if (bVisualizeMouse) { InputVisualizer::DrawMouse(In2DRT, D2_WhiteBrush, D2_BlackBrush); }
-            if (bVisualizeGamepad) { InputVisualizer::DrawGamepad(In2DRT, D2_WhiteBrush, D2_BlackBrush); }
+            if (bVisualizeInput)
+            {
+                InputVisualizer::DrawKeyboard(In2DRT, D2_WhiteBrush, D2_BlackBrush);
+                InputVisualizer::DrawMouse(In2DRT, D2_WhiteBrush, D2_BlackBrush);
+                InputVisualizer::DrawGamepad(In2DRT, D2_WhiteBrush, D2_BlackBrush);
+            }
 
             DX_CHECK(In2DRT->EndDraw());
         }
 
         // DirectWrite Test
+        if (bDrawTimeStats)
         {
             In2DRT->BeginDraw();
 

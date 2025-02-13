@@ -10,6 +10,8 @@ namespace Leviathan
         static void Term();
     };
 
+    extern unsigned int FrameNumber;
+
     int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd);
 }
 

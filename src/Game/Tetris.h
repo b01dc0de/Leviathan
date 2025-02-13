@@ -6,11 +6,11 @@
 
 namespace Game
 {
-    using Leviathan::InstQuadColorData;
+    using Leviathan::BatchDraw2D;
 
     namespace Tetris
     {
-        void UpdateAndDraw(Array<InstQuadColorData>& OutDrawCmds);
+        void UpdateAndDraw(BatchDraw2D& Draw2D);
         void Init();
         void Term();
     }

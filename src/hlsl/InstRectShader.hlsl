@@ -30,13 +30,14 @@ struct VS_OUTPUT
 
 float4 RectTransform(float4 InPos, float4 InRect)
 {
-    float PosX = InRect.x;
-    float PosY = InRect.y;
-    float SizeX = InRect.z;
-    float SizeY = InRect.w;
-
-    float AdjX = PosX + (InPos.x * SizeX);
-    float AdjY = PosY + (InPos.y * SizeY);
+    /* NOTE:
+        InRect.x == PosX
+        InRect.y == PosY
+        InRect.z == SizeX
+        InRect.w == SizeY
+    */
+    float AdjX = InRect.x + (InPos.x * InRect.z);
+    float AdjY = InRect.y + (InPos.y * InRect.w);
 
     return float4(AdjX, AdjY, InPos.z, InPos.w);
 }

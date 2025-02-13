@@ -208,14 +208,14 @@ namespace Leviathan
 
     Camera OrthoCamera;
     Camera GameCamera;
+    BatchDraw2D Draw2D;
 
-    constexpr int DefaultSize_BatchedQuadCmds = 256;
-    Array<InstQuadColorData> BatchedQuadCmds(DefaultSize_BatchedQuadCmds);
+    constexpr int DefaultSize_BatchDraw2D = 256;
     void Graphics::UpdateAndDraw()
     {
         // Get instanced draw commands from game (Tetris):
-        BatchedQuadCmds.Empty();
-        Game::Tetris::UpdateAndDraw(BatchedQuadCmds);
+        Draw2D.Clear();
+        Game::Tetris::UpdateAndDraw(Draw2D);
 
         DX_ImmediateContext->RSSetState(DX_RasterizerState);
         DX_ImmediateContext->OMSetDepthStencilState(nullptr, 0);
@@ -391,7 +391,7 @@ namespace Leviathan
         }
 
         static bool bDrawTetris = true;
-        if (bDrawTetris && BatchedQuadCmds.Num > 0)
+        if (bDrawTetris && Draw2D.BatchCmds.Num > 0)
         {
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
@@ -399,7 +399,7 @@ namespace Leviathan
             { // Send BatchedCmds state to GPU
                 D3D11_MAPPED_SUBRESOURCE MappedBatchCmds = {};
                 DX_ImmediateContext->Map(DX_BatchedQuadCmdsBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedBatchCmds);
-                memcpy(MappedBatchCmds.pData, BatchedQuadCmds.Data, sizeof(InstQuadColorData) * BatchedQuadCmds.Num);
+                memcpy(MappedBatchCmds.pData, Draw2D.BatchCmds.Data, sizeof(InstQuadColorData) * Draw2D.BatchCmds.Num);
                 DX_ImmediateContext->Unmap(DX_BatchedQuadCmdsBuffer, 0);
             }
 
@@ -418,7 +418,7 @@ namespace Leviathan
 
             //DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, BatchedQuadCmds.Num-1, 0u, 0, 1u);
             //DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, 1, 0u, 0, 0u);
-            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, BatchedQuadCmds.Num, 0u, 0, 0u);
+            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, Draw2D.BatchCmds.Num, 0u, 0, 0u);
         }
 
         DX_ImmediateContext->OMSetDepthStencilState(nullptr, 0);
@@ -676,8 +676,10 @@ namespace Leviathan
         D3D11_SUBRESOURCE_DATA InstRectBufferInitData = { InstRectDataArray, 0, 0 };
         DX_CHECK(DX_Device->CreateBuffer(&InstRectBufferDesc, &InstRectBufferInitData, &DX_InstRectBuffer));
 
+
+        Draw2D.BatchCmds.Reserve(DefaultSize_BatchDraw2D);
         D3D11_BUFFER_DESC BatchedQuadCmdsBufferDesc = {};
-        BatchedQuadCmdsBufferDesc.ByteWidth = sizeof(InstQuadColorData) * BatchedQuadCmds.Capacity;
+        BatchedQuadCmdsBufferDesc.ByteWidth = sizeof(InstQuadColorData) * Draw2D.BatchCmds.Capacity;
         BatchedQuadCmdsBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
         BatchedQuadCmdsBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         BatchedQuadCmdsBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
