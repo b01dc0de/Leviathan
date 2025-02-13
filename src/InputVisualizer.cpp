@@ -136,7 +136,6 @@ namespace Leviathan
         RGBA ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
         if (bIsDown)
         {
-            //KeyQuad.PosY -= SizeY;
             Draw2D.AddQuad(KeyQuad, ColorWhite);
         }
         else
@@ -149,21 +148,24 @@ namespace Leviathan
     {
         static VisualKeyboard vKeyboard;
         if (!vKeyboard.bInit) { vKeyboard.Init(); }
-        /*
         static bool bDrawBG = true;
         if (bDrawBG)
         {
-            D2D1_RECT_F BGRect
+            v2f BackgroundSize
+            {
+                vKeyboard.KeyList[LV_KEY_NONE].Size.X * Scale,
+                vKeyboard.KeyList[LV_KEY_NONE].Size.Y * Scale
+            };
+            QuadF BackgroundQuad
             {
                 Origin.X,
-                Origin.Y,
-                Origin.X + vKeyboard.KeyList[LV_KEY_NONE].Size.X * Scale,
-                Origin.Y + vKeyboard.KeyList[LV_KEY_NONE].Size.Y * Scale
+                Origin.Y - BackgroundSize.Y,
+                BackgroundSize.X,
+                BackgroundSize.Y
             };
-            InD2RT->FillRectangle(&BGRect, InBrush2);
-            InD2RT->DrawRectangle(&BGRect, InBrush1, InputVisualizer::LineWidth);
+            Draw2D.AddQuad(BackgroundQuad, RGBA{0.0f, 0.0f, 0.0f, 1.0f});
+            Draw2D.AddBox(BackgroundQuad, RGBA{1.0f, 1.0f, 1.0f, 1.0f}, InputVisualizer::LineWidth);
         }
-        */
         for (int KeyIdx = LV_KEY_ESC; KeyIdx < LV_KEY_COUNT; KeyIdx++)
         {
             DrawKey(Draw2D, vKeyboard.KeyList[KeyIdx], Origin, Scale);
