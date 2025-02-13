@@ -26,6 +26,7 @@ namespace Leviathan
 {
     extern int AppWidth;
     extern int AppHeight;
+    extern float AspectRatio;
     extern bool bAppRunning;
     extern HWND AppWindow;
 }
