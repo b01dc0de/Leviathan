@@ -53,6 +53,7 @@ namespace Leviathan
         //if (KeyboardState::GetKeyState(LV_KEY_F1)) { bVisualizeInput = !bVisualizeInput; }
         //if (KeyboardState::GetKeyState(LV_KEY_F2)) { bDrawTimeStats = !bDrawTimeStats; }
 
+        /*
         if (bVisualizeInput)
         {
             In2DRT->BeginDraw();
@@ -66,6 +67,7 @@ namespace Leviathan
 
             DX_CHECK(In2DRT->EndDraw());
         }
+        */
 
         // DirectWrite Test
         if (bDrawTimeStats)

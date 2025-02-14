@@ -15,9 +15,6 @@ namespace Leviathan
         VisualKey KeyList[LV_KEY_COUNT];
 
         void Init();
-        static void DrawKey(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush, const VisualKey& Key, const v2f& Origin, float Scale);
-        static void Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2, const v2f& Origin, float Scale);
-
         static void DrawKey(BatchDraw2D& Draw2D, const VisualKey& Key, const v2f& Origin, float Scale);
         static void Draw(BatchDraw2D& Draw2D, const v2f& Origin, float Scale);
     };
@@ -90,41 +87,6 @@ namespace Leviathan
         bInit = true;
     }
 
-    void VisualKeyboard::DrawKey(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush, const VisualKey& Key, const v2f& Origin, float Scale)
-    {
-        float Left = Origin.X + (Key.Pos.X * Scale);
-        float Top = Origin.Y + (Key.Pos.Y * Scale);
-        float Right = Left + (Key.Size.X * Scale);
-        float Bottom = Top + (Key.Size.Y * Scale);
-        D2D1_RECT_F KeyRect{ Left, Top, Right, Bottom };
-        bool bIsDown = KeyboardState::GetKeyState(Key.LvCode, true);
-        if (bIsDown) { InD2RT->FillRectangle(&KeyRect, InBrush); }
-        else { InD2RT->DrawRectangle(&KeyRect, InBrush, InputVisualizer::LineWidth, nullptr); }
-    }
-
-    void VisualKeyboard::Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2, const v2f& Origin, float Scale)
-    {
-        static VisualKeyboard vKeyboard;
-        if (!vKeyboard.bInit) { vKeyboard.Init(); }
-        static constexpr bool bDrawBG = true;
-        if (bDrawBG)
-        {
-            D2D1_RECT_F BGRect
-            {
-                Origin.X,
-                Origin.Y,
-                Origin.X + vKeyboard.KeyList[LV_KEY_NONE].Size.X * Scale,
-                Origin.Y + vKeyboard.KeyList[LV_KEY_NONE].Size.Y * Scale
-            };
-            InD2RT->FillRectangle(&BGRect, InBrush2);
-            InD2RT->DrawRectangle(&BGRect, InBrush1, InputVisualizer::LineWidth);
-        }
-        for (int KeyIdx = LV_KEY_ESC; KeyIdx < LV_KEY_COUNT; KeyIdx++)
-        {
-            DrawKey(InD2RT, InBrush1, vKeyboard.KeyList[KeyIdx], Origin, Scale);
-        }
-    }
-
     void VisualKeyboard::DrawKey(BatchDraw2D& Draw2D, const VisualKey& Key, const v2f& Origin, float Scale)
     {
         float SizeX = (Key.Size.X * Scale);
@@ -172,13 +134,6 @@ namespace Leviathan
         }
     }
 
-    void InputVisualizer::DrawKeyboard(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
-    {
-        v2f Origin{975.0f, 10.0};
-        float Scale = 20.0f;
-        VisualKeyboard::Draw(InD2RT, InBrush1, InBrush2, Origin, Scale);
-    }
-
     void InputVisualizer::DrawKeyboard(BatchDraw2D& Draw2D)
     {
         v2f Origin{975.0f, (float)AppHeight - 10.0f};
@@ -188,93 +143,99 @@ namespace Leviathan
 
     struct VisualMouse
     {
-        static void Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2, const v2f& Origin, float Scale);
+        static void Draw(BatchDraw2D& Draw2D, const v2f& Origin, float Scale);
     };
 
-    void VisualMouse::Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2, const v2f& Origin, float Scale)
+    void VisualMouse::Draw(BatchDraw2D& Draw2D, const v2f& Origin, float Scale)
     {
         static constexpr v2f RegionSize{ 16.0f, 9.0f * 2.0f };
         static constexpr v2f ButtonSize{ RegionSize.X / 3.0f, RegionSize.Y / 2.0f };
-        static constexpr float WheelSize = RegionSize.X / 6.0f;
-        static constexpr v2f WheelPos = { RegionSize.X / 2.0f, WheelSize };
+        static constexpr float WheelSize = RegionSize.X / 4.0f;
+
+        constexpr RGBA ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
+        constexpr RGBA ColorBlack{ 0.0f, 0.0f, 0.0f, 1.0f };
 
         static constexpr bool bDrawBG = true;
         if (bDrawBG)
         {
-            D2D1_RECT_F RegionBGRect
-            {
-                Origin.X,
-                Origin.Y,
-                Origin.X + RegionSize.X * Scale,
-                Origin.Y + RegionSize.Y * Scale
-            };
-            InD2RT->FillRectangle(&RegionBGRect, InBrush2);
-            InD2RT->DrawRectangle(&RegionBGRect, InBrush1, InputVisualizer::LineWidth);
+            v2f AdjRegionSize { RegionSize.X * Scale, RegionSize.Y * Scale };
+            QuadF RegionQuad{ Origin.X, Origin.Y - AdjRegionSize.Y, AdjRegionSize.X, AdjRegionSize.Y };
+            Draw2D.AddQuad(RegionQuad, ColorBlack);
+            Draw2D.AddBox(RegionQuad, ColorWhite, InputVisualizer::LineWidth);
         }
 
         const v2f AdjButtonSize{ ButtonSize.X * Scale, ButtonSize.Y * Scale };
-        D2D1_POINT_2F AdjWheelPos{ WheelPos.X * Scale + Origin.X, WheelPos.Y * Scale + Origin.Y };
-        D2D1_RECT_F LeftRect{ Origin.X, Origin.Y, Origin.X + AdjButtonSize.X, Origin.Y + AdjButtonSize.Y };
-        D2D1_RECT_F MiddleRect{ LeftRect.left + AdjButtonSize.X, AdjWheelPos.y + WheelSize * Scale, LeftRect.right + AdjButtonSize.X, LeftRect.bottom };
-        D2D1_RECT_F RightRect{ MiddleRect.right, LeftRect.top, MiddleRect.right + AdjButtonSize.X, LeftRect.bottom };
+        const float AdjWheelSize = WheelSize * Scale;
+        QuadF LeftQuad{ Origin.X, Origin.Y - AdjButtonSize.Y, AdjButtonSize.X, AdjButtonSize.Y };
+        QuadF MiddleQuad{ LeftQuad.PosX + AdjButtonSize.X, LeftQuad.PosY, AdjButtonSize.X, AdjButtonSize.Y - AdjWheelSize };
+        QuadF RightQuad{ MiddleQuad.PosX + AdjButtonSize.X, LeftQuad.PosY, AdjButtonSize.X, AdjButtonSize.Y };
         { // Buttons
-            if (MouseState::bLeftKey) { InD2RT->FillRectangle(&LeftRect, InBrush1); }
-            else { InD2RT->DrawRectangle(&LeftRect, InBrush1, InputVisualizer::LineWidth); }
-            if (MouseState::bRightKey) { InD2RT->FillRectangle(&RightRect, InBrush1); }
-            else { InD2RT->DrawRectangle(&RightRect, InBrush1, InputVisualizer::LineWidth); }
-            if (MouseState::bMiddleKey) { InD2RT->FillRectangle(&MiddleRect, InBrush1); }
-            else { InD2RT->DrawRectangle(&MiddleRect, InBrush1, InputVisualizer::LineWidth); }
+            if (MouseState::bLeftKey) { Draw2D.AddQuad(LeftQuad, ColorWhite); }
+            else { Draw2D.AddBox(LeftQuad, ColorWhite, InputVisualizer::LineWidth); }
+            if (MouseState::bRightKey) { Draw2D.AddQuad(RightQuad, ColorWhite); }
+            else { Draw2D.AddBox(RightQuad, ColorWhite, InputVisualizer::LineWidth); }
+            if (MouseState::bMiddleKey) { Draw2D.AddQuad(MiddleQuad, ColorWhite); }
+            else { Draw2D.AddBox(MiddleQuad, ColorWhite, InputVisualizer::LineWidth); }
         }
 
         static constexpr v2f MouseAreaSize{ RegionSize.X, RegionSize.Y / 2.0f };
-        static constexpr v2f MouseAreaPos{ 0.0f, RegionSize.Y / 2.0f };
-        D2D1_RECT_F MouseWindowRect
+        static constexpr v2f MouseAreaPos{ 0.0f, 0.0f - RegionSize.Y };
+
+        v2f AdjMouseAreaSize { MouseAreaSize.X * Scale, MouseAreaSize.Y * Scale };
+        v2f AdjMouseAreaPos{ MouseAreaPos.X * Scale, MouseAreaPos.Y * Scale };
+        QuadF MouseWindowQuad
         {
-            MouseAreaPos.X + Origin.X,
-            MouseAreaPos.Y * Scale + Origin.Y,
-            MouseAreaPos.X + MouseAreaSize.X * Scale + Origin.X,
-            (MouseAreaPos.Y + MouseAreaSize.Y) * Scale + Origin.Y
+            AdjMouseAreaPos.X + Origin.X,
+            AdjMouseAreaPos.Y + Origin.Y,
+            AdjMouseAreaSize.X,
+            AdjMouseAreaSize.Y
         };
-        float MouseWindowAdjWidth = MouseWindowRect.right - MouseWindowRect.left;
-        float MouseWindowAdjHeight = MouseWindowRect.bottom - MouseWindowRect.top;
         static float HalfCursorSize = Scale * 0.5f;
         { // Cursor
             v2f CursorPos =
             {
-                ((float)MouseState::MouseX / (float)AppWidth * MouseWindowAdjWidth) + MouseWindowRect.left,
-                ((float)MouseState::MouseY / (float)AppHeight * MouseWindowAdjHeight) + MouseWindowRect.top
+                ((float)MouseState::MouseX / (float)AppWidth * MouseWindowQuad.SizeX) + MouseWindowQuad.PosX,
+                AdjMouseAreaSize.Y - ((float)MouseState::MouseY / (float)AppHeight * MouseWindowQuad.SizeY) + MouseWindowQuad.PosY
             };
-            D2D1_RECT_F CursorRect
+            QuadF CursorQuad
             {
                 CursorPos.X - HalfCursorSize,
                 CursorPos.Y - HalfCursorSize,
-                CursorPos.X + HalfCursorSize,
-                CursorPos.Y + HalfCursorSize
+                HalfCursorSize * 2.0f,
+                HalfCursorSize * 2.0f
             };
-            InD2RT->FillRectangle(&MouseWindowRect, InBrush1);
-            InD2RT->FillRectangle(&CursorRect, InBrush2);
+            Draw2D.AddQuad(MouseWindowQuad, ColorWhite);
+            Draw2D.AddQuad(CursorQuad, ColorBlack);
         }
 
+        const v2f AdjWheelPos{ Origin.X + (RegionSize.X * Scale * 0.5f) - (AdjWheelSize * 0.5f), Origin.Y - AdjWheelSize };
         static float WheelAngle = 0.0f;
         static float VisualSpeed = 0.25f;
         WheelAngle += MouseState::MouseWheel * VisualSpeed;
         { // Wheel
-            D2D1_ELLIPSE WheelEllipse{ AdjWheelPos, WheelSize*Scale, WheelSize*Scale };
-            InD2RT->DrawEllipse(WheelEllipse, InBrush1, InputVisualizer::LineWidth);
-            D2D1_POINT_2F WheelLineEnd =
+            QuadF WheelQuad{ AdjWheelPos.X, AdjWheelPos.Y, AdjWheelSize, AdjWheelSize };
+            Draw2D.AddBox(WheelQuad, RGBA{1.0f, 0.0f, 0.0f, 1.0f}, InputVisualizer::LineWidth);
+            /* TODO:
+            const v2f WheelLineBegin
             {
-                AdjWheelPos.x + (cosf(WheelAngle) * WheelSize * Scale),
-                AdjWheelPos.y + (sinf(WheelAngle) * WheelSize * Scale),
+                AdjWheelPos.X + AdjWheelSize * 0.5f,
+                AdjWheelPos.Y + AdjWheelSize * 0.5f
             };
-            InD2RT->DrawLine(AdjWheelPos, WheelLineEnd, InBrush1, InputVisualizer::LineWidth);
+            const v2f WheelLineEnd
+            {
+                AdjWheelPos.X + (cosf(WheelAngle) * AdjWheelSize),
+                AdjWheelPos.Y + (sinf(WheelAngle) * AdjWheelSize)
+            };
+            DrawLine(AdjWheelPos, WheelLineEnd, ColorWhite, InputVisualizer::LineWidth);
+            */
         }
     }
 
-    void InputVisualizer::DrawMouse(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
+    void InputVisualizer::DrawMouse(BatchDraw2D& Draw2D)
     {
-        static v2f Origin{ 1000.0f, 200.0f };
+        static v2f Origin{ 1000.0f, AppHeight - 200.0f };
         static float Scale = 5.0f;
-        VisualMouse::Draw(InD2RT, InBrush1, InBrush2, Origin, Scale);
+        VisualMouse::Draw(Draw2D, Origin, Scale);
     }
 
     struct VisualGamepad

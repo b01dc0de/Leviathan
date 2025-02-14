@@ -425,6 +425,7 @@ namespace Leviathan
         if (bDrawKeyboardInput)
         {
             InputVisualizer::DrawKeyboard(Draw2D);
+            InputVisualizer::DrawMouse(Draw2D);
 
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
