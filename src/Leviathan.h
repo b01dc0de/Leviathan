@@ -43,6 +43,7 @@ namespace Leviathan
 #endif // UNICODE
 
 #include "Array.h"
+#include "Clock.h"
 #include "Engine.h"
 #include "Graphics.h"
 #include "Input.h"

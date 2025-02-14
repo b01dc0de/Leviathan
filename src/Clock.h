@@ -1,8 +1,6 @@
 #ifndef LEVIATHAN_CLOCK_H
 #define LEVIATHAN_CLOCK_H
 
-#include "Leviathan.h"
-
 namespace Leviathan
 {
     struct Clock
