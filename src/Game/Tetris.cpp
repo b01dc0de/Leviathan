@@ -415,8 +415,19 @@ namespace Game
             //constexpr double SecondsPerFall = 1.0f;
             constexpr double SecondsPerFall = 0.25f;
             constexpr double SecondsPerFastFall = SecondsPerFall / 3.0f;
+
+            enum TetrisGameState : int
+            {
+                ATTRACT,
+                PAUSED,
+                PLAY,
+                STATE_COUNT,
+            };
+
             struct Tetrion
             {
+                static TetrisGameState State;
+
                 static PieceBag Bag;
                 static BlockType PlayField[GridSize];
                 static ActivePiece Piece;
@@ -427,6 +438,9 @@ namespace Game
                 static bool CheckCollision(int Row, int Col, BlockType Type, int Rotation);
                 static BlockType& GetGridCell(int Row, int Col);
                 static BlockType& GetGridCell(GridPos Pos);
+                static bool IsLineFull(int Row);
+                static void ClearRow(int Row);
+                static void ClearFullLines();
                 static bool CanFall();
                 static void Fall();
                 static void RotateLeft();
@@ -437,6 +451,7 @@ namespace Game
                 static void Update();
                 static void DrawGrid(BatchDraw2D& Draw2D);
             };
+            TetrisGameState Tetrion::State = TetrisGameState::ATTRACT;
             PieceBag Tetrion::Bag{};
             BlockType Tetrion::PlayField[GridSize]{};
             ActivePiece Tetrion::Piece{};
@@ -507,7 +522,13 @@ namespace Game
                 {
                     GridPos Pos = Piece.BlockPos[BlockIdx];
                     BlockType& Cell = GetGridCell(Pos);
-                    if (GetGridCell(Pos) != BLOCK_NONE) { /* Fail condition */ }
+                    // Game over condition
+                    if (GetGridCell(Pos) != BLOCK_NONE)
+                    { 
+                        Init();
+                        State = TetrisGameState::ATTRACT;
+                        return;
+                    }
                 }
             }
 
@@ -516,8 +537,46 @@ namespace Game
                 for (int CellIdx = 0; CellIdx < GridSize; CellIdx++) { PlayField[CellIdx] = BLOCK_NONE; }
 
                 LastFallTime = Clock::Time();
+                State = TetrisGameState::ATTRACT;
 
                 InitNextPiece();
+            }
+
+            bool Tetrion::IsLineFull(int Row)
+            {
+                ASSERT(CheckIdx(Row, 0));
+                for (int ColIdx = 0; ColIdx < GridWidth; ColIdx++)
+                {
+                    if (GetGridCell(Row, ColIdx) == BLOCK_NONE) { return false; }
+                }
+                return true;
+            }
+
+            void Tetrion::ClearRow(int Row)
+            {
+                ASSERT(CheckIdx(Row, 0));
+                for (int RowIdx = Row; RowIdx >= 1; RowIdx--)
+                {
+                    for (int ColIdx = 0; ColIdx < GridWidth; ColIdx++)
+                    {
+                        BlockType& Cell = GetGridCell(RowIdx, ColIdx);
+                        BlockType& AboveCell = GetGridCell(RowIdx - 1, ColIdx);
+                        Cell = AboveCell;
+                    }
+                }
+            }
+
+            void Tetrion::ClearFullLines()
+            {
+                int NumRowsCleared = 0;
+                for (int RowIdx = GridHeight - 1; RowIdx >= 0 && RowIdx >= NumRowsCleared; RowIdx--)
+                {
+                    if (IsLineFull(RowIdx))
+                    {
+                        ClearRow(RowIdx++);
+                        NumRowsCleared++;
+                    }
+                }
             }
 
             bool Tetrion::CanFall()
@@ -584,25 +643,57 @@ namespace Game
                     Cell = Piece.Type;
                 }
 
+                ClearFullLines();
+
                 InitNextPiece();
             }
 
+            /* NOTE:
+                - For the 'current piece'
+                    - Check if piece is timed to fall
+                        - If can fall... Fall
+                        - If blocked... Stick
+                    - Check for player input
+                        - Move input: Check for collision -> move if valid
+                        - Orientation input: Check for collision w/ next orientation -> turn if valid
+                        - FastFall input: Same as fall
+                        - Lock input: Drop piece to lowest possible point, then Stick
+                - If need next piece:
+                    - If more pieces in current bag, select next random piece
+                    - If no more pieces, shuffle new bag
+            */
             void Tetrion::Update()
             {
-                /* NOTE:
-                    - For the 'current piece'
-                        - Check if piece is timed to fall
-                            - If can fall... Fall
-                            - If blocked... Stick
-                        - Check for player input
-                            - Move input: Check for collision -> move if valid
-                            - Orientation input: Check for collision w/ next orientation -> turn if valid
-                            - FastFall input: Same as fall
-                            - Lock input: Drop piece to lowest possible point, then Stick
-                    - If need next piece:
-                        - If more pieces in current bag, select next random piece
-                        - If no more pieces, shuffle new bag
-                */
+                switch (State)
+                {
+                    case TetrisGameState::ATTRACT:
+                    {
+                        if (KeyboardState::GetKeyState(LV_KEY_ENTER))
+                        {
+                            Init();
+                            State = TetrisGameState::PLAY;
+                        }
+                        return;
+                    } break;
+                    case TetrisGameState::PAUSED:
+                    {
+                        if (KeyboardState::GetKeyState(LV_KEY_ESC))
+                        {
+                            Init();
+                            State = TetrisGameState::ATTRACT;
+                        }
+                        if (KeyboardState::GetKeyState(LV_KEY_ENTER))
+                        {
+                            State = TetrisGameState::PLAY;
+                        }
+                        return;
+                    } break;
+                    case TetrisGameState::PLAY:
+                    {
+                        // Proceed with Update as normal
+                    } break;
+                }
+
                 static bool bInit = false;
                 if (!bInit) { Init(); bInit = true; }
 
