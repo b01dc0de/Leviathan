@@ -7,11 +7,11 @@ namespace Game
     enum struct GameType
     {
         Tetris,
-        Snake,
+        GridSnake,
         Count
     };
 
-    constexpr GameType SelectedGame = GameType::Tetris;
+    constexpr GameType SelectedGame = GameType::GridSnake;
 
     using ProcCallback = void (*)(void);
     using UpdateDrawCallback = void (*)(BatchDraw2D&);
@@ -29,9 +29,9 @@ namespace Game
             Tetris::Term
         },
         { // Snake
-            Snake::UpdateAndDraw,
-            Snake::Init,
-            Snake::Term
+            GridSnake::UpdateAndDraw,
+            GridSnake::Init,
+            GridSnake::Term
         }
     };
 

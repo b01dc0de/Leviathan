@@ -8,7 +8,7 @@ namespace Game
 
     using Leviathan::BatchDraw2D;
 
-    namespace Snake
+    namespace GridSnake
     {
         void UpdateAndDraw(BatchDraw2D& Draw2D);
         void Init();
