@@ -672,7 +672,6 @@ namespace Game
                         if (KeyboardState::GetKeyState(LV_KEY_ENTER))
                         {
                             State = TetrisGameState::PLAY;
-                            Init();
                         }
                         return;
                     } break;
