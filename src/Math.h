@@ -3,6 +3,12 @@
 
 namespace Leviathan
 {
+    struct v2i
+    {
+        int X = 0;
+        int Y = 0;
+    };
+
     struct v2f
     {
         float X = 0.0f;
@@ -58,6 +64,17 @@ namespace Leviathan
         static m4f RotAxisY(float Angle);
         static m4f RotAxisZ(float Angle);
     };
+
+    v2i Add(const v2i& A, const v2i& B);
+    v2i Subtract(const v2i& A, const v2i& B);
+    v2i Mult(const v2i& A, int S);
+    v2i Divide(const v2i& A, int D);
+    v2i Remainder(const v2i& A, int D);
+    v2i operator+(const v2i& A, const v2i& B);
+    v2i operator-(const v2i& A, const v2i& B);
+    v2i operator*(const v2i& A, int S);
+    v2i operator/(const v2i& A, int D);
+    v2i operator%(const v2i& A, int D);
 
     float LengthSq(const v2f& A);
     float LengthSq(const v3f& A);

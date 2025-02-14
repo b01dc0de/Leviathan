@@ -123,6 +123,52 @@ namespace Leviathan
         return Result;
     }
 
+    v2i Add(const v2i& A, const v2i& B)
+    {
+        v2i Result{ A.X + B.X, A.Y + B.Y };
+        return Result;
+    }
+    v2i Subtract(const v2i& A, const v2i& B)
+    {
+        v2i Result{ A.X - B.X, A.Y - B.Y };
+        return Result;
+    }
+    v2i Mult(const v2i& A, int S)
+    {
+        v2i Result{ A.X * S, A.Y * S };
+        return Result;
+    }
+    v2i Divide(const v2i& A, int D)
+    {
+        v2i Result{ A.X / D, A.Y / D };
+        return Result;
+    }
+    v2i Remainder(const v2i& A, int D)
+    {
+        v2i Result{ A.X % D, A.Y % D };
+        return Result;
+    }
+    v2i operator+(const v2i& A, const v2i& B)
+    {
+        return Add(A, B);
+    }
+    v2i operator-(const v2i& A, const v2i& B)
+    {
+        return Subtract(A, B);
+    }
+    v2i operator*(const v2i& A, int S)
+    {
+        return Mult(A, S);
+    }
+    v2i operator/(const v2i& A, int D)
+    {
+        return Divide(A, D);;
+    }
+    v2i operator%(const v2i& A, int D)
+    {
+        return Remainder(A, D);
+    }
+
     float LengthSq(const v2f& A)
     {
         float Result = A.X*A.X + A.Y*A.Y;
