@@ -314,6 +314,36 @@ namespace Game
                 return Orientation;
             }
 
+            int GetNumOrientations(BlockType Type)
+            {
+                int NumOrientations = 0;
+                switch (Type)
+                {
+                    case BLOCK_I: { NumOrientations = ARRAY_SIZE(Orientations_I); } break;
+                    case BLOCK_O: { NumOrientations = ARRAY_SIZE(Orientations_O); } break;
+                    case BLOCK_T: { NumOrientations = ARRAY_SIZE(Orientations_T); } break;
+                    case BLOCK_S: { NumOrientations = ARRAY_SIZE(Orientations_S); } break;
+                    case BLOCK_Z: { NumOrientations = ARRAY_SIZE(Orientations_Z); } break;
+                    case BLOCK_J: { NumOrientations = ARRAY_SIZE(Orientations_J); } break;
+                    case BLOCK_L: { NumOrientations = ARRAY_SIZE(Orientations_L); } break;
+                    default: { ASSERT(false); } break;
+                }
+                ASSERT(NumOrientations > 0);
+                return NumOrientations;
+            }
+
+            int GetNextOrientationIdx(BlockType Type, int Rotation, int Offset)
+            {
+                int NumOrientations = GetNumOrientations(Type);
+                int NextOrientationIdx = (Rotation + Offset + NumOrientations) % NumOrientations;
+                return NextOrientationIdx;
+            }
+
+            BlockType* GetNextOrientation(BlockType Type, int Rotation, int& OutLength, int& OutSize, int Offset)
+            {
+                return GetOrientation(Type, GetNextOrientationIdx(Type, Rotation, Offset), OutLength, OutSize);
+            }
+
             struct GridPos
             {
                 int Row = -1;
@@ -338,12 +368,12 @@ namespace Game
                     }
                     return false;
                 }
-                void Init(BlockType InType, int StartRow, int StartCol)
+                void Init(BlockType InType, int InRow, int InCol, int InRotation)
                 {
                     Type = InType;
-                    Rotation = 0;
-                    Row = StartRow;
-                    Col = StartCol;
+                    Rotation = InRotation;
+                    Row = InRow;
+                    Col = InCol;
                     { // Init BlockPos
                         int OrientationLength = 0;
                         int OrientationSize = 0;
@@ -367,12 +397,23 @@ namespace Game
                         }
                     }
                 }
+                void Move(int RowOffset, int ColOffset)
+                {
+                    Row += RowOffset;
+                    Col += ColOffset;
+                    for (int BlockIdx = 0; BlockIdx < NumBlocks; BlockIdx++)
+                    {
+                        BlockPos[BlockIdx].Row += RowOffset;
+                        BlockPos[BlockIdx].Col += ColOffset;
+                    }
+                }
             };
 
             constexpr int GridWidth = 10;
             constexpr int GridHeight = 20;
             constexpr int GridSize = GridWidth * GridHeight;
-            constexpr double SecondsPerFall = 1.0f;
+            //constexpr double SecondsPerFall = 1.0f;
+            constexpr double SecondsPerFall = 0.25f;
             constexpr double SecondsPerFastFall = SecondsPerFall / 3.0f;
             struct Tetrion
             {
@@ -383,13 +424,18 @@ namespace Game
 
                 static bool CheckIdx(int Row, int Col);
                 static bool CheckIdx(GridPos Pos);
+                static bool CheckCollision(int Row, int Col, BlockType Type, int Rotation);
                 static BlockType& GetGridCell(int Row, int Col);
                 static BlockType& GetGridCell(GridPos Pos);
                 static bool CanFall();
                 static void Fall();
+                static void RotateLeft();
+                static void RotateRight();
+                static void Settle();
                 static void InitNextPiece();
                 static void Init();
                 static void Update();
+                static void DrawGrid(BatchDraw2D& Draw2D);
             };
             PieceBag Tetrion::Bag{};
             BlockType Tetrion::PlayField[GridSize]{};
@@ -404,6 +450,36 @@ namespace Game
             bool Tetrion::CheckIdx(GridPos Pos)
             {
                 return CheckIdx(Pos.Row, Pos.Col);
+            }
+
+            bool Tetrion::CheckCollision(int Row, int Col, BlockType Type, int Rotation)
+            {
+                int OrientationLength = 0;
+                int OrientationSize = 0;
+                BlockType* Orientation = GetOrientation(Type, Rotation, OrientationLength, OrientationSize);
+                ASSERT(OrientationLength > 0);
+                ASSERT(OrientationSize > 0);
+                ASSERT(Orientation);
+
+                for (int OriIdx = 0; OriIdx < OrientationSize; OriIdx++)
+                {
+                    BlockType Value = Orientation[OriIdx];
+                    if (Value != BLOCK_NONE)
+                    {
+                        int CurrRow = Row + (OriIdx / OrientationLength);
+                        int CurrCol = Col + (OriIdx % OrientationLength);
+                        if (!CheckIdx(CurrRow, CurrCol))
+                        {
+                            return true;
+                        }
+                        if (GetGridCell(CurrRow, CurrCol) != BLOCK_NONE)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
             }
 
             BlockType& Tetrion::GetGridCell(int Row, int Col)
@@ -425,15 +501,13 @@ namespace Game
 
                 int StartRow = 0;
                 int StartCol = 5;
-                Piece.Init(NextType, StartRow, StartCol);
+                Piece.Init(NextType, StartRow, StartCol, 0);
 
-                // Write piece to PlayField
                 for (int BlockIdx = 0; BlockIdx < NumBlocks; BlockIdx++)
                 {
                     GridPos Pos = Piece.BlockPos[BlockIdx];
                     BlockType& Cell = GetGridCell(Pos);
                     if (GetGridCell(Pos) != BLOCK_NONE) { /* Fail condition */ }
-                    else { Cell = Piece.Type; }
                 }
             }
 
@@ -448,6 +522,7 @@ namespace Game
 
             bool Tetrion::CanFall()
             {
+                /*
                 for (int BlockIdx = 0; BlockIdx < NumBlocks; BlockIdx++)
                 {
                     GridPos CurrPos = Piece.BlockPos[BlockIdx];
@@ -455,8 +530,7 @@ namespace Game
                     if (CheckIdx(NextPos))
                     {
                         bool bNextEmpty = GetGridCell(NextPos) == BLOCK_NONE;
-                        bool bNextSelf = Piece.IsPiece(NextPos);
-                        if (!bNextSelf && !bNextEmpty) { return false; }
+                        if (!bNextEmpty) { return false; }
                     }
                     else
                     {
@@ -464,28 +538,53 @@ namespace Game
                     }
                 }
                 return true;
+                */
+                return !CheckCollision(Piece.Row + 1, Piece.Col, Piece.Type, Piece.Rotation);
             }
 
             void Tetrion::Fall()
             {
+                /*
+                Piece.Init(Piece.Type, Piece.Row + 1, Piece.Col, Piece.Rotation);
+                */
+                Piece.Move(+1, 0);
+
+                /*
                 for (int BlockIdx = 0; BlockIdx < NumBlocks; BlockIdx++)
                 {
                     GridPos CurrPos = Piece.BlockPos[BlockIdx];
                     GridPos NextPos{ CurrPos.Row + 1, CurrPos.Col };
                     ASSERT(CheckIdx(NextPos));
-                    BlockType& CurrCell = GetGridCell(CurrPos);
-                    ASSERT(CurrCell == Piece.Type);
-                    CurrCell = BLOCK_NONE;
                     Piece.BlockPos[BlockIdx] = NextPos;
                 }
+                */
+            }
 
+            void Tetrion::RotateLeft()
+            {
+                int NextOrientationIdx = GetNextOrientationIdx(Piece.Type, Piece.Rotation, -1);
+                ASSERT(!CheckCollision(Piece.Row, Piece.Col, Piece.Type, NextOrientationIdx));
+                Piece.Init(Piece.Type, Piece.Row, Piece.Col, NextOrientationIdx);
+            }
+
+            void Tetrion::RotateRight()
+            {
+                int NextOrientationIdx = GetNextOrientationIdx(Piece.Type, Piece.Rotation, +1);
+                ASSERT(!CheckCollision(Piece.Row, Piece.Col, Piece.Type, NextOrientationIdx));
+                Piece.Init(Piece.Type, Piece.Row, Piece.Col, NextOrientationIdx);
+            }
+
+            void Tetrion::Settle()
+            {
                 for (int BlockIdx = 0; BlockIdx < NumBlocks; BlockIdx++)
                 {
-                    GridPos NextPos = Piece.BlockPos[BlockIdx];
-                    BlockType& NextCell = GetGridCell(NextPos);
-                    NextCell = Piece.Type;
-                    Piece.BlockPos[BlockIdx] = NextPos;
+                    GridPos Pos = Piece.BlockPos[BlockIdx];
+                    BlockType& Cell = GetGridCell(Pos);
+                    ASSERT(GetGridCell(Pos) == BLOCK_NONE);
+                    Cell = Piece.Type;
                 }
+
+                InitNextPiece();
             }
 
             void Tetrion::Update()
@@ -511,37 +610,49 @@ namespace Game
                 bool bInputRight = KeyboardState::GetKeyState(LV_KEY_D);
                 if (bInputLeft != bInputRight)
                 {
-                    // TODO
+                    if (bInputLeft)
+                    {
+                        bool bCanMoveLeft = !CheckCollision(Piece.Row, Piece.Col - 1, Piece.Type, Piece.Rotation);
+                        if (bCanMoveLeft) { Piece.Move(0, -1); }
+                    }
+                    else if (bInputRight)
+                    {
+                        bool bCanMoveRight= !CheckCollision(Piece.Row, Piece.Col + 1, Piece.Type, Piece.Rotation);
+                        if (bCanMoveRight) { Piece.Move(0, +1); }
+                    }
                 }
 
                 bool bRotateLeft = KeyboardState::GetKeyState(LV_KEY_Q);
                 bool bRotateRight = KeyboardState::GetKeyState(LV_KEY_E);
-                if (bInputLeft != bRotateRight)
+                if (bRotateLeft != bRotateRight)
                 {
-                    // TODO
+                    int LeftOrientationIdx = GetNextOrientationIdx(Piece.Type, Piece.Rotation, -1);
+                    bool bCanRotateLeft = !CheckCollision(Piece.Row, Piece.Col, Piece.Type, LeftOrientationIdx);
+                    int RightOrientationIdx = GetNextOrientationIdx(Piece.Type, Piece.Rotation, +1);
+                    bool bCanRotateRight = !CheckCollision(Piece.Row, Piece.Col, Piece.Type, RightOrientationIdx);
+                    if (bInputLeft && bCanRotateLeft) { RotateLeft(); }
+                    else if (bInputRight && bCanRotateRight) { RotateRight(); }
+                    else { if (bCanRotateLeft) { RotateLeft(); } else if (bCanRotateRight) { RotateRight(); } }
                 }
                 bool bSink = KeyboardState::GetKeyState(LV_KEY_W);
-                bool bFastFall = KeyboardState::GetKeyState(LV_KEY_S);
+                bool bFastFall = KeyboardState::GetKeyState(LV_KEY_S, true);
                 if (bSink)
                 {
-                    // TODO
-                }
-                else if (bFastFall)
-                {
-                    // TODO
+                    while (CanFall()) { Fall(); }
                 }
 
                 double CurrTime = Clock::Time();
-                if ((CurrTime - LastFallTime) > SecondsPerFall)
+                double CurrSecondsPerFall = bFastFall ? SecondsPerFastFall : SecondsPerFall;
+                if ((CurrTime - LastFallTime) > CurrSecondsPerFall)
                 {
                     LastFallTime = CurrTime;
                     if (CanFall()) { Fall(); }
-                    else { InitNextPiece(); }
+                    else { Settle(); }
                 }
             }
         }
 
-        void DrawGrid(BatchDraw2D& Draw2D)
+        void Tetrion::DrawGrid(BatchDraw2D& Draw2D)
         {
             const float VisualGridHeight = Leviathan::AppHeight;
             const float VisualGridWidth = VisualGridHeight / 2.0f;
@@ -559,11 +670,22 @@ namespace Game
 
                 float CellX = VisualGridPos.X + CellCol * VisualCellSize;
                 float CellY = AppHeight - (VisualGridPos.Y + CellRow * VisualCellSize) - VisualCellSize;
-                //int ColorIdx = CellIdx % BLOCKTYPE_COUNT;
-                //RGBA CellColor = CellColors[ColorIdx];
                 RGBA CellColor = CellColors[Tetrion::PlayField[CellIdx]];
 
                 Draw2D.AddQuad(QuadF{ CellX, CellY, VisualCellSize, VisualCellSize }, CellColor);
+            }
+
+            // Draw Player Piece
+            RGBA PlayerColor = CellColors[Piece.Type];
+            for (int BlockIdx = 0; BlockIdx < NumBlocks; BlockIdx++)
+            {
+                GridPos Pos = Piece.BlockPos[BlockIdx];
+                if (CheckIdx(Pos))
+                {
+                    float CellX = VisualGridPos.X + (Pos.Col * VisualCellSize);
+                    float CellY = AppHeight - (VisualGridPos.Y + (Pos.Row * VisualCellSize) + VisualCellSize);
+                    Draw2D.AddQuad(QuadF{ CellX, CellY, VisualCellSize, VisualCellSize }, PlayerColor);
+                }
             }
 
             // Draw grid lines
@@ -581,12 +703,10 @@ namespace Game
             }
         }
 
-
         void UpdateAndDraw(BatchDraw2D& OutDraw2D)
         {
             Tetrion::Update();
-
-            DrawGrid(OutDraw2D);
+            Tetrion::DrawGrid(OutDraw2D);
         }
 
         void Init()
