@@ -17,11 +17,11 @@ namespace Leviathan
     void BatchDraw2D::AddBox(const QuadF& InQuad, const RGBA& InColor, float LineWeight)
     {
         float HalfLineWeight = LineWeight / 2.0f;
-        QuadF LeftSide{InQuad.PosX - HalfLineWeight, InQuad.PosY, LineWeight, InQuad.SizeY};
-        QuadF RightSide{ InQuad.PosX + InQuad.SizeX - HalfLineWeight, InQuad.PosY, LineWeight, InQuad.SizeY };
+        QuadF LeftSide{InQuad.PosX - HalfLineWeight, InQuad.PosY - HalfLineWeight, LineWeight, InQuad.SizeY + HalfLineWeight};
+        QuadF RightSide{ InQuad.PosX + InQuad.SizeX - HalfLineWeight, InQuad.PosY - HalfLineWeight, LineWeight, InQuad.SizeY + HalfLineWeight};
 
-        QuadF TopSide{ InQuad.PosX, InQuad.PosY - HalfLineWeight + InQuad.SizeY, InQuad.SizeX, LineWeight};
-        QuadF BottomSide{ InQuad.PosX, InQuad.PosY - HalfLineWeight, InQuad.SizeX, LineWeight };
+        QuadF TopSide{ InQuad.PosX - HalfLineWeight, InQuad.PosY - HalfLineWeight + InQuad.SizeY, InQuad.SizeX + HalfLineWeight, LineWeight};
+        QuadF BottomSide{ InQuad.PosX - HalfLineWeight, InQuad.PosY - HalfLineWeight, InQuad.SizeX + HalfLineWeight, LineWeight };
 
         // TODO: Add this as array (will require new Array<>::Add method)
         AddQuad(LeftSide, InColor);

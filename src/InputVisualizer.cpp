@@ -284,7 +284,7 @@ namespace Leviathan
                 AdjRegionSize.X, AdjRegionSize.Y
             };
             Draw2D.AddQuad(BackgroundQuad, ColorBlack);
-            Draw2D.AddBox(BackgroundQuad, ColorWhite);
+            Draw2D.AddBox(BackgroundQuad, ColorWhite, InputVisualizer::LineWidth);
         }
 
         v2f AdjDPadOrigin{ DPadButtonsCenter.X * AdjRegionSize.X + Origin.X, DPadButtonsCenter.Y * AdjRegionSize.Y + Origin.Y };
