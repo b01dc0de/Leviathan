@@ -11,7 +11,6 @@ namespace Leviathan
         static void DrawKeyboard(BatchDraw2D& Draw2D);
         static void DrawMouse(BatchDraw2D& Draw2D);
         static void DrawGamepad(BatchDraw2D& Draw2D);
-        static void DrawGamepad(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2);
     };
 }
 

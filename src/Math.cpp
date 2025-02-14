@@ -372,4 +372,29 @@ namespace Leviathan
     {
         return Mult(A, B);
     }
+
+    int Min(int A, int B)
+    {
+        return B < A ? B : A;
+    }
+    int Max(int A, int B)
+    {
+        return B > A ? B : A;
+    }
+    int Abs(int A)
+    {
+        return A < 0 ? -A : A;
+    }
+    float Min(float A, float B)
+    {
+        return B < A ? B : A;
+    }
+    float Max(float A, float B)
+    {
+        return B > A ? B : A;
+    }
+    float Abs(float A)
+    {
+        return A < 0 ? -A : A;
+    }
 }

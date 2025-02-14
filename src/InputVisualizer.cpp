@@ -240,134 +240,8 @@ namespace Leviathan
 
     struct VisualGamepad
     {
-        static void Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2, const v2f& Origin, float Scale);
         static void Draw(BatchDraw2D& Draw2D, const v2f& Origin, float Scale);
     };
-
-    void VisualGamepad::Draw(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2, const v2f& Origin, float Scale)
-    {
-        static constexpr v2f GamepadRegionSize{ 16.0f, 16.0f };
-        static constexpr v2f DPadButtonsCenter{ 0.25f, 0.5f };
-        static constexpr v2f FaceButtonsCenter{ 0.75f, 0.5f };
-        static constexpr float FaceButtonsSize{ 0.05f };
-        static constexpr v2f ControlButtonsSize{ FaceButtonsSize * 1.5f, FaceButtonsSize };
-        static constexpr v2f MenuButtonsCenter{ 0.5f, 0.25f + ControlButtonsSize.Y };
-        static constexpr float ButtonsOffset{ FaceButtonsSize * 2.0f };
-        static constexpr v2f TriggerButtonsSize{ 0.5f, 0.2f };
-        static constexpr v2f ThumbStickCenter = { 0.5f, 0.75f };
-        static constexpr float ThumbStickSize = { 0.125f };
-        static constexpr v2f ButtonPos[LV_GAMEPAD_BUTTON_COUNT] =
-        {
-            {DPadButtonsCenter.X, DPadButtonsCenter.Y - ButtonsOffset},
-            {DPadButtonsCenter.X, DPadButtonsCenter.Y + ButtonsOffset},
-            {DPadButtonsCenter.X - ButtonsOffset, DPadButtonsCenter.Y},
-            {DPadButtonsCenter.X + ButtonsOffset, DPadButtonsCenter.Y},
-            {FaceButtonsCenter.X, FaceButtonsCenter.Y - ButtonsOffset},
-            {FaceButtonsCenter.X, FaceButtonsCenter.Y + ButtonsOffset},
-            {FaceButtonsCenter.X - ButtonsOffset, FaceButtonsCenter.Y},
-            {FaceButtonsCenter.X + ButtonsOffset, FaceButtonsCenter.Y},
-            {MenuButtonsCenter.X + ControlButtonsSize.X, MenuButtonsCenter.Y},
-            {MenuButtonsCenter.X - ControlButtonsSize.X, MenuButtonsCenter.Y},
-            {DPadButtonsCenter.X - ControlButtonsSize.X * 2.0f, MenuButtonsCenter.Y},
-            {FaceButtonsCenter.X + ControlButtonsSize.X * 2.0f, MenuButtonsCenter.Y},
-            {},//LV_GAMEPAD_LEFT_THUMB,
-            {},//LV_GAMEPAD_RIGHT_THUMB,
-        };
-
-        v2f AdjRegionSize{ GamepadRegionSize.X * Scale, GamepadRegionSize.Y * Scale };
-
-        static constexpr bool bDrawBG = true;
-        if (bDrawBG)
-        {
-            D2D1_RECT_F BGRect = {
-                Origin.X, Origin.Y,
-                Origin.X + AdjRegionSize.X, Origin.Y + AdjRegionSize.Y
-            };
-            InD2RT->FillRectangle(&BGRect, InBrush2);
-            InD2RT->DrawRectangle(&BGRect, InBrush1);
-        }
-
-        v2f AdjDPadOrigin{ DPadButtonsCenter.X * AdjRegionSize.X + Origin.X, DPadButtonsCenter.Y * AdjRegionSize.Y + Origin.Y };
-        v2f AdjFaceOrigin{ FaceButtonsCenter.X * AdjRegionSize.X + Origin.X, FaceButtonsCenter.Y * AdjRegionSize.Y + Origin.Y };
-        float AdjFaceButtonsSize = FaceButtonsSize * AdjRegionSize.X;
-        float AdjButtonsOffset = ButtonsOffset * AdjRegionSize.X;
-        for (int ButtonIdx = LV_GAMEPAD_DPAD_UP; ButtonIdx < LV_GAMEPAD_START; ButtonIdx++)
-        {
-            D2D1_ELLIPSE ButtonEllipse
-            {
-                ButtonPos[ButtonIdx].X * GamepadRegionSize.X * Scale + Origin.X,
-                ButtonPos[ButtonIdx].Y * GamepadRegionSize.Y * Scale + Origin.Y,
-                AdjFaceButtonsSize, AdjFaceButtonsSize
-            };
-            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx)) { InD2RT->FillEllipse(&ButtonEllipse, InBrush1); }
-            else { InD2RT->DrawEllipse(&ButtonEllipse, InBrush1, InputVisualizer::LineWidth); }
-        }
-        for (int ButtonIdx = LV_GAMEPAD_START; ButtonIdx < LV_GAMEPAD_LEFT_THUMB; ButtonIdx++)
-        {
-            D2D1_RECT_F ButtonRect
-            {
-                (ButtonPos[ButtonIdx].X - ControlButtonsSize.X) * GamepadRegionSize.X * Scale + Origin.X,
-                (ButtonPos[ButtonIdx].Y - ControlButtonsSize.Y) * GamepadRegionSize.Y * Scale + Origin.Y,
-                (ButtonPos[ButtonIdx].X + ControlButtonsSize.X) * GamepadRegionSize.X * Scale + Origin.X,
-                (ButtonPos[ButtonIdx].Y + ControlButtonsSize.Y) * GamepadRegionSize.X * Scale + Origin.Y,
-            };
-            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx)) { InD2RT->FillRectangle(&ButtonRect, InBrush1); }
-            else { InD2RT->DrawRectangle(&ButtonRect, InBrush1, InputVisualizer::LineWidth); }
-        }
-
-        v2f AdjTriggerSize{ TriggerButtonsSize.X * AdjRegionSize.X, TriggerButtonsSize.Y * AdjRegionSize.Y };
-        float LTrigger = GamepadState::GetLeftTrigger();
-        float RTrigger = GamepadState::GetRightTrigger();
-        { // Triggers
-            static constexpr float TriggerDeadzone = 0.05f;
-            D2D1_RECT_F LeftTriggerRect{ Origin.X, Origin.Y,
-                Origin.X + AdjTriggerSize.X, Origin.Y + AdjTriggerSize.Y };
-            D2D1_RECT_F RightTriggerRect{ LeftTriggerRect.right, Origin.Y,
-                Origin.X + AdjRegionSize.X, Origin.Y + AdjTriggerSize.Y };
-            InD2RT->DrawRectangle(&LeftTriggerRect, InBrush1, InputVisualizer::LineWidth);
-            InD2RT->DrawRectangle(&RightTriggerRect, InBrush1, InputVisualizer::LineWidth);
-            if (LTrigger > TriggerDeadzone)
-            {
-                LeftTriggerRect.right = LeftTriggerRect.left + (AdjTriggerSize.X * LTrigger);
-                InD2RT->FillRectangle(&LeftTriggerRect, InBrush1);
-            }
-            if (RTrigger > TriggerDeadzone)
-            {
-                RightTriggerRect.left = RightTriggerRect.right - (AdjTriggerSize.X * RTrigger);
-                InD2RT->FillRectangle(&RightTriggerRect, InBrush1);
-            }
-        }
-
-        v2f LStick = GamepadState::GetLeftStick();
-        v2f RStick = GamepadState::GetRightStick();
-        { // Sticks
-            float AdjStickSize = ThumbStickSize * AdjRegionSize.X;
-            const D2D1_POINT_2F LStickPos{ Origin.X + (DPadButtonsCenter.X * AdjRegionSize.X), Origin.Y + (ThumbStickCenter.Y * AdjRegionSize.Y) + AdjStickSize / 2.0f};
-            const D2D1_POINT_2F RStickPos{ Origin.X + (FaceButtonsCenter.X * AdjRegionSize.X), Origin.Y + (ThumbStickCenter.Y * AdjRegionSize.Y) + AdjStickSize / 2.0f};
-            D2D1_ELLIPSE LeftEllipse{ LStickPos, AdjStickSize, AdjStickSize };
-            D2D1_ELLIPSE RightEllipse{ RStickPos, AdjStickSize, AdjStickSize };
-
-            ID2D1Brush* LeftLineBrush = InBrush1;
-            ID2D1Brush* RightLineBrush = InBrush1;
-            if (GamepadState::GetButton(LV_GAMEPAD_LEFT_THUMB)) { InD2RT->FillEllipse(&LeftEllipse, InBrush1); LeftLineBrush = InBrush2; }
-            else { InD2RT->DrawEllipse(&LeftEllipse, InBrush1, InputVisualizer::LineWidth); }
-            if (GamepadState::GetButton(LV_GAMEPAD_RIGHT_THUMB)) { InD2RT->FillEllipse(&RightEllipse, InBrush1); RightLineBrush = InBrush2; }
-            else { InD2RT->DrawEllipse(&RightEllipse, InBrush1, InputVisualizer::LineWidth); }
-
-            D2D1_POINT_2F LStickInput
-            {
-                LStickPos.x + LStick.X * AdjStickSize,
-                LStickPos.y + -LStick.Y * AdjStickSize
-            };
-            D2D1_POINT_2F RStickInput
-            {
-                RStickPos.x + RStick.X * AdjStickSize,
-                RStickPos.y + -RStick.Y * AdjStickSize
-            };
-            InD2RT->DrawLine(LStickPos, LStickInput, LeftLineBrush, InputVisualizer::LineWidth);
-            InD2RT->DrawLine(RStickPos, RStickInput, RightLineBrush, InputVisualizer::LineWidth);
-        }
-    }
 
     void VisualGamepad::Draw(BatchDraw2D& Draw2D, const v2f& Origin, float Scale)
     {
@@ -379,8 +253,8 @@ namespace Leviathan
         static constexpr v2f MenuButtonsCenter{ 0.5f, -(0.25f + ControlButtonsSize.Y) };
         static constexpr float ButtonsOffset{ FaceButtonsSize * 2.0f };
         static constexpr v2f TriggerButtonsSize{ 0.5f, 0.2f };
-        static constexpr v2f ThumbStickCenter = { 0.5f, 0.75f };
-        static constexpr float ThumbStickSize = { 0.125f };
+        static constexpr v2f ThumbStickCenter = { 0.5f, -0.75f };
+        static constexpr float ThumbStickSize = { 0.25f };
         static constexpr v2f ButtonPos[LV_GAMEPAD_BUTTON_COUNT] =
         {
             {DPadButtonsCenter.X, DPadButtonsCenter.Y + ButtonsOffset},
@@ -424,7 +298,7 @@ namespace Leviathan
         {
             QuadF ButtonQuad
             {
-                ButtonPos[ButtonIdx].X * GamepadRegionSize.X * Scale + Origin.X - AdjFaceButtonsSize,
+                ButtonPos[ButtonIdx].X * GamepadRegionSize.X * Scale + Origin.X - AdjFaceButtonsSize / 2.0f,
                 ButtonPos[ButtonIdx].Y * GamepadRegionSize.Y * Scale + Origin.Y - AdjFaceButtonsSize,
                 AdjFaceButtonsSize, AdjFaceButtonsSize
             };
@@ -435,7 +309,7 @@ namespace Leviathan
         {
             QuadF ButtonQuad
             {
-                (ButtonPos[ButtonIdx].X - ControlButtonsSize.X) * GamepadRegionSize.X * Scale + Origin.X,
+                (ButtonPos[ButtonIdx].X - ControlButtonsSize.X / 2.0f) * GamepadRegionSize.X * Scale + Origin.X,
                 (ButtonPos[ButtonIdx].Y - ControlButtonsSize.Y) * GamepadRegionSize.Y * Scale + Origin.Y,
                 ControlButtonsSize.X * GamepadRegionSize.X * Scale,
                 ControlButtonsSize.Y * GamepadRegionSize.X * Scale
@@ -474,44 +348,71 @@ namespace Leviathan
             }
         }
 
-        /*
         v2f LStick = GamepadState::GetLeftStick();
         v2f RStick = GamepadState::GetRightStick();
         { // Sticks
             float AdjStickSize = ThumbStickSize * AdjRegionSize.X;
-            const D2D1_POINT_2F LStickPos{ Origin.X + (DPadButtonsCenter.X * AdjRegionSize.X), Origin.Y + (ThumbStickCenter.Y * AdjRegionSize.Y) + AdjStickSize / 2.0f};
-            const D2D1_POINT_2F RStickPos{ Origin.X + (FaceButtonsCenter.X * AdjRegionSize.X), Origin.Y + (ThumbStickCenter.Y * AdjRegionSize.Y) + AdjStickSize / 2.0f};
-            D2D1_ELLIPSE LeftEllipse{ LStickPos, AdjStickSize, AdjStickSize };
-            D2D1_ELLIPSE RightEllipse{ RStickPos, AdjStickSize, AdjStickSize };
 
-            ID2D1Brush* LeftLineBrush = InBrush1;
-            ID2D1Brush* RightLineBrush = InBrush1;
-            if (GamepadState::GetButton(LV_GAMEPAD_LEFT_THUMB)) { InD2RT->FillEllipse(&LeftEllipse, InBrush1); LeftLineBrush = InBrush2; }
-            else { InD2RT->DrawEllipse(&LeftEllipse, InBrush1, InputVisualizer::LineWidth); }
-            if (GamepadState::GetButton(LV_GAMEPAD_RIGHT_THUMB)) { InD2RT->FillEllipse(&RightEllipse, InBrush1); RightLineBrush = InBrush2; }
-            else { InD2RT->DrawEllipse(&RightEllipse, InBrush1, InputVisualizer::LineWidth); }
+            QuadF LeftStickQuad
+            {
+                Origin.X + (DPadButtonsCenter.X * AdjRegionSize.X) - AdjStickSize / 2.0f,
+                Origin.Y + (ThumbStickCenter.Y * AdjRegionSize.Y) - AdjStickSize * 0.75f,
+                AdjStickSize, AdjStickSize
+            };
+            QuadF RightStickQuad
+            {
+                Origin.X + (FaceButtonsCenter.X * AdjRegionSize.X) - AdjStickSize / 2.0f,
+                Origin.Y + (ThumbStickCenter.Y * AdjRegionSize.Y) - AdjStickSize * 0.75f,
+                AdjStickSize, AdjStickSize
+            };
 
-            D2D1_POINT_2F LStickInput
+            RGBA LeftLineColor = ColorWhite;
+            RGBA RightLineColor = ColorWhite;
+            if (GamepadState::GetButton(LV_GAMEPAD_LEFT_THUMB)) { Draw2D.AddQuad(LeftStickQuad, ColorWhite); LeftLineColor = ColorBlack; }
+            else { Draw2D.AddBox(LeftStickQuad, ColorWhite, InputVisualizer::LineWidth); }
+            if (GamepadState::GetButton(LV_GAMEPAD_RIGHT_THUMB)) { Draw2D.AddQuad(RightStickQuad, ColorWhite); RightLineColor = ColorBlack; }
+            else { Draw2D.AddBox(RightStickQuad, ColorWhite, InputVisualizer::LineWidth); }
+
+            v2f LeftStickCenter
             {
-                LStickPos.x + LStick.X * AdjStickSize,
-                LStickPos.y + -LStick.Y * AdjStickSize
+                LeftStickQuad.PosX + LeftStickQuad.SizeX / 2.0f,
+                LeftStickQuad.PosY + LeftStickQuad.SizeY / 2.0f
             };
-            D2D1_POINT_2F RStickInput
+            v2f RightStickCenter
             {
-                RStickPos.x + RStick.X * AdjStickSize,
-                RStickPos.y + -RStick.Y * AdjStickSize
+                RightStickQuad.PosX + RightStickQuad.SizeX / 2.0f,
+                RightStickQuad.PosY + RightStickQuad.SizeY / 2.0f
             };
-            InD2RT->DrawLine(LStickPos, LStickInput, LeftLineBrush, InputVisualizer::LineWidth);
-            InD2RT->DrawLine(RStickPos, RStickInput, RightLineBrush, InputVisualizer::LineWidth);
+
+            v2f LeftStickInputPos
+            {
+                LeftStickCenter.X + LStick.X * AdjStickSize / 2.0f,
+                LeftStickCenter.Y + LStick.Y * AdjStickSize / 2.0f
+            };
+            v2f RightStickInputPos
+            {
+                RightStickCenter.X + RStick.X * AdjStickSize / 2.0f,
+                RightStickCenter.Y + RStick.Y * AdjStickSize / 2.0f
+            };
+
+            QuadF LeftInputQuad
+            {
+                Min(LeftStickInputPos.X, LeftStickCenter.X),
+                Min(LeftStickInputPos.Y, LeftStickCenter.Y),
+                Abs(LeftStickInputPos.X - LeftStickCenter.X),
+                Abs(LeftStickInputPos.Y - LeftStickCenter.Y)
+            };
+            QuadF RightInputQuad
+            {
+                Min(RightStickInputPos.X, RightStickCenter.X),
+                Min(RightStickInputPos.Y, RightStickCenter.Y),
+                Abs(RightStickInputPos.X - RightStickCenter.X),
+                Abs(RightStickInputPos.Y - LeftStickCenter.Y)
+            };
+
+            Draw2D.AddQuad(LeftInputQuad, LeftLineColor);
+            Draw2D.AddQuad(RightInputQuad, RightLineColor);
         }
-        */
-    }
-
-    void InputVisualizer::DrawGamepad(ID2D1RenderTarget* InD2RT, ID2D1Brush* InBrush1, ID2D1Brush* InBrush2)
-    {
-        static const v2f Origin{ 1100.0f, 200.0f };
-        static const float Scale = 7.5f;
-        VisualGamepad::Draw(InD2RT, InBrush1, InBrush2, Origin, Scale);
     }
 
     void InputVisualizer::DrawGamepad(BatchDraw2D& Draw2D)

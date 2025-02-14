@@ -101,6 +101,13 @@ namespace Leviathan
     m2f operator*(const m2f& A, const m2f& B);
     m3f operator*(const m3f& A, const m3f& B);
     m4f operator*(const m4f& A, const m4f& B);
+
+    int Min(int A, int B);
+    int Max(int A, int B);
+    int Abs(int A);
+    float Min(float A, float B);
+    float Max(float A, float B);
+    float Abs(float A);
 }
 
 #endif // LEVIATHAN_MATH_H
