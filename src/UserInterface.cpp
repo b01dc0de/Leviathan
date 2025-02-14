@@ -43,31 +43,22 @@ namespace Leviathan
         }
     }
 
-    bool bVisualizeInput = false;
+    bool bVisualizeInput = true;
     bool bDrawTimeStats = true;
 
-    void UserInterface::Draw(ID2D1RenderTarget* In2DRT)
+    void UserInterface::Draw(ID2D1RenderTarget* In2DRT, BatchDraw2D& Draw2D)
     {
         ASSERT(In2DRT);
 
-        //if (KeyboardState::GetKeyState(LV_KEY_F1)) { bVisualizeInput = !bVisualizeInput; }
-        //if (KeyboardState::GetKeyState(LV_KEY_F2)) { bDrawTimeStats = !bDrawTimeStats; }
+        if (KeyboardState::GetKeyState(LV_KEY_F1)) { bVisualizeInput = !bVisualizeInput; }
+        if (KeyboardState::GetKeyState(LV_KEY_F2)) { bDrawTimeStats = !bDrawTimeStats; }
 
-        /*
         if (bVisualizeInput)
         {
-            In2DRT->BeginDraw();
-
-            if (bVisualizeInput)
-            {
-                InputVisualizer::DrawKeyboard(In2DRT, D2_WhiteBrush, D2_BlackBrush);
-                InputVisualizer::DrawMouse(In2DRT, D2_WhiteBrush, D2_BlackBrush);
-                InputVisualizer::DrawGamepad(In2DRT, D2_WhiteBrush, D2_BlackBrush);
-            }
-
-            DX_CHECK(In2DRT->EndDraw());
+            InputVisualizer::DrawKeyboard(Draw2D);
+            InputVisualizer::DrawMouse(Draw2D);
+            InputVisualizer::DrawGamepad(Draw2D);
         }
-        */
 
         // DirectWrite Test
         if (bDrawTimeStats)
