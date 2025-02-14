@@ -1,18 +1,20 @@
-#ifndef GAME_TETRIS_H
-#define GAME_TETRIS_H
+#ifndef GAME_SNAKE_H
+#define GAME_SNAKE_H
 
 #include "../Leviathan.h"
 
 namespace Game
 {
+
     using Leviathan::BatchDraw2D;
 
-    namespace Tetris
+    namespace Snake
     {
         void UpdateAndDraw(BatchDraw2D& Draw2D);
         void Init();
         void Term();
     }
+
 }
 
 #endif // GAME_TETRIS_H

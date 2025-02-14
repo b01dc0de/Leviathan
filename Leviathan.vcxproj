@@ -89,6 +89,8 @@
     <ClCompile Include="src\Clock.cpp" />
     <ClCompile Include="src\DrawState.cpp" />
     <ClCompile Include="src\Engine.cpp" />
+    <ClCompile Include="src\Game\Game.cpp" />
+    <ClCompile Include="src\Game\Snake.cpp" />
     <ClCompile Include="src\Game\Tetris.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
     <ClCompile Include="src\Image.cpp" />
@@ -105,6 +107,8 @@
     <ClInclude Include="src\Clock.h" />
     <ClInclude Include="src\DrawState.h" />
     <ClInclude Include="src\Engine.h" />
+    <ClInclude Include="src\Game\Game.h" />
+    <ClInclude Include="src\Game\Snake.h" />
     <ClInclude Include="src\Game\Tetris.h" />
     <ClInclude Include="src\Graphics.h" />
     <ClInclude Include="src\Image.h" />

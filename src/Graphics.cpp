@@ -5,7 +5,7 @@
 #include "InputVisualizer.h"
 #include "UserInterface.h"
 
-#include "Game/Tetris.h"
+#include "Game/Game.h"
 
 namespace Leviathan
 {
@@ -216,7 +216,7 @@ namespace Leviathan
     {
         // Get instanced draw commands from game (Tetris):
         Draw2D.Clear();
-        Game::Tetris::UpdateAndDraw(Draw2D);
+        Game::Manager::UpdateAndDraw(Draw2D);
 
         DX_ImmediateContext->RSSetState(DX_RasterizerState);
         DX_ImmediateContext->OMSetDepthStencilState(nullptr, 0);
@@ -859,14 +859,10 @@ namespace Leviathan
         OrthoCamera.Ortho((float)AppWidth, (float)AppHeight, -2.0f);
 
         UserInterface::Init(D2_RenderTarget);
-
-        Game::Tetris::Init();
     }
 
     void Graphics::Term()
     {
-        Game::Tetris::Term();
-
         UserInterface::Term();
 
         { // Direct2D:

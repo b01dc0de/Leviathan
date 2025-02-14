@@ -1,6 +1,7 @@
 #include "Leviathan.h" // NOTE: Engine.h is included in Leviathan.h
 #include "Graphics.h"
 #include "Clock.h"
+#include "Game/Game.h"
 
 namespace Leviathan
 {
@@ -127,6 +128,7 @@ namespace Leviathan
             Graphics::Init();
             RawInputHandler::Init();
             Clock::Init();
+            Game::Manager::Init();
         }
     }
 
@@ -153,6 +155,7 @@ namespace Leviathan
 
     void Engine::Term()
     {
+        Game::Manager::Term();
         Graphics::Term();
     }
 
