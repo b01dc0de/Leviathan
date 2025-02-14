@@ -71,19 +71,6 @@ namespace Leviathan
             swprintf_s(MsgBuffer, MsgBufferSize, L"CurrTime: %.02f", CurrTime);
             size_t MsgLength = wcslen(MsgBuffer);
 
-            static bool bDrawShadow = true;
-            if (bDrawShadow)
-            {
-                D2D1_RECT_F ShadowTextLayoutRect{ 0.5f, 0.5f, 200.0f, 100.0f };
-                In2DRT->DrawText
-                (
-                    MsgBuffer,
-                    MsgLength,
-                    DW_DefaultTextFormat,
-                    &ShadowTextLayoutRect,
-                    D2_BlackBrush
-                );
-            }
             D2D1_RECT_F TextLayoutRect { 0.0f, 0.0f, 200.0f, 100.0f };
             In2DRT->DrawText
             (

@@ -215,19 +215,16 @@ namespace Leviathan
         { // Wheel
             QuadF WheelQuad{ AdjWheelPos.X, AdjWheelPos.Y, AdjWheelSize, AdjWheelSize };
             Draw2D.AddBox(WheelQuad, RGBA{1.0f, 0.0f, 0.0f, 1.0f}, InputVisualizer::LineWidth);
-            /* TODO:
-            const v2f WheelLineBegin
+            const v2f WheelLineCenter { AdjWheelPos.X + AdjWheelSize * 0.5f, AdjWheelPos.Y + AdjWheelSize * 0.5f };
+            const v2f WheelLineEnd { WheelLineCenter.X + (cosf(WheelAngle) * AdjWheelSize * 0.5f), WheelLineCenter.Y + (sinf(WheelAngle) * AdjWheelSize * 0.5f) };
+            QuadF WheelAngleQuad
             {
-                AdjWheelPos.X + AdjWheelSize * 0.5f,
-                AdjWheelPos.Y + AdjWheelSize * 0.5f
+                Min(WheelLineCenter.X, WheelLineEnd.X),
+                Min(WheelLineCenter.Y, WheelLineEnd.Y),
+                Abs(WheelLineCenter.X - WheelLineEnd.X),
+                Abs(WheelLineCenter.Y - WheelLineEnd.Y)
             };
-            const v2f WheelLineEnd
-            {
-                AdjWheelPos.X + (cosf(WheelAngle) * AdjWheelSize),
-                AdjWheelPos.Y + (sinf(WheelAngle) * AdjWheelSize)
-            };
-            DrawLine(AdjWheelPos, WheelLineEnd, ColorWhite, InputVisualizer::LineWidth);
-            */
+            Draw2D.AddQuad(WheelAngleQuad, RGBA{ 0.0f, 1.0f, 1.0f, 1.0f });
         }
     }
 
