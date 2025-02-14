@@ -448,6 +448,7 @@ namespace Game
                 static void Settle();
                 static void InitNextPiece();
                 static void Init();
+                static void ClearGrid();
                 static void Update();
                 static void DrawGrid(BatchDraw2D& Draw2D);
             };
@@ -525,8 +526,8 @@ namespace Game
                     // Game over condition
                     if (GetGridCell(Pos) != BLOCK_NONE)
                     { 
-                        Init();
                         State = TetrisGameState::ATTRACT;
+                        Init();
                         return;
                     }
                 }
@@ -534,12 +535,28 @@ namespace Game
 
             void Tetrion::Init()
             {
+                switch (State)
+                {
+                    case TetrisGameState::ATTRACT:
+                    {
+                        ClearGrid();
+                    } break;
+                    case TetrisGameState::PAUSED:
+                    {
+                        return;
+                    } break;
+                    case TetrisGameState::PLAY:
+                    {
+                        ClearGrid();
+                        LastFallTime = Clock::Time();
+                        InitNextPiece();
+                    } break;
+                }
+            }
+
+            void Tetrion::ClearGrid()
+            {
                 for (int CellIdx = 0; CellIdx < GridSize; CellIdx++) { PlayField[CellIdx] = BLOCK_NONE; }
-
-                LastFallTime = Clock::Time();
-                State = TetrisGameState::ATTRACT;
-
-                InitNextPiece();
             }
 
             bool Tetrion::IsLineFull(int Row)
@@ -581,42 +598,12 @@ namespace Game
 
             bool Tetrion::CanFall()
             {
-                /*
-                for (int BlockIdx = 0; BlockIdx < NumBlocks; BlockIdx++)
-                {
-                    GridPos CurrPos = Piece.BlockPos[BlockIdx];
-                    GridPos NextPos{ CurrPos.Row + 1, CurrPos.Col };
-                    if (CheckIdx(NextPos))
-                    {
-                        bool bNextEmpty = GetGridCell(NextPos) == BLOCK_NONE;
-                        if (!bNextEmpty) { return false; }
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                return true;
-                */
                 return !CheckCollision(Piece.Row + 1, Piece.Col, Piece.Type, Piece.Rotation);
             }
 
             void Tetrion::Fall()
             {
-                /*
-                Piece.Init(Piece.Type, Piece.Row + 1, Piece.Col, Piece.Rotation);
-                */
                 Piece.Move(+1, 0);
-
-                /*
-                for (int BlockIdx = 0; BlockIdx < NumBlocks; BlockIdx++)
-                {
-                    GridPos CurrPos = Piece.BlockPos[BlockIdx];
-                    GridPos NextPos{ CurrPos.Row + 1, CurrPos.Col };
-                    ASSERT(CheckIdx(NextPos));
-                    Piece.BlockPos[BlockIdx] = NextPos;
-                }
-                */
             }
 
             void Tetrion::RotateLeft()
@@ -670,32 +657,39 @@ namespace Game
                     {
                         if (KeyboardState::GetKeyState(LV_KEY_ENTER))
                         {
-                            Init();
                             State = TetrisGameState::PLAY;
+                            Init();
                         }
                         return;
                     } break;
                     case TetrisGameState::PAUSED:
                     {
-                        if (KeyboardState::GetKeyState(LV_KEY_ESC))
+                        if (KeyboardState::GetKeyState(LV_KEY_BACKSPACE))
                         {
-                            Init();
                             State = TetrisGameState::ATTRACT;
+                            Init();
                         }
                         if (KeyboardState::GetKeyState(LV_KEY_ENTER))
                         {
                             State = TetrisGameState::PLAY;
+                            Init();
                         }
                         return;
                     } break;
                     case TetrisGameState::PLAY:
                     {
-                        // Proceed with Update as normal
+                        if (KeyboardState::GetKeyState(LV_KEY_BACKSPACE))
+                        {
+                            State = TetrisGameState::ATTRACT;
+                            Init();
+                        }
+                        if (KeyboardState::GetKeyState(LV_KEY_ENTER))
+                        {
+                            State = TetrisGameState::PAUSED;
+                            Init();
+                        }
                     } break;
                 }
-
-                static bool bInit = false;
-                if (!bInit) { Init(); bInit = true; }
 
                 bool bInputLeft = KeyboardState::GetKeyState(LV_KEY_A);
                 bool bInputRight = KeyboardState::GetKeyState(LV_KEY_D);
