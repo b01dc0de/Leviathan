@@ -88,11 +88,11 @@ namespace Leviathan
     void UserInterface::Term()
     {
         { // DirectWrite:
-            DX_SAFE_RELEASE(DW_Factory);
-            DX_SAFE_RELEASE(DW_DefaultTextFormat);
+            SafeRelease(DW_Factory);
+            SafeRelease(DW_DefaultTextFormat);
         }
 
-        DX_SAFE_RELEASE(D2_WhiteBrush);
-        DX_SAFE_RELEASE(D2_BlackBrush);
+        SafeRelease(D2_WhiteBrush);
+        SafeRelease(D2_BlackBrush);
     }
 }

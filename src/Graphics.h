@@ -13,8 +13,9 @@ namespace Leviathan
     };
 
 #define DX_CHECK(DXResult) if (FAILED(DXResult)) { DebugBreak(); }
-#define DX_SAFE_RELEASE(Ptr) if (Ptr) { Ptr->Release(); Ptr = nullptr; }
 #define DX_UUID_HELPER(Type, Ptr) __uuidof(Type), (void**)&Ptr
+
+    inline void SafeRelease(IUnknown* Ptr) { if (Ptr) { Ptr->Release(); Ptr = nullptr; } }
 }
 
 #include "BatchDraw2D.h"

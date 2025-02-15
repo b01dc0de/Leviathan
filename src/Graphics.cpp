@@ -5,7 +5,7 @@
 #include "InputVisualizer.h"
 #include "UserInterface.h"
 
-#include "Game/Game.h"
+#include "Game/GameManager.h"
 
 namespace Leviathan
 {
@@ -208,7 +208,7 @@ namespace Leviathan
     {
         // Get instanced draw commands from game (Tetris):
         Draw2D.Clear();
-        Game::Manager::UpdateAndDraw(Draw2D);
+        GameManager::UpdateAndDraw(Draw2D);
 
         DX_ImmediateContext->RSSetState(DX_RasterizerState);
         DX_ImmediateContext->OMSetDepthStencilState(nullptr, 0);
@@ -858,12 +858,12 @@ namespace Leviathan
         UserInterface::Term();
 
         { // Direct2D:
-            DX_SAFE_RELEASE(D2_Factory);
-            DX_SAFE_RELEASE(DXGI_Surface);
-            DX_SAFE_RELEASE(D2_RenderTarget);
-            DX_SAFE_RELEASE(D2_LinearGradientBrush);
-            DX_SAFE_RELEASE(D2_GradientStops);
-            DX_SAFE_RELEASE(D2_LightGrayBrush);
+            SafeRelease(D2_Factory);
+            SafeRelease(DXGI_Surface);
+            SafeRelease(D2_RenderTarget);
+            SafeRelease(D2_LinearGradientBrush);
+            SafeRelease(D2_GradientStops);
+            SafeRelease(D2_LightGrayBrush);
         }
 
         SafeRelease(MeshStateTriangle);
@@ -872,35 +872,35 @@ namespace Leviathan
         SafeRelease(MeshStateMinQuad);
         SafeRelease(MeshStateSpriteQuad);
 
-        DX_SAFE_RELEASE(DX_WBuffer);
-        DX_SAFE_RELEASE(DX_VPBuffer);
-        DX_SAFE_RELEASE(DX_UnicolorBuffer);
-        DX_SAFE_RELEASE(DX_InstRectBuffer);
+        SafeRelease(DX_WBuffer);
+        SafeRelease(DX_VPBuffer);
+        SafeRelease(DX_UnicolorBuffer);
+        SafeRelease(DX_InstRectBuffer);
 
         SafeRelease(DrawStateColor);
         SafeRelease(DrawStateTexture);
         SafeRelease(DrawStateUnicolor);
         SafeRelease(DrawStateInstRect);
 
-        DX_SAFE_RELEASE(DXGI_SwapChain1);
-        DX_SAFE_RELEASE(DX_Backbuffer);
-        DX_SAFE_RELEASE(DX_RenderTargetView);
-        DX_SAFE_RELEASE(DX_RasterizerState);
-        DX_SAFE_RELEASE(DX_DepthStencil);
-        DX_SAFE_RELEASE(DX_DepthStencilView);
-        DX_SAFE_RELEASE(DX_2DInstancedDepthStencilState);
+        SafeRelease(DXGI_SwapChain1);
+        SafeRelease(DX_Backbuffer);
+        SafeRelease(DX_RenderTargetView);
+        SafeRelease(DX_RasterizerState);
+        SafeRelease(DX_DepthStencil);
+        SafeRelease(DX_DepthStencilView);
+        SafeRelease(DX_2DInstancedDepthStencilState);
 
-        DX_SAFE_RELEASE(DXGI_Factory2);
-        DX_SAFE_RELEASE(DX_ImmediateContext);
+        SafeRelease(DXGI_Factory2);
+        SafeRelease(DX_ImmediateContext);
 
         if (DX_Device)
         {
             ID3D11Debug* DX_Debug = nullptr;
             DX_Device->QueryInterface(DX_UUID_HELPER(ID3D11Debug, DX_Debug));
             if (DX_Debug) { DX_Debug->ReportLiveDeviceObjects(D3D11_RLDO_IGNORE_INTERNAL); }
-            DX_SAFE_RELEASE(DX_Debug);
+            SafeRelease(DX_Debug);
         }
 
-        DX_SAFE_RELEASE(DX_Device);
+        SafeRelease(DX_Device);
     }
 }

@@ -38,8 +38,8 @@ namespace Leviathan
 
     void SafeRelease(MeshStateT& InMeshState)
     {
-        DX_SAFE_RELEASE(InMeshState.VxBuffer);
-        DX_SAFE_RELEASE(InMeshState.IxBuffer);
+        SafeRelease(InMeshState.VxBuffer);
+        SafeRelease(InMeshState.IxBuffer);
     }
 
     int CompileShaderHelper
@@ -124,16 +124,16 @@ namespace Leviathan
 
             DX_CHECK(InDevice->CreateInputLayout(InputElements, NumInputElements, VSBlob->GetBufferPointer(), VSBlob->GetBufferSize(), &Result.InputLayout));
         }
-        DX_SAFE_RELEASE(VSBlob);
-        DX_SAFE_RELEASE(PSBlob);
+        SafeRelease(VSBlob);
+        SafeRelease(PSBlob);
 
         return Result;
     }
 
     void SafeRelease(DrawStateT& InDrawState)
     {
-        DX_SAFE_RELEASE(InDrawState.InputLayout);
-        DX_SAFE_RELEASE(InDrawState.VertexShader);
-        DX_SAFE_RELEASE(InDrawState.PixelShader);
+        SafeRelease(InDrawState.InputLayout);
+        SafeRelease(InDrawState.VertexShader);
+        SafeRelease(InDrawState.PixelShader);
     }
 }
