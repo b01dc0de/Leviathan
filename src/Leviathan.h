@@ -4,6 +4,7 @@
 // C/C++ std lib
 #include <cmath>
 #include <cstdio>
+#include <random>
 
 // Win32
 #define WIN32_LEAN_AND_MEAN
@@ -48,6 +49,7 @@ namespace Leviathan
 #include "Graphics.h"
 #include "Input.h"
 #include "Math.h"
+#include "Utils.h"
 
 #endif // LEVIATHAN_H
 

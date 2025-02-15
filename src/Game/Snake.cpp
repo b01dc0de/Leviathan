@@ -33,7 +33,7 @@ namespace Game
         constexpr int GridLength = 32;
         constexpr int GridSize = GridLength * GridLength;
 
-        float VisualGridSize = AppWidth / 3.0;
+        float VisualGridSize = AppWidth / 3.0f;
         float VisualGridOffset = VisualGridSize / 3.0f;
         v2f VisualGridPos{ VisualGridOffset / 3.0f, VisualGridOffset };
         float VisualCellSize = VisualGridSize / GridLength;
@@ -44,12 +44,11 @@ namespace Game
         int HeadX = 0;
         int HeadY = 0;
         MoveDirection HeadDir = DIR_NORTH;
-        bool bStill = true;
         double LastMoveTime = 0.0f;
         double SecondsPerMove = 0.25f;
+        Array<v2i> Tail;
 
-        int FruitX = 0;
-        int FruitY = 0;
+        v2i FruitPos;
 
         RGBA GridColor{ Norm8Bit(127u, 186u, 0u) };
         RGBA HeadColor{ GridColor };
@@ -57,9 +56,13 @@ namespace Game
 
         bool CheckIdx(int Row, int Col);
         bool CheckCollision(int Row, int Col);
+        bool CheckCollision(const v2i& Pos);
         GridCellState& GetCell(int Row, int Col);
+        GridCellState& GetCell(const v2i& Pos);
         v2i GetNextPos(MoveDirection Dir);
         bool CanMove(MoveDirection Dir);
+        v2i GetNewFruitPos();
+        void EatFruit();
         void ClearGrid();
         void Update();
     }
@@ -71,13 +74,23 @@ namespace Game
 
     bool GridSnakeState::CheckCollision(int Row, int Col)
     {
-        return !CheckIdx(Row, Col) || GetCell(Row, Col) != CELL_EMPTY;
+        return !CheckIdx(Row, Col) || GetCell(Row, Col) == CELL_SNAKE;
+    }
+
+    bool GridSnakeState::CheckCollision(const v2i& Pos)
+    {
+        return CheckCollision(Pos.Y, Pos.X);
     }
 
     GridCellState& GridSnakeState::GetCell(int Row, int Col)
     {
         ASSERT(CheckIdx(Row, Col));
         return PlayField[Row * GridLength + Col];
+    }
+
+    GridCellState& GridSnakeState::GetCell(const v2i& Pos)
+    {
+        return GetCell(Pos.Y, Pos.X);
     }
 
     v2i GridSnakeState::GetNextPos(MoveDirection Dir)
@@ -97,6 +110,24 @@ namespace Game
     {
         v2i NextPos = GetNextPos(Dir);
         return !CheckCollision(NextPos.Y, NextPos.X);
+    }
+
+    v2i GridSnakeState::GetNewFruitPos()
+    {
+        int Min = 1;
+        int Max = GridLength - 1;
+        v2i NewFruitPos;
+        do
+        {
+            NewFruitPos = { GetRandomInRange(Min, Max), GetRandomInRange(Min, Max) };
+        } while (CheckCollision(NewFruitPos));
+        return NewFruitPos;
+    }
+
+    void GridSnakeState::EatFruit()
+    {
+        Tail.Add(FruitPos);
+        FruitPos = GetNewFruitPos();
     }
 
     void GridSnakeState::ClearGrid()
@@ -154,10 +185,11 @@ namespace Game
         if (CurrTime - LastMoveTime > SecondsPerMove)
         {
             v2i NextPos = GetNextPos(HeadDir);
-            if (!CheckCollision(NextPos.Y, NextPos.X))
+            if (!CheckCollision(NextPos))
             {
                 HeadX = NextPos.X;
                 HeadY = NextPos.Y;
+                if (GetCell(NextPos) == CELL_FRUIT) { EatFruit(); }
             }
             else
             {
@@ -185,8 +217,8 @@ namespace Game
 
         QuadF FruitQuad
         {
-            VisualGridPos.X + FruitX * VisualCellSize,
-            VisualGridPos.Y + VisualGridSize - ((FruitY+1) * VisualCellSize),
+            VisualGridPos.X + FruitPos.X * VisualCellSize,
+            VisualGridPos.Y + VisualGridSize - ((FruitPos.Y+1) * VisualCellSize),
             VisualCellSize, VisualCellSize
         };
         Draw2D.AddQuad(FruitQuad, FruitColor);
@@ -198,9 +230,7 @@ namespace Game
         GameState = PlayState::Attract;
         HeadX = GridLength / 2;
         HeadY = GridLength / 2;
-        FruitX = 0;
-        FruitY = 0;
-        bStill = true;
+        FruitPos = { 0, 0 };
         LastMoveTime = Clock::Time();
     }
 

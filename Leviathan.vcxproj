@@ -99,6 +99,7 @@
     <ClCompile Include="src\Leviathan.cpp" />
     <ClCompile Include="src\Math.cpp" />
     <ClCompile Include="src\UserInterface.cpp" />
+    <ClCompile Include="src\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Array.h" />
@@ -117,6 +118,7 @@
     <ClInclude Include="src\Leviathan.h" />
     <ClInclude Include="src\Math.h" />
     <ClInclude Include="src\UserInterface.h" />
+    <ClInclude Include="src\Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\hlsl\BaseShader.hlsl">
