@@ -208,9 +208,7 @@ namespace Leviathan
     constexpr int DefaultSize_BatchDraw2D = 512;
     void Graphics::UpdateAndDraw()
     {
-        // Get instanced draw commands from game (Tetris):
         Draw2D.Clear();
-        GameManager::UpdateAndDraw(Draw2D);
 
         DX_ImmediateContext->RSSetState(DX_RasterizerState);
         DX_ImmediateContext->OMSetDepthStencilState(nullptr, 0);
@@ -219,9 +217,7 @@ namespace Leviathan
         float fClearDepth = 1.0f;
         DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, &ClearColor.X);
         DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, fClearDepth, 0);
-
         const m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
-
 
         static bool bD2Background = false;
         if (bD2Background)
@@ -386,7 +382,9 @@ namespace Leviathan
         }
 
         static bool bDrawGame = true;
-        if (bDrawGame && Draw2D.BatchCmds.Num > 0)
+        // Get instanced draw commands from game:
+        if (bDrawGame) { GameManager::UpdateAndDraw(Draw2D); }
+        if (Draw2D.BatchCmds.Num > 0)
         {
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);

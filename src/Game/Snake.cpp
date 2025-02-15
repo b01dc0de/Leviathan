@@ -43,7 +43,7 @@ namespace Game
         int LastTailIdx = 0;
         v2i FruitPos;
         double LastMoveTime = 0.0f;
-        double SecondsPerMove = 0.25f;
+        double SecondsPerMove = 0.125f;
 
         bool CheckIdx(int Row, int Col);
         bool CheckTailCollision(const v2i& Pos);
@@ -105,7 +105,7 @@ namespace Game
     {
         int Min = 1;
         int Max = GridLength - 1;
-        v2i NewFruitPos{ -1, -1 };
+        v2i NewFruitPos{};
         do { NewFruitPos = { GetRandomInRange(Min, Max), GetRandomInRange(Min, Max) }; }
         while (NewFruitPos == HeadPos || CheckTailCollision(NewFruitPos));
         return NewFruitPos;
@@ -220,11 +220,12 @@ namespace Game
 
     void GridSnake::Init()
     {
-        Tail.Empty();
         GameState = PlayState::Attract;
         HeadPos = { GridLength / 2, GridLength / 2 };
-        FruitPos = GetNewFruitPos();
         LastMoveTime = Clock::Time();
+        Tail.Empty();
+        LastTailIdx = 0;
+        FruitPos = GetNewFruitPos();
     }
 
     void GridSnake::Term()
