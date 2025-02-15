@@ -26,7 +26,6 @@ namespace Game
         {
             CELL_EMPTY,
             CELL_SNAKE,
-            CELL_FRUIT,
             CELLSTATE_COUNT
         };
 
@@ -38,8 +37,15 @@ namespace Game
         v2f VisualGridPos{ VisualGridOffset / 3.0f, VisualGridOffset };
         float VisualCellSize = VisualGridSize / GridLength;
 
+        RGBA GridColor{ Norm8Bit(127u, 186u, 0u) };
+        RGBA HeadColor{ GridColor };
+        RGBA TailColor{ GridColor };
+        RGBA FruitColor{ Norm8Bit(255u, 136u, 142u) };
+
         GridCellState PlayField[GridSize];
         PlayState GameState;
+
+        v2i FruitPos;
 
         int HeadX = 0;
         int HeadY = 0;
@@ -47,12 +53,6 @@ namespace Game
         double LastMoveTime = 0.0f;
         double SecondsPerMove = 0.25f;
         Array<v2i> Tail;
-
-        v2i FruitPos;
-
-        RGBA GridColor{ Norm8Bit(127u, 186u, 0u) };
-        RGBA HeadColor{ GridColor };
-        RGBA FruitColor{ Norm8Bit(255u, 136u, 142u) };
 
         bool CheckIdx(int Row, int Col);
         bool CheckCollision(int Row, int Col);
@@ -189,7 +189,7 @@ namespace Game
             {
                 HeadX = NextPos.X;
                 HeadY = NextPos.Y;
-                if (GetCell(NextPos) == CELL_FRUIT) { EatFruit(); }
+                if (NextPos == FruitPos) { EatFruit(); }
             }
             else
             {

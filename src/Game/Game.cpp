@@ -11,7 +11,7 @@ namespace Game
         Count
     };
 
-    constexpr GameType SelectedGame = GameType::Tetris;
+    constexpr GameType SelectedGame = GameType::GridSnake;
 
     using ProcCallback = void (*)(void);
     using UpdateDrawCallback = void (*)(BatchDraw2D&);
