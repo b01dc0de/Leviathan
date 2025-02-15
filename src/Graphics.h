@@ -13,7 +13,6 @@ namespace Leviathan
     };
 
 #define DX_CHECK(DXResult) if (FAILED(DXResult)) { DebugBreak(); }
-#define DX_UUID_HELPER(Type, Ptr) __uuidof(Type), (void**)&Ptr
 
     inline void SafeRelease(IUnknown* Ptr) { if (Ptr) { Ptr->Release(); Ptr = nullptr; } }
 }

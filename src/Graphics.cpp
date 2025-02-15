@@ -60,6 +60,8 @@ namespace Leviathan
         ID2D1SolidColorBrush* D2_LightGrayBrush = nullptr;
     }
 
+#define DX_UUID_HELPER(Type, Ptr) __uuidof(Type), (void**)&Ptr
+
     struct VxMin
     {
         v4f Pos;
