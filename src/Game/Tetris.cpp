@@ -212,8 +212,7 @@ namespace Game
                     int NewListIdx = 0;
                     while (NewListIdx < NumPieces)
                     {
-                        // TODO: Actually make this random
-                        int RandomIdx = NewListIdx;
+                        int RandomIdx = GetRandomInRange(0, NumPieces - 1);
                         if (PieceList[RandomIdx] != BLOCK_NONE)
                         {
                             List[NewListIdx++] = PieceList[RandomIdx];
