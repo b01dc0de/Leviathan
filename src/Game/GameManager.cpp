@@ -16,9 +16,10 @@ static GameType SelectedGame = GameType::GridSnake;
 struct GameDefinition
 {
     using ProcCallback = void (*)(void);
-    using UpdateDrawCallback = void (*)(BatchDraw2D&);
+    using DrawCallback = void (*)(BatchDraw2D&);
 
-    UpdateDrawCallback UpdateDraw = nullptr;
+    ProcCallback Update = nullptr;
+    DrawCallback Draw = nullptr;
     ProcCallback Init = nullptr;
     ProcCallback Term = nullptr;
 };
@@ -26,22 +27,31 @@ struct GameDefinition
 const GameDefinition GameDefines[(size_t)GameType::Count] =
 {
     { // Tetris
-        Tetris::UpdateAndDraw,
+        Tetris::Update,
+        Tetris::Draw,
         Tetris::Init,
         Tetris::Term
     },
     { // Snake
-        GridSnake::UpdateAndDraw,
+        GridSnake::Update,
+        GridSnake::Draw,
         GridSnake::Init,
         GridSnake::Term
     }
 };
 
-void GameManager::UpdateAndDraw(BatchDraw2D& Draw2D)
+void GameManager::Update()
 {
     const GameDefinition& CurrGame = GameDefines[(size_t)SelectedGame];
-    ASSERT(CurrGame.UpdateDraw);
-    CurrGame.UpdateDraw(Draw2D);
+    ASSERT(CurrGame.Update);
+    CurrGame.Update();
+}
+
+void GameManager::Draw(BatchDraw2D& Draw2D)
+{
+    const GameDefinition& CurrGame = GameDefines[(size_t)SelectedGame];
+    ASSERT(CurrGame.Draw);
+    CurrGame.Draw(Draw2D);
 }
 void GameManager::Init()
 {

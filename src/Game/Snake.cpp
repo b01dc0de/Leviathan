@@ -200,10 +200,13 @@ namespace Game
         }
     }
 
-    void GridSnake::UpdateAndDraw(BatchDraw2D& Draw2D)
+    void GridSnake::Update()
     {
         GridSnakeState::Update();
+    }
 
+    void GridSnake::Draw(BatchDraw2D& Draw2D)
+    {
         // Draw Grid
         Draw2D.AddBox(QuadF{ VisualGridPos.X, VisualGridPos.Y, VisualGridSize, VisualGridSize }, GridColor);
 

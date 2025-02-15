@@ -10,7 +10,8 @@ namespace Game
 
     namespace GridSnake
     {
-        void UpdateAndDraw(BatchDraw2D& Draw2D);
+        void Update();
+        void Draw(BatchDraw2D& Draw2D);
         void Init();
         void Term();
     }

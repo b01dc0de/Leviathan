@@ -206,7 +206,7 @@ namespace Leviathan
     BatchDraw2D Draw2D;
 
     constexpr int DefaultSize_BatchDraw2D = 512;
-    void Graphics::UpdateAndDraw()
+    void Graphics::Draw()
     {
         Draw2D.Clear();
 
@@ -383,7 +383,7 @@ namespace Leviathan
 
         static bool bDrawGame = true;
         // Get instanced draw commands from game:
-        if (bDrawGame) { GameManager::UpdateAndDraw(Draw2D); }
+        if (bDrawGame) { GameManager::Draw(Draw2D); }
         if (Draw2D.BatchCmds.Num > 0)
         {
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);

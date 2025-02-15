@@ -786,9 +786,13 @@ namespace Game
             }
         }
 
-        void UpdateAndDraw(BatchDraw2D& OutDraw2D)
+        void Update()
         {
             Tetrion::Update();
+        }
+
+        void Draw(BatchDraw2D& OutDraw2D)
+        {
             Tetrion::DrawGrid(OutDraw2D);
         }
 

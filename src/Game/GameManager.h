@@ -5,7 +5,8 @@
 
 struct GameManager
 {
-    static void UpdateAndDraw(BatchDraw2D& Draw2D);
+    static void Update();
+    static void Draw(BatchDraw2D& Draw2D);
     static void Init();
     static void Term();
 };

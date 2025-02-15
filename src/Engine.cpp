@@ -139,7 +139,8 @@ namespace Leviathan
         while (bAppRunning)
         {
             WindowMsgLoop(AppWindow);
-            Graphics::UpdateAndDraw();
+            GameManager::Update();
+            Graphics::Draw();
 
             if (KeyboardState::GetKeyState(LV_KEY_ESC))
             {
