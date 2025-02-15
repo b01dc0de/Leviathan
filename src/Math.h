@@ -65,11 +65,13 @@ namespace Leviathan
         static m4f RotAxisZ(float Angle);
     };
 
+    bool Equals(const v2i& A, const v2i& B);
     v2i Add(const v2i& A, const v2i& B);
     v2i Subtract(const v2i& A, const v2i& B);
     v2i Mult(const v2i& A, int S);
     v2i Divide(const v2i& A, int D);
     v2i Remainder(const v2i& A, int D);
+    bool operator==(const v2i& A, const v2i& B);
     v2i operator+(const v2i& A, const v2i& B);
     v2i operator-(const v2i& A, const v2i& B);
     v2i operator*(const v2i& A, int S);

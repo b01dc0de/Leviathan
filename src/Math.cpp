@@ -123,6 +123,10 @@ namespace Leviathan
         return Result;
     }
 
+    bool Equals(const v2i& A, const v2i& B)
+    {
+        return A.X == B.X && A.Y == B.Y;
+    }
     v2i Add(const v2i& A, const v2i& B)
     {
         v2i Result{ A.X + B.X, A.Y + B.Y };
@@ -147,6 +151,10 @@ namespace Leviathan
     {
         v2i Result{ A.X % D, A.Y % D };
         return Result;
+    }
+    bool operator==(const v2i& A, const v2i& B)
+    {
+        return Equals(A, B);
     }
     v2i operator+(const v2i& A, const v2i& B)
     {
