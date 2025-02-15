@@ -71,7 +71,6 @@ namespace Leviathan
         bool CheckIdx(int Idx)
         {
             bool bValidIdx = (0 <= Idx) && (Idx < Num);
-            ASSERT(bValidIdx);
             return bValidIdx;
         }
         int Add(const T& Item)
@@ -99,15 +98,28 @@ namespace Leviathan
             }
         }
 
+        T& Get(int Idx)
+        {
+            ASSERT(CheckIdx(Idx));
+            return Data[Idx];
+        }
+        const T& Get(int Idx) const
+        {
+            ASSERT(CheckIdx(Idx));
+            return Data[Idx];
+        }
         T& operator[](int Idx)
         {
-            CheckIdx(Idx);
-            return Data[Idx];
+            return Get(Idx);
         }
         const T& operator[](int Idx) const
         {
-            CheckIdx(Idx);
-            return Data[Idx];
+            return Get(Idx);
+        }
+        T& Last()
+        {
+            ASSERT(Num > 0);
+            return Get(Num > 0 ? Num - 1 : 0);
         }
 
         Array(int InitSize)
