@@ -199,14 +199,6 @@ namespace Leviathan
         return m4f::Scale(InSprTrans.Scale.X, InSprTrans.Scale.Y, 1.0f) * m4f::RotAxisZ(InSprTrans.RotAngle) * m4f::Trans(InSprTrans.Pos.X, InSprTrans.Pos.Y, 0.0f);
     }
 
-    RGBA Norm8Bit(unsigned char R, unsigned char G, unsigned char B)
-    {
-        float fR = (float)R / 255.0f;
-        float fG = (float)G / 255.0f;
-        float fB = (float)B / 255.0f;
-        return RGBA{ fR, fG, fB, 1.0f };
-    }
-
     Camera OrthoCamera;
     Camera GameCamera;
     BatchDraw2D Draw2D;
@@ -391,8 +383,8 @@ namespace Leviathan
             DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, ARRAY_SIZE(InstRectDataArray), 0u, 0, 0u);
         }
 
-        static bool bDrawTetris = true;
-        if (bDrawTetris && Draw2D.BatchCmds.Num > 0)
+        static bool bDrawGame = true;
+        if (bDrawGame && Draw2D.BatchCmds.Num > 0)
         {
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);

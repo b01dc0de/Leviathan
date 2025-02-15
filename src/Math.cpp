@@ -156,6 +156,10 @@ namespace Leviathan
     {
         return Equals(A, B);
     }
+    bool operator!=(const v2i& A, const v2i& B)
+    {
+        return !Equals(A, B);
+    }
     v2i operator+(const v2i& A, const v2i& B)
     {
         return Add(A, B);

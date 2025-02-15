@@ -43,13 +43,13 @@ namespace Leviathan
     #define APPNAME() APPNAMEA()
 #endif // UNICODE
 
+#include "Utils.h"
 #include "Array.h"
 #include "Clock.h"
 #include "Engine.h"
 #include "Graphics.h"
 #include "Input.h"
 #include "Math.h"
-#include "Utils.h"
 
 #endif // LEVIATHAN_H
 

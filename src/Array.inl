@@ -101,12 +101,12 @@ namespace Leviathan
 
         T& operator[](int Idx)
         {
-            CheckIdx();
+            CheckIdx(Idx);
             return Data[Idx];
         }
         const T& operator[](int Idx) const
         {
-            CheckIdx();
+            CheckIdx(Idx);
             return Data[Idx];
         }
 

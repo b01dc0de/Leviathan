@@ -22,13 +22,6 @@ namespace Game
             Count
         };
 
-        enum GridCellState
-        {
-            CELL_EMPTY,
-            CELL_SNAKE,
-            CELLSTATE_COUNT
-        };
-
         constexpr int GridLength = 32;
         constexpr int GridSize = GridLength * GridLength;
 
@@ -42,29 +35,37 @@ namespace Game
         RGBA TailColor{ GridColor };
         RGBA FruitColor{ Norm8Bit(255u, 136u, 142u) };
 
-        GridCellState PlayField[GridSize];
         PlayState GameState;
 
-        v2i FruitPos;
-
-        int HeadX = 0;
-        int HeadY = 0;
         MoveDirection HeadDir = DIR_NORTH;
+        v2i HeadPos;
+        Array<v2i> Tail;
+        int LastTailIdx = 0;
+        v2i FruitPos;
         double LastMoveTime = 0.0f;
         double SecondsPerMove = 0.25f;
-        Array<v2i> Tail;
 
         bool CheckIdx(int Row, int Col);
-        bool CheckCollision(int Row, int Col);
-        bool CheckCollision(const v2i& Pos);
-        GridCellState& GetCell(int Row, int Col);
-        GridCellState& GetCell(const v2i& Pos);
-        v2i GetNextPos(MoveDirection Dir);
+        bool CheckTailCollision(const v2i& Pos);
         bool CanMove(MoveDirection Dir);
+        v2i GetNextPos(MoveDirection Dir);
         v2i GetNewFruitPos();
+        void GrowTail(v2i FruitPos);
+        void MoveTail(v2i NewTail);
         void EatFruit();
-        void ClearGrid();
         void Update();
+        void DrawCell(BatchDraw2D& Draw2D, v2i Cell, RGBA Color);
+    }
+
+    void GridSnakeState::DrawCell(BatchDraw2D& Draw2D, v2i Cell, RGBA Color)
+    {
+        QuadF CellQuad
+        {
+            VisualGridPos.X + Cell.X * VisualCellSize,
+            VisualGridPos.Y + VisualGridSize - ((Cell.Y+1) * VisualCellSize),
+            VisualCellSize, VisualCellSize
+        };
+        Draw2D.AddQuad(CellQuad, Color);
     }
 
     bool GridSnakeState::CheckIdx(int Row, int Col)
@@ -72,30 +73,24 @@ namespace Game
         return (0 <= Row && Row < GridLength) && (0 <= Col && Col < GridLength);
     }
 
-    bool GridSnakeState::CheckCollision(int Row, int Col)
+    bool GridSnakeState::CheckTailCollision(const v2i& Pos)
     {
-        return !CheckIdx(Row, Col) || GetCell(Row, Col) == CELL_SNAKE;
+        for (int TailIdx = 0; TailIdx < Tail.Num; TailIdx++)
+        {
+            if (Pos == Tail[TailIdx]) { return true; }
+        }
+        return false;
     }
 
-    bool GridSnakeState::CheckCollision(const v2i& Pos)
+    bool GridSnakeState::CanMove(MoveDirection Dir)
     {
-        return CheckCollision(Pos.Y, Pos.X);
-    }
-
-    GridCellState& GridSnakeState::GetCell(int Row, int Col)
-    {
-        ASSERT(CheckIdx(Row, Col));
-        return PlayField[Row * GridLength + Col];
-    }
-
-    GridCellState& GridSnakeState::GetCell(const v2i& Pos)
-    {
-        return GetCell(Pos.Y, Pos.X);
+        v2i NextPos = GetNextPos(Dir);
+        return CheckIdx(NextPos.Y, NextPos.X) && !CheckTailCollision(NextPos);
     }
 
     v2i GridSnakeState::GetNextPos(MoveDirection Dir)
     {
-        v2i NextPos{ HeadX, HeadY };
+        v2i NextPos{ HeadPos.X, HeadPos.Y };
         switch (Dir)
         {
             case DIR_NORTH: { NextPos.Y--; } break;
@@ -106,33 +101,38 @@ namespace Game
         return NextPos;
     }
 
-    bool GridSnakeState::CanMove(MoveDirection Dir)
-    {
-        v2i NextPos = GetNextPos(Dir);
-        return !CheckCollision(NextPos.Y, NextPos.X);
-    }
-
     v2i GridSnakeState::GetNewFruitPos()
     {
         int Min = 1;
         int Max = GridLength - 1;
-        v2i NewFruitPos;
-        do
-        {
-            NewFruitPos = { GetRandomInRange(Min, Max), GetRandomInRange(Min, Max) };
-        } while (CheckCollision(NewFruitPos));
+        v2i NewFruitPos{ -1, -1 };
+        do { NewFruitPos = { GetRandomInRange(Min, Max), GetRandomInRange(Min, Max) }; }
+        while (NewFruitPos == HeadPos || CheckTailCollision(NewFruitPos));
         return NewFruitPos;
+    }
+
+    void GridSnakeState::GrowTail(v2i FruitPos)
+    {
+        Tail.Add(FruitPos);
+    }
+
+    void GridSnakeState::MoveTail(v2i NewTail)
+    {
+        if (Tail.Num == 0)
+        {
+            return;
+        }
+        else
+        {
+            Tail[LastTailIdx] = NewTail;
+            LastTailIdx = (LastTailIdx + 1) % Tail.Num;
+        }
     }
 
     void GridSnakeState::EatFruit()
     {
-        Tail.Add(FruitPos);
+        GrowTail(FruitPos);
         FruitPos = GetNewFruitPos();
-    }
-
-    void GridSnakeState::ClearGrid()
-    {
-        for (int CellIdx = 0; CellIdx < GridSize; CellIdx++) { PlayField[CellIdx] = CELL_EMPTY; }
     }
 
     void GridSnakeState::Update()
@@ -184,12 +184,12 @@ namespace Game
         double CurrTime = Clock::Time();
         if (CurrTime - LastMoveTime > SecondsPerMove)
         {
-            v2i NextPos = GetNextPos(HeadDir);
-            if (!CheckCollision(NextPos))
+            if (CanMove(HeadDir))
             {
-                HeadX = NextPos.X;
-                HeadY = NextPos.Y;
-                if (NextPos == FruitPos) { EatFruit(); }
+                v2i NewTailPos = HeadPos;
+                HeadPos = GetNextPos(HeadDir);
+                if (HeadPos == FruitPos) { EatFruit(); }
+                MoveTail(NewTailPos);
             }
             else
             {
@@ -204,33 +204,26 @@ namespace Game
     {
         GridSnakeState::Update();
 
-        QuadF GridQuad{ VisualGridPos.X, VisualGridPos.Y, VisualGridSize, VisualGridSize };
-        Draw2D.AddBox(GridQuad, GridColor);
+        // Draw Grid
+        Draw2D.AddBox(QuadF{ VisualGridPos.X, VisualGridPos.Y, VisualGridSize, VisualGridSize }, GridColor);
 
-        QuadF HeadQuad
+        // Draw Head
+        DrawCell(Draw2D, HeadPos, HeadColor);
+        // Draw Tail
+        for (int TailIdx = 0; TailIdx < Tail.Num; TailIdx++)
         {
-            VisualGridPos.X + HeadX * VisualCellSize,
-            VisualGridPos.Y + VisualGridSize - ((HeadY+1) * VisualCellSize),
-            VisualCellSize, VisualCellSize
-        };
-        Draw2D.AddQuad(HeadQuad, HeadColor);
+            DrawCell(Draw2D, Tail[TailIdx], TailColor);
+        }
 
-        QuadF FruitQuad
-        {
-            VisualGridPos.X + FruitPos.X * VisualCellSize,
-            VisualGridPos.Y + VisualGridSize - ((FruitPos.Y+1) * VisualCellSize),
-            VisualCellSize, VisualCellSize
-        };
-        Draw2D.AddQuad(FruitQuad, FruitColor);
+        DrawCell(Draw2D, FruitPos, FruitColor);
     }
 
     void GridSnake::Init()
     {
-        GridSnakeState::ClearGrid();
+        Tail.Empty();
         GameState = PlayState::Attract;
-        HeadX = GridLength / 2;
-        HeadY = GridLength / 2;
-        FruitPos = { 0, 0 };
+        HeadPos = { GridLength / 2, GridLength / 2 };
+        FruitPos = GetNewFruitPos();
         LastMoveTime = Clock::Time();
     }
 
