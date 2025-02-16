@@ -5,35 +5,36 @@
 
 namespace Game
 {
-    using EntityID = int;
-    using EntityCallback = void (*)(void);
+    using GameEntityID = int;
+    using GameEntityCallback = void (*)(void*);
 
-    constexpr EntityID InvalidID = 0;
+    constexpr GameEntityID InvalidID = 0;
 
-    struct Entity
+    struct GameEntity
     {
-        EntityID ID = InvalidID;
+        GameEntityID ID = InvalidID;
         bool bActive = false;
-        EntityCallback Tick = nullptr;
-        EntityCallback Init = nullptr;
-        EntityCallback Term = nullptr;
+        void* pData = nullptr;
+        GameEntityCallback Tick = nullptr;
+        GameEntityCallback Init = nullptr;
+        GameEntityCallback Term = nullptr;
     };
 
     struct EntityManager
     {
-        Array<Entity> Entities;
-        EntityID Counter = InvalidID;
+        Array<GameEntity> Entities;
+        GameEntityID Counter = InvalidID;
 
-        Entity* GetEntity(EntityID ID);
-        EntityID AddEntity(Entity NewEntity);
-        bool RemoveEntity(EntityID ID);
+        GameEntity* GetEntity(GameEntityID ID);
+        GameEntityID AddEntity(GameEntity NewEntity);
+        bool RemoveEntity(GameEntityID ID);
         void Tick();
         void Init();
         void Term();
     };
 }
 
-using GameEntity = Game::Entity;
-using GameEntityManager = Game::EntityManager;
+using Game::GameEntity;
+using Game::EntityManager;
 
 #endif // GAME_ENTITY

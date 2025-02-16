@@ -5,8 +5,6 @@
 
 namespace Game
 {
-    using Leviathan::BatchDraw2D;
-
     namespace Tetris
     {
         void Update();

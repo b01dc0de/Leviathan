@@ -2,9 +2,9 @@
 
 namespace Game
 {
-    Entity* EntityManager::GetEntity(EntityID ID)
+    GameEntity* EntityManager::GetEntity(GameEntityID ID)
     {
-        Entity* Result = nullptr;
+        GameEntity* Result = nullptr;
         for (int EntityIdx = 0; EntityIdx < Entities.Num; EntityIdx++)
         {
             if (Entities[EntityIdx].ID == ID)
@@ -16,26 +16,26 @@ namespace Game
         return Result;
     }
 
-    EntityID EntityManager::AddEntity(Entity NewEntity)
+    GameEntityID EntityManager::AddEntity(GameEntity NewEntity)
     {
         NewEntity.ID = ++Counter;
         Entities.Add(NewEntity);
         NewEntity.bActive = true;
-        if (NewEntity.Init) { NewEntity.Init(); }
+        if (NewEntity.Init) { NewEntity.Init(NewEntity.pData); }
         return Counter;
     }
 
-    bool EntityManager::RemoveEntity(EntityID ID)
+    bool EntityManager::RemoveEntity(GameEntityID ID)
     {
         bool bFound = false;
         for (int EntityIdx = 0; EntityIdx < Entities.Num; EntityIdx++)
         {
             if (Entities[EntityIdx].ID == ID)
             {
-                Entity& EntityToRemove = Entities[EntityIdx];
-                if (EntityToRemove.Term) { EntityToRemove.Term(); }
+                GameEntity& EntityToRemove = Entities[EntityIdx];
+                if (EntityToRemove.Term) { EntityToRemove.Term(EntityToRemove.pData); }
 
-                Entity& LastToClear = Entities.Last();
+                GameEntity& LastToClear = Entities.Last();
                 Entities.Remove(EntityIdx);
                 LastToClear = {};
 
@@ -52,8 +52,8 @@ namespace Game
         {
             if (Entities[EntityIdx].bActive)
             {
-                Entity& CurrEntity = Entities[EntityIdx];
-                if (CurrEntity.Tick) { CurrEntity.Tick(); }
+                GameEntity& CurrEntity = Entities[EntityIdx];
+                if (CurrEntity.Tick) { CurrEntity.Tick(CurrEntity.pData); }
             }
         }
     }
@@ -68,8 +68,8 @@ namespace Game
     {
         for (int EntityIdx = 0; EntityIdx < Entities.Num; EntityIdx++)
         {
-            Entity& CurrEntity = Entities[EntityIdx];
-            if (CurrEntity.Term) { CurrEntity.Term(); }
+            GameEntity& CurrEntity = Entities[EntityIdx];
+            if (CurrEntity.Term) { CurrEntity.Term(CurrEntity.pData); }
             CurrEntity = {};
         }
         Entities.Empty();

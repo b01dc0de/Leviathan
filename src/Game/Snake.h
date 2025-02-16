@@ -2,11 +2,10 @@
 #define GAME_SNAKE_H
 
 #include "../Leviathan.h"
+#include "Entity.h"
 
 namespace Game
 {
-
-    using Leviathan::BatchDraw2D;
 
     namespace GridSnake
     {
