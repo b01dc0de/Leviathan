@@ -1,6 +1,6 @@
-#include "Entity.h"
+#include "GameEntity.h"
 
-namespace Game
+namespace Leviathan
 {
     GameEntity* EntityManager::GetEntity(GameEntityID ID)
     {

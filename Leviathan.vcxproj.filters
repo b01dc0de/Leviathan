@@ -60,8 +60,8 @@
     <ClCompile Include="src\Utils.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Game\Entity.cpp">
-      <Filter>src\Game</Filter>
+    <ClCompile Include="src\GameEntity.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -116,8 +116,8 @@
     <ClInclude Include="src\Utils.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Game\Entity.h">
-      <Filter>src\Game</Filter>
+    <ClInclude Include="src\GameEntity.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

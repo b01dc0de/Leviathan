@@ -1,9 +1,9 @@
-#ifndef GAME_ENTITY_H
-#define GAME_ENTITY_H
+#ifndef LEVIATHAN_GAMEENTITY_H
+#define LEVIATHAN_GAMEENTITY_H
 
-#include "../Leviathan.h"
+#include "Leviathan.h"
 
-namespace Game
+namespace Leviathan
 {
     using GameEntityID = int;
     using GameEntityCallback = void (*)(void*);
@@ -34,7 +34,4 @@ namespace Game
     };
 }
 
-using Game::GameEntity;
-using Game::EntityManager;
-
-#endif // GAME_ENTITY
+#endif // LEVIATHAN_GAMEENTITY_H

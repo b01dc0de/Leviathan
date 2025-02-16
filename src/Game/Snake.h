@@ -2,7 +2,6 @@
 #define GAME_SNAKE_H
 
 #include "../Leviathan.h"
-#include "Entity.h"
 
 namespace Game
 {
