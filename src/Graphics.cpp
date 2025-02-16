@@ -25,7 +25,8 @@ namespace Leviathan
         DrawStateT DrawStateColor;
         DrawStateT DrawStateTexture;
         DrawStateT DrawStateUnicolor;
-        DrawStateT DrawStateInstRect;
+        DrawStateT DrawStateInstRectColor;
+        DrawStateT DrawStateInstRectTexture;
 
         ID3D11Buffer* DX_WBuffer = nullptr;
         ID3D11Buffer* DX_VPBuffer = nullptr;
@@ -43,10 +44,13 @@ namespace Leviathan
         ID3D11Buffer* DX_VxBufferLines = nullptr;
 
         ID3D11Buffer* DX_InstRectBuffer = nullptr;
-        ID3D11Buffer* DX_BatchedQuadCmdsBuffer = nullptr;
+        ID3D11Buffer* DX_BatchedRectColorCmdsBuffer = nullptr;
+        ID3D11Buffer* DX_BatchedRectTextureCmdsBuffer = nullptr;
 
         ID3D11Texture2D* DX_DebugTexture = nullptr;
         ID3D11ShaderResourceView* DX_DebugTextureSRV = nullptr;
+        ID3D11Texture2D* DX_TestTexture = nullptr;
+        ID3D11ShaderResourceView* DX_TestTextureSRV = nullptr;
         ID3D11SamplerState* DX_DefaultSamplerState = nullptr;
 
         D3D_FEATURE_LEVEL UsedFeatureLevel;
@@ -369,14 +373,14 @@ namespace Leviathan
             const UINT Strides[] = { sizeof(VxMin), sizeof(InstQuadColorData) };
             const UINT Offsets[] = { 0, 0 };
             ASSERT((ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Strides)) && (ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Offsets)));
-            DX_ImmediateContext->IASetInputLayout(DrawStateInstRect.InputLayout);
+            DX_ImmediateContext->IASetInputLayout(DrawStateInstRectColor.InputLayout);
             DX_ImmediateContext->IASetVertexBuffers(0, ARRAY_SIZE(VxInstBuffers), VxInstBuffers, Strides, Offsets);
             DX_ImmediateContext->IASetIndexBuffer(MeshStateSpriteQuad.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
             DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-            DX_ImmediateContext->VSSetShader(DrawStateInstRect.VertexShader, nullptr, 0);
+            DX_ImmediateContext->VSSetShader(DrawStateInstRectColor.VertexShader, nullptr, 0);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
-            DX_ImmediateContext->PSSetShader(DrawStateInstRect.PixelShader, nullptr, 0);
+            DX_ImmediateContext->PSSetShader(DrawStateInstRectColor.PixelShader, nullptr, 0);
 
             DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, ARRAY_SIZE(InstRectDataArray), 0u, 0, 0u);
         }
@@ -384,32 +388,32 @@ namespace Leviathan
         static bool bDrawGame = true;
         // Get instanced draw commands from game:
         if (bDrawGame) { GameManager::Draw(Draw2D); }
-        if (Draw2D.BatchCmds.Num > 0)
+        if (Draw2D.ColorBatchCmds.Num > 0)
         {
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
 
             { // Send BatchedCmds state to GPU
                 D3D11_MAPPED_SUBRESOURCE MappedBatchCmds = {};
-                DX_ImmediateContext->Map(DX_BatchedQuadCmdsBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedBatchCmds);
-                memcpy(MappedBatchCmds.pData, Draw2D.BatchCmds.Data, sizeof(InstQuadColorData) * Draw2D.BatchCmds.Num);
-                DX_ImmediateContext->Unmap(DX_BatchedQuadCmdsBuffer, 0);
+                DX_ImmediateContext->Map(DX_BatchedRectColorCmdsBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedBatchCmds);
+                memcpy(MappedBatchCmds.pData, Draw2D.ColorBatchCmds.Data, sizeof(InstQuadColorData) * Draw2D.ColorBatchCmds.Num);
+                DX_ImmediateContext->Unmap(DX_BatchedRectColorCmdsBuffer, 0);
             }
 
-            ID3D11Buffer* VxInstBuffers[] = { MeshStateSpriteQuad.VxBuffer, DX_BatchedQuadCmdsBuffer };
+            ID3D11Buffer* VxInstBuffers[] = { MeshStateSpriteQuad.VxBuffer, DX_BatchedRectColorCmdsBuffer };
             const UINT Strides[] = { sizeof(VxMin), sizeof(InstQuadColorData) };
             const UINT Offsets[] = { 0, 0 };
             ASSERT((ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Strides)) && (ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Offsets)));
-            DX_ImmediateContext->IASetInputLayout(DrawStateInstRect.InputLayout);
+            DX_ImmediateContext->IASetInputLayout(DrawStateInstRectColor.InputLayout);
             DX_ImmediateContext->IASetVertexBuffers(0, ARRAY_SIZE(VxInstBuffers), VxInstBuffers, Strides, Offsets);
             DX_ImmediateContext->IASetIndexBuffer(MeshStateSpriteQuad.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
             DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-            DX_ImmediateContext->VSSetShader(DrawStateInstRect.VertexShader, nullptr, 0);
+            DX_ImmediateContext->VSSetShader(DrawStateInstRectColor.VertexShader, nullptr, 0);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
-            DX_ImmediateContext->PSSetShader(DrawStateInstRect.PixelShader, nullptr, 0);
+            DX_ImmediateContext->PSSetShader(DrawStateInstRectColor.PixelShader, nullptr, 0);
 
-            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, Draw2D.BatchCmds.Num, 0u, 0, 0u);
+            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, Draw2D.ColorBatchCmds.Num, 0u, 0, 0u);
         }
 
         DX_ImmediateContext->OMSetDepthStencilState(nullptr, 0);
@@ -454,25 +458,25 @@ namespace Leviathan
 
             { // Send BatchedCmds state to GPU
                 D3D11_MAPPED_SUBRESOURCE MappedBatchCmds = {};
-                DX_ImmediateContext->Map(DX_BatchedQuadCmdsBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedBatchCmds);
-                memcpy(MappedBatchCmds.pData, Draw2D.BatchCmds.Data, sizeof(InstQuadColorData) * Draw2D.BatchCmds.Num);
-                DX_ImmediateContext->Unmap(DX_BatchedQuadCmdsBuffer, 0);
+                DX_ImmediateContext->Map(DX_BatchedRectColorCmdsBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedBatchCmds);
+                memcpy(MappedBatchCmds.pData, Draw2D.ColorBatchCmds.Data, sizeof(InstQuadColorData) * Draw2D.ColorBatchCmds.Num);
+                DX_ImmediateContext->Unmap(DX_BatchedRectColorCmdsBuffer, 0);
             }
 
-            ID3D11Buffer* VxInstBuffers[] = { MeshStateSpriteQuad.VxBuffer, DX_BatchedQuadCmdsBuffer };
+            ID3D11Buffer* VxInstBuffers[] = { MeshStateSpriteQuad.VxBuffer, DX_BatchedRectColorCmdsBuffer };
             const UINT Strides[] = { sizeof(VxMin), sizeof(InstQuadColorData) };
             const UINT Offsets[] = { 0, 0 };
             ASSERT((ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Strides)) && (ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Offsets)));
-            DX_ImmediateContext->IASetInputLayout(DrawStateInstRect.InputLayout);
+            DX_ImmediateContext->IASetInputLayout(DrawStateInstRectColor.InputLayout);
             DX_ImmediateContext->IASetVertexBuffers(0, ARRAY_SIZE(VxInstBuffers), VxInstBuffers, Strides, Offsets);
             DX_ImmediateContext->IASetIndexBuffer(MeshStateSpriteQuad.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
             DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-            DX_ImmediateContext->VSSetShader(DrawStateInstRect.VertexShader, nullptr, 0);
+            DX_ImmediateContext->VSSetShader(DrawStateInstRectColor.VertexShader, nullptr, 0);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
-            DX_ImmediateContext->PSSetShader(DrawStateInstRect.PixelShader, nullptr, 0);
+            DX_ImmediateContext->PSSetShader(DrawStateInstRectColor.PixelShader, nullptr, 0);
 
-            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, Draw2D.BatchCmds.Num, 0u, 0, 0u);
+            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, Draw2D.ColorBatchCmds.Num, 0u, 0, 0u);
         }
 
         UINT SyncInterval = 0, PresentFlags = 0;
@@ -670,10 +674,12 @@ namespace Leviathan
             DrawStateUnicolor = CreateDrawState(DX_Device, BaseShaderFilename, DefinesVxMin, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
         }
 
-        { // InstRect
-            const wchar_t* InstRectShaderFilename = L"src/hlsl/InstRectShader.hlsl";
+        const wchar_t* InstRectShaderFilename = L"src/hlsl/InstRectShader.hlsl";
+        { // InstRectColor
             const D3D_SHADER_MACRO DefinesInst[] =
             {
+                "INST_RECT_COLOR", "1",
+                "INST_RECT_TEXTURE", "0",
                 nullptr, nullptr
             };
             D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
@@ -683,7 +689,24 @@ namespace Leviathan
                 { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
             };
 
-            DrawStateInstRect = CreateDrawState(DX_Device, InstRectShaderFilename, DefinesInst, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
+            DrawStateInstRectColor = CreateDrawState(DX_Device, InstRectShaderFilename, DefinesInst, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
+        }
+
+        { // InstRectTexture
+            const D3D_SHADER_MACRO DefinesInst[] =
+            {
+                "INST_RECT_COLOR", "0",
+                "INST_RECT_TEXTURE", "1",
+                nullptr, nullptr
+            };
+            D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
+            {
+                { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+                { "RECT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+                { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+            };
+
+            DrawStateInstRectTexture = CreateDrawState(DX_Device, InstRectShaderFilename, DefinesInst, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
         }
 
         D3D11_BUFFER_DESC InstRectBufferDesc = {};
@@ -695,15 +718,25 @@ namespace Leviathan
         D3D11_SUBRESOURCE_DATA InstRectBufferInitData = { InstRectDataArray, 0, 0 };
         DX_CHECK(DX_Device->CreateBuffer(&InstRectBufferDesc, &InstRectBufferInitData, &DX_InstRectBuffer));
 
-        Draw2D.BatchCmds.Reserve(DefaultSize_BatchDraw2D);
-        D3D11_BUFFER_DESC BatchedQuadCmdsBufferDesc = {};
-        BatchedQuadCmdsBufferDesc.ByteWidth = sizeof(InstQuadColorData) * Draw2D.BatchCmds.Capacity;
-        BatchedQuadCmdsBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-        BatchedQuadCmdsBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-        BatchedQuadCmdsBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-        BatchedQuadCmdsBufferDesc.MiscFlags = 0;
-        BatchedQuadCmdsBufferDesc.StructureByteStride = 0;
-        DX_CHECK(DX_Device->CreateBuffer(&BatchedQuadCmdsBufferDesc, nullptr, &DX_BatchedQuadCmdsBuffer));
+        Draw2D.ColorBatchCmds.Reserve(DefaultSize_BatchDraw2D);
+        D3D11_BUFFER_DESC BatchedColorCmdsBuffer = {};
+        BatchedColorCmdsBuffer.ByteWidth = sizeof(InstQuadColorData) * Draw2D.ColorBatchCmds.Capacity;
+        BatchedColorCmdsBuffer.Usage = D3D11_USAGE_DYNAMIC;
+        BatchedColorCmdsBuffer.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+        BatchedColorCmdsBuffer.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        BatchedColorCmdsBuffer.MiscFlags = 0;
+        BatchedColorCmdsBuffer.StructureByteStride = 0;
+        DX_CHECK(DX_Device->CreateBuffer(&BatchedColorCmdsBuffer, nullptr, &DX_BatchedRectColorCmdsBuffer));
+
+        Draw2D.TextureBatchCmds.Reserve(DefaultSize_BatchDraw2D);
+        D3D11_BUFFER_DESC BatchedTextureCmdsBuffer = {};
+        BatchedColorCmdsBuffer.ByteWidth = sizeof(InstQuadTextureData) * Draw2D.TextureBatchCmds.Capacity;
+        BatchedColorCmdsBuffer.Usage = D3D11_USAGE_DYNAMIC;
+        BatchedColorCmdsBuffer.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+        BatchedColorCmdsBuffer.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        BatchedColorCmdsBuffer.MiscFlags = 0;
+        BatchedColorCmdsBuffer.StructureByteStride = 0;
+        DX_CHECK(DX_Device->CreateBuffer(&BatchedColorCmdsBuffer, nullptr, &DX_BatchedRectTextureCmdsBuffer));
 
         D3D11_BUFFER_DESC WorldBufferDesc = {};
         WorldBufferDesc.ByteWidth = sizeof(m4f);
@@ -807,6 +840,48 @@ namespace Leviathan
             DX_CHECK(DX_Device->CreateSamplerState(&DefaultSamplerDesc, &DX_DefaultSamplerState));
         }
 
+        // TODO:
+        if (false)
+        {
+            ImageT TestImage = {};
+            LoadBMPFile("TestTexture.bmp", TestImage);
+
+            D3D11_SUBRESOURCE_DATA DebugTextureDataDesc[] = { {} };
+            DebugTextureDataDesc[0].pSysMem = TestImage.PxBuffer;
+            DebugTextureDataDesc[0].SysMemPitch = sizeof(RGBA32) * TestImage.Width;
+            DebugTextureDataDesc[0].SysMemSlicePitch = TestImage.PxBytes;
+            D3D11_TEXTURE2D_DESC DebugTextureDesc = {};
+            DebugTextureDesc.Width = TestImage.Width;
+            DebugTextureDesc.Height = TestImage.Height;
+            DebugTextureDesc.MipLevels = 1;
+            DebugTextureDesc.ArraySize = 1;
+            DebugTextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            DebugTextureDesc.SampleDesc.Count = 1;
+            DebugTextureDesc.SampleDesc.Quality = 0;
+            DebugTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+            DebugTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+            DebugTextureDesc.CPUAccessFlags = 0;
+            DebugTextureDesc.MiscFlags = 0;
+            DX_CHECK(DX_Device->CreateTexture2D(&DebugTextureDesc, &DebugTextureDataDesc[0], &DX_DebugTexture));
+            DX_CHECK(DX_Device->CreateShaderResourceView(DX_DebugTexture, nullptr, &DX_DebugTextureSRV));
+
+            D3D11_TEXTURE_ADDRESS_MODE SamplerAddressMode = D3D11_TEXTURE_ADDRESS_WRAP;
+            D3D11_SAMPLER_DESC DefaultSamplerDesc = {};
+            DefaultSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+            DefaultSamplerDesc.AddressU = SamplerAddressMode;
+            DefaultSamplerDesc.AddressV = SamplerAddressMode;
+            DefaultSamplerDesc.AddressW = SamplerAddressMode;
+            DefaultSamplerDesc.MipLODBias = 0.0f;
+            DefaultSamplerDesc.MaxAnisotropy = 0;
+            DefaultSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+            DefaultSamplerDesc.MinLOD = 0;
+            DefaultSamplerDesc.MaxLOD = 0;
+            DX_CHECK(DX_Device->CreateSamplerState(&DefaultSamplerDesc, &DX_DefaultSamplerState));
+
+            DX_TestTexture = nullptr;
+            DX_TestTextureSRV = nullptr;
+        }
+
         MeshStateQuad = CreateMeshState
         (
             DX_Device,
@@ -876,11 +951,14 @@ namespace Leviathan
         SafeRelease(DX_VPBuffer);
         SafeRelease(DX_UnicolorBuffer);
         SafeRelease(DX_InstRectBuffer);
+        SafeRelease(DX_BatchedRectColorCmdsBuffer);
+        SafeRelease(DX_BatchedRectTextureCmdsBuffer);
 
         SafeRelease(DrawStateColor);
         SafeRelease(DrawStateTexture);
         SafeRelease(DrawStateUnicolor);
-        SafeRelease(DrawStateInstRect);
+        SafeRelease(DrawStateInstRectColor);
+        SafeRelease(DrawStateInstRectTexture);
 
         SafeRelease(DXGI_SwapChain1);
         SafeRelease(DX_Backbuffer);

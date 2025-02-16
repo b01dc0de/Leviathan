@@ -93,7 +93,7 @@ namespace Leviathan
         float SizeY = (Key.Size.Y * Scale);
         float PosX = Origin.X + (Key.Pos.X * Scale);
         float PosY = Origin.Y - (Key.Pos.Y * Scale) - SizeY;
-        QuadF KeyQuad = { PosX, PosY, SizeX, SizeY };
+        RectF KeyQuad = { PosX, PosY, SizeX, SizeY };
         bool bIsDown = KeyboardState::GetKeyState(Key.LvCode, true);
         RGBA ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
         if (bIsDown)
@@ -118,7 +118,7 @@ namespace Leviathan
                 vKeyboard.KeyList[LV_KEY_NONE].Size.X * Scale,
                 vKeyboard.KeyList[LV_KEY_NONE].Size.Y * Scale
             };
-            QuadF BackgroundQuad
+            RectF BackgroundQuad
             {
                 Origin.X,
                 Origin.Y - BackgroundSize.Y,
@@ -159,16 +159,16 @@ namespace Leviathan
         if (bDrawBG)
         {
             v2f AdjRegionSize { RegionSize.X * Scale, RegionSize.Y * Scale };
-            QuadF RegionQuad{ Origin.X, Origin.Y - AdjRegionSize.Y, AdjRegionSize.X, AdjRegionSize.Y };
+            RectF RegionQuad{ Origin.X, Origin.Y - AdjRegionSize.Y, AdjRegionSize.X, AdjRegionSize.Y };
             Draw2D.AddQuad(RegionQuad, ColorBlack);
             Draw2D.AddBox(RegionQuad, ColorWhite, InputVisualizer::LineWidth);
         }
 
         const v2f AdjButtonSize{ ButtonSize.X * Scale, ButtonSize.Y * Scale };
         const float AdjWheelSize = WheelSize * Scale;
-        QuadF LeftQuad{ Origin.X, Origin.Y - AdjButtonSize.Y, AdjButtonSize.X, AdjButtonSize.Y };
-        QuadF MiddleQuad{ LeftQuad.PosX + AdjButtonSize.X, LeftQuad.PosY, AdjButtonSize.X, AdjButtonSize.Y - AdjWheelSize };
-        QuadF RightQuad{ MiddleQuad.PosX + AdjButtonSize.X, LeftQuad.PosY, AdjButtonSize.X, AdjButtonSize.Y };
+        RectF LeftQuad{ Origin.X, Origin.Y - AdjButtonSize.Y, AdjButtonSize.X, AdjButtonSize.Y };
+        RectF MiddleQuad{ LeftQuad.PosX + AdjButtonSize.X, LeftQuad.PosY, AdjButtonSize.X, AdjButtonSize.Y - AdjWheelSize };
+        RectF RightQuad{ MiddleQuad.PosX + AdjButtonSize.X, LeftQuad.PosY, AdjButtonSize.X, AdjButtonSize.Y };
         { // Buttons
             if (MouseState::bLeftKey) { Draw2D.AddQuad(LeftQuad, ColorWhite); }
             else { Draw2D.AddBox(LeftQuad, ColorWhite, InputVisualizer::LineWidth); }
@@ -183,7 +183,7 @@ namespace Leviathan
 
         v2f AdjMouseAreaSize { MouseAreaSize.X * Scale, MouseAreaSize.Y * Scale };
         v2f AdjMouseAreaPos{ MouseAreaPos.X * Scale, MouseAreaPos.Y * Scale };
-        QuadF MouseWindowQuad
+        RectF MouseWindowQuad
         {
             AdjMouseAreaPos.X + Origin.X,
             AdjMouseAreaPos.Y + Origin.Y,
@@ -197,7 +197,7 @@ namespace Leviathan
                 ((float)MouseState::MouseX / (float)AppWidth * MouseWindowQuad.SizeX) + MouseWindowQuad.PosX,
                 AdjMouseAreaSize.Y - ((float)MouseState::MouseY / (float)AppHeight * MouseWindowQuad.SizeY) + MouseWindowQuad.PosY
             };
-            QuadF CursorQuad
+            RectF CursorQuad
             {
                 CursorPos.X - HalfCursorSize,
                 CursorPos.Y - HalfCursorSize,
@@ -213,11 +213,11 @@ namespace Leviathan
         static float VisualSpeed = 0.25f;
         WheelAngle += MouseState::MouseWheel * VisualSpeed;
         { // Wheel
-            QuadF WheelQuad{ AdjWheelPos.X, AdjWheelPos.Y, AdjWheelSize, AdjWheelSize };
+            RectF WheelQuad{ AdjWheelPos.X, AdjWheelPos.Y, AdjWheelSize, AdjWheelSize };
             Draw2D.AddBox(WheelQuad, RGBA{1.0f, 0.0f, 0.0f, 1.0f}, InputVisualizer::LineWidth);
             const v2f WheelLineCenter { AdjWheelPos.X + AdjWheelSize * 0.5f, AdjWheelPos.Y + AdjWheelSize * 0.5f };
             const v2f WheelLineEnd { WheelLineCenter.X + (cosf(WheelAngle) * AdjWheelSize * 0.5f), WheelLineCenter.Y + (sinf(WheelAngle) * AdjWheelSize * 0.5f) };
-            QuadF WheelAngleQuad
+            RectF WheelAngleQuad
             {
                 Min(WheelLineCenter.X, WheelLineEnd.X),
                 Min(WheelLineCenter.Y, WheelLineEnd.Y),
@@ -278,7 +278,7 @@ namespace Leviathan
         static constexpr bool bDrawBG = true;
         if (bDrawBG)
         {
-            QuadF BackgroundQuad
+            RectF BackgroundQuad
             {
                 Origin.X, Origin.Y - AdjRegionSize.Y,
                 AdjRegionSize.X, AdjRegionSize.Y
@@ -293,7 +293,7 @@ namespace Leviathan
         float AdjButtonsOffset = ButtonsOffset * AdjRegionSize.X;
         for (int ButtonIdx = LV_GAMEPAD_DPAD_UP; ButtonIdx < LV_GAMEPAD_START; ButtonIdx++)
         {
-            QuadF ButtonQuad
+            RectF ButtonQuad
             {
                 ButtonPos[ButtonIdx].X * GamepadRegionSize.X * Scale + Origin.X - AdjFaceButtonsSize / 2.0f,
                 ButtonPos[ButtonIdx].Y * GamepadRegionSize.Y * Scale + Origin.Y - AdjFaceButtonsSize,
@@ -304,7 +304,7 @@ namespace Leviathan
         }
         for (int ButtonIdx = LV_GAMEPAD_START; ButtonIdx < LV_GAMEPAD_LEFT_THUMB; ButtonIdx++)
         {
-            QuadF ButtonQuad
+            RectF ButtonQuad
             {
                 (ButtonPos[ButtonIdx].X - ControlButtonsSize.X / 2.0f) * GamepadRegionSize.X * Scale + Origin.X,
                 (ButtonPos[ButtonIdx].Y - ControlButtonsSize.Y) * GamepadRegionSize.Y * Scale + Origin.Y,
@@ -320,12 +320,12 @@ namespace Leviathan
         float RTrigger = GamepadState::GetRightTrigger();
         { // Triggers
             static constexpr float TriggerDeadzone = 0.05f;
-            QuadF LeftTriggerQuad
+            RectF LeftTriggerQuad
             {
                 Origin.X, Origin.Y - AdjTriggerSize.Y,
                 AdjTriggerSize.X, AdjTriggerSize.Y
             };
-            QuadF RightTriggerQuad
+            RectF RightTriggerQuad
             {
                 Origin.X + AdjTriggerSize.X, Origin.Y - AdjTriggerSize.Y,
                 AdjTriggerSize.X, AdjTriggerSize.Y
@@ -350,13 +350,13 @@ namespace Leviathan
         { // Sticks
             float AdjStickSize = ThumbStickSize * AdjRegionSize.X;
 
-            QuadF LeftStickQuad
+            RectF LeftStickQuad
             {
                 Origin.X + (DPadButtonsCenter.X * AdjRegionSize.X) - AdjStickSize / 2.0f,
                 Origin.Y + (ThumbStickCenter.Y * AdjRegionSize.Y) - AdjStickSize * 0.75f,
                 AdjStickSize, AdjStickSize
             };
-            QuadF RightStickQuad
+            RectF RightStickQuad
             {
                 Origin.X + (FaceButtonsCenter.X * AdjRegionSize.X) - AdjStickSize / 2.0f,
                 Origin.Y + (ThumbStickCenter.Y * AdjRegionSize.Y) - AdjStickSize * 0.75f,
@@ -392,14 +392,14 @@ namespace Leviathan
                 RightStickCenter.Y + RStick.Y * AdjStickSize / 2.0f
             };
 
-            QuadF LeftInputQuad
+            RectF LeftInputQuad
             {
                 Min(LeftStickInputPos.X, LeftStickCenter.X),
                 Min(LeftStickInputPos.Y, LeftStickCenter.Y),
                 Abs(LeftStickInputPos.X - LeftStickCenter.X),
                 Abs(LeftStickInputPos.Y - LeftStickCenter.Y)
             };
-            QuadF RightInputQuad
+            RectF RightInputQuad
             {
                 Min(RightStickInputPos.X, RightStickCenter.X),
                 Min(RightStickInputPos.Y, RightStickCenter.Y),

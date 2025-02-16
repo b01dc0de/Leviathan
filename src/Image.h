@@ -21,6 +21,7 @@ namespace Leviathan
     };
 
     void GetDebugImage(ImageT& OutImage);
+    void LoadBMPFile(const char* Filename, ImageT& OutImage);
 }
 
 #endif // LEVIATHAN_IMAGE_H

@@ -59,7 +59,7 @@ namespace Game
 
     void GridSnakeState::DrawCell(BatchDraw2D& Draw2D, v2i Cell, RGBA Color)
     {
-        QuadF CellQuad
+        RectF CellQuad
         {
             VisualGridPos.X + Cell.X * VisualCellSize,
             VisualGridPos.Y + VisualGridSize - ((Cell.Y+1) * VisualCellSize),
@@ -208,7 +208,7 @@ namespace Game
     void GridSnake::Draw(BatchDraw2D& Draw2D)
     {
         // Draw Grid
-        Draw2D.AddBox(QuadF{ VisualGridPos.X, VisualGridPos.Y, VisualGridSize, VisualGridSize }, GridColor);
+        Draw2D.AddBox(RectF{ VisualGridPos.X, VisualGridPos.Y, VisualGridSize, VisualGridSize }, GridColor);
 
         // Draw Head
         DrawCell(Draw2D, HeadPos, HeadColor);

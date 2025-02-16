@@ -5,7 +5,7 @@
 
 namespace Leviathan
 {
-    struct QuadF
+    struct RectF
     {
         float PosX = 0.0f;
         float PosY = 0.0f;
@@ -15,18 +15,27 @@ namespace Leviathan
 
     struct InstQuadColorData
     {
-        QuadF Rect;
+        RectF Rect;
         RGBA Color;
+    };
+
+    struct InstQuadTextureData
+    {
+        RectF PosRect;
+        RectF TexRect;
     };
 
     struct BatchDraw2D
     {
-        Array<InstQuadColorData> BatchCmds;
+        Array<InstQuadColorData> ColorBatchCmds;
+        Array<InstQuadTextureData> TextureBatchCmds;
 
         void Clear();
         void AddQuad(const InstQuadColorData& InInstQuadColorData);
-        void AddQuad(const QuadF& InQuad, const RGBA& InColor);
-        void AddBox(const QuadF& InQuad, const RGBA& InColor, float LineWeight = 1.0f);
+        void AddQuad(const RectF& InQuad, const RGBA& InColor);
+        void AddBox(const RectF& InQuad, const RGBA& InColor, float LineWeight = 1.0f);
+        void AddQuad(const InstQuadTextureData& InInstQuadTextureData);
+        void AddQuad(const RectF& InQuad, const RectF& InTexRect);
     };
 }
 

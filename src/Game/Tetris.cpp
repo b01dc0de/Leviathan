@@ -743,7 +743,7 @@ namespace Game
             const float VisualCellSize = VisualGridHeight / (float)GridHeight;
 
             // Draw grid background
-            Draw2D.AddQuad(QuadF{ VisualGridPos.X, VisualGridPos.Y, VisualGridWidth, VisualGridHeight }, BackgroundColor);
+            Draw2D.AddQuad(RectF{ VisualGridPos.X, VisualGridPos.Y, VisualGridWidth, VisualGridHeight }, BackgroundColor);
 
             // Draw cells
             for (int CellIdx = 0; CellIdx < GridSize; CellIdx++)
@@ -755,7 +755,7 @@ namespace Game
                 float CellY = AppHeight - (VisualGridPos.Y + CellRow * VisualCellSize) - VisualCellSize;
                 RGBA CellColor = CellColors[Tetrion::PlayField[CellIdx]];
 
-                Draw2D.AddQuad(QuadF{ CellX, CellY, VisualCellSize, VisualCellSize }, CellColor);
+                Draw2D.AddQuad(RectF{ CellX, CellY, VisualCellSize, VisualCellSize }, CellColor);
             }
 
             // Draw Player Piece
@@ -767,7 +767,7 @@ namespace Game
                 {
                     float CellX = VisualGridPos.X + (Pos.Col * VisualCellSize);
                     float CellY = AppHeight - (VisualGridPos.Y + (Pos.Row * VisualCellSize) + VisualCellSize);
-                    Draw2D.AddQuad(QuadF{ CellX, CellY, VisualCellSize, VisualCellSize }, PlayerColor);
+                    Draw2D.AddQuad(RectF{ CellX, CellY, VisualCellSize, VisualCellSize }, PlayerColor);
                 }
             }
 
@@ -777,12 +777,12 @@ namespace Game
             for (int RowIdx = 0; RowIdx < GridHeight + 1; RowIdx++)
             {
                 float LineY = VisualGridPos.Y + RowIdx * VisualCellSize - HalfLineThickness;
-                Draw2D.AddQuad(QuadF{ VisualGridPos.X, LineY, VisualGridWidth, LineThickness }, LineColor);
+                Draw2D.AddQuad(RectF{ VisualGridPos.X, LineY, VisualGridWidth, LineThickness }, LineColor);
             }
             for (int ColIdx = 0; ColIdx < GridWidth + 1; ColIdx++)
             {
                 float LineX = VisualGridPos.X + ColIdx * VisualCellSize - HalfLineThickness;
-                Draw2D.AddQuad(QuadF{ LineX, VisualGridPos.Y, LineThickness, VisualGridHeight }, LineColor);
+                Draw2D.AddQuad(RectF{ LineX, VisualGridPos.Y, LineThickness, VisualGridHeight }, LineColor);
             }
         }
 

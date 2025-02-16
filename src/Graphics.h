@@ -12,10 +12,10 @@ namespace Leviathan
         static void Term();
     };
 
-#define DX_CHECK(DXResult) if (FAILED(DXResult)) { DebugBreak(); }
-
     inline void SafeRelease(IUnknown* Ptr) { if (Ptr) { Ptr->Release(); Ptr = nullptr; } }
 }
+
+#define DX_CHECK(DXResult) if (FAILED(DXResult)) { DebugBreak(); }
 
 #include "BatchDraw2D.h"
 

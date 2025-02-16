@@ -1,3 +1,4 @@
+#include "Leviathan.h"
 #include "Image.h"
 
 namespace Leviathan
@@ -42,6 +43,22 @@ namespace Leviathan
                 bool bEvenCell = (PxRow + PxCol) % 2 == 0;
                 OutImage.PxBuffer[PxIdx] = bEvenCell ? Black : Pink;
             }
+        }
+    }
+
+    struct BitmapFile
+    {
+    };
+
+
+    void LoadBMPFile(const char* Filename, ImageT& OutImage)
+    {
+        FileContentsT LoadedFile = LoadFileContents(Filename);
+
+        BitmapFile BMP;
+
+        if (LoadedFile.Size && LoadedFile.Contents)
+        {
         }
     }
 }

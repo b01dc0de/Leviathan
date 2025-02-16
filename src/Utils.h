@@ -21,6 +21,13 @@ namespace Leviathan
         return RGBA{ fR, fG, fB, 1.0f };
     }
 
+    struct FileContentsT
+    {
+        size_t Size = 0;
+        uchar* Contents = nullptr;
+    };
+
+    FileContentsT LoadFileContents(const char* Filename);
 
     int GetRandomInRange(int Min, int Max);
 }
