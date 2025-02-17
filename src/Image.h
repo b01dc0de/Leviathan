@@ -16,7 +16,7 @@ namespace Leviathan
         unsigned int Width;
         unsigned int Height;
         size_t PxCount;
-        size_t PxBytes;
+        size_t PxBufferSize;
         RGBA32* PxBuffer;
     };
 

@@ -9,7 +9,7 @@ namespace Leviathan
         OutImage.Width = DebugImageLength;
         OutImage.Height = DebugImageLength;
         OutImage.PxCount = OutImage.Width * OutImage.Height;
-        OutImage.PxBytes = sizeof(RGBA32) * OutImage.PxCount;
+        OutImage.PxBufferSize = sizeof(RGBA32) * OutImage.PxCount;
         OutImage.PxBuffer = new RGBA32[OutImage.PxCount];
 
         const RGBA32 Pink{ 255u, 73u, 173u, 255u };
@@ -46,19 +46,81 @@ namespace Leviathan
         }
     }
 
-    struct BitmapFile
-    {
-    };
+    #pragma pack(push, 1)
+	struct BMPFileHeader
+	{
+		u16 Type; // Always Ascii BM
+		u32 SizeInBytes; // Size (bytes) of file
+		u16 Res1; // 0
+		u16 Res2; // 0
+		u32 OffsetBytes; // Offset (bytes) to actual pixel data
+	};
 
+	struct BMPInfoHeader
+	{
+		u32 StructSize; // Size (bytes) of InfoHeader
+		s32 Width;
+		s32 Height; // NOTE(chris): If positive, pixel data is bottom to top
+		u16 Planes; // Must be 1
+		u16 BitsPerPixel; // Bits-per-pixel (0, 1, 4, 8, 16, 24, 32)
+		u32 Compression; // *Should* be 0
+		u32 Unused_ImgSize; // Only used if Compression is weird (not 0)
+		s32 HRes; // Horizontal resolution
+		s32 VRes; // Vertical resolution
+		u32 ColorsUsed; // 0 for our purposes
+		u32 ColorsImportant; // 0 for our purposes
+	};
+#pragma pack(pop)
+	struct BMPHeader
+	{
+		BMPFileHeader FileHeader;
+		BMPInfoHeader InfoHeader;
+	};
 
     void LoadBMPFile(const char* Filename, ImageT& OutImage)
     {
         FileContentsT LoadedFile = LoadFileContents(Filename);
-
-        BitmapFile BMP;
-
         if (LoadedFile.Size && LoadedFile.Contents)
         {
+            u8* FileReadPtr = LoadedFile.Contents;
+            BMPHeader BmpHdr = {};
+
+            memcpy(&BmpHdr.FileHeader, FileReadPtr, sizeof(BMPFileHeader));
+            FileReadPtr += sizeof(BMPFileHeader);
+            memcpy(&BmpHdr.InfoHeader, FileReadPtr, sizeof(BMPInfoHeader));
+            FileReadPtr += sizeof(BMPInfoHeader);
+
+            constexpr int SupportedBPP = 32;
+            if (BmpHdr.InfoHeader.BitsPerPixel == SupportedBPP)
+            {
+                OutImage.Width = BmpHdr.InfoHeader.Width;
+                OutImage.Height = BmpHdr.InfoHeader.Height;
+                OutImage.PxCount = OutImage.Width * OutImage.Height;
+                OutImage.PxBufferSize = sizeof(RGBA32) * OutImage.PxCount;
+                OutImage.PxBuffer = new RGBA32[OutImage.PxCount];
+                memcpy(OutImage.PxBuffer, FileReadPtr, OutImage.PxBufferSize);
+            }
+
+            for (size_t PxIdx = 0; PxIdx < OutImage.PxCount; PxIdx++)
+            {
+                RGBA32& PxColor = OutImage.PxBuffer[PxIdx];
+                if (false)
+                {
+                    unsigned char Tmp = PxColor.R;
+                    PxColor.R = PxColor.A;
+                    PxColor.A = Tmp;
+                    Tmp = PxColor.G;
+                    PxColor.G = PxColor.B;
+                    PxColor.B = Tmp;
+                }
+                {
+                    unsigned char Tmp = PxColor.R;
+                    PxColor.R = PxColor.B;
+                    PxColor.B = Tmp;
+                }
+            }
+
+            delete[] LoadedFile.Contents;
         }
     }
 }

@@ -182,6 +182,13 @@ namespace Leviathan
         { {0.0f, 0.0f, TestInstRectSize, TestInstRectSize}, { 1.0f, 1.0f, 0.0f, 1.0f } },
         { {RightRectX, 0.0f, TestInstRectSize, TestInstRectSize}, {0.0f, 0.0f, 0.0f, 1.0f} }
     };
+    InstQuadTextureData InstRectTextureDataArray[] =
+    {
+        { {0.0f, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.0f, 0.5f, 0.5f, 0.5f} },
+        { {RightRectX, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.5f, 0.5f, 0.5f, 0.5f} },
+        { {0.0f, 0.0f, TestInstRectSize, TestInstRectSize}, { 0.0f, 0.0f, 0.5f, 0.5f } },
+        { {RightRectX, 0.0f, TestInstRectSize, TestInstRectSize}, {0.5f, 0.0f, 0.5f, 0.5f} }
+    };
 
     float HalfWidth = (float)AppWidth / 2.0f;
     float HalfHeight = (float)AppHeight / 2.0f;
@@ -378,9 +385,13 @@ namespace Leviathan
             DX_ImmediateContext->IASetIndexBuffer(MeshStateSpriteQuad.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
             DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-            DX_ImmediateContext->VSSetShader(DrawStateInstRectColor.VertexShader, nullptr, 0);
+            //DX_ImmediateContext->VSSetShader(DrawStateInstRectColor.VertexShader, nullptr, 0);
+            DX_ImmediateContext->VSSetShader(DrawStateInstRectTexture.VertexShader, nullptr, 0);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
-            DX_ImmediateContext->PSSetShader(DrawStateInstRectColor.PixelShader, nullptr, 0);
+            //DX_ImmediateContext->PSSetShader(DrawStateInstRectColor.PixelShader, nullptr, 0);
+            DX_ImmediateContext->PSSetShader(DrawStateInstRectTexture.PixelShader, nullptr, 0);
+            DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_TestTextureSRV);
+            DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
 
             DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, ARRAY_SIZE(InstRectDataArray), 0u, 0, 0u);
         }
@@ -715,7 +726,8 @@ namespace Leviathan
         InstRectBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         InstRectBufferDesc.CPUAccessFlags = 0;
         InstRectBufferDesc.StructureByteStride = 0;
-        D3D11_SUBRESOURCE_DATA InstRectBufferInitData = { InstRectDataArray, 0, 0 };
+        //D3D11_SUBRESOURCE_DATA InstRectBufferInitData = { InstRectDataArray, 0, 0 };
+        D3D11_SUBRESOURCE_DATA InstRectBufferInitData = { InstRectTextureDataArray, 0, 0 };
         DX_CHECK(DX_Device->CreateBuffer(&InstRectBufferDesc, &InstRectBufferInitData, &DX_InstRectBuffer));
 
         Draw2D.ColorBatchCmds.Reserve(DefaultSize_BatchDraw2D);
@@ -810,7 +822,7 @@ namespace Leviathan
             D3D11_SUBRESOURCE_DATA DebugTextureDataDesc[] = { {} };
             DebugTextureDataDesc[0].pSysMem = DebugImage.PxBuffer;
             DebugTextureDataDesc[0].SysMemPitch = sizeof(RGBA32) * DebugImage.Width;
-            DebugTextureDataDesc[0].SysMemSlicePitch = DebugImage.PxBytes;
+            DebugTextureDataDesc[0].SysMemSlicePitch = DebugImage.PxBufferSize;
             D3D11_TEXTURE2D_DESC DebugTextureDesc = {};
             DebugTextureDesc.Width = DebugImage.Width;
             DebugTextureDesc.Height = DebugImage.Height;
@@ -840,16 +852,14 @@ namespace Leviathan
             DX_CHECK(DX_Device->CreateSamplerState(&DefaultSamplerDesc, &DX_DefaultSamplerState));
         }
 
-        // TODO:
-        if (false)
         {
             ImageT TestImage = {};
-            LoadBMPFile("TestTexture.bmp", TestImage);
+            LoadBMPFile("Assets/TestTexture.bmp", TestImage);
 
             D3D11_SUBRESOURCE_DATA DebugTextureDataDesc[] = { {} };
             DebugTextureDataDesc[0].pSysMem = TestImage.PxBuffer;
             DebugTextureDataDesc[0].SysMemPitch = sizeof(RGBA32) * TestImage.Width;
-            DebugTextureDataDesc[0].SysMemSlicePitch = TestImage.PxBytes;
+            DebugTextureDataDesc[0].SysMemSlicePitch = TestImage.PxBufferSize;
             D3D11_TEXTURE2D_DESC DebugTextureDesc = {};
             DebugTextureDesc.Width = TestImage.Width;
             DebugTextureDesc.Height = TestImage.Height;
@@ -862,24 +872,8 @@ namespace Leviathan
             DebugTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
             DebugTextureDesc.CPUAccessFlags = 0;
             DebugTextureDesc.MiscFlags = 0;
-            DX_CHECK(DX_Device->CreateTexture2D(&DebugTextureDesc, &DebugTextureDataDesc[0], &DX_DebugTexture));
-            DX_CHECK(DX_Device->CreateShaderResourceView(DX_DebugTexture, nullptr, &DX_DebugTextureSRV));
-
-            D3D11_TEXTURE_ADDRESS_MODE SamplerAddressMode = D3D11_TEXTURE_ADDRESS_WRAP;
-            D3D11_SAMPLER_DESC DefaultSamplerDesc = {};
-            DefaultSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-            DefaultSamplerDesc.AddressU = SamplerAddressMode;
-            DefaultSamplerDesc.AddressV = SamplerAddressMode;
-            DefaultSamplerDesc.AddressW = SamplerAddressMode;
-            DefaultSamplerDesc.MipLODBias = 0.0f;
-            DefaultSamplerDesc.MaxAnisotropy = 0;
-            DefaultSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-            DefaultSamplerDesc.MinLOD = 0;
-            DefaultSamplerDesc.MaxLOD = 0;
-            DX_CHECK(DX_Device->CreateSamplerState(&DefaultSamplerDesc, &DX_DefaultSamplerState));
-
-            DX_TestTexture = nullptr;
-            DX_TestTextureSRV = nullptr;
+            DX_CHECK(DX_Device->CreateTexture2D(&DebugTextureDesc, &DebugTextureDataDesc[0], &DX_TestTexture));
+            DX_CHECK(DX_Device->CreateShaderResourceView(DX_TestTexture, nullptr, &DX_TestTextureSRV));
         }
 
         MeshStateQuad = CreateMeshState

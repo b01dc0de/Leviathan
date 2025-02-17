@@ -27,16 +27,10 @@ struct GameDefinition
 const GameDefinition GameDefines[(size_t)GameType::Count] =
 {
     { // Tetris
-        Tetris::Update,
-        Tetris::Draw,
-        Tetris::Init,
-        Tetris::Term
+        Tetris::Update, Tetris::Draw, Tetris::Init, Tetris::Term
     },
     { // Snake
-        GridSnake::Update,
-        GridSnake::Draw,
-        GridSnake::Init,
-        GridSnake::Term
+        GridSnake::Update, GridSnake::Draw, GridSnake::Init, GridSnake::Term
     }
 };
 
