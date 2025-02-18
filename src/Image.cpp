@@ -103,16 +103,29 @@ namespace Leviathan
                 OutImage.PxBuffer = new RGBA32[OutImage.PxCount];
 
                 size_t ColorTableSize = RemainingFileSize - OutImage.PxBufferSize;
-                static bool bReadColorTable = false;
+                constexpr bool bReadColorTable = false;
                 if (bReadColorTable)
                 {
                     u8* ColorTable = new u8[ColorTableSize];
                     memcpy(ColorTable, FileReadPtr, ColorTableSize);
-
                     delete[] ColorTable;
                 }
                 FileReadPtr += ColorTableSize;
-                memcpy(OutImage.PxBuffer, FileReadPtr, OutImage.PxBufferSize);
+                if (BmpHdr.InfoHeader.Height < 0)
+                {
+                    memcpy(OutImage.PxBuffer, FileReadPtr, OutImage.PxBufferSize);
+                }
+                else
+                {
+                    size_t Stride = OutImage.Width * sizeof(RGBA32);
+                    RGBA32* PxBufferWrite = OutImage.PxBuffer;
+                    for (int RowIdx = OutImage.Height - 1; RowIdx >= 0; RowIdx--)
+                    {
+                        u8* RowReadPtr = FileReadPtr + (Stride * RowIdx);
+                        memcpy(PxBufferWrite, RowReadPtr, Stride);
+                        PxBufferWrite += OutImage.Width;
+                    }
+                }
             }
 
             for (size_t PxIdx = 0; PxIdx < OutImage.PxCount; PxIdx++)
