@@ -275,7 +275,7 @@ namespace Leviathan
             DX_CHECK(D2_RenderTarget->EndDraw());
         }
 
-        static bool bDrawLines = true;
+        static bool bDrawLines = false;
         if (bDrawLines)
         {
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
@@ -318,7 +318,7 @@ namespace Leviathan
             DX_ImmediateContext->DrawIndexed(MeshStateTriangle.NumInds, 0u, 0u);
         }
 
-        static bool bDrawTexQuad = true;
+        static bool bDrawTexQuad = false;
         if (bDrawTexQuad)
         { // Draw tex quad
             m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(+256.0f, +256.0f, 0.0f);
@@ -373,7 +373,7 @@ namespace Leviathan
 
         const float HalfWidth = (float)AppWidth / 2.0f;
         const float HalfHeight = (float)AppHeight / 2.0f;
-        static bool bDrawInstRects = true;
+        static bool bDrawInstRects = false;
         if (bDrawInstRects)
         { // Draw Instanced Rects
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);

@@ -105,7 +105,7 @@ namespace Leviathan
         static bool bRawInput;
 
         static LvKeyCode VkToLv(int VkCode);
-        static bool GetKeyState(LvKeyCode LvCode, bool bHeld = false);
+        static bool GetKey(LvKeyCode LvCode, bool bHeld = false);
         static void SetKeyUp(int VkCode);
         static void SetKeyDown(int VkCode);
         static void Win32_KeyMsg(UINT Msg, WPARAM wParam, LPARAM lParam);

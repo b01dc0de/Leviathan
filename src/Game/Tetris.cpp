@@ -352,6 +352,7 @@ namespace Game
             struct ActivePiece
             {
                 BlockType Type = BLOCK_NONE;
+                bool bActive = false;
                 int Rotation = 0;
                 int Row = 0;
                 int Col = 0;
@@ -370,6 +371,7 @@ namespace Game
                 void Init(BlockType InType, int InRow, int InCol, int InRotation)
                 {
                     Type = InType;
+                    bActive = true;
                     Rotation = InRotation;
                     Row = InRow;
                     Col = InCol;
@@ -414,6 +416,8 @@ namespace Game
             //constexpr double SecondsPerFall = 1.0f;
             constexpr double SecondsPerFall = 0.25f;
             constexpr double SecondsPerFastFall = SecondsPerFall / 3.0f;
+            constexpr double SecondsPerMove = SecondsPerFall / 4.0f;
+            constexpr double SecondsPerRotate = SecondsPerFall / 2.0f;
 
             enum TetrisGameState : int
             {
@@ -423,9 +427,52 @@ namespace Game
                 STATE_COUNT,
             };
 
+            struct TetrisInput
+            {
+                bool bMoveLeft = false;
+                bool bMoveRight = false;
+                bool bRotateLeft = false;
+                bool bRotateRight = false;
+
+                double LastMoveTime = 0.0;
+                double LastRotateTime = 0.0;
+
+                void Process();
+            };
+
+            void TetrisInput::Process()
+            {
+                bMoveLeft = false;
+                bMoveRight = false;
+                bRotateLeft = false;
+                bRotateRight = false;
+                double CurrTime = Clock::Time();
+                bool bKeyMoveLeftPressed = KeyboardState::GetKey(LV_KEY_A);
+                bool bKeyMoveRightPressed = KeyboardState::GetKey(LV_KEY_D);
+                bool bKeyMoveLeftHeld = KeyboardState::GetKey(LV_KEY_A, true);
+                bool bKeyMoveRightHeld = KeyboardState::GetKey(LV_KEY_D, true);
+                bool bKeyRotateLeftPressed = KeyboardState::GetKey(LV_KEY_Q);
+                bool bKeyRotateRightPressed = KeyboardState::GetKey(LV_KEY_E);
+                if ((bKeyMoveLeftPressed || bKeyMoveRightPressed) ||
+                    (bKeyMoveLeftHeld != bKeyMoveRightHeld && (CurrTime - LastMoveTime) > SecondsPerMove))
+                {
+                    bMoveLeft = bKeyMoveLeftPressed || bKeyMoveLeftHeld;
+                    bMoveRight = bKeyMoveRightPressed || bKeyMoveRightHeld;
+                    if (bMoveLeft) { LastMoveTime = bKeyMoveLeftPressed ? (CurrTime + SecondsPerMove) : CurrTime; }
+                    else if (bMoveRight) { LastMoveTime = bKeyMoveRightPressed ? (CurrTime + SecondsPerMove) : CurrTime; }
+                }
+                if (bKeyRotateLeftPressed != bKeyRotateRightPressed)
+                {
+                    bRotateLeft = bKeyRotateLeftPressed;
+                    bRotateRight = bKeyRotateRightPressed;
+                    LastRotateTime = CurrTime;
+                }
+            }
+
             struct Tetrion
             {
                 static TetrisGameState State;
+                static TetrisInput Input;
 
                 static PieceBag Bag;
                 static BlockType PlayField[GridSize];
@@ -449,9 +496,11 @@ namespace Game
                 static void Init();
                 static void ClearGrid();
                 static void Update();
+                static void ProcessInput();
                 static void DrawGrid(BatchDraw2D& Draw2D);
             };
             TetrisGameState Tetrion::State = TetrisGameState::ATTRACT;
+            TetrisInput Tetrion::Input{};
             PieceBag Tetrion::Bag{};
             BlockType Tetrion::PlayField[GridSize]{};
             ActivePiece Tetrion::Piece{};
@@ -556,6 +605,7 @@ namespace Game
             void Tetrion::ClearGrid()
             {
                 for (int CellIdx = 0; CellIdx < GridSize; CellIdx++) { PlayField[CellIdx] = BLOCK_NONE; }
+                Piece.bActive = false;
             }
 
             bool Tetrion::IsLineFull(int Row)
@@ -654,7 +704,7 @@ namespace Game
                 {
                     case TetrisGameState::ATTRACT:
                     {
-                        if (KeyboardState::GetKeyState(LV_KEY_ENTER))
+                        if (KeyboardState::GetKey(LV_KEY_ENTER))
                         {
                             State = TetrisGameState::PLAY;
                             Init();
@@ -663,12 +713,12 @@ namespace Game
                     } break;
                     case TetrisGameState::PAUSED:
                     {
-                        if (KeyboardState::GetKeyState(LV_KEY_BACKSPACE))
+                        if (KeyboardState::GetKey(LV_KEY_BACKSPACE))
                         {
                             State = TetrisGameState::ATTRACT;
                             Init();
                         }
-                        if (KeyboardState::GetKeyState(LV_KEY_ENTER))
+                        if (KeyboardState::GetKey(LV_KEY_ENTER))
                         {
                             State = TetrisGameState::PLAY;
                         }
@@ -676,12 +726,12 @@ namespace Game
                     } break;
                     case TetrisGameState::PLAY:
                     {
-                        if (KeyboardState::GetKeyState(LV_KEY_BACKSPACE))
+                        if (KeyboardState::GetKey(LV_KEY_BACKSPACE))
                         {
                             State = TetrisGameState::ATTRACT;
                             Init();
                         }
-                        if (KeyboardState::GetKeyState(LV_KEY_ENTER))
+                        if (KeyboardState::GetKey(LV_KEY_ENTER))
                         {
                             State = TetrisGameState::PAUSED;
                             Init();
@@ -689,36 +739,31 @@ namespace Game
                     } break;
                 }
 
-                bool bInputLeft = KeyboardState::GetKeyState(LV_KEY_A);
-                bool bInputRight = KeyboardState::GetKeyState(LV_KEY_D);
-                if (bInputLeft != bInputRight)
+                Input.Process();
+
+                if (Input.bMoveLeft)
                 {
-                    if (bInputLeft)
-                    {
-                        bool bCanMoveLeft = !CheckCollision(Piece.Row, Piece.Col - 1, Piece.Type, Piece.Rotation);
-                        if (bCanMoveLeft) { Piece.Move(0, -1); }
-                    }
-                    else if (bInputRight)
-                    {
-                        bool bCanMoveRight= !CheckCollision(Piece.Row, Piece.Col + 1, Piece.Type, Piece.Rotation);
-                        if (bCanMoveRight) { Piece.Move(0, +1); }
-                    }
+                    bool bCanMoveLeft = !CheckCollision(Piece.Row, Piece.Col - 1, Piece.Type, Piece.Rotation);
+                    if (bCanMoveLeft) { Piece.Move(0, -1); }
+                }
+                else if (Input.bMoveRight)
+                {
+                    bool bCanMoveRight = !CheckCollision(Piece.Row, Piece.Col + 1, Piece.Type, Piece.Rotation);
+                    if (bCanMoveRight) { Piece.Move(0, +1); }
                 }
 
-                bool bRotateLeft = KeyboardState::GetKeyState(LV_KEY_Q);
-                bool bRotateRight = KeyboardState::GetKeyState(LV_KEY_E);
-                if (bRotateLeft != bRotateRight)
+                if (Input.bRotateLeft || Input.bRotateRight)
                 {
                     int LeftOrientationIdx = GetNextOrientationIdx(Piece.Type, Piece.Rotation, -1);
                     bool bCanRotateLeft = !CheckCollision(Piece.Row, Piece.Col, Piece.Type, LeftOrientationIdx);
                     int RightOrientationIdx = GetNextOrientationIdx(Piece.Type, Piece.Rotation, +1);
                     bool bCanRotateRight = !CheckCollision(Piece.Row, Piece.Col, Piece.Type, RightOrientationIdx);
-                    if (bInputLeft && bCanRotateLeft) { RotateLeft(); }
-                    else if (bInputRight && bCanRotateRight) { RotateRight(); }
+                    if (Input.bRotateLeft && bCanRotateLeft) { RotateLeft(); }
+                    else if (Input.bRotateRight && bCanRotateRight) { RotateRight(); }
                     else { if (bCanRotateLeft) { RotateLeft(); } else if (bCanRotateRight) { RotateRight(); } }
                 }
-                bool bSink = KeyboardState::GetKeyState(LV_KEY_W);
-                bool bFastFall = KeyboardState::GetKeyState(LV_KEY_S, true);
+                bool bSink = KeyboardState::GetKey(LV_KEY_W);
+                bool bFastFall = KeyboardState::GetKey(LV_KEY_S, true);
                 if (bSink)
                 {
                     while (CanFall()) { Fall(); }
@@ -759,15 +804,18 @@ namespace Game
             }
 
             // Draw Player Piece
-            RGBA PlayerColor = CellColors[Piece.Type];
-            for (int BlockIdx = 0; BlockIdx < NumBlocks; BlockIdx++)
+            if (Piece.bActive)
             {
-                GridPos Pos = Piece.BlockPos[BlockIdx];
-                if (CheckIdx(Pos))
+                RGBA PlayerColor = CellColors[Piece.Type];
+                for (int BlockIdx = 0; BlockIdx < NumBlocks; BlockIdx++)
                 {
-                    float CellX = VisualGridPos.X + (Pos.Col * VisualCellSize);
-                    float CellY = AppHeight - (VisualGridPos.Y + (Pos.Row * VisualCellSize) + VisualCellSize);
-                    Draw2D.AddRect(RectF{ CellX, CellY, VisualCellSize, VisualCellSize }, PlayerColor);
+                    GridPos Pos = Piece.BlockPos[BlockIdx];
+                    if (CheckIdx(Pos))
+                    {
+                        float CellX = VisualGridPos.X + (Pos.Col * VisualCellSize);
+                        float CellY = AppHeight - (VisualGridPos.Y + (Pos.Row * VisualCellSize) + VisualCellSize);
+                        Draw2D.AddRect(RectF{ CellX, CellY, VisualCellSize, VisualCellSize }, PlayerColor);
+                    }
                 }
             }
 

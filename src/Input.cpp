@@ -276,7 +276,7 @@ namespace Leviathan
         return VKCodeMap[VkCode];
     }
 
-    bool KeyboardState::GetKeyState(LvKeyCode KeyCode, bool bHeld)
+    bool KeyboardState::GetKey(LvKeyCode KeyCode, bool bHeld)
     {
         for (int KeyIdx = 0; KeyIdx < ActiveCount; KeyIdx++)
         {

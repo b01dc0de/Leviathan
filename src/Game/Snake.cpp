@@ -137,10 +137,10 @@ namespace Game
 
     void GridSnakeState::Update()
     {
-        bool bInputNorth = KeyboardState::GetKeyState(LV_KEY_W);
-        bool bInputSouth = KeyboardState::GetKeyState(LV_KEY_S);
-        bool bInputEast = KeyboardState::GetKeyState(LV_KEY_D);
-        bool bInputWest = KeyboardState::GetKeyState(LV_KEY_A);
+        bool bInputNorth = KeyboardState::GetKey(LV_KEY_W);
+        bool bInputSouth = KeyboardState::GetKey(LV_KEY_S);
+        bool bInputEast = KeyboardState::GetKey(LV_KEY_D);
+        bool bInputWest = KeyboardState::GetKey(LV_KEY_A);
 
         switch (GameState)
         {

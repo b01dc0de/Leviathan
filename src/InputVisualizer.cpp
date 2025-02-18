@@ -94,7 +94,7 @@ namespace Leviathan
         float PosX = Origin.X + (Key.Pos.X * Scale);
         float PosY = Origin.Y - (Key.Pos.Y * Scale) - SizeY;
         RectF KeyQuad = { PosX, PosY, SizeX, SizeY };
-        bool bIsDown = KeyboardState::GetKeyState(Key.LvCode, true);
+        bool bIsDown = KeyboardState::GetKey(Key.LvCode, true);
         RGBA ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
         if (bIsDown)
         {

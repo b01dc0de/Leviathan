@@ -52,8 +52,8 @@ namespace Leviathan
     {
         ASSERT(In2DRT);
 
-        if (KeyboardState::GetKeyState(LV_KEY_F1)) { bVisualizeInput = !bVisualizeInput; }
-        if (KeyboardState::GetKeyState(LV_KEY_F2)) { bDrawTimeStats = !bDrawTimeStats; }
+        if (KeyboardState::GetKey(LV_KEY_F1)) { bVisualizeInput = !bVisualizeInput; }
+        if (KeyboardState::GetKey(LV_KEY_F2)) { bDrawTimeStats = !bDrawTimeStats; }
 
         if (bVisualizeInput)
         {

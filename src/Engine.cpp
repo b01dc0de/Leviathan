@@ -142,7 +142,7 @@ namespace Leviathan
             GameManager::Update();
             Graphics::Draw();
 
-            if (KeyboardState::GetKeyState(LV_KEY_ESC))
+            if (KeyboardState::GetKey(LV_KEY_ESC))
             {
                 bAppRunning = false;
             }
