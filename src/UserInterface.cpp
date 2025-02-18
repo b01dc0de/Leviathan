@@ -2,6 +2,7 @@
 #include "Clock.h"
 #include "Graphics.h"
 #include "InputVisualizer.h"
+#include "PerformanceGraph.h"
 
 namespace Leviathan
 {
@@ -44,6 +45,7 @@ namespace Leviathan
     }
 
     bool bVisualizeInput = true;
+    bool bDrawPerfGraph = true;
     bool bDrawTimeStats = true;
 
     void UserInterface::Draw(ID2D1RenderTarget* In2DRT, BatchDraw2D& Draw2D)
@@ -82,6 +84,8 @@ namespace Leviathan
             );
 
             DX_CHECK(In2DRT->EndDraw());
+
+            PerformanceGraph::Draw(Draw2D);
         }
     }
 

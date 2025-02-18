@@ -99,6 +99,7 @@
     <ClCompile Include="src\InputVisualizer.cpp" />
     <ClCompile Include="src\Leviathan.cpp" />
     <ClCompile Include="src\Math.cpp" />
+    <ClCompile Include="src\PerformanceGraph.cpp" />
     <ClCompile Include="src\UserInterface.cpp" />
     <ClCompile Include="src\Utils.cpp" />
   </ItemGroup>
@@ -119,6 +120,7 @@
     <ClInclude Include="src\InputVisualizer.h" />
     <ClInclude Include="src\Leviathan.h" />
     <ClInclude Include="src\Math.h" />
+    <ClInclude Include="src\PerformanceGraph.h" />
     <ClInclude Include="src\UserInterface.h" />
     <ClInclude Include="src\Utils.h" />
   </ItemGroup>

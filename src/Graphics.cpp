@@ -215,7 +215,7 @@ namespace Leviathan
     Camera GameCamera;
     BatchDraw2D Draw2D;
 
-    constexpr int DefaultSize_BatchDraw2D = 512;
+    constexpr int DefaultSize_BatchDraw2D = 1024;
     void Graphics::Draw()
     {
         Draw2D.Clear();
