@@ -7,35 +7,35 @@ namespace Leviathan
         ColorBatchCmds.Empty();
         TextureBatchCmds.Empty();
     }
-    void BatchDraw2D::AddQuad(const InstQuadColorData& InInstQuadColorData)
+    void BatchDraw2D::AddRect(const InstRectColorData& InInstRectColorData)
     {
-        ColorBatchCmds.Add(InInstQuadColorData);
+        ColorBatchCmds.Add(InInstRectColorData);
     }
-    void BatchDraw2D::AddQuad(const RectF& InQuad, const RGBA& InColor)
+    void BatchDraw2D::AddRect(const RectF& InRect, const RGBA& InColor)
     {
-        AddQuad(InstQuadColorData{ InQuad, InColor });
+        AddRect(InstRectColorData{ InRect, InColor });
     }
-    void BatchDraw2D::AddBox(const RectF& InQuad, const RGBA& InColor, float LineWeight)
+    void BatchDraw2D::AddBox(const RectF& InRect, const RGBA& InColor, float LineWeight)
     {
         float HalfLineWeight = LineWeight / 2.0f;
-        RectF LeftSide{InQuad.PosX - HalfLineWeight, InQuad.PosY - HalfLineWeight, LineWeight, InQuad.SizeY + HalfLineWeight};
-        RectF RightSide{ InQuad.PosX + InQuad.SizeX - HalfLineWeight, InQuad.PosY - HalfLineWeight, LineWeight, InQuad.SizeY + HalfLineWeight};
+        RectF LeftSide{InRect.PosX - HalfLineWeight, InRect.PosY - HalfLineWeight, LineWeight, InRect.SizeY + HalfLineWeight};
+        RectF RightSide{ InRect.PosX + InRect.SizeX - HalfLineWeight, InRect.PosY - HalfLineWeight, LineWeight, InRect.SizeY + HalfLineWeight};
 
-        RectF TopSide{ InQuad.PosX - HalfLineWeight, InQuad.PosY - HalfLineWeight + InQuad.SizeY, InQuad.SizeX + HalfLineWeight, LineWeight};
-        RectF BottomSide{ InQuad.PosX - HalfLineWeight, InQuad.PosY - HalfLineWeight, InQuad.SizeX + HalfLineWeight, LineWeight };
+        RectF TopSide{ InRect.PosX - HalfLineWeight, InRect.PosY - HalfLineWeight + InRect.SizeY, InRect.SizeX + HalfLineWeight, LineWeight};
+        RectF BottomSide{ InRect.PosX - HalfLineWeight, InRect.PosY - HalfLineWeight, InRect.SizeX + HalfLineWeight, LineWeight };
 
         // TODO: Add this as array (will require new Array<>::Add method)
-        AddQuad(LeftSide, InColor);
-        AddQuad(TopSide, InColor);
-        AddQuad(RightSide, InColor);
-        AddQuad(BottomSide, InColor);
+        AddRect(LeftSide, InColor);
+        AddRect(TopSide, InColor);
+        AddRect(RightSide, InColor);
+        AddRect(BottomSide, InColor);
     }
-    void BatchDraw2D::AddQuad(const InstQuadTextureData& InInstQuadTextureData)
+    void BatchDraw2D::AddRect(const InstRectTextureData& InInstRectTextureData)
     {
-        TextureBatchCmds.Add(InInstQuadTextureData);
+        TextureBatchCmds.Add(InInstRectTextureData);
     }
-    void BatchDraw2D::AddQuad(const RectF& InQuad, const RectF& InTexRect)
+    void BatchDraw2D::AddRect(const RectF& InRect, const RectF& InTexRect)
     {
-        AddQuad(InstQuadTextureData{ InQuad, InTexRect });
+        AddRect(InstRectTextureData{ InRect, InTexRect });
     }
 }

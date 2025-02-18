@@ -65,7 +65,7 @@ namespace Game
             VisualGridPos.Y + VisualGridSize - ((Cell.Y+1) * VisualCellSize),
             VisualCellSize, VisualCellSize
         };
-        Draw2D.AddQuad(CellQuad, Color);
+        Draw2D.AddRect(CellQuad, Color);
     }
 
     bool GridSnakeState::CheckIdx(int Row, int Col)

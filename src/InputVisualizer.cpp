@@ -98,7 +98,7 @@ namespace Leviathan
         RGBA ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
         if (bIsDown)
         {
-            Draw2D.AddQuad(KeyQuad, ColorWhite);
+            Draw2D.AddRect(KeyQuad, ColorWhite);
         }
         else
         {
@@ -125,7 +125,7 @@ namespace Leviathan
                 BackgroundSize.X,
                 BackgroundSize.Y
             };
-            Draw2D.AddQuad(BackgroundQuad, RGBA{0.0f, 0.0f, 0.0f, 1.0f});
+            Draw2D.AddRect(BackgroundQuad, RGBA{0.0f, 0.0f, 0.0f, 1.0f});
             Draw2D.AddBox(BackgroundQuad, RGBA{1.0f, 1.0f, 1.0f, 1.0f}, InputVisualizer::LineWidth);
         }
         for (int KeyIdx = LV_KEY_ESC; KeyIdx < LV_KEY_COUNT; KeyIdx++)
@@ -160,7 +160,7 @@ namespace Leviathan
         {
             v2f AdjRegionSize { RegionSize.X * Scale, RegionSize.Y * Scale };
             RectF RegionQuad{ Origin.X, Origin.Y - AdjRegionSize.Y, AdjRegionSize.X, AdjRegionSize.Y };
-            Draw2D.AddQuad(RegionQuad, ColorBlack);
+            Draw2D.AddRect(RegionQuad, ColorBlack);
             Draw2D.AddBox(RegionQuad, ColorWhite, InputVisualizer::LineWidth);
         }
 
@@ -170,11 +170,11 @@ namespace Leviathan
         RectF MiddleQuad{ LeftQuad.PosX + AdjButtonSize.X, LeftQuad.PosY, AdjButtonSize.X, AdjButtonSize.Y - AdjWheelSize };
         RectF RightQuad{ MiddleQuad.PosX + AdjButtonSize.X, LeftQuad.PosY, AdjButtonSize.X, AdjButtonSize.Y };
         { // Buttons
-            if (MouseState::bLeftKey) { Draw2D.AddQuad(LeftQuad, ColorWhite); }
+            if (MouseState::bLeftKey) { Draw2D.AddRect(LeftQuad, ColorWhite); }
             else { Draw2D.AddBox(LeftQuad, ColorWhite, InputVisualizer::LineWidth); }
-            if (MouseState::bRightKey) { Draw2D.AddQuad(RightQuad, ColorWhite); }
+            if (MouseState::bRightKey) { Draw2D.AddRect(RightQuad, ColorWhite); }
             else { Draw2D.AddBox(RightQuad, ColorWhite, InputVisualizer::LineWidth); }
-            if (MouseState::bMiddleKey) { Draw2D.AddQuad(MiddleQuad, ColorWhite); }
+            if (MouseState::bMiddleKey) { Draw2D.AddRect(MiddleQuad, ColorWhite); }
             else { Draw2D.AddBox(MiddleQuad, ColorWhite, InputVisualizer::LineWidth); }
         }
 
@@ -204,8 +204,8 @@ namespace Leviathan
                 HalfCursorSize * 2.0f,
                 HalfCursorSize * 2.0f
             };
-            Draw2D.AddQuad(MouseWindowQuad, ColorWhite);
-            Draw2D.AddQuad(CursorQuad, ColorBlack);
+            Draw2D.AddRect(MouseWindowQuad, ColorWhite);
+            Draw2D.AddRect(CursorQuad, ColorBlack);
         }
 
         const v2f AdjWheelPos{ Origin.X + (RegionSize.X * Scale * 0.5f) - (AdjWheelSize * 0.5f), Origin.Y - AdjWheelSize };
@@ -224,7 +224,7 @@ namespace Leviathan
                 Abs(WheelLineCenter.X - WheelLineEnd.X),
                 Abs(WheelLineCenter.Y - WheelLineEnd.Y)
             };
-            Draw2D.AddQuad(WheelAngleQuad, RGBA{ 0.0f, 1.0f, 1.0f, 1.0f });
+            Draw2D.AddRect(WheelAngleQuad, RGBA{ 0.0f, 1.0f, 1.0f, 1.0f });
         }
     }
 
@@ -283,7 +283,7 @@ namespace Leviathan
                 Origin.X, Origin.Y - AdjRegionSize.Y,
                 AdjRegionSize.X, AdjRegionSize.Y
             };
-            Draw2D.AddQuad(BackgroundQuad, ColorBlack);
+            Draw2D.AddRect(BackgroundQuad, ColorBlack);
             Draw2D.AddBox(BackgroundQuad, ColorWhite, InputVisualizer::LineWidth);
         }
 
@@ -299,7 +299,7 @@ namespace Leviathan
                 ButtonPos[ButtonIdx].Y * GamepadRegionSize.Y * Scale + Origin.Y - AdjFaceButtonsSize,
                 AdjFaceButtonsSize, AdjFaceButtonsSize
             };
-            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx)) { Draw2D.AddQuad(ButtonQuad, ColorWhite); }
+            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx)) { Draw2D.AddRect(ButtonQuad, ColorWhite); }
             else { Draw2D.AddBox(ButtonQuad, ColorWhite, InputVisualizer::LineWidth); }
         }
         for (int ButtonIdx = LV_GAMEPAD_START; ButtonIdx < LV_GAMEPAD_LEFT_THUMB; ButtonIdx++)
@@ -311,7 +311,7 @@ namespace Leviathan
                 ControlButtonsSize.X * GamepadRegionSize.X * Scale,
                 ControlButtonsSize.Y * GamepadRegionSize.X * Scale
             };
-            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx)) { Draw2D.AddQuad(ButtonQuad, ColorWhite); }
+            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx)) { Draw2D.AddRect(ButtonQuad, ColorWhite); }
             else { Draw2D.AddBox(ButtonQuad, ColorWhite, InputVisualizer::LineWidth); }
         }
 
@@ -335,13 +335,13 @@ namespace Leviathan
             if (LTrigger > TriggerDeadzone)
             {
                 LeftTriggerQuad.SizeX = AdjTriggerSize.X * LTrigger;
-                Draw2D.AddQuad(LeftTriggerQuad, ColorWhite);
+                Draw2D.AddRect(LeftTriggerQuad, ColorWhite);
             }
             if (RTrigger > TriggerDeadzone)
             {
                 RightTriggerQuad.SizeX = AdjTriggerSize.X * RTrigger;
                 RightTriggerQuad.PosX += AdjTriggerSize.X - RightTriggerQuad.SizeX;
-                Draw2D.AddQuad(RightTriggerQuad, ColorWhite);
+                Draw2D.AddRect(RightTriggerQuad, ColorWhite);
             }
         }
 
@@ -365,9 +365,9 @@ namespace Leviathan
 
             RGBA LeftLineColor = ColorWhite;
             RGBA RightLineColor = ColorWhite;
-            if (GamepadState::GetButton(LV_GAMEPAD_LEFT_THUMB)) { Draw2D.AddQuad(LeftStickQuad, ColorWhite); LeftLineColor = ColorBlack; }
+            if (GamepadState::GetButton(LV_GAMEPAD_LEFT_THUMB)) { Draw2D.AddRect(LeftStickQuad, ColorWhite); LeftLineColor = ColorBlack; }
             else { Draw2D.AddBox(LeftStickQuad, ColorWhite, InputVisualizer::LineWidth); }
-            if (GamepadState::GetButton(LV_GAMEPAD_RIGHT_THUMB)) { Draw2D.AddQuad(RightStickQuad, ColorWhite); RightLineColor = ColorBlack; }
+            if (GamepadState::GetButton(LV_GAMEPAD_RIGHT_THUMB)) { Draw2D.AddRect(RightStickQuad, ColorWhite); RightLineColor = ColorBlack; }
             else { Draw2D.AddBox(RightStickQuad, ColorWhite, InputVisualizer::LineWidth); }
 
             v2f LeftStickCenter
@@ -407,8 +407,8 @@ namespace Leviathan
                 Abs(RightStickInputPos.Y - LeftStickCenter.Y)
             };
 
-            Draw2D.AddQuad(LeftInputQuad, LeftLineColor);
-            Draw2D.AddQuad(RightInputQuad, RightLineColor);
+            Draw2D.AddRect(LeftInputQuad, LeftLineColor);
+            Draw2D.AddRect(RightInputQuad, RightLineColor);
         }
     }
 

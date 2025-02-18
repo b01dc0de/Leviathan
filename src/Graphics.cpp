@@ -174,14 +174,14 @@ namespace Leviathan
     const float TestInstRectSize = 50.0f;
     const float RightRectX = (float)AppWidth - TestInstRectSize;
     const float BottomRectY = (float)AppHeight - TestInstRectSize;
-    InstQuadColorData InstRectDataArray[] =
+    InstRectColorData InstRectDataArray[] =
     {
         { {0.0f, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.0f, 1.0f, 1.0f, 1.0f} },
         { {RightRectX, BottomRectY, TestInstRectSize, TestInstRectSize}, {1.0f, 0.0f, 1.0f, 1.0f} },
         { {0.0f, 0.0f, TestInstRectSize, TestInstRectSize}, { 1.0f, 1.0f, 0.0f, 1.0f } },
         { {RightRectX, 0.0f, TestInstRectSize, TestInstRectSize}, {0.0f, 0.0f, 0.0f, 1.0f} }
     };
-    InstQuadTextureData InstRectTextureDataArray[] =
+    InstRectTextureData InstRectTextureDataArray[] =
     {
         { {0.0f, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.0f, 0.0f, 0.5f, 0.5f} },
         { {RightRectX, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.5f, 0.0f, 0.5f, 0.5f} },
@@ -380,7 +380,7 @@ namespace Leviathan
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
 
             ID3D11Buffer* VxInstBuffers[] = { MeshStateSpriteQuad.VxBuffer, DX_InstRectBuffer };
-            const UINT Strides[] = { sizeof(VxMin), sizeof(InstQuadColorData) };
+            const UINT Strides[] = { sizeof(VxMin), sizeof(InstRectColorData) };
             const UINT Offsets[] = { 0, 0 };
             ASSERT((ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Strides)) && (ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Offsets)));
             //DX_ImmediateContext->IASetInputLayout(DrawStateInstRectColor.InputLayout);
@@ -411,12 +411,12 @@ namespace Leviathan
             { // Send BatchedCmds state to GPU
                 D3D11_MAPPED_SUBRESOURCE MappedBatchCmds = {};
                 DX_ImmediateContext->Map(DX_BatchedRectColorCmdsBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedBatchCmds);
-                memcpy(MappedBatchCmds.pData, Draw2D.ColorBatchCmds.Data, sizeof(InstQuadColorData) * Draw2D.ColorBatchCmds.Num);
+                memcpy(MappedBatchCmds.pData, Draw2D.ColorBatchCmds.Data, sizeof(InstRectColorData) * Draw2D.ColorBatchCmds.Num);
                 DX_ImmediateContext->Unmap(DX_BatchedRectColorCmdsBuffer, 0);
             }
 
             ID3D11Buffer* VxInstBuffers[] = { MeshStateSpriteQuad.VxBuffer, DX_BatchedRectColorCmdsBuffer };
-            const UINT Strides[] = { sizeof(VxMin), sizeof(InstQuadColorData) };
+            const UINT Strides[] = { sizeof(VxMin), sizeof(InstRectColorData) };
             const UINT Offsets[] = { 0, 0 };
             ASSERT((ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Strides)) && (ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Offsets)));
             DX_ImmediateContext->IASetInputLayout(DrawStateInstRectColor.InputLayout);
@@ -474,12 +474,12 @@ namespace Leviathan
             { // Send BatchedCmds state to GPU
                 D3D11_MAPPED_SUBRESOURCE MappedBatchCmds = {};
                 DX_ImmediateContext->Map(DX_BatchedRectColorCmdsBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedBatchCmds);
-                memcpy(MappedBatchCmds.pData, Draw2D.ColorBatchCmds.Data, sizeof(InstQuadColorData) * Draw2D.ColorBatchCmds.Num);
+                memcpy(MappedBatchCmds.pData, Draw2D.ColorBatchCmds.Data, sizeof(InstRectColorData) * Draw2D.ColorBatchCmds.Num);
                 DX_ImmediateContext->Unmap(DX_BatchedRectColorCmdsBuffer, 0);
             }
 
             ID3D11Buffer* VxInstBuffers[] = { MeshStateSpriteQuad.VxBuffer, DX_BatchedRectColorCmdsBuffer };
-            const UINT Strides[] = { sizeof(VxMin), sizeof(InstQuadColorData) };
+            const UINT Strides[] = { sizeof(VxMin), sizeof(InstRectColorData) };
             const UINT Offsets[] = { 0, 0 };
             ASSERT((ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Strides)) && (ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Offsets)));
             DX_ImmediateContext->IASetInputLayout(DrawStateInstRectColor.InputLayout);
@@ -737,7 +737,7 @@ namespace Leviathan
 
         Draw2D.ColorBatchCmds.Reserve(DefaultSize_BatchDraw2D);
         D3D11_BUFFER_DESC BatchedColorCmdsBuffer = {};
-        BatchedColorCmdsBuffer.ByteWidth = sizeof(InstQuadColorData) * Draw2D.ColorBatchCmds.Capacity;
+        BatchedColorCmdsBuffer.ByteWidth = sizeof(InstRectColorData) * Draw2D.ColorBatchCmds.Capacity;
         BatchedColorCmdsBuffer.Usage = D3D11_USAGE_DYNAMIC;
         BatchedColorCmdsBuffer.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         BatchedColorCmdsBuffer.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -747,7 +747,7 @@ namespace Leviathan
 
         Draw2D.TextureBatchCmds.Reserve(DefaultSize_BatchDraw2D);
         D3D11_BUFFER_DESC BatchedTextureCmdsBuffer = {};
-        BatchedColorCmdsBuffer.ByteWidth = sizeof(InstQuadTextureData) * Draw2D.TextureBatchCmds.Capacity;
+        BatchedColorCmdsBuffer.ByteWidth = sizeof(InstRectTextureData) * Draw2D.TextureBatchCmds.Capacity;
         BatchedColorCmdsBuffer.Usage = D3D11_USAGE_DYNAMIC;
         BatchedColorCmdsBuffer.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         BatchedColorCmdsBuffer.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;

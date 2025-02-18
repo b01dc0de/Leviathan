@@ -13,13 +13,13 @@ namespace Leviathan
         float SizeY = 0.0f;
     };
 
-    struct InstQuadColorData
+    struct InstRectColorData
     {
         RectF Rect;
         RGBA Color;
     };
 
-    struct InstQuadTextureData
+    struct InstRectTextureData
     {
         RectF PosRect;
         RectF TexRect;
@@ -27,15 +27,15 @@ namespace Leviathan
 
     struct BatchDraw2D
     {
-        Array<InstQuadColorData> ColorBatchCmds;
-        Array<InstQuadTextureData> TextureBatchCmds;
+        Array<InstRectColorData> ColorBatchCmds;
+        Array<InstRectTextureData> TextureBatchCmds;
 
         void Clear();
-        void AddQuad(const InstQuadColorData& InInstQuadColorData);
-        void AddQuad(const RectF& InQuad, const RGBA& InColor);
-        void AddBox(const RectF& InQuad, const RGBA& InColor, float LineWeight = 1.0f);
-        void AddQuad(const InstQuadTextureData& InInstQuadTextureData);
-        void AddQuad(const RectF& InQuad, const RectF& InTexRect);
+        void AddRect(const InstRectColorData& InInstRectColorData);
+        void AddRect(const RectF& InRect, const RGBA& InColor);
+        void AddBox(const RectF& InRect, const RGBA& InColor, float LineWeight = 1.0f);
+        void AddRect(const InstRectTextureData& InInstRectTextureData);
+        void AddRect(const RectF& InRect, const RectF& InTexRect);
     };
 }
 
