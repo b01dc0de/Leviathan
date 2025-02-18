@@ -21,6 +21,7 @@ namespace Leviathan
         ID3D11Texture2D* DX_DepthStencil = nullptr;
         ID3D11DepthStencilView* DX_DepthStencilView = nullptr;
         ID3D11DepthStencilState* DX_2DInstancedDepthStencilState = nullptr;
+        ID3D11BlendState* DX_BlendState = nullptr;
 
         DrawStateT DrawStateColor;
         DrawStateT DrawStateTexture;
@@ -182,10 +183,10 @@ namespace Leviathan
     };
     InstQuadTextureData InstRectTextureDataArray[] =
     {
-        { {0.0f, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.0f, 0.5f, 0.5f, 0.5f} },
-        { {RightRectX, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.5f, 0.5f, 0.5f, 0.5f} },
-        { {0.0f, 0.0f, TestInstRectSize, TestInstRectSize}, { 0.0f, 0.0f, 0.5f, 0.5f } },
-        { {RightRectX, 0.0f, TestInstRectSize, TestInstRectSize}, {0.5f, 0.0f, 0.5f, 0.5f} }
+        { {0.0f, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.0f, 0.0f, 0.5f, 0.5f} },
+        { {RightRectX, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.5f, 0.0f, 0.5f, 0.5f} },
+        { {0.0f, 0.0f, TestInstRectSize, TestInstRectSize}, { 0.0f, 0.5f, 0.5f, 0.5f } },
+        { {RightRectX, 0.0f, TestInstRectSize, TestInstRectSize}, {0.5f, 0.5f, 0.5f, 0.5f} }
     };
 
     float HalfWidth = (float)AppWidth / 2.0f;
@@ -220,6 +221,8 @@ namespace Leviathan
         Draw2D.Clear();
 
         DX_ImmediateContext->RSSetState(DX_RasterizerState);
+        UINT DefaultSampleMask = 0xFFFFFFFF;
+        DX_ImmediateContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
         DX_ImmediateContext->OMSetDepthStencilState(nullptr, 0);
         DX_ImmediateContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
         v4f ClearColor = { 30.0f / 255.0f, 30.0f / 255.0f, 45.0f / 255.0f, 1.0f };
@@ -272,7 +275,7 @@ namespace Leviathan
             DX_CHECK(D2_RenderTarget->EndDraw());
         }
 
-        static bool bDrawLines = false;
+        static bool bDrawLines = true;
         if (bDrawLines)
         {
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
@@ -293,7 +296,7 @@ namespace Leviathan
         }
 
 
-        static bool bDrawTriangle = false;
+        static bool bDrawTriangle = true;
         if (bDrawTriangle)
         { // Draw triangle
             m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(256.0f, -256.0f, 0.0f);
@@ -318,7 +321,7 @@ namespace Leviathan
         static bool bDrawTexQuad = true;
         if (bDrawTexQuad)
         { // Draw tex quad
-            m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(+256.0f, -256.0f, 0.0f);
+            m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(+256.0f, +256.0f, 0.0f);
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &TexQuadWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
 
@@ -339,6 +342,7 @@ namespace Leviathan
 
             DX_ImmediateContext->DrawIndexed(MeshStateQuad.NumInds, 0u, 0u);
         }
+        DX_ImmediateContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
 
         static bool bDrawUnicolorQuad = false;
         if (bDrawUnicolorQuad)
@@ -379,7 +383,8 @@ namespace Leviathan
             const UINT Strides[] = { sizeof(VxMin), sizeof(InstQuadColorData) };
             const UINT Offsets[] = { 0, 0 };
             ASSERT((ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Strides)) && (ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Offsets)));
-            DX_ImmediateContext->IASetInputLayout(DrawStateInstRectColor.InputLayout);
+            //DX_ImmediateContext->IASetInputLayout(DrawStateInstRectColor.InputLayout);
+            DX_ImmediateContext->IASetInputLayout(DrawStateInstRectTexture.InputLayout);
             DX_ImmediateContext->IASetVertexBuffers(0, ARRAY_SIZE(VxInstBuffers), VxInstBuffers, Strides, Offsets);
             DX_ImmediateContext->IASetIndexBuffer(MeshStateSpriteQuad.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
             DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -600,8 +605,9 @@ namespace Leviathan
         RenderTargetBlendDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
         RenderTargetBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALPHA;
         D3D11_BLEND_DESC BlendDesc = {};
+        BlendDesc.AlphaToCoverageEnable = FALSE;
+        BlendDesc.IndependentBlendEnable = FALSE;
         BlendDesc.RenderTarget[0] = RenderTargetBlendDesc;
-        ID3D11BlendState* DX_BlendState = nullptr;
         DX_CHECK(DX_Device->CreateBlendState(&BlendDesc, &DX_BlendState));
 
         D3D11_VIEWPORT ViewportDesc = {};
@@ -960,6 +966,7 @@ namespace Leviathan
         SafeRelease(DX_DepthStencil);
         SafeRelease(DX_DepthStencilView);
         SafeRelease(DX_2DInstancedDepthStencilState);
+        SafeRelease(DX_BlendState);
 
         SafeRelease(DXGI_Factory2);
         SafeRelease(DX_ImmediateContext);
