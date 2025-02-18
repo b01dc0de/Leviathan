@@ -11,7 +11,7 @@ enum struct GameType
     Count
 };
 
-static GameType SelectedGame = GameType::GridSnake;
+static GameType SelectedGame = GameType::Tetris;
 
 struct GameDefinition
 {

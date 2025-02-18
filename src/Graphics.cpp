@@ -170,8 +170,6 @@ namespace Leviathan
         float RotAngle = 0.0f;
     };
 
-    Array<InstQuadColorData> DrawCmds;
-
     const float TestInstRectSize = 50.0f;
     const float RightRectX = (float)AppWidth - TestInstRectSize;
     const float BottomRectY = (float)AppHeight - TestInstRectSize;
@@ -317,10 +315,10 @@ namespace Leviathan
             DX_ImmediateContext->DrawIndexed(MeshStateTriangle.NumInds, 0u, 0u);
         }
 
-        static bool bDrawTexQuad = false;
+        static bool bDrawTexQuad = true;
         if (bDrawTexQuad)
         { // Draw tex quad
-            m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(-256.0f, +256.0f, 0.0f);
+            m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(+256.0f, -256.0f, 0.0f);
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &TexQuadWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
 
@@ -335,7 +333,8 @@ namespace Leviathan
             DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
             DX_ImmediateContext->PSSetShader(DrawStateTexture.PixelShader, nullptr, 0);
-            DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_DebugTextureSRV);
+            //DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_DebugTextureSRV);
+            DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_TestTextureSRV);
             DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
 
             DX_ImmediateContext->DrawIndexed(MeshStateQuad.NumInds, 0u, 0u);

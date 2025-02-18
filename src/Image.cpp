@@ -70,12 +70,12 @@ namespace Leviathan
 		u32 ColorsUsed; // 0 for our purposes
 		u32 ColorsImportant; // 0 for our purposes
 	};
-#pragma pack(pop)
 	struct BMPHeader
 	{
 		BMPFileHeader FileHeader;
 		BMPInfoHeader InfoHeader;
 	};
+#pragma pack(pop)
 
     void LoadBMPFile(const char* Filename, ImageT& OutImage)
     {
@@ -90,29 +90,34 @@ namespace Leviathan
             memcpy(&BmpHdr.InfoHeader, FileReadPtr, sizeof(BMPInfoHeader));
             FileReadPtr += sizeof(BMPInfoHeader);
 
-            constexpr int SupportedBPP = 32;
-            if (BmpHdr.InfoHeader.BitsPerPixel == SupportedBPP)
+            if (BmpHdr.InfoHeader.BitsPerPixel == 32)
             {
+                RGBA32* PxReadPtr = (RGBA32*)FileReadPtr;
+                size_t BitmapFileSize = BmpHdr.FileHeader.SizeInBytes;
+                size_t RemainingFileSize = BitmapFileSize - sizeof(BMPHeader);
+
                 OutImage.Width = BmpHdr.InfoHeader.Width;
                 OutImage.Height = BmpHdr.InfoHeader.Height;
                 OutImage.PxCount = OutImage.Width * OutImage.Height;
                 OutImage.PxBufferSize = sizeof(RGBA32) * OutImage.PxCount;
                 OutImage.PxBuffer = new RGBA32[OutImage.PxCount];
+
+                size_t ColorTableSize = RemainingFileSize - OutImage.PxBufferSize;
+                static bool bReadColorTable = false;
+                if (bReadColorTable)
+                {
+                    u8* ColorTable = new u8[ColorTableSize];
+                    memcpy(ColorTable, FileReadPtr, ColorTableSize);
+
+                    delete[] ColorTable;
+                }
+                FileReadPtr += ColorTableSize;
                 memcpy(OutImage.PxBuffer, FileReadPtr, OutImage.PxBufferSize);
             }
 
             for (size_t PxIdx = 0; PxIdx < OutImage.PxCount; PxIdx++)
             {
                 RGBA32& PxColor = OutImage.PxBuffer[PxIdx];
-                if (false)
-                {
-                    unsigned char Tmp = PxColor.R;
-                    PxColor.R = PxColor.A;
-                    PxColor.A = Tmp;
-                    Tmp = PxColor.G;
-                    PxColor.G = PxColor.B;
-                    PxColor.B = Tmp;
-                }
                 {
                     unsigned char Tmp = PxColor.R;
                     PxColor.R = PxColor.B;
