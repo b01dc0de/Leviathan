@@ -6,6 +6,7 @@ namespace Leviathan
     {
         ColorBatchCmds.Empty();
         TextureBatchCmds.Empty();
+        TextBatchCmds.Empty();
     }
     void BatchDraw2D::AddRect(const InstRectColorData& InInstRectColorData)
     {
@@ -37,5 +38,10 @@ namespace Leviathan
     void BatchDraw2D::AddRect(const RectF& InRect, const RectF& InTexRect)
     {
         AddRect(InstRectTextureData{ InRect, InTexRect });
+    }
+
+    void BatchDraw2D::AddTextRect(const RectF& InPosRect, const RectF& InTexRect)
+    {
+        TextBatchCmds.Add(InstRectTextureData{ InPosRect, InTexRect });
     }
 }

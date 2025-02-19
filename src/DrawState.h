@@ -41,6 +41,17 @@ namespace Leviathan
         size_t NumInputElements
     );
     void SafeRelease(DrawStateT& InDrawState);
+
+    struct LvTexture2D
+    {
+        ID3D11Texture2D* Texture = nullptr;
+        ID3D11ShaderResourceView* TextureSRV = nullptr;
+        int Width = 0;
+        int Height = 0;
+    };
+
+    LvTexture2D LoadTextureBMP(const char* Filename, ID3D11Device* InDevice);
+    void SafeRelease(LvTexture2D& InLvTex2D);
 }
 
 #endif // LEVIATHAN_DRAWSTATE_H

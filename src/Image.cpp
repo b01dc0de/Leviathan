@@ -141,4 +141,13 @@ namespace Leviathan
             delete[] LoadedFile.Contents;
         }
     }
+
+    void SafeRelease(ImageT& Image)
+    {
+        if (Image.PxBuffer)
+        {
+            delete[] Image.PxBuffer;
+            Image.PxBuffer = nullptr;
+        }
+    }
 }

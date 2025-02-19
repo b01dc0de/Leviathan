@@ -29,6 +29,7 @@ namespace Leviathan
     {
         Array<InstRectColorData> ColorBatchCmds;
         Array<InstRectTextureData> TextureBatchCmds;
+        Array<InstRectTextureData> TextBatchCmds;
 
         void Clear();
         void AddRect(const InstRectColorData& InInstRectColorData);
@@ -36,6 +37,7 @@ namespace Leviathan
         void AddBox(const RectF& InRect, const RGBA& InColor, float LineWeight = 1.0f);
         void AddRect(const InstRectTextureData& InInstRectTextureData);
         void AddRect(const RectF& InRect, const RectF& InTexRect);
+        void AddTextRect(const RectF& InPosRect, const RectF& InTexRect);
     };
 }
 

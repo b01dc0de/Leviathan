@@ -90,6 +90,139 @@ namespace Leviathan
         m4f Proj;
     };
 
+    struct HandmadeTextSheet
+    {
+        LvTexture2D LvTex2D;
+        int NumGlyphsX;
+        int NumGlyphsY;
+        v2f GlyphSize;
+        RectF* GlyphRects;
+
+        void Init(ID3D11Device* InDevice, const char* Filename, int InNumGlyphsX, int InNumGlyphsY);
+        void Draw(BatchDraw2D& Draw2D, v2f Origin, float Scale, const char* Msg, int MsgLength);
+        RectF GetGlyph(char GlyphChar);
+        void Term();
+    };
+
+    void HandmadeTextSheet::Init(ID3D11Device* InDevice, const char* Filename, int InNumGlyphsX, int InNumGlyphsY)
+    {
+        *this = {};
+        NumGlyphsX = InNumGlyphsX;
+        NumGlyphsY = InNumGlyphsY;
+
+        LvTex2D = LoadTextureBMP(Filename, InDevice);
+        if (LvTex2D.Texture)
+        {
+            GlyphSize = {1.0f / NumGlyphsX, 1.0f / NumGlyphsY};
+            GlyphRects = new RectF[NumGlyphsX * NumGlyphsY];
+            int GlyphIdx = 0;
+            for (int RowIdx = 0; RowIdx < NumGlyphsY; RowIdx++)
+            {
+                for (int ColIdx = 0; ColIdx < NumGlyphsX; ColIdx++, GlyphIdx++)
+                {
+                    GlyphRects[GlyphIdx] = RectF
+                    {
+                        GlyphSize.X * ColIdx, GlyphSize.Y * RowIdx,
+                        GlyphSize.X, GlyphSize.Y
+                    };
+                }
+            }
+        }
+    }
+
+    void HandmadeTextSheet::Draw(BatchDraw2D& Draw2D, v2f Origin, float Scale, const char* Msg, int MsgLength)
+    {
+        v2f TextPos = Origin;
+        const v2f TextSize{ GlyphSize.X * Scale, GlyphSize.Y * Scale };
+        for (int MsgCharIdx = 0; MsgCharIdx < MsgLength; MsgCharIdx++)
+        {
+            RectF TextRect{ TextPos.X, TextPos.Y, TextSize.X, TextSize.Y };
+            Draw2D.AddTextRect(TextRect, GetGlyph(Msg[MsgCharIdx]));
+            TextPos.X += TextSize.X;
+        }
+    }
+
+    RectF HandmadeTextSheet::GetGlyph(char GlyphChar)
+    {
+        constexpr RectF InvalidRect{ 0.0f, 0.0f, 0.0f, 0.0f };
+        RectF Result = InvalidRect;
+        if (!GlyphRects) { return Result; }
+        switch (GlyphChar)
+        {
+            case 'A':
+            case 'a': { Result = GlyphRects[0]; } break;
+            case 'B':
+            case 'b': { Result = GlyphRects[1]; } break;
+            case 'C':
+            case 'c': { Result = GlyphRects[2]; } break;
+            case 'D':
+            case 'd': { Result = GlyphRects[3]; } break;
+            case 'E':
+            case 'e': { Result = GlyphRects[4]; } break;
+            case 'F':
+            case 'f': { Result = GlyphRects[5]; } break;
+            case 'G':
+            case 'g': { Result = GlyphRects[6]; } break;
+            case 'H':
+            case 'h': { Result = GlyphRects[7]; } break;
+            case 'I':
+            case 'i': { Result = GlyphRects[8]; } break;
+            case 'J':
+            case 'j': { Result = GlyphRects[9]; } break;
+            case 'K':
+            case 'k': { Result = GlyphRects[10]; } break;
+            case 'L':
+            case 'l': { Result = GlyphRects[11]; } break;
+            case 'M':
+            case 'm': { Result = GlyphRects[12]; } break;
+            case 'N':
+            case 'n': { Result = GlyphRects[13]; } break;
+            case 'O':
+            case 'o': { Result = GlyphRects[14]; } break;
+            case 'P':
+            case 'p': { Result = GlyphRects[15]; } break;
+            case 'Q':
+            case 'q': { Result = GlyphRects[16]; } break;
+            case 'R':
+            case 'r': { Result = GlyphRects[17]; } break;
+            case 'S':
+            case 's': { Result = GlyphRects[18]; } break;
+            case 'T':
+            case 't': { Result = GlyphRects[19]; } break;
+            case 'U':
+            case 'u': { Result = GlyphRects[20]; } break;
+            case 'V':
+            case 'v': { Result = GlyphRects[21]; } break;
+            case 'W':
+            case 'w': { Result = GlyphRects[22]; } break;
+            case 'X':
+            case 'x': { Result = GlyphRects[23]; } break;
+            case 'Y':
+            case 'y': { Result = GlyphRects[24]; } break;
+            case 'Z':
+            case 'z': { Result = GlyphRects[25]; } break;
+            case '1': { Result = GlyphRects[26]; } break;
+            case '2': { Result = GlyphRects[27]; } break;
+            case '3': { Result = GlyphRects[28]; } break;
+            case '4': { Result = GlyphRects[29]; } break;
+            case '5': { Result = GlyphRects[30]; } break;
+            case '6': { Result = GlyphRects[31]; } break;
+            case '7': { Result = GlyphRects[32]; } break;
+            case '8': { Result = GlyphRects[33]; } break;
+            case '9': { Result = GlyphRects[34]; } break;
+            case '0': { Result = GlyphRects[35]; } break;
+            default: { } break;
+        }
+        return Result;
+    }
+
+    void HandmadeTextSheet::Term()
+    {
+        SafeRelease(LvTex2D);
+        delete[] GlyphRects;
+        *this = {};
+    }
+
     VxColor Vertices_Triangle[] =
     {
         { {+0.0f, +0.5f, +0.5f, 1.0f}, {0.0f, 1.0f, 1.0f, 1.0f} },
@@ -214,6 +347,7 @@ namespace Leviathan
     Camera OrthoCamera;
     Camera GameCamera;
     BatchDraw2D Draw2D;
+    HandmadeTextSheet HandmadeText;
 
     constexpr int DefaultSize_BatchDraw2D = 1024;
     void Graphics::Draw()
@@ -425,6 +559,7 @@ namespace Leviathan
             DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
             DX_ImmediateContext->VSSetShader(DrawStateInstRectColor.VertexShader, nullptr, 0);
+            DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
             DX_ImmediateContext->PSSetShader(DrawStateInstRectColor.PixelShader, nullptr, 0);
 
@@ -492,6 +627,43 @@ namespace Leviathan
             DX_ImmediateContext->PSSetShader(DrawStateInstRectColor.PixelShader, nullptr, 0);
 
             DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, Draw2D.ColorBatchCmds.Num, 0u, 0, 0u);
+        }
+
+        static bool bDrawHandmadeText = true;
+        if (bDrawHandmadeText)
+        {
+            const v2f TextOrigin{ AppWidth / 2.0f, AppHeight / 2.0f };
+            const float TextScale = 200.0f;
+            const char TextMsg[] = "HELLO WORLD";
+            HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextMsg, ARRAY_SIZE(TextMsg) - 1);
+
+            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
+            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
+
+            { // Send BatchedCmds state to GPU
+                D3D11_MAPPED_SUBRESOURCE MappedBatchCmds = {};
+                DX_ImmediateContext->Map(DX_BatchedRectColorCmdsBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedBatchCmds);
+                memcpy(MappedBatchCmds.pData, Draw2D.TextBatchCmds.Data, sizeof(InstRectTextureData) * Draw2D.TextBatchCmds.Num);
+                DX_ImmediateContext->Unmap(DX_BatchedRectColorCmdsBuffer, 0);
+            }
+
+            ID3D11Buffer* VxInstBuffers[] = { MeshStateSpriteQuad.VxBuffer, DX_BatchedRectColorCmdsBuffer };
+            const UINT Strides[] = { sizeof(VxMin), sizeof(InstRectTextureData) };
+            const UINT Offsets[] = { 0, 0 };
+            ASSERT((ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Strides)) && (ARRAY_SIZE(VxInstBuffers) == ARRAY_SIZE(Offsets)));
+            DX_ImmediateContext->IASetInputLayout(DrawStateInstRectTexture.InputLayout);
+            DX_ImmediateContext->IASetVertexBuffers(0, ARRAY_SIZE(VxInstBuffers), VxInstBuffers, Strides, Offsets);
+            DX_ImmediateContext->IASetIndexBuffer(MeshStateSpriteQuad.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
+            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            DX_ImmediateContext->VSSetShader(DrawStateInstRectTexture.VertexShader, nullptr, 0);
+            DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
+            DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
+            DX_ImmediateContext->PSSetShaderResources(0, 1, &HandmadeText.LvTex2D.TextureSRV);
+            DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
+            DX_ImmediateContext->PSSetShader(DrawStateInstRectTexture.PixelShader, nullptr, 0);
+
+            DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, Draw2D.TextBatchCmds.Num, 0u, 0, 0u);
         }
 
         UINT SyncInterval = 0, PresentFlags = 0;
@@ -880,6 +1052,8 @@ namespace Leviathan
             DX_CHECK(DX_Device->CreateTexture2D(&DebugTextureDesc, &DebugTextureDataDesc[0], &DX_TestTexture));
             DX_CHECK(DX_Device->CreateShaderResourceView(DX_TestTexture, nullptr, &DX_TestTextureSRV));
         }
+
+        HandmadeText.Init(DX_Device, "Assets/HandmadeTextFont_White.bmp", 6, 6);
 
         MeshStateQuad = CreateMeshState
         (

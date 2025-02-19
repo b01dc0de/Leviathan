@@ -1,4 +1,5 @@
 #include "DrawState.h"
+#include "Image.h"
 
 namespace Leviathan
 {
@@ -135,5 +136,61 @@ namespace Leviathan
         SafeRelease(InDrawState.InputLayout);
         SafeRelease(InDrawState.VertexShader);
         SafeRelease(InDrawState.PixelShader);
+    }
+
+    LvTexture2D LoadTextureBMP(const char* Filename, ID3D11Device* InDevice)
+    {
+        LvTexture2D Result = {};
+
+        ImageT TextureImage = {};
+        LoadBMPFile(Filename, TextureImage);
+
+        if (TextureImage.PxBuffer)
+        {
+            ID3D11Texture2D* OutTexture = nullptr;
+            ID3D11ShaderResourceView* OutTextureSRV = nullptr;
+
+            D3D11_SUBRESOURCE_DATA DebugTextureDataDesc[] = { {} };
+            DebugTextureDataDesc[0].pSysMem = TextureImage.PxBuffer;
+            DebugTextureDataDesc[0].SysMemPitch = sizeof(RGBA32) * TextureImage.Width;
+            DebugTextureDataDesc[0].SysMemSlicePitch = TextureImage.PxBufferSize;
+            D3D11_TEXTURE2D_DESC DebugTextureDesc = {};
+            DebugTextureDesc.Width = TextureImage.Width;
+            DebugTextureDesc.Height = TextureImage.Height;
+            DebugTextureDesc.MipLevels = 1;
+            DebugTextureDesc.ArraySize = 1;
+            DebugTextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            DebugTextureDesc.SampleDesc.Count = 1;
+            DebugTextureDesc.SampleDesc.Quality = 0;
+            DebugTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+            DebugTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+            DebugTextureDesc.CPUAccessFlags = 0;
+            DebugTextureDesc.MiscFlags = 0;
+            DX_CHECK(InDevice->CreateTexture2D(&DebugTextureDesc, &DebugTextureDataDesc[0], &OutTexture));
+            DX_CHECK(InDevice->CreateShaderResourceView(OutTexture, nullptr, &OutTextureSRV));
+
+            if (OutTexture && OutTextureSRV)
+            {
+                Result.Texture = OutTexture;
+                Result.TextureSRV = OutTextureSRV;
+                Result.Width = TextureImage.Width;
+                Result.Height = TextureImage.Height;
+            }
+            else
+            {
+                SafeRelease(OutTexture);
+                SafeRelease(OutTextureSRV);
+            }
+
+            delete[] TextureImage.PxBuffer;
+        }
+
+        return Result;
+    }
+
+    void SafeRelease(LvTexture2D& InLvTex2D)
+    {
+        SafeRelease(InLvTex2D.Texture);
+        SafeRelease(InLvTex2D.TextureSRV);
     }
 }
