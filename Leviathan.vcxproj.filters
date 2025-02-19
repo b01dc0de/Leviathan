@@ -66,6 +66,9 @@
     <ClCompile Include="src\PerformanceGraph.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Game\BulletLimbo.cpp">
+      <Filter>src\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -124,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="src\PerformanceGraph.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Game\BulletLimbo.h">
+      <Filter>src\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

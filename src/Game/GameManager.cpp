@@ -1,4 +1,5 @@
 #include "GameManager.h"
+#include "BulletLimbo.h"
 #include "Tetris.h"
 #include "Snake.h"
 
@@ -6,12 +7,13 @@ using namespace Game;
 
 enum struct GameType
 {
+    BulletLimbo,
     Tetris,
     GridSnake,
     Count
 };
 
-static GameType SelectedGame = GameType::Tetris;
+static GameType SelectedGame = GameType::BulletLimbo;
 
 struct GameDefinition
 {
@@ -26,12 +28,12 @@ struct GameDefinition
 
 const GameDefinition GameDefines[(size_t)GameType::Count] =
 {
-    { // Tetris
-        Tetris::Update, Tetris::Draw, Tetris::Init, Tetris::Term
-    },
-    { // Snake
-        GridSnake::Update, GridSnake::Draw, GridSnake::Init, GridSnake::Term
-    }
+    // BulletLimbo
+    { BulletLimbo::Update, BulletLimbo::Draw, BulletLimbo::Init, BulletLimbo::Term },
+    // Tetris
+    { Tetris::Update, Tetris::Draw, Tetris::Init, Tetris::Term },
+    // Snake
+    { GridSnake::Update, GridSnake::Draw, GridSnake::Init, GridSnake::Term },
 };
 
 void GameManager::Update()

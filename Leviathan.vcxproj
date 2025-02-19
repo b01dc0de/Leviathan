@@ -90,6 +90,7 @@
     <ClCompile Include="src\DrawState.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\GameEntity.cpp" />
+    <ClCompile Include="src\Game\BulletLimbo.cpp" />
     <ClCompile Include="src\Game\GameManager.cpp" />
     <ClCompile Include="src\Game\Snake.cpp" />
     <ClCompile Include="src\Game\Tetris.cpp" />
@@ -111,6 +112,7 @@
     <ClInclude Include="src\DrawState.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\GameEntity.h" />
+    <ClInclude Include="src\Game\BulletLimbo.h" />
     <ClInclude Include="src\Game\GameManager.h" />
     <ClInclude Include="src\Game\Snake.h" />
     <ClInclude Include="src\Game\Tetris.h" />
