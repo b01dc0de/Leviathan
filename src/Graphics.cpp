@@ -134,11 +134,12 @@ namespace Leviathan
     {
         v2f TextPos = Origin;
         const v2f TextSize{ GlyphSize.X * Scale, GlyphSize.Y * Scale };
+        const float Spacing = 0.01f * Scale;
         for (int MsgCharIdx = 0; MsgCharIdx < MsgLength; MsgCharIdx++)
         {
             RectF TextRect{ TextPos.X, TextPos.Y, TextSize.X, TextSize.Y };
             Draw2D.AddTextRect(TextRect, GetGlyph(Msg[MsgCharIdx]));
-            TextPos.X += TextSize.X;
+            TextPos.X += TextSize.X + Spacing;
         }
     }
 
@@ -211,6 +212,7 @@ namespace Leviathan
             case '8': { Result = GlyphRects[33]; } break;
             case '9': { Result = GlyphRects[34]; } break;
             case '0': { Result = GlyphRects[35]; } break;
+            case ' ': { Result = GlyphRects[36]; } break;
             default: { } break;
         }
         return Result;
@@ -1053,7 +1055,7 @@ namespace Leviathan
             DX_CHECK(DX_Device->CreateShaderResourceView(DX_TestTexture, nullptr, &DX_TestTextureSRV));
         }
 
-        HandmadeText.Init(DX_Device, "Assets/HandmadeTextFont_White.bmp", 6, 6);
+        HandmadeText.Init(DX_Device, "Assets/HandmadeTextFont_White.bmp", 12, 6);
 
         MeshStateQuad = CreateMeshState
         (
