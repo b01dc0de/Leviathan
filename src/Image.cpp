@@ -131,11 +131,9 @@ namespace Leviathan
             for (size_t PxIdx = 0; PxIdx < OutImage.PxCount; PxIdx++)
             {
                 RGBA32& PxColor = OutImage.PxBuffer[PxIdx];
-                {
-                    unsigned char Tmp = PxColor.R;
-                    PxColor.R = PxColor.B;
-                    PxColor.B = Tmp;
-                }
+                unsigned char Tmp = PxColor.R;
+                PxColor.R = PxColor.B;
+                PxColor.B = Tmp;
             }
 
             delete[] LoadedFile.Contents;

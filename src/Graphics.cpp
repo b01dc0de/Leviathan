@@ -22,6 +22,7 @@ namespace Leviathan
         ID3D11DepthStencilView* DX_DepthStencilView = nullptr;
         ID3D11DepthStencilState* DX_2DInstancedDepthStencilState = nullptr;
         ID3D11BlendState* DX_BlendState = nullptr;
+        ID3D11BlendState* DX_AlphaBlendState = nullptr;
 
         DrawStateT DrawStateColor;
         DrawStateT DrawStateTexture;
@@ -48,10 +49,8 @@ namespace Leviathan
         ID3D11Buffer* DX_BatchedRectColorCmdsBuffer = nullptr;
         ID3D11Buffer* DX_BatchedRectTextureCmdsBuffer = nullptr;
 
-        ID3D11Texture2D* DX_DebugTexture = nullptr;
-        ID3D11ShaderResourceView* DX_DebugTextureSRV = nullptr;
-        ID3D11Texture2D* DX_TestTexture = nullptr;
-        ID3D11ShaderResourceView* DX_TestTextureSRV = nullptr;
+        LvTexture2D LvDebugTexture;
+        LvTexture2D LvTestTexture;
         ID3D11SamplerState* DX_DefaultSamplerState = nullptr;
 
         D3D_FEATURE_LEVEL UsedFeatureLevel;
@@ -202,16 +201,28 @@ namespace Leviathan
             case 'y': { Result = GlyphRects[24]; } break;
             case 'Z':
             case 'z': { Result = GlyphRects[25]; } break;
-            case '1': { Result = GlyphRects[26]; } break;
-            case '2': { Result = GlyphRects[27]; } break;
-            case '3': { Result = GlyphRects[28]; } break;
-            case '4': { Result = GlyphRects[29]; } break;
-            case '5': { Result = GlyphRects[30]; } break;
-            case '6': { Result = GlyphRects[31]; } break;
-            case '7': { Result = GlyphRects[32]; } break;
-            case '8': { Result = GlyphRects[33]; } break;
-            case '9': { Result = GlyphRects[34]; } break;
-            case '0': { Result = GlyphRects[35]; } break;
+            // NOTE: Version 1
+            case '0': { Result = GlyphRects[26]; } break;
+            case '1': { Result = GlyphRects[27]; } break;
+            case '2': { Result = GlyphRects[28]; } break;
+            case '3': { Result = GlyphRects[29]; } break;
+            case '4': { Result = GlyphRects[30]; } break;
+            case '5': { Result = GlyphRects[31]; } break;
+            case '6': { Result = GlyphRects[32]; } break;
+            case '7': { Result = GlyphRects[33]; } break;
+            case '8': { Result = GlyphRects[34]; } break;
+            case '9': { Result = GlyphRects[35]; } break;
+            // NOTE: Version 0
+            //case '1': { Result = GlyphRects[26]; } break;
+            //case '2': { Result = GlyphRects[27]; } break;
+            //case '3': { Result = GlyphRects[28]; } break;
+            //case '4': { Result = GlyphRects[29]; } break;
+            //case '5': { Result = GlyphRects[30]; } break;
+            //case '6': { Result = GlyphRects[31]; } break;
+            //case '7': { Result = GlyphRects[32]; } break;
+            //case '8': { Result = GlyphRects[33]; } break;
+            //case '9': { Result = GlyphRects[34]; } break;
+            // case '0': { Result = GlyphRects[35]; } break;
             case ' ': { Result = GlyphRects[36]; } break;
             default: { } break;
         }
@@ -411,9 +422,10 @@ namespace Leviathan
             DX_CHECK(D2_RenderTarget->EndDraw());
         }
 
-        static bool bDrawLines = false;
+        static bool bDrawLines = true;
         if (bDrawLines)
         {
+            DX_ImmediateContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
             
@@ -435,6 +447,7 @@ namespace Leviathan
         static bool bDrawTriangle = true;
         if (bDrawTriangle)
         { // Draw triangle
+            DX_ImmediateContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
             m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(256.0f, -256.0f, 0.0f);
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &TriangleWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
@@ -454,9 +467,10 @@ namespace Leviathan
             DX_ImmediateContext->DrawIndexed(MeshStateTriangle.NumInds, 0u, 0u);
         }
 
-        static bool bDrawTexQuad = false;
+        static bool bDrawTexQuad = true;
         if (bDrawTexQuad)
         { // Draw tex quad
+            DX_ImmediateContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
             m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(+256.0f, +256.0f, 0.0f);
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &TexQuadWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
@@ -473,16 +487,17 @@ namespace Leviathan
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
             DX_ImmediateContext->PSSetShader(DrawStateTexture.PixelShader, nullptr, 0);
             //DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_DebugTextureSRV);
-            DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_TestTextureSRV);
+            DX_ImmediateContext->PSSetShaderResources(0, 1, &LvTestTexture.SRV);
             DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
 
             DX_ImmediateContext->DrawIndexed(MeshStateQuad.NumInds, 0u, 0u);
         }
         DX_ImmediateContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
 
-        static bool bDrawUnicolorQuad = false;
+        static bool bDrawUnicolorQuad = true;
         if (bDrawUnicolorQuad)
         {
+            DX_ImmediateContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
             m4f UnicolorQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(-256.0f, -256.0f, 0.0f);
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &UnicolorQuadWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
@@ -509,9 +524,10 @@ namespace Leviathan
 
         const float HalfWidth = (float)AppWidth / 2.0f;
         const float HalfHeight = (float)AppHeight / 2.0f;
-        static bool bDrawInstRects = false;
+        static bool bDrawInstRects = true;
         if (bDrawInstRects)
         { // Draw Instanced Rects
+            DX_ImmediateContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
 
@@ -530,7 +546,7 @@ namespace Leviathan
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
             //DX_ImmediateContext->PSSetShader(DrawStateInstRectColor.PixelShader, nullptr, 0);
             DX_ImmediateContext->PSSetShader(DrawStateInstRectTexture.PixelShader, nullptr, 0);
-            DX_ImmediateContext->PSSetShaderResources(0, 1, &DX_TestTextureSRV);
+            DX_ImmediateContext->PSSetShaderResources(0, 1, &LvTestTexture.SRV);
             DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
 
             DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, ARRAY_SIZE(InstRectDataArray), 0u, 0, 0u);
@@ -604,6 +620,7 @@ namespace Leviathan
 
             UserInterface::Draw(D2_RenderTarget, Draw2D);
 
+            DX_ImmediateContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
             DX_ImmediateContext->OMSetDepthStencilState(DX_2DInstancedDepthStencilState, 0);
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
@@ -634,8 +651,10 @@ namespace Leviathan
         static bool bDrawHandmadeText = true;
         if (bDrawHandmadeText)
         {
+            DX_ImmediateContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
+
             const v2f TextOrigin{ AppWidth / 2.0f, AppHeight / 2.0f };
-            const float TextScale = 200.0f;
+            const float TextScale = 300.0f;
             const char TextMsg[] = "HELLO WORLD";
             HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextMsg, ARRAY_SIZE(TextMsg) - 1);
 
@@ -661,12 +680,14 @@ namespace Leviathan
             DX_ImmediateContext->VSSetShader(DrawStateInstRectTexture.VertexShader, nullptr, 0);
             DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
-            DX_ImmediateContext->PSSetShaderResources(0, 1, &HandmadeText.LvTex2D.TextureSRV);
+            DX_ImmediateContext->PSSetShaderResources(0, 1, &HandmadeText.LvTex2D.SRV);
             DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
             DX_ImmediateContext->PSSetShader(DrawStateInstRectTexture.PixelShader, nullptr, 0);
 
             DX_ImmediateContext->DrawIndexedInstanced(MeshStateSpriteQuad.NumInds, Draw2D.TextBatchCmds.Num, 0u, 0, 0u);
         }
+
+        DX_ImmediateContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
 
         UINT SyncInterval = 0, PresentFlags = 0;
         DXGI_PRESENT_PARAMETERS PresentParams = {};
@@ -769,20 +790,23 @@ namespace Leviathan
         Instanced2DDepthStencilStateDesc.StencilEnable = FALSE;
         DX_Device->CreateDepthStencilState(&Instanced2DDepthStencilStateDesc, &DX_2DInstancedDepthStencilState);
 
-        D3D11_RENDER_TARGET_BLEND_DESC RenderTargetBlendDesc = {};
-        RenderTargetBlendDesc.BlendEnable = TRUE;
-        RenderTargetBlendDesc.SrcBlend = D3D11_BLEND_SRC_ALPHA;
-        RenderTargetBlendDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-        RenderTargetBlendDesc.BlendOp = D3D11_BLEND_OP_ADD;
-        RenderTargetBlendDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
-        RenderTargetBlendDesc.DestBlendAlpha = D3D11_BLEND_ZERO;
-        RenderTargetBlendDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
-        RenderTargetBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALPHA;
-        D3D11_BLEND_DESC BlendDesc = {};
-        BlendDesc.AlphaToCoverageEnable = FALSE;
-        BlendDesc.IndependentBlendEnable = FALSE;
-        BlendDesc.RenderTarget[0] = RenderTargetBlendDesc;
-        DX_CHECK(DX_Device->CreateBlendState(&BlendDesc, &DX_BlendState));
+        { // AlphaBlendState:
+            D3D11_RENDER_TARGET_BLEND_DESC AlphaRTBlendDesc = {};
+            AlphaRTBlendDesc.BlendEnable = TRUE;
+            AlphaRTBlendDesc.SrcBlend = D3D11_BLEND_SRC_COLOR;
+            AlphaRTBlendDesc.DestBlend = D3D11_BLEND_DEST_COLOR;
+            AlphaRTBlendDesc.BlendOp = D3D11_BLEND_OP_ADD;
+            AlphaRTBlendDesc.SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+            AlphaRTBlendDesc.DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+            AlphaRTBlendDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+            AlphaRTBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+            D3D11_BLEND_DESC AlphaBlendDesc = {};
+            AlphaBlendDesc.AlphaToCoverageEnable = FALSE;
+            AlphaBlendDesc.IndependentBlendEnable = FALSE;
+            AlphaBlendDesc.RenderTarget[0] = AlphaRTBlendDesc;
+            
+            DX_CHECK(DX_Device->CreateBlendState(&AlphaBlendDesc, &DX_AlphaBlendState));
+        }
 
         D3D11_VIEWPORT ViewportDesc = {};
         ViewportDesc.TopLeftX = 0.0f;
@@ -994,29 +1018,7 @@ namespace Leviathan
             DX_CHECK(DX_Device->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &DX_VxBufferLines));
         }
 
-        {
-            ImageT DebugImage = {};
-            GetDebugImage(DebugImage);
-
-            D3D11_SUBRESOURCE_DATA DebugTextureDataDesc[] = { {} };
-            DebugTextureDataDesc[0].pSysMem = DebugImage.PxBuffer;
-            DebugTextureDataDesc[0].SysMemPitch = sizeof(RGBA32) * DebugImage.Width;
-            DebugTextureDataDesc[0].SysMemSlicePitch = DebugImage.PxBufferSize;
-            D3D11_TEXTURE2D_DESC DebugTextureDesc = {};
-            DebugTextureDesc.Width = DebugImage.Width;
-            DebugTextureDesc.Height = DebugImage.Height;
-            DebugTextureDesc.MipLevels = 1;
-            DebugTextureDesc.ArraySize = 1;
-            DebugTextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-            DebugTextureDesc.SampleDesc.Count = 1;
-            DebugTextureDesc.SampleDesc.Quality = 0;
-            DebugTextureDesc.Usage = D3D11_USAGE_DEFAULT;
-            DebugTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-            DebugTextureDesc.CPUAccessFlags = 0;
-            DebugTextureDesc.MiscFlags = 0;
-            DX_CHECK(DX_Device->CreateTexture2D(&DebugTextureDesc, &DebugTextureDataDesc[0], &DX_DebugTexture));
-            DX_CHECK(DX_Device->CreateShaderResourceView(DX_DebugTexture, nullptr, &DX_DebugTextureSRV));
-
+        { // Default sampler state:
             D3D11_TEXTURE_ADDRESS_MODE SamplerAddressMode = D3D11_TEXTURE_ADDRESS_WRAP;
             D3D11_SAMPLER_DESC DefaultSamplerDesc = {};
             DefaultSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
@@ -1031,31 +1033,13 @@ namespace Leviathan
             DX_CHECK(DX_Device->CreateSamplerState(&DefaultSamplerDesc, &DX_DefaultSamplerState));
         }
 
-        {
-            ImageT TestImage = {};
-            LoadBMPFile("Assets/TestTexture.bmp", TestImage);
+        ImageT DebugImage = {};
+        GetDebugImage(DebugImage);
+        LvDebugTexture = LoadTextureFromImage(DebugImage, DX_Device);
+        LvTestTexture = LoadTextureBMP("Assets/TestTexture.bmp", DX_Device);
 
-            D3D11_SUBRESOURCE_DATA DebugTextureDataDesc[] = { {} };
-            DebugTextureDataDesc[0].pSysMem = TestImage.PxBuffer;
-            DebugTextureDataDesc[0].SysMemPitch = sizeof(RGBA32) * TestImage.Width;
-            DebugTextureDataDesc[0].SysMemSlicePitch = TestImage.PxBufferSize;
-            D3D11_TEXTURE2D_DESC DebugTextureDesc = {};
-            DebugTextureDesc.Width = TestImage.Width;
-            DebugTextureDesc.Height = TestImage.Height;
-            DebugTextureDesc.MipLevels = 1;
-            DebugTextureDesc.ArraySize = 1;
-            DebugTextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-            DebugTextureDesc.SampleDesc.Count = 1;
-            DebugTextureDesc.SampleDesc.Quality = 0;
-            DebugTextureDesc.Usage = D3D11_USAGE_DEFAULT;
-            DebugTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-            DebugTextureDesc.CPUAccessFlags = 0;
-            DebugTextureDesc.MiscFlags = 0;
-            DX_CHECK(DX_Device->CreateTexture2D(&DebugTextureDesc, &DebugTextureDataDesc[0], &DX_TestTexture));
-            DX_CHECK(DX_Device->CreateShaderResourceView(DX_TestTexture, nullptr, &DX_TestTextureSRV));
-        }
-
-        HandmadeText.Init(DX_Device, "Assets/HandmadeTextFont_White.bmp", 12, 6);
+        //HandmadeText.Init(DX_Device, "Assets/HandmadeTextFont_0.bmp", 12, 6);
+        HandmadeText.Init(DX_Device, "Assets/HandmadeTextFont_1.bmp", 12, 6);
 
         MeshStateQuad = CreateMeshState
         (
@@ -1121,6 +1105,9 @@ namespace Leviathan
         SafeRelease(MeshStateQuad);
         SafeRelease(MeshStateMinQuad);
         SafeRelease(MeshStateSpriteQuad);
+
+        SafeRelease(LvDebugTexture);
+        SafeRelease(LvTestTexture);
 
         SafeRelease(DX_WBuffer);
         SafeRelease(DX_VPBuffer);

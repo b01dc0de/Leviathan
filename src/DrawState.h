@@ -2,6 +2,7 @@
 #define LEVIATHAN_DRAWSTATE_H
 
 #include "Leviathan.h"
+#include "Image.h"
 
 namespace Leviathan
 {
@@ -45,11 +46,12 @@ namespace Leviathan
     struct LvTexture2D
     {
         ID3D11Texture2D* Texture = nullptr;
-        ID3D11ShaderResourceView* TextureSRV = nullptr;
+        ID3D11ShaderResourceView* SRV = nullptr;
         int Width = 0;
         int Height = 0;
     };
 
+    LvTexture2D LoadTextureFromImage(ImageT& Image, ID3D11Device* InDevice);
     LvTexture2D LoadTextureBMP(const char* Filename, ID3D11Device* InDevice);
     void SafeRelease(LvTexture2D& InLvTex2D);
 }

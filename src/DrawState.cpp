@@ -138,25 +138,22 @@ namespace Leviathan
         SafeRelease(InDrawState.PixelShader);
     }
 
-    LvTexture2D LoadTextureBMP(const char* Filename, ID3D11Device* InDevice)
+    LvTexture2D LoadTextureFromImage(ImageT& Image, ID3D11Device* InDevice)
     {
         LvTexture2D Result = {};
 
-        ImageT TextureImage = {};
-        LoadBMPFile(Filename, TextureImage);
-
-        if (TextureImage.PxBuffer)
+        if (Image.PxBuffer)
         {
             ID3D11Texture2D* OutTexture = nullptr;
             ID3D11ShaderResourceView* OutTextureSRV = nullptr;
 
             D3D11_SUBRESOURCE_DATA DebugTextureDataDesc[] = { {} };
-            DebugTextureDataDesc[0].pSysMem = TextureImage.PxBuffer;
-            DebugTextureDataDesc[0].SysMemPitch = sizeof(RGBA32) * TextureImage.Width;
-            DebugTextureDataDesc[0].SysMemSlicePitch = TextureImage.PxBufferSize;
+            DebugTextureDataDesc[0].pSysMem = Image.PxBuffer;
+            DebugTextureDataDesc[0].SysMemPitch = sizeof(RGBA32) * Image.Width;
+            DebugTextureDataDesc[0].SysMemSlicePitch = Image.PxBufferSize;
             D3D11_TEXTURE2D_DESC DebugTextureDesc = {};
-            DebugTextureDesc.Width = TextureImage.Width;
-            DebugTextureDesc.Height = TextureImage.Height;
+            DebugTextureDesc.Width = Image.Width;
+            DebugTextureDesc.Height = Image.Height;
             DebugTextureDesc.MipLevels = 1;
             DebugTextureDesc.ArraySize = 1;
             DebugTextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -172,16 +169,30 @@ namespace Leviathan
             if (OutTexture && OutTextureSRV)
             {
                 Result.Texture = OutTexture;
-                Result.TextureSRV = OutTextureSRV;
-                Result.Width = TextureImage.Width;
-                Result.Height = TextureImage.Height;
+                Result.SRV = OutTextureSRV;
+                Result.Width = Image.Width;
+                Result.Height = Image.Height;
             }
             else
             {
                 SafeRelease(OutTexture);
                 SafeRelease(OutTextureSRV);
             }
+        }
 
+        return Result;
+    }
+
+    LvTexture2D LoadTextureBMP(const char* Filename, ID3D11Device* InDevice)
+    {
+        LvTexture2D Result = {};
+
+        ImageT TextureImage = {};
+        LoadBMPFile(Filename, TextureImage);
+
+        if (TextureImage.PxBuffer)
+        {
+            Result = LoadTextureFromImage(TextureImage, InDevice);
             delete[] TextureImage.PxBuffer;
         }
 
@@ -191,6 +202,6 @@ namespace Leviathan
     void SafeRelease(LvTexture2D& InLvTex2D)
     {
         SafeRelease(InLvTex2D.Texture);
-        SafeRelease(InLvTex2D.TextureSRV);
+        SafeRelease(InLvTex2D.SRV);
     }
 }
