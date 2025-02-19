@@ -653,10 +653,20 @@ namespace Leviathan
         {
             DX_ImmediateContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
 
-            const v2f TextOrigin{ AppWidth / 2.0f, AppHeight / 2.0f };
+            v2f TextOrigin{ AppWidth / 2.0f, AppHeight / 2.0f };
             const float TextScale = 300.0f;
             const char TextMsg[] = "HELLO WORLD";
             HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextMsg, ARRAY_SIZE(TextMsg) - 1);
+
+            const char TextRow0[] = "ABCDEFGHIJKL";
+            const char TextRow1[] = "MNOPQRSTUVWX";
+            const char TextRow2[] = "YZ0123456789";
+            TextOrigin.Y -= 60.0f;
+            HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextRow0, ARRAY_SIZE(TextRow0) - 1);
+            TextOrigin.Y -= 60.0f;
+            HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextRow1, ARRAY_SIZE(TextRow1) - 1);
+            TextOrigin.Y -= 60.0f;
+            HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextRow2, ARRAY_SIZE(TextRow2) - 1);
 
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
