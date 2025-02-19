@@ -48,7 +48,7 @@
     <ClCompile Include="src\Clock.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\BatchDraw2D.cpp">
+    <ClCompile Include="src\Draw2D.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Game\Snake.cpp">
@@ -110,7 +110,7 @@
     <ClInclude Include="src\Array.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\BatchDraw2D.h">
+    <ClInclude Include="src\Draw2D.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Game\Snake.h">
@@ -137,6 +137,9 @@
       <Filter>src\hlsl</Filter>
     </FxCompile>
     <FxCompile Include="src\hlsl\InstRectShader.hlsl">
+      <Filter>src\hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="src\hlsl\InstLineShader.hlsl">
       <Filter>src\hlsl</Filter>
     </FxCompile>
   </ItemGroup>

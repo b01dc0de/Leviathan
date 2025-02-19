@@ -13,6 +13,14 @@ namespace Leviathan
         float SizeY = 0.0f;
     };
 
+    struct LineF
+    {
+        float BeginX = 0.0f;
+        float BeginY = 0.0f;
+        float EndX = 0.0f;
+        float EndY = 0.0f;
+    };
+
     struct InstRectColorData
     {
         RectF Rect;
@@ -25,11 +33,18 @@ namespace Leviathan
         RectF TexRect;
     };
 
+    struct InstLineData
+    {
+        LineF Line;
+        RGBA Color;
+    };
+
     struct BatchDraw2D
     {
         Array<InstRectColorData> ColorBatchCmds;
         Array<InstRectTextureData> TextureBatchCmds;
         Array<InstRectTextureData> TextBatchCmds;
+        Array<InstLineData> LineBatchCmds;
 
         void Clear();
         void AddRect(const InstRectColorData& InInstRectColorData);
@@ -38,6 +53,8 @@ namespace Leviathan
         void AddRect(const InstRectTextureData& InInstRectTextureData);
         void AddRect(const RectF& InRect, const RectF& InTexRect);
         void AddTextRect(const RectF& InPosRect, const RectF& InTexRect);
+        void AddLine(const InstLineData& InLineData);
+        void AddLine(const LineF& InLine, const RGBA& InColor);
     };
 }
 
