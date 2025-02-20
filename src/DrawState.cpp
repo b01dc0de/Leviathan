@@ -37,12 +37,6 @@ namespace Leviathan
         return Result;
     }
 
-    void SafeRelease(MeshStateT& InMeshState)
-    {
-        SafeRelease(InMeshState.VxBuffer);
-        SafeRelease(InMeshState.IxBuffer);
-    }
-
     int CompileShaderHelper
     (
         LPCWSTR SourceFileName,
@@ -131,11 +125,31 @@ namespace Leviathan
         return Result;
     }
 
-    void SafeRelease(DrawStateT& InDrawState)
+    void CallDraw(ID3D11DeviceContext* Context, DrawStateT& PipelineState, MeshStateT& Mesh)
     {
-        SafeRelease(InDrawState.InputLayout);
-        SafeRelease(InDrawState.VertexShader);
-        SafeRelease(InDrawState.PixelShader);
+        ASSERT(Context);
+
+        UINT VxStride = Mesh.VertexSize;
+        UINT VxOffset = 0;
+        Context->IASetInputLayout(PipelineState.InputLayout);
+        Context->IASetVertexBuffers(0, 1, &Mesh.VxBuffer, &VxStride, &VxOffset);
+        if (Mesh.IxBuffer) { Context->IASetIndexBuffer(Mesh.IxBuffer, MeshStateT::IxFormat, 0); }
+        Context->IASetPrimitiveTopology(MeshStateT::VxFormat);
+
+        Context->VSSetShader(PipelineState.VertexShader, nullptr, 0);
+        Context->PSSetShader(PipelineState.PixelShader, nullptr, 0);
+
+        if (Mesh.IxBuffer)
+        {
+            constexpr UINT StartIdx = 0;
+            constexpr UINT StartVx = 0;
+            Context->DrawIndexed(Mesh.NumInds, StartIdx, StartVx);
+        }
+        else
+        {
+            constexpr UINT StartVx = 0;
+            Context->Draw(Mesh.NumVerts, StartVx);
+        }
     }
 
     LvTexture2D LoadTextureFromImage(ImageT& Image, ID3D11Device* InDevice)
@@ -197,6 +211,20 @@ namespace Leviathan
         }
 
         return Result;
+    }
+
+
+    void SafeRelease(MeshStateT& InMeshState)
+    {
+        SafeRelease(InMeshState.VxBuffer);
+        SafeRelease(InMeshState.IxBuffer);
+    }
+
+    void SafeRelease(DrawStateT& InDrawState)
+    {
+        SafeRelease(InDrawState.InputLayout);
+        SafeRelease(InDrawState.VertexShader);
+        SafeRelease(InDrawState.PixelShader);
     }
 
     void SafeRelease(LvTexture2D& InLvTex2D)

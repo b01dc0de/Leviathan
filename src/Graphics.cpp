@@ -142,7 +142,7 @@ namespace Leviathan
 
     RectF HandmadeTextSheet::GetGlyph(char GlyphChar)
     {
-        constexpr RectF InvalidRect{ 0.0f, 0.0f, 0.0f, 0.0f };
+        constexpr RectF InvalidRect{ 1.0f, 1.0f, 0.0f, 0.0f };
         RectF Result = InvalidRect;
         if (!GlyphRects) { return Result; }
         switch (GlyphChar)
@@ -374,9 +374,10 @@ namespace Leviathan
         DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, fClearDepth, 0);
         const m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
 
-        static bool bDrawInstLines = true;
+        static bool bDrawInstLines = false;
         if (bDrawInstLines)
         {
+            DX_ImmediateContext->OMSetDepthStencilState(DX_2DInstancedDepthStencilState, 0);
             DX_ImmediateContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
@@ -417,19 +418,10 @@ namespace Leviathan
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &TriangleWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
 
-            UINT Offset = 0;
-            const UINT Stride = sizeof(VxColor);
-            DX_ImmediateContext->IASetInputLayout(DrawStateColor.InputLayout);
-            DX_ImmediateContext->IASetVertexBuffers(0, 1, &MeshStateTriangle.VxBuffer, &Stride, &Offset);
-            DX_ImmediateContext->IASetIndexBuffer(MeshStateTriangle.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
-            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-            DX_ImmediateContext->VSSetShader(DrawStateColor.VertexShader, nullptr, 0);
             DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
-            DX_ImmediateContext->PSSetShader(DrawStateColor.PixelShader, nullptr, 0);
 
-            DX_ImmediateContext->DrawIndexed(MeshStateTriangle.NumInds, 0u, 0u);
+            CallDraw(DX_ImmediateContext, DrawStateColor, MeshStateTriangle);
         }
 
         static bool bDrawTexQuad = true;
@@ -440,21 +432,11 @@ namespace Leviathan
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &TexQuadWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
 
-            UINT Offset = 0;
-            const UINT Stride = sizeof(VxTexture);
-            DX_ImmediateContext->IASetInputLayout(DrawStateTexture.InputLayout);
-            DX_ImmediateContext->IASetVertexBuffers(0, 1, &MeshStateQuad.VxBuffer, &Stride, &Offset);
-            DX_ImmediateContext->IASetIndexBuffer(MeshStateQuad.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
-            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-            DX_ImmediateContext->VSSetShader(DrawStateTexture.VertexShader, nullptr, 0);
             DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
-            DX_ImmediateContext->PSSetShader(DrawStateTexture.PixelShader, nullptr, 0);
             DX_ImmediateContext->PSSetShaderResources(0, 1, &LvTestTexture.SRV);
-            DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
 
-            DX_ImmediateContext->DrawIndexed(MeshStateQuad.NumInds, 0u, 0u);
+            CallDraw(DX_ImmediateContext, DrawStateTexture, MeshStateQuad);
         }
         DX_ImmediateContext->OMSetDepthStencilState(DX_2DInstancedDepthStencilState, 0);
 
@@ -493,7 +475,8 @@ namespace Leviathan
         if (bDrawGame) { GameManager::Draw(Draw2D); }
         if (Draw2D.ColorBatchCmds.Num > 0)
         {
-            DX_ImmediateContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
+            DX_ImmediateContext->OMSetDepthStencilState(DX_2DInstancedDepthStencilState, 0);
+            DX_ImmediateContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
 
@@ -535,19 +518,10 @@ namespace Leviathan
             DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &CubeWorld, sizeof(m4f), 0);
             DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &GameCamera.View, sizeof(Camera), 0);
 
-            UINT Offset = 0;
-            const UINT Stride = sizeof(VxColor);
-            DX_ImmediateContext->IASetInputLayout(DrawStateColor.InputLayout);
-            DX_ImmediateContext->IASetVertexBuffers(0, 1, &MeshStateCube.VxBuffer, &Stride, &Offset);
-            DX_ImmediateContext->IASetIndexBuffer(MeshStateCube.IxBuffer, DXGI_FORMAT_R32_UINT, 0);
-            DX_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-            DX_ImmediateContext->VSSetShader(DrawStateColor.VertexShader, nullptr, 0);
             DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
-            DX_ImmediateContext->PSSetShader(DrawStateColor.PixelShader, nullptr, 0);
 
-            DX_ImmediateContext->DrawIndexed(MeshStateCube.NumInds, 0u, 0u);
+            CallDraw(DX_ImmediateContext, DrawStateColor, MeshStateCube);
         }
 
         static bool bDrawUI = true;

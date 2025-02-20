@@ -6,6 +6,7 @@
 
 namespace Leviathan
 {
+
     struct MeshStateT
     {
         size_t VertexSize = 0;
@@ -13,6 +14,9 @@ namespace Leviathan
         size_t NumInds = 0;
         ID3D11Buffer* VxBuffer = nullptr;
         ID3D11Buffer* IxBuffer = nullptr;
+
+        static constexpr DXGI_FORMAT IxFormat = DXGI_FORMAT_R32_UINT;
+        static constexpr D3D_PRIMITIVE_TOPOLOGY VxFormat = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     };
 
     MeshStateT CreateMeshState
@@ -24,7 +28,6 @@ namespace Leviathan
         size_t NumIndices,
         unsigned int* IndexData
     );
-    void SafeRelease(MeshStateT& InMeshState);
 
     struct DrawStateT
     {
@@ -41,7 +44,8 @@ namespace Leviathan
         const D3D11_INPUT_ELEMENT_DESC* InputElements,
         size_t NumInputElements
     );
-    void SafeRelease(DrawStateT& InDrawState);
+
+    void CallDraw(ID3D11DeviceContext* Context, DrawStateT& PipelineState, MeshStateT& Mesh);
 
     struct LvTexture2D
     {
@@ -53,6 +57,9 @@ namespace Leviathan
 
     LvTexture2D LoadTextureFromImage(ImageT& Image, ID3D11Device* InDevice);
     LvTexture2D LoadTextureBMP(const char* Filename, ID3D11Device* InDevice);
+
+    void SafeRelease(MeshStateT& InMeshState);
+    void SafeRelease(DrawStateT& InDrawState);
     void SafeRelease(LvTexture2D& InLvTex2D);
 }
 
