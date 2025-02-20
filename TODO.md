@@ -1,0 +1,6 @@
+- [ ] API for better Draw calls that set all required DrawState
+- [ ] Allow for InstRects to be rotated
+- [ ] Determine better way of handling draw order
+- [ ] Fix alpha + blend states inconsistencies
+- [ ] Wireframe debug drawing
+- [ ] TrueTypeFont support
