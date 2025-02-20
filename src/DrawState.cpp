@@ -158,8 +158,12 @@ namespace Leviathan
         ID3DBlob* VSBlob = nullptr;
         ID3DBlob* PSBlob = nullptr;
 
-        DX_CHECK(CompileShaderHelper(ShaderFilename, "VSMain", "vs_5_0", &VSBlob, Defines));
-        DX_CHECK(CompileShaderHelper(ShaderFilename, "PSMain", "ps_5_0", &PSBlob, Defines));
+        static const char* VxShaderMain = "VSMain";
+        static const char* VxShaderProfile = "vs_5_0";
+        static const char* PxShaderMain = "PSMain";
+        static const char* PxShaderProfile = "ps_5_0";
+        DX_CHECK(CompileShaderHelper(ShaderFilename, VxShaderMain, VxShaderProfile, &VSBlob, Defines));
+        DX_CHECK(CompileShaderHelper(ShaderFilename, PxShaderMain, PxShaderProfile, &PSBlob, Defines));
 
         DrawStateT Result;
 
@@ -176,7 +180,49 @@ namespace Leviathan
         return Result;
     }
 
-    void CallDraw(ID3D11DeviceContext* Context, DrawStateT& PipelineState, MeshStateT& Mesh)
+    void SetVSState(ID3D11DeviceContext* Context, PipelineStateT& Pipeline)
+    {
+        ASSERT(Context);
+        constexpr UINT StartSlot = 0;
+        if (Pipeline.ConstantBuffers.Num > 0)
+        {
+            ASSERT(Pipeline.ConstantBuffers.Num <= PipelineStateT::MaxConstantBuffers);
+            Context->VSSetConstantBuffers(StartSlot, Pipeline.ConstantBuffers.Num, Pipeline.ConstantBuffers.Data);
+        }
+        if (Pipeline.Samplers.Num > 0)
+        {
+            ASSERT(Pipeline.Samplers.Num <= PipelineStateT::MaxSamplers);
+            Context->VSSetSamplers(StartSlot, Pipeline.Samplers.Num, Pipeline.Samplers.Data);
+        }
+        if (Pipeline.SRVs.Num > 0)
+        {
+            ASSERT(Pipeline.SRVs.Num <= PipelineStateT::MaxSRVs);
+            Context->VSSetShaderResources(StartSlot, Pipeline.SRVs.Num, Pipeline.SRVs.Data);
+        }
+    }
+
+    void SetPSState(ID3D11DeviceContext* Context, PipelineStateT& Pipeline)
+    {
+        ASSERT(Context);
+        constexpr UINT StartSlot = 0;
+        if (Pipeline.ConstantBuffers.Num > 0)
+        {
+            ASSERT(Pipeline.ConstantBuffers.Num <= PipelineStateT::MaxConstantBuffers);
+            Context->PSSetConstantBuffers(StartSlot, Pipeline.ConstantBuffers.Num, Pipeline.ConstantBuffers.Data);
+        }
+        if (Pipeline.Samplers.Num > 0)
+        {
+            ASSERT(Pipeline.Samplers.Num <= PipelineStateT::MaxSamplers);
+            Context->PSSetSamplers(StartSlot, Pipeline.Samplers.Num, Pipeline.Samplers.Data);
+        }
+        if (Pipeline.SRVs.Num > 0)
+        {
+            ASSERT(Pipeline.SRVs.Num <= PipelineStateT::MaxSRVs);
+            Context->PSSetShaderResources(StartSlot, Pipeline.SRVs.Num, Pipeline.SRVs.Data);
+        }
+    }
+
+    void DrawMesh(ID3D11DeviceContext* Context, DrawStateT& PipelineState, MeshStateT& Mesh)
     {
         ASSERT(Context);
 
@@ -212,7 +258,7 @@ namespace Leviathan
         if (MeshInst.IxBuffer) { Context->DrawIndexedInstanced(MeshInst.NumInds, NumInsts, StartIdx, StartVx, StartInst); }
         else { Context->DrawInstanced(MeshInst.NumVerts, NumInsts, StartVx, StartInst); }
     }
-    void CallDrawInstanced
+    void DrawMeshInstanced
     (
         ID3D11DeviceContext* Context,
         DrawStateT& PipelineState,

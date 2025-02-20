@@ -65,6 +65,20 @@ namespace Leviathan
         ID3D11PixelShader* PixelShader = nullptr;
     };
 
+    struct PipelineStateT
+    {
+        Array<ID3D11Buffer*> ConstantBuffers;
+        Array<ID3D11SamplerState*> Samplers;
+        Array<ID3D11ShaderResourceView*> SRVs;
+
+        static constexpr int MaxConstantBuffers = D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT;
+        static constexpr int MaxSamplers = D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT;
+        static constexpr int MaxSRVs = D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT;
+    };
+
+    void SetVSState(ID3D11DeviceContext* Context, PipelineStateT& Pipeline);
+    void SetPSState(ID3D11DeviceContext* Context, PipelineStateT& Pipeline);
+
     DrawStateT CreateDrawState
     (
         ID3D11Device* InDevice,
@@ -74,8 +88,8 @@ namespace Leviathan
         size_t NumInputElements
     );
 
-    void CallDraw(ID3D11DeviceContext* Context, DrawStateT& PipelineState, MeshStateT& Mesh);
-    void CallDrawInstanced
+    void DrawMesh(ID3D11DeviceContext* Context, DrawStateT& PipelineState, MeshStateT& Mesh);
+    void DrawMeshInstanced
     (
         ID3D11DeviceContext* Context,
         DrawStateT& PipelineState,

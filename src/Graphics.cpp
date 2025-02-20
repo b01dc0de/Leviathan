@@ -425,7 +425,7 @@ namespace Leviathan
             DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
 
-            CallDraw(DX_ImmediateContext, DrawStateColor, MeshStateTriangle);
+            DrawMesh(DX_ImmediateContext, DrawStateColor, MeshStateTriangle);
         }
 
         static bool bDrawTexQuad = false;
@@ -440,7 +440,7 @@ namespace Leviathan
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
             DX_ImmediateContext->PSSetShaderResources(0, 1, &LvTestTexture.SRV);
 
-            CallDraw(DX_ImmediateContext, DrawStateTexture, MeshStateQuad);
+            DrawMesh(DX_ImmediateContext, DrawStateTexture, MeshStateQuad);
         }
         DX_ImmediateContext->OMSetDepthStencilState(DX_2DInstancedDepthStencilState, 0);
 
@@ -457,7 +457,7 @@ namespace Leviathan
             DX_ImmediateContext->PSSetShaderResources(0, 1, &LvTestTexture.SRV);
             DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
 
-            CallDrawInstanced
+            DrawMeshInstanced
             (
                 DX_ImmediateContext,
                 DrawStateInstRectTexture,
@@ -480,7 +480,7 @@ namespace Leviathan
             DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
 
-            CallDrawInstanced
+            DrawMeshInstanced
             (
                 DX_ImmediateContext,
                 DrawStateInstRectColor,
@@ -507,7 +507,7 @@ namespace Leviathan
             DX_ImmediateContext->VSSetConstantBuffers(WBufferSlot, 1, &DX_WBuffer);
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
 
-            CallDraw(DX_ImmediateContext, DrawStateColor, MeshStateCube);
+            DrawMesh(DX_ImmediateContext, DrawStateColor, MeshStateCube);
         }
 
         static bool bDrawUI = true;
@@ -524,7 +524,7 @@ namespace Leviathan
 
             DX_ImmediateContext->VSSetConstantBuffers(VPBufferSlot, 1, &DX_VPBuffer);
 
-            CallDrawInstanced
+            DrawMeshInstanced
             (
                 DX_ImmediateContext,
                 DrawStateInstRectColor,
@@ -562,7 +562,7 @@ namespace Leviathan
             DX_ImmediateContext->PSSetShaderResources(0, 1, &HandmadeText.LvTex2D.SRV);
             DX_ImmediateContext->PSSetSamplers(0, 1, &DX_DefaultSamplerState);
 
-            CallDrawInstanced
+            DrawMeshInstanced
             (
                 DX_ImmediateContext,
                 DrawStateInstRectTexture,
