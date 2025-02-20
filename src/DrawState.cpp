@@ -3,6 +3,7 @@
 
 namespace Leviathan
 {
+
     MeshStateT CreateMeshState
     (
         ID3D11Device* InDevice,
@@ -10,7 +11,8 @@ namespace Leviathan
         size_t NumVertices,
         void* VertexData,
         size_t NumIndices,
-        unsigned int* IndexData
+        unsigned int* IndexData,
+        D3D_PRIMITIVE_TOPOLOGY Format
     )
     {
         ASSERT(VertexData);
@@ -19,12 +21,61 @@ namespace Leviathan
 
         Result.VertexSize = VertexSize;
         Result.NumVerts = NumVertices;
+        Result.Format = Format;
         Result.NumInds = NumIndices;
 
         size_t VxDataSize = VertexSize * NumVertices;
         D3D11_BUFFER_DESC VertexBufferDesc = { VxDataSize, D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0 };
         D3D11_SUBRESOURCE_DATA VertexBufferInitData = { VertexData, 0, 0 };
         DX_CHECK(InDevice->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &Result.VxBuffer));
+
+        if (IndexData)
+        {
+            size_t IxDataSize = NumIndices * sizeof(unsigned int);
+            D3D11_BUFFER_DESC IndexBufferDesc = { IxDataSize, D3D11_USAGE_DEFAULT, D3D11_BIND_INDEX_BUFFER, 0, 0 };
+            D3D11_SUBRESOURCE_DATA IndexBufferInitData = { IndexData, 0, 0 };
+            DX_CHECK(InDevice->CreateBuffer(&IndexBufferDesc, &IndexBufferInitData, &Result.IxBuffer));
+        }
+
+        return Result;
+    }
+
+    MeshInstStateT CreateMeshInstState
+    (
+        ID3D11Device* InDevice,
+        size_t VertexSize,
+        size_t InstDataSize,
+        size_t MaxInstCount,
+        size_t NumVertices,
+        void* VertexData,
+        size_t NumIndices,
+        unsigned int* IndexData,
+        D3D_PRIMITIVE_TOPOLOGY Format
+    )
+    {
+        ASSERT(VertexSize);
+        ASSERT(InstDataSize);
+        ASSERT(MaxInstCount);
+        ASSERT(NumVertices);
+        ASSERT(VertexData);
+
+        MeshInstStateT Result;
+
+        Result.VertexSize = VertexSize;
+        Result.NumVerts = NumVertices;
+        Result.NumInds = NumIndices;
+        Result.InstDataSize = InstDataSize;
+        Result.MaxInstCount = MaxInstCount;
+        Result.InstBufferSize = InstDataSize * MaxInstCount;
+        Result.Format = Format;
+
+        size_t VxDataSize = VertexSize * NumVertices;
+        D3D11_BUFFER_DESC VertexBufferDesc = { VxDataSize, D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0 };
+        D3D11_SUBRESOURCE_DATA VertexBufferInitData = { VertexData, 0, 0 };
+        DX_CHECK(InDevice->CreateBuffer(&VertexBufferDesc, &VertexBufferInitData, &Result.VxBuffer));
+
+        D3D11_BUFFER_DESC InstBufferDesc = { Result.InstBufferSize, D3D11_USAGE_DYNAMIC, D3D11_BIND_VERTEX_BUFFER, D3D11_CPU_ACCESS_WRITE, 0 };
+        DX_CHECK(InDevice->CreateBuffer(&InstBufferDesc, nullptr, &Result.InstBuffer));
 
         if (IndexData)
         {
@@ -134,7 +185,7 @@ namespace Leviathan
         Context->IASetInputLayout(PipelineState.InputLayout);
         Context->IASetVertexBuffers(0, 1, &Mesh.VxBuffer, &VxStride, &VxOffset);
         if (Mesh.IxBuffer) { Context->IASetIndexBuffer(Mesh.IxBuffer, MeshStateT::IxFormat, 0); }
-        Context->IASetPrimitiveTopology(MeshStateT::VxFormat);
+        Context->IASetPrimitiveTopology(MeshStateT::FormatTriangleList);
 
         Context->VSSetShader(PipelineState.VertexShader, nullptr, 0);
         Context->PSSetShader(PipelineState.PixelShader, nullptr, 0);
@@ -149,6 +200,83 @@ namespace Leviathan
         {
             constexpr UINT StartVx = 0;
             Context->Draw(Mesh.NumVerts, StartVx);
+        }
+    }
+
+    void DrawMeshInst(ID3D11DeviceContext* Context, MeshInstStateT& MeshInst, size_t NumInsts)
+    {
+        ASSERT(NumInsts * MeshInst.InstDataSize < MeshInst.InstBufferSize);
+        constexpr UINT StartIdx = 0;
+        constexpr UINT StartVx = 0;
+        constexpr UINT StartInst = 0;
+        if (MeshInst.IxBuffer) { Context->DrawIndexedInstanced(MeshInst.NumInds, NumInsts, StartIdx, StartVx, StartInst); }
+        else { Context->DrawInstanced(MeshInst.NumVerts, NumInsts, StartVx, StartInst); }
+    }
+    void CallDrawInstanced
+    (
+        ID3D11DeviceContext* Context,
+        DrawStateT& PipelineState,
+        MeshInstStateT& MeshInst,
+        size_t NumInsts,
+        void* pInstData
+    )
+    {
+        ASSERT(Context);
+        ASSERT(MeshInst.VxBuffer);
+        ASSERT(MeshInst.InstBuffer);
+        ASSERT(NumInsts > 0);
+
+        ID3D11Buffer* VxInstBuffers[] = { MeshInst.VxBuffer, MeshInst.InstBuffer };
+        UINT VxInstStrides[] = { MeshInst.VertexSize, MeshInst.InstDataSize };
+        UINT VxInstOffsets[] = { 0, 0 };
+        Context->IASetInputLayout(PipelineState.InputLayout);
+        Context->IASetVertexBuffers(0, 2, VxInstBuffers, VxInstStrides, VxInstOffsets);
+        if (MeshInst.IxBuffer) { Context->IASetIndexBuffer(MeshInst.IxBuffer, MeshStateT::IxFormat, 0); }
+        Context->IASetPrimitiveTopology(MeshInst.Format);
+
+        Context->VSSetShader(PipelineState.VertexShader, nullptr, 0);
+        Context->PSSetShader(PipelineState.PixelShader, nullptr, 0);
+
+        if (pInstData)
+        {
+            // Case 1: NumInsts <= MaxInstCount 
+            if (NumInsts <= MeshInst.MaxInstCount)
+            {
+                // Map instance data
+                D3D11_MAPPED_SUBRESOURCE InstDataMapWrite = {};
+                DX_CHECK(Context->Map(MeshInst.InstBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &InstDataMapWrite));
+                memcpy(InstDataMapWrite.pData, pInstData, NumInsts * MeshInst.InstDataSize);
+                Context->Unmap(MeshInst.InstBuffer, 0);
+
+                DrawMeshInst(Context, MeshInst, NumInsts);
+            }
+            else // Case 2: NumInsts > MaxInstCount 
+            {
+                ASSERT(MeshInst.MaxInstCount * MeshInst.InstDataSize == MeshInst.InstBufferSize);
+                size_t NumInstPerCall = MeshInst.MaxInstCount;
+                u8* InstReadPtr = (u8*)pInstData;
+                int NumRemainingInsts = NumInsts;
+                while (NumRemainingInsts > 0)
+                {
+                    size_t NumInstsForCall = Min(NumRemainingInsts, NumInstPerCall);
+                    // Map instance data
+                    D3D11_MAPPED_SUBRESOURCE InstDataMapWrite = {};
+                    DX_CHECK(Context->Map(MeshInst.InstBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &InstDataMapWrite));
+                    memcpy(InstDataMapWrite.pData, InstReadPtr, NumInstsForCall * MeshInst.InstDataSize);
+                    Context->Unmap(MeshInst.InstBuffer, 0);
+
+                    // Draw instances
+                    DrawMeshInst(Context, MeshInst, NumInstsForCall);
+
+                    InstReadPtr += NumInstsForCall * MeshInst.InstDataSize;
+                    NumRemainingInsts -= NumInstsForCall;
+                }
+            }
+        }
+        else
+        {
+            ASSERT(NumInsts * sizeof(MeshInst.InstDataSize) <= MeshInst.InstBufferSize);
+            DrawMeshInst(Context, MeshInst, NumInsts);
         }
     }
 

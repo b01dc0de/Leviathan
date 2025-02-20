@@ -6,17 +6,32 @@
 
 namespace Leviathan
 {
-
     struct MeshStateT
     {
         size_t VertexSize = 0;
         size_t NumVerts = 0;
         size_t NumInds = 0;
+        D3D_PRIMITIVE_TOPOLOGY Format = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
         ID3D11Buffer* VxBuffer = nullptr;
         ID3D11Buffer* IxBuffer = nullptr;
 
         static constexpr DXGI_FORMAT IxFormat = DXGI_FORMAT_R32_UINT;
-        static constexpr D3D_PRIMITIVE_TOPOLOGY VxFormat = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+        static constexpr D3D_PRIMITIVE_TOPOLOGY FormatTriangleList = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+        static constexpr D3D_PRIMITIVE_TOPOLOGY FormatLineList = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+    };
+
+    struct MeshInstStateT
+    {
+        size_t VertexSize = 0;
+        size_t NumVerts = 0;
+        size_t NumInds = 0;
+        size_t InstDataSize = 0;
+        size_t MaxInstCount = 0;
+        size_t InstBufferSize = 0;
+        D3D_PRIMITIVE_TOPOLOGY Format = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+        ID3D11Buffer* VxBuffer = nullptr;
+        ID3D11Buffer* InstBuffer = nullptr;
+        ID3D11Buffer* IxBuffer = nullptr;
     };
 
     MeshStateT CreateMeshState
@@ -25,8 +40,22 @@ namespace Leviathan
         size_t VertexSize,
         size_t NumVertices,
         void* VertexData,
-        size_t NumIndices,
-        unsigned int* IndexData
+        size_t NumIndices = 0,
+        unsigned int* IndexData = nullptr,
+        D3D_PRIMITIVE_TOPOLOGY Format = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+    );
+
+    MeshInstStateT CreateMeshInstState
+    (
+        ID3D11Device* InDevice,
+        size_t VertexSize,
+        size_t InstDataSize,
+        size_t MaxInstCount,
+        size_t NumVertices,
+        void* VertexData,
+        size_t NumIndices = 0,
+        unsigned int* IndexData = nullptr,
+        D3D_PRIMITIVE_TOPOLOGY Format = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST
     );
 
     struct DrawStateT
@@ -46,6 +75,14 @@ namespace Leviathan
     );
 
     void CallDraw(ID3D11DeviceContext* Context, DrawStateT& PipelineState, MeshStateT& Mesh);
+    void CallDrawInstanced
+    (
+        ID3D11DeviceContext* Context,
+        DrawStateT& PipelineState,
+        MeshInstStateT& MeshInst,
+        size_t NumInsts,
+        void* pInstData = nullptr
+    );
 
     struct LvTexture2D
     {

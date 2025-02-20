@@ -128,6 +128,15 @@ namespace Leviathan
     float Min(float A, float B);
     float Max(float A, float B);
     float Abs(float A);
+
+    template <typename T> T Min(T A, T B)
+    {
+        return B < A ? B : A;
+    }
+    template <typename T> T Max(T A, T B)
+    {
+        return B > A ? B : A;
+    }
 }
 
 #endif // LEVIATHAN_MATH_H
