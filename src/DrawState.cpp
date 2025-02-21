@@ -201,6 +201,37 @@ namespace Leviathan
         }
     }
 
+    void SetShaderConstantBuffers(ID3D11DeviceContext* Context, uint NumConstantBuffers, ID3D11Buffer** ConstantBuffers, uint StartSlot)
+    {
+        if (NumConstantBuffers > 0)
+        {
+            ASSERT(ConstantBuffers);
+            ASSERT(NumConstantBuffers <= PipelineStateT::MaxConstantBuffers);
+            Context->VSSetConstantBuffers(StartSlot, NumConstantBuffers, ConstantBuffers);
+            Context->PSSetConstantBuffers(StartSlot, NumConstantBuffers, ConstantBuffers);
+        }
+    }
+    void SetShaderSamplers(ID3D11DeviceContext* Context, uint NumSamplers, ID3D11SamplerState** Samplers, uint StartSlot)
+    {
+        if (NumSamplers > 0)
+        {
+            ASSERT(Samplers);
+            ASSERT(NumSamplers <= PipelineStateT::MaxSamplers);
+            Context->VSSetSamplers(StartSlot, NumSamplers, Samplers);
+            Context->PSSetSamplers(StartSlot, NumSamplers, Samplers);
+        }
+    }
+    void SetShaderResourceViews(ID3D11DeviceContext* Context, uint NumSRVs, ID3D11ShaderResourceView** SRVs, uint StartSlot)
+    {
+        if (NumSRVs > 0)
+        {
+            ASSERT(SRVs);
+            ASSERT(NumSRVs <= PipelineStateT::MaxSRVs);
+            Context->VSSetShaderResources(StartSlot, NumSRVs, SRVs);
+            Context->PSSetShaderResources(StartSlot, NumSRVs, SRVs);
+        }
+    }
+
     void SetPSState(ID3D11DeviceContext* Context, PipelineStateT& Pipeline)
     {
         ASSERT(Context);
@@ -285,43 +316,28 @@ namespace Leviathan
 
         if (pInstData)
         {
-            // Case 1: NumInsts <= MaxInstCount 
-            if (NumInsts <= MeshInst.MaxInstCount)
+            ASSERT(MeshInst.MaxInstCount * MeshInst.InstDataSize == MeshInst.InstBufferSize);
+            size_t NumInstPerCall = MeshInst.MaxInstCount;
+            u8* InstReadPtr = (u8*)pInstData;
+            int NumRemainingInsts = NumInsts;
+            while (NumRemainingInsts > 0)
             {
+                size_t CurrDrawNumInsts = Min(NumRemainingInsts, NumInstPerCall);
                 // Map instance data
                 D3D11_MAPPED_SUBRESOURCE InstDataMapWrite = {};
                 DX_CHECK(Context->Map(MeshInst.InstBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &InstDataMapWrite));
-                memcpy(InstDataMapWrite.pData, pInstData, NumInsts * MeshInst.InstDataSize);
+                memcpy(InstDataMapWrite.pData, InstReadPtr, CurrDrawNumInsts * MeshInst.InstDataSize);
                 Context->Unmap(MeshInst.InstBuffer, 0);
 
-                DrawMeshInst(Context, MeshInst, NumInsts);
-            }
-            else // Case 2: NumInsts > MaxInstCount 
-            {
-                ASSERT(MeshInst.MaxInstCount * MeshInst.InstDataSize == MeshInst.InstBufferSize);
-                size_t NumInstPerCall = MeshInst.MaxInstCount;
-                u8* InstReadPtr = (u8*)pInstData;
-                int NumRemainingInsts = NumInsts;
-                while (NumRemainingInsts > 0)
-                {
-                    size_t NumInstsForCall = Min(NumRemainingInsts, NumInstPerCall);
-                    // Map instance data
-                    D3D11_MAPPED_SUBRESOURCE InstDataMapWrite = {};
-                    DX_CHECK(Context->Map(MeshInst.InstBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &InstDataMapWrite));
-                    memcpy(InstDataMapWrite.pData, InstReadPtr, NumInstsForCall * MeshInst.InstDataSize);
-                    Context->Unmap(MeshInst.InstBuffer, 0);
+                // Draw instances
+                DrawMeshInst(Context, MeshInst, CurrDrawNumInsts);
 
-                    // Draw instances
-                    DrawMeshInst(Context, MeshInst, NumInstsForCall);
-
-                    InstReadPtr += NumInstsForCall * MeshInst.InstDataSize;
-                    NumRemainingInsts -= NumInstsForCall;
-                }
+                InstReadPtr += CurrDrawNumInsts * MeshInst.InstDataSize;
+                NumRemainingInsts -= CurrDrawNumInsts;
             }
         }
         else
         {
-            ASSERT(NumInsts * sizeof(MeshInst.InstDataSize) <= MeshInst.InstBufferSize);
             DrawMeshInst(Context, MeshInst, NumInsts);
         }
     }
@@ -387,11 +403,17 @@ namespace Leviathan
         return Result;
     }
 
-
     void SafeRelease(MeshStateT& InMeshState)
     {
         SafeRelease(InMeshState.VxBuffer);
         SafeRelease(InMeshState.IxBuffer);
+    }
+
+    void SafeRelease(MeshInstStateT& InMeshInstState)
+    {
+        SafeRelease(InMeshInstState.VxBuffer);
+        SafeRelease(InMeshInstState.InstBuffer);
+        SafeRelease(InMeshInstState.IxBuffer);
     }
 
     void SafeRelease(DrawStateT& InDrawState)

@@ -78,6 +78,9 @@ namespace Leviathan
 
     void SetVSState(ID3D11DeviceContext* Context, PipelineStateT& Pipeline);
     void SetPSState(ID3D11DeviceContext* Context, PipelineStateT& Pipeline);
+    void SetShaderConstantBuffers(ID3D11DeviceContext* Context, uint NumConstantBuffers, ID3D11Buffer** ConstantBuffers, uint StartSlot = 0);
+    void SetShaderSamplers(ID3D11DeviceContext* Context, uint NumSamplers, ID3D11SamplerState** Samplers, uint StartSlot = 0);
+    void SetShaderResourceViews(ID3D11DeviceContext* Context, uint NumSRVs, ID3D11ShaderResourceView** SRVs, uint StartSlot = 0);
 
     DrawStateT CreateDrawState
     (
@@ -110,6 +113,7 @@ namespace Leviathan
     LvTexture2D LoadTextureBMP(const char* Filename, ID3D11Device* InDevice);
 
     void SafeRelease(MeshStateT& InMeshState);
+    void SafeRelease(MeshInstStateT& InMeshInstState);
     void SafeRelease(DrawStateT& InDrawState);
     void SafeRelease(LvTexture2D& InLvTex2D);
 }
