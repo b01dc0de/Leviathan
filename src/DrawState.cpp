@@ -180,6 +180,21 @@ namespace Leviathan
         return Result;
     }
 
+    void UpdateShaderResource
+    (
+        ID3D11DeviceContext* Context,
+        ID3D11Resource* Resource,
+        void* pData,
+        size_t DataSize
+    )
+    {
+        ASSERT(pData);
+        ASSERT(DataSize);
+        constexpr UINT Subresource = 0;
+        Context->UpdateSubresource(Resource, Subresource, nullptr, pData, (UINT)DataSize, 0);
+    }
+
+
     void SetVSState(ID3D11DeviceContext* Context, PipelineStateT& Pipeline)
     {
         ASSERT(Context);

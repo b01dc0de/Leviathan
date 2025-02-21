@@ -76,6 +76,7 @@ namespace Leviathan
         static constexpr int MaxSRVs = D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT;
     };
 
+    void UpdateShaderResource(ID3D11DeviceContext* Context, ID3D11Resource* Resource, void* pData, size_t DataSize);
     void SetVSState(ID3D11DeviceContext* Context, PipelineStateT& Pipeline);
     void SetPSState(ID3D11DeviceContext* Context, PipelineStateT& Pipeline);
     void SetShaderConstantBuffers(ID3D11DeviceContext* Context, uint NumConstantBuffers, ID3D11Buffer** ConstantBuffers, uint StartSlot = 0);

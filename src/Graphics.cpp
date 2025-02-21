@@ -329,6 +329,17 @@ namespace Leviathan
     BatchDraw2D Draw2D;
     HandmadeTextSheet HandmadeText;
 
+    void UpdateShaderWorld(ID3D11DeviceContext* Context, m4f* WorldData)
+    {
+        ID3D11Buffer* WorldBuffer = DX_WBuffer;
+        UpdateShaderResource(Context, WorldBuffer, WorldData, sizeof(m4f));
+    }
+    void UpdateShaderViewProj(ID3D11DeviceContext* Context, Camera* CameraData)
+    {
+        ID3D11Buffer* ViewProjBuffer = DX_VPBuffer;
+        UpdateShaderResource(Context, ViewProjBuffer, CameraData, sizeof(Camera));
+    }
+
     constexpr int DefaultSize_BatchDraw2D = 1024;
     void Graphics::Draw()
     {
@@ -343,7 +354,7 @@ namespace Leviathan
         float fClearDepth = 1.0f;
         DX_ImmediateContext->ClearRenderTargetView(DX_RenderTargetView, &ClearColor.X);
         DX_ImmediateContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, fClearDepth, 0);
-        const m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
+        m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
 
         ASSERT(sizeof(InstRectColorData) == sizeof(InstRectTextureData));
         ASSERT(sizeof(InstRectColorData) == sizeof(InstLineData));
@@ -373,8 +384,8 @@ namespace Leviathan
         {
             DX_ImmediateContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
             DX_ImmediateContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
-            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
-            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
+            UpdateShaderWorld(DX_ImmediateContext, &DefaultSpriteWorld);
+            UpdateShaderViewProj(DX_ImmediateContext, &OrthoCamera);
 
             for (int Idx = 0; Idx < ARRAY_SIZE(InstData_Lines); Idx++)
             {
@@ -398,8 +409,8 @@ namespace Leviathan
         { // Draw triangle
             DX_ImmediateContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
             m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(256.0f, -256.0f, 0.0f);
-            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &TriangleWorld, sizeof(m4f), 0);
-            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
+            UpdateShaderWorld(DX_ImmediateContext, &TriangleWorld);
+            UpdateShaderViewProj(DX_ImmediateContext, &OrthoCamera);
 
             SetShaderConstantBuffers(DX_ImmediateContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
 
@@ -411,8 +422,8 @@ namespace Leviathan
         { // Draw tex quad
             DX_ImmediateContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
             m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(+256.0f, +256.0f, 0.0f);
-            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &TexQuadWorld, sizeof(m4f), 0);
-            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
+            UpdateShaderWorld(DX_ImmediateContext, &TexQuadWorld);
+            UpdateShaderViewProj(DX_ImmediateContext, &OrthoCamera);
 
             SetShaderConstantBuffers(DX_ImmediateContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
             SetShaderResourceViews(DX_ImmediateContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
@@ -427,8 +438,8 @@ namespace Leviathan
         if (bDrawInstRects)
         { // Draw Instanced Rects
             DX_ImmediateContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
-            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
-            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
+            UpdateShaderWorld(DX_ImmediateContext, &DefaultSpriteWorld);
+            UpdateShaderViewProj(DX_ImmediateContext, &OrthoCamera);
 
             SetShaderConstantBuffers(DX_ImmediateContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
             SetShaderResourceViews(DX_ImmediateContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
@@ -450,8 +461,9 @@ namespace Leviathan
         {
             DX_ImmediateContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
             DX_ImmediateContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
-            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
+
+            UpdateShaderWorld(DX_ImmediateContext, &DefaultSpriteWorld);
+            UpdateShaderViewProj(DX_ImmediateContext, &OrthoCamera);
 
             SetShaderConstantBuffers(DX_ImmediateContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
 
@@ -476,8 +488,8 @@ namespace Leviathan
             RotationX += RotSpeed;
             RotationY += RotSpeed * 0.5f;
             m4f CubeWorld = m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
-            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &CubeWorld, sizeof(m4f), 0);
-            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &GameCamera.View, sizeof(Camera), 0);
+            UpdateShaderWorld(DX_ImmediateContext, &CubeWorld);
+            UpdateShaderViewProj(DX_ImmediateContext, &GameCamera);
 
             SetShaderConstantBuffers(DX_ImmediateContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
 
@@ -492,8 +504,8 @@ namespace Leviathan
         {
             DX_ImmediateContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
             DX_ImmediateContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
-            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
-            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
+            UpdateShaderWorld(DX_ImmediateContext, &DefaultSpriteWorld);
+            UpdateShaderViewProj(DX_ImmediateContext, &OrthoCamera);
 
             SetShaderConstantBuffers(DX_ImmediateContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
             SetShaderResourceViews(DX_ImmediateContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
@@ -528,8 +540,8 @@ namespace Leviathan
             TextOrigin.Y -= 60.0f;
             HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextRow2, ARRAY_SIZE(TextRow2) - 1);
 
-            DX_ImmediateContext->UpdateSubresource(DX_WBuffer, 0, nullptr, &DefaultSpriteWorld, sizeof(m4f), 0);
-            DX_ImmediateContext->UpdateSubresource(DX_VPBuffer, 0, nullptr, &OrthoCamera.View, sizeof(Camera), 0);
+            UpdateShaderWorld(DX_ImmediateContext, &DefaultSpriteWorld);
+            UpdateShaderViewProj(DX_ImmediateContext, &OrthoCamera);
 
             SetShaderConstantBuffers(DX_ImmediateContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
             SetShaderResourceViews(DX_ImmediateContext, ARRAY_SIZE(HandmadeFontTextureSRV), HandmadeFontTextureSRV);
