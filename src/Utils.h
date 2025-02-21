@@ -5,7 +5,7 @@
 
 namespace Leviathan
 {
-    struct RGBA
+    struct fColor
     {
         float R = 0.0f;
         float G = 0.0f;
@@ -13,12 +13,12 @@ namespace Leviathan
         float A = 0.0f;
     };
 
-    constexpr RGBA Norm8Bit(unsigned char R, unsigned char G, unsigned char B)
+    constexpr fColor Norm8Bit(unsigned char R, unsigned char G, unsigned char B)
     {
         float fR = (float)R / 255.0f;
         float fG = (float)G / 255.0f;
         float fB = (float)B / 255.0f;
-        return RGBA{ fR, fG, fB, 1.0f };
+        return fColor{ fR, fG, fB, 1.0f };
     }
 
     struct FileContentsT

@@ -95,7 +95,7 @@ namespace Leviathan
         float PosY = Origin.Y - (Key.Pos.Y * Scale) - SizeY;
         RectF KeyQuad = { PosX, PosY, SizeX, SizeY };
         bool bIsDown = KeyboardState::GetKey(Key.LvCode, true);
-        RGBA ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
+        fColor ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
         if (bIsDown)
         {
             Draw2D.AddRect(KeyQuad, ColorWhite);
@@ -125,8 +125,8 @@ namespace Leviathan
                 BackgroundSize.X,
                 BackgroundSize.Y
             };
-            Draw2D.AddRect(BackgroundQuad, RGBA{0.0f, 0.0f, 0.0f, 1.0f});
-            Draw2D.AddBox(BackgroundQuad, RGBA{1.0f, 1.0f, 1.0f, 1.0f}, InputVisualizer::LineWidth);
+            Draw2D.AddRect(BackgroundQuad, fColor{0.0f, 0.0f, 0.0f, 1.0f});
+            Draw2D.AddBox(BackgroundQuad, fColor{1.0f, 1.0f, 1.0f, 1.0f}, InputVisualizer::LineWidth);
         }
         for (int KeyIdx = LV_KEY_ESC; KeyIdx < LV_KEY_COUNT; KeyIdx++)
         {
@@ -152,8 +152,8 @@ namespace Leviathan
         static constexpr v2f ButtonSize{ RegionSize.X / 3.0f, RegionSize.Y / 2.0f };
         static constexpr float WheelSize = RegionSize.X / 4.0f;
 
-        constexpr RGBA ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
-        constexpr RGBA ColorBlack{ 0.0f, 0.0f, 0.0f, 1.0f };
+        constexpr fColor ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
+        constexpr fColor ColorBlack{ 0.0f, 0.0f, 0.0f, 1.0f };
 
         static constexpr bool bDrawBG = true;
         if (bDrawBG)
@@ -214,7 +214,7 @@ namespace Leviathan
         WheelAngle += MouseState::MouseWheel * VisualSpeed;
         { // Wheel
             RectF WheelQuad{ AdjWheelPos.X, AdjWheelPos.Y, AdjWheelSize, AdjWheelSize };
-            Draw2D.AddBox(WheelQuad, RGBA{1.0f, 0.0f, 0.0f, 1.0f}, InputVisualizer::LineWidth);
+            Draw2D.AddBox(WheelQuad, fColor{1.0f, 0.0f, 0.0f, 1.0f}, InputVisualizer::LineWidth);
             const v2f WheelLineCenter { AdjWheelPos.X + AdjWheelSize * 0.5f, AdjWheelPos.Y + AdjWheelSize * 0.5f };
             const v2f WheelLineEnd { WheelLineCenter.X + (cosf(WheelAngle) * AdjWheelSize * 0.5f), WheelLineCenter.Y + (sinf(WheelAngle) * AdjWheelSize * 0.5f) };
             RectF WheelAngleQuad
@@ -224,7 +224,7 @@ namespace Leviathan
                 Abs(WheelLineCenter.X - WheelLineEnd.X),
                 Abs(WheelLineCenter.Y - WheelLineEnd.Y)
             };
-            Draw2D.AddRect(WheelAngleQuad, RGBA{ 0.0f, 1.0f, 1.0f, 1.0f });
+            Draw2D.AddRect(WheelAngleQuad, fColor{ 0.0f, 1.0f, 1.0f, 1.0f });
         }
     }
 
@@ -272,8 +272,8 @@ namespace Leviathan
 
         v2f AdjRegionSize{ GamepadRegionSize.X * Scale, GamepadRegionSize.Y * Scale };
 
-        static constexpr RGBA ColorBlack{ 0.0f, 0.0f, 0.0f, 0.0f };
-        static constexpr RGBA ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
+        static constexpr fColor ColorBlack{ 0.0f, 0.0f, 0.0f, 0.0f };
+        static constexpr fColor ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
 
         static constexpr bool bDrawBG = true;
         if (bDrawBG)
@@ -363,8 +363,8 @@ namespace Leviathan
                 AdjStickSize, AdjStickSize
             };
 
-            RGBA LeftLineColor = ColorWhite;
-            RGBA RightLineColor = ColorWhite;
+            fColor LeftLineColor = ColorWhite;
+            fColor RightLineColor = ColorWhite;
             if (GamepadState::GetButton(LV_GAMEPAD_LEFT_THUMB)) { Draw2D.AddRect(LeftStickQuad, ColorWhite); LeftLineColor = ColorBlack; }
             else { Draw2D.AddBox(LeftStickQuad, ColorWhite, InputVisualizer::LineWidth); }
             if (GamepadState::GetButton(LV_GAMEPAD_RIGHT_THUMB)) { Draw2D.AddRect(RightStickQuad, ColorWhite); RightLineColor = ColorBlack; }

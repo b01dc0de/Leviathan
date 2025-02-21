@@ -36,15 +36,15 @@ namespace Leviathan
     void PerformanceGraph::Draw(BatchDraw2D& Draw2D, v2f Origin, float Scale)
     {
         // Add graph background
-        constexpr RGBA BackgroundColor{ Norm8Bit(0, 0, 0) };
-        constexpr RGBA GraphLinesColor{ Norm8Bit(255, 255, 255) };
-        constexpr RGBA GraphTimingsColor[] =
+        constexpr fColor BackgroundColor{ Norm8Bit(0, 0, 0) };
+        constexpr fColor GraphLinesColor{ Norm8Bit(255, 255, 255) };
+        constexpr fColor GraphTimingsColor[] =
         {
             Norm8Bit(0, 255, 0),
             Norm8Bit(255, 255, 0),
             Norm8Bit(255, 0, 0),
         };
-        constexpr RGBA GraphPointsColor{ Norm8Bit(255, 0, 0) };
+        constexpr fColor GraphPointsColor{ Norm8Bit(255, 0, 0) };
         float VisualGraphSize = Scale;
         Draw2D.AddRect(RectF{ Origin.X, Origin.Y, VisualGraphSize, VisualGraphSize }, BackgroundColor);
         // Add graph lines
@@ -55,7 +55,7 @@ namespace Leviathan
         {
             // Row line
             float LineY = Origin.Y + LineIdx * VisualCellSize - HalfLineThickness;
-            RGBA TimingsLineColor = GraphTimingsColor[LineIdx - 1];
+            fColor TimingsLineColor = GraphTimingsColor[LineIdx - 1];
             Draw2D.AddRect(RectF{ Origin.X, LineY, VisualGraphSize, LineThickness }, TimingsLineColor );
 
             // Col line

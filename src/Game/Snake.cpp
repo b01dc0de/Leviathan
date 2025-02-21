@@ -30,10 +30,10 @@ namespace Game
         v2f VisualGridPos{ VisualGridOffset / 3.0f, VisualGridOffset };
         float VisualCellSize = VisualGridSize / GridLength;
 
-        RGBA GridColor{ Norm8Bit(127u, 186u, 0u) };
-        RGBA HeadColor{ GridColor };
-        RGBA TailColor{ GridColor };
-        RGBA FruitColor{ Norm8Bit(255u, 136u, 142u) };
+        fColor GridColor{ Norm8Bit(127u, 186u, 0u) };
+        fColor HeadColor{ GridColor };
+        fColor TailColor{ GridColor };
+        fColor FruitColor{ Norm8Bit(255u, 136u, 142u) };
 
         PlayState GameState;
 
@@ -54,10 +54,10 @@ namespace Game
         void MoveTail(v2i NewTail);
         void EatFruit();
         void Update();
-        void DrawCell(BatchDraw2D& Draw2D, v2i Cell, RGBA Color);
+        void DrawCell(BatchDraw2D& Draw2D, v2i Cell, fColor Color);
     }
 
-    void GridSnakeState::DrawCell(BatchDraw2D& Draw2D, v2i Cell, RGBA Color)
+    void GridSnakeState::DrawCell(BatchDraw2D& Draw2D, v2i Cell, fColor Color)
     {
         RectF CellQuad
         {

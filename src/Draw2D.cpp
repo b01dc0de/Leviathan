@@ -15,12 +15,12 @@ namespace Leviathan
         ColorBatchCmds.Add(InInstRectColorData);
     }
 
-    void BatchDraw2D::AddRect(const RectF& InRect, const RGBA& InColor)
+    void BatchDraw2D::AddRect(const RectF& InRect, const fColor& InColor)
     {
         AddRect(InstRectColorData{ InRect, InColor });
     }
 
-    void BatchDraw2D::AddBox(const RectF& InRect, const RGBA& InColor, float LineWeight)
+    void BatchDraw2D::AddBox(const RectF& InRect, const fColor& InColor, float LineWeight)
     {
         float HalfLineWeight = LineWeight / 2.0f;
         RectF LeftSide{InRect.PosX - HalfLineWeight, InRect.PosY - HalfLineWeight, LineWeight, InRect.SizeY + HalfLineWeight};
@@ -56,7 +56,7 @@ namespace Leviathan
         LineBatchCmds.Add(InLineData);
     }
 
-    void BatchDraw2D::AddLine(const LineF& InLine, const RGBA& InColor)
+    void BatchDraw2D::AddLine(const LineF& InLine, const fColor& InColor)
     {
         AddLine(InstLineData{ InLine, InColor });
     }

@@ -184,9 +184,9 @@ namespace Game
 
             inline namespace Colors
             {
-                const RGBA BackgroundColor{ Norm8Bit(30, 30, 46) };
-                const RGBA LineColor{ Norm8Bit(200, 200, 200) };
-                RGBA CellColors[BLOCKTYPE_COUNT] =
+                const fColor BackgroundColor{ Norm8Bit(30, 30, 46) };
+                const fColor LineColor{ Norm8Bit(200, 200, 200) };
+                fColor CellColors[BLOCKTYPE_COUNT] =
                 {
                     BackgroundColor, // BLOCK_NONE
                     Norm8Bit(156, 220, 254), // BLOCK_I / LIGHT BLUE
@@ -798,7 +798,7 @@ namespace Game
 
                 float CellX = VisualGridPos.X + CellCol * VisualCellSize;
                 float CellY = AppHeight - (VisualGridPos.Y + CellRow * VisualCellSize) - VisualCellSize;
-                RGBA CellColor = CellColors[Tetrion::PlayField[CellIdx]];
+                fColor CellColor = CellColors[Tetrion::PlayField[CellIdx]];
 
                 Draw2D.AddRect(RectF{ CellX, CellY, VisualCellSize, VisualCellSize }, CellColor);
             }
@@ -806,7 +806,7 @@ namespace Game
             // Draw Player Piece
             if (Piece.bActive)
             {
-                RGBA PlayerColor = CellColors[Piece.Type];
+                fColor PlayerColor = CellColors[Piece.Type];
                 for (int BlockIdx = 0; BlockIdx < NumBlocks; BlockIdx++)
                 {
                     GridPos Pos = Piece.BlockPos[BlockIdx];

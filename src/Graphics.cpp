@@ -31,8 +31,8 @@ namespace Leviathan
         DrawStateT DrawStateInstRectTexture;
         DrawStateT DrawStateInstLine;
 
-        ID3D11Buffer* DX_WBuffer = nullptr;
-        ID3D11Buffer* DX_VPBuffer = nullptr;
+        ID3D11Buffer* DX_WorldBuffer = nullptr;
+        ID3D11Buffer* DX_ViewProjBuffer = nullptr;
         const int WBufferSlot = 0;
         const int VPBufferSlot = 1;
 
@@ -331,12 +331,12 @@ namespace Leviathan
 
     void UpdateShaderWorld(ID3D11DeviceContext* Context, m4f* WorldData)
     {
-        ID3D11Buffer* WorldBuffer = DX_WBuffer;
+        ID3D11Buffer* WorldBuffer = DX_WorldBuffer;
         UpdateShaderResource(Context, WorldBuffer, WorldData, sizeof(m4f));
     }
     void UpdateShaderViewProj(ID3D11DeviceContext* Context, Camera* CameraData)
     {
-        ID3D11Buffer* ViewProjBuffer = DX_VPBuffer;
+        ID3D11Buffer* ViewProjBuffer = DX_ViewProjBuffer;
         UpdateShaderResource(Context, ViewProjBuffer, CameraData, sizeof(Camera));
     }
 
@@ -361,8 +361,8 @@ namespace Leviathan
 
         ID3D11Buffer* World_ViewProjBuffers[] =
         {
-            DX_WBuffer,
-            DX_VPBuffer
+            DX_WorldBuffer,
+            DX_ViewProjBuffer
         };
         ID3D11SamplerState* DefaultSampler[] =
         {
@@ -778,13 +778,13 @@ namespace Leviathan
         WorldBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         WorldBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         WorldBufferDesc.CPUAccessFlags = 0;
-        DX_CHECK(DX_Device->CreateBuffer(&WorldBufferDesc, nullptr, &DX_WBuffer));
+        DX_CHECK(DX_Device->CreateBuffer(&WorldBufferDesc, nullptr, &DX_WorldBuffer));
         D3D11_BUFFER_DESC ViewProjBufferDesc = {};
         ViewProjBufferDesc.ByteWidth = sizeof(m4f) * 2;
         ViewProjBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         ViewProjBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         ViewProjBufferDesc.CPUAccessFlags = 0;
-        DX_CHECK(DX_Device->CreateBuffer(&ViewProjBufferDesc, nullptr, &DX_VPBuffer));
+        DX_CHECK(DX_Device->CreateBuffer(&ViewProjBufferDesc, nullptr, &DX_ViewProjBuffer));
 
         MeshStateTriangle = CreateMeshState
         (
@@ -906,8 +906,8 @@ namespace Leviathan
         SafeRelease(LvDebugTexture);
         SafeRelease(LvTestTexture);
 
-        SafeRelease(DX_WBuffer);
-        SafeRelease(DX_VPBuffer);
+        SafeRelease(DX_WorldBuffer);
+        SafeRelease(DX_ViewProjBuffer);
 
         SafeRelease(DX_DefaultSamplerState);
 
