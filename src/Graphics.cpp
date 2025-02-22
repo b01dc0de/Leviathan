@@ -4,6 +4,7 @@
 #include "Image.h"
 #include "InputVisualizer.h"
 #include "UserInterface.h"
+#include "Fonts.h"
 
 #include "Game/GameManager.h"
 
@@ -359,23 +360,10 @@ namespace Leviathan
         ASSERT(sizeof(InstRectColorData) == sizeof(InstRectTextureData));
         ASSERT(sizeof(InstRectColorData) == sizeof(InstLineData));
 
-        ID3D11Buffer* World_ViewProjBuffers[] =
-        {
-            DX_WorldBuffer,
-            DX_ViewProjBuffer
-        };
-        ID3D11SamplerState* DefaultSampler[] =
-        {
-            DX_DefaultSamplerState
-        };
-        ID3D11ShaderResourceView* TestTextureSRV[] =
-        {
-            LvTestTexture.SRV
-        };
-        ID3D11ShaderResourceView* HandmadeFontTextureSRV[] =
-        {
-            HandmadeText.LvTex2D.SRV
-        };
+        ID3D11Buffer* World_ViewProjBuffers[] = { DX_WorldBuffer, DX_ViewProjBuffer };
+        ID3D11SamplerState* DefaultSampler[] = { DX_DefaultSamplerState };
+        ID3D11ShaderResourceView* TestTextureSRV[] = { LvTestTexture.SRV };
+        ID3D11ShaderResourceView* HandmadeFontTextureSRV[] = { HandmadeText.LvTex2D.SRV };
 
         SetShaderSamplers(DX_ImmediateContext, ARRAY_SIZE(DefaultSampler), DefaultSampler);
 
@@ -885,6 +873,8 @@ namespace Leviathan
         OrthoCamera.Ortho((float)AppWidth, (float)AppHeight, -2.0f);
 
         UserInterface::Init(D2_RenderTarget);
+
+        //LvFont JetBrainsMono = LoadOpenTypeFont_WIP();
     }
 
     void Graphics::Term()

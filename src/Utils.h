@@ -25,6 +25,8 @@ namespace Leviathan
     {
         size_t Size = 0;
         uchar* Contents = nullptr;
+
+        size_t Read(uchar*& ReadPtr, size_t DataSize, void* DstData);
     };
 
     FileContentsT LoadFileContents(const char* Filename);

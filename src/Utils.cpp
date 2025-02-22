@@ -26,6 +26,18 @@ namespace Leviathan
         return Result;
     }
 
+    size_t FileContentsT::Read(uchar*& ReadPtr, size_t DataSize, void* DstData)
+    {
+        bool bReadPtrInRange = Contents <= ReadPtr && ReadPtr <= Contents + Size;
+        ASSERT(bReadPtrInRange);
+        if (!bReadPtrInRange) { return 0; }
+
+        size_t ReadSize = Min(DataSize, (size_t)(Contents + Size - ReadPtr));
+        memcpy(DstData, ReadPtr, ReadSize);
+        ReadPtr += ReadSize;
+        return ReadSize;
+    }
+
     int GetRandomInRange(int Min, int Max)
     {
         std::random_device RandomDevice{};
