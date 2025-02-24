@@ -230,7 +230,7 @@ namespace Leviathan
 
         SetShaderSamplers(DX_ImmContext, ARRAY_SIZE(DefaultSampler), DefaultSampler);
 
-        if (bDrawInstLines)
+        if (!bDrawGame && bDrawInstLines)
         {
             DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
             DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
@@ -247,7 +247,7 @@ namespace Leviathan
             DrawMeshInstanced(DX_ImmContext, DrawStateInstLine, MeshInstStateLine, Draw2D.LineBatchCmds.Num, Draw2D.LineBatchCmds.Data);
         }
 
-        if (bDrawTriangle)
+        if (!bDrawGame && bDrawTriangle)
         { // Draw triangle
             DX_ImmContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
             m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(256.0f, -256.0f, 0.0f);
@@ -259,7 +259,7 @@ namespace Leviathan
             DrawMesh(DX_ImmContext, DrawStateColor, MeshStateTriangle);
         }
 
-        if (bDrawTexQuad)
+        if (!bDrawGame && bDrawTexQuad)
         { // Draw tex quad
             DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
             m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(+256.0f, +256.0f, 0.0f);
@@ -273,7 +273,7 @@ namespace Leviathan
         }
         DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
 
-        if (bDrawInstRects)
+        if (!bDrawGame && bDrawInstRects)
         { // Draw Instanced Rects
             DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
             UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
@@ -313,8 +313,27 @@ namespace Leviathan
                 Draw2D.ColorBatchCmds.Data
             );
         }
+        if (Draw2D.RotationColorBatchCmds.Num > 0)
+        {
+            DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
+            DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
 
-        if (bDrawCube)
+            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
+            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
+
+            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
+
+            DrawMeshInstanced
+            (
+                DX_ImmContext,
+                DrawStateInstRectColorRotation,
+                MeshInstStateRectRotation,
+                Draw2D.RotationColorBatchCmds.Num,
+                Draw2D.RotationColorBatchCmds.Data
+            );
+        }
+
+        if (!bDrawGame && bDrawCube)
         { // Draw cube
             DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
 
@@ -356,7 +375,7 @@ namespace Leviathan
             );
         }
 
-        if (bDrawHandmadeText)
+        if (!bDrawGame && bDrawHandmadeText)
         {
             DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
 
@@ -391,7 +410,7 @@ namespace Leviathan
             );
         }
 
-        if (bDrawInstRotationDemo)
+        if (!bDrawGame && bDrawInstRotationDemo)
         {
             constexpr int RotationDemoNum = 12;
             constexpr float RectSize = 50.0f;
