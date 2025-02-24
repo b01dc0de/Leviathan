@@ -32,6 +32,7 @@ namespace Leviathan
         DrawStateT DrawStateInstRectTexture;
         DrawStateT DrawStateInstLine;
         DrawStateT DrawStateInstRectColorRotation;
+        DrawStateT DrawStateInstRectTextureRotation;
 
         ID3D11Buffer* DX_WorldBuffer = nullptr;
         ID3D11Buffer* DX_ViewProjBuffer = nullptr;
@@ -272,8 +273,6 @@ namespace Leviathan
         }
         DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
 
-        const float HalfWidth = (float)AppWidth / 2.0f;
-        const float HalfHeight = (float)AppHeight / 2.0f;
         if (bDrawInstRects)
         { // Draw Instanced Rects
             DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
@@ -400,6 +399,7 @@ namespace Leviathan
             constexpr float CircleSize = 200.0f;
             const v2f Origin{ AppWidth / 2.0f, AppHeight * 0.75f };
             RectF Rect = { Origin.X, Origin.Y, RectSize, RectSize };
+            RectF TexRect = { 0.0f, 0.0f, 1.0f, 1.0f };
             for (int Idx = 0; Idx < RotationDemoNum; Idx++)
             {
                 float CurrAngle = (float)Idx / (float)RotationDemoNum * fTau;
@@ -407,10 +407,14 @@ namespace Leviathan
                 CurrRect.PosX += cosf(CurrAngle) * CircleSize;
                 CurrRect.PosY += sinf(CurrAngle) * CircleSize;
                 fColor CurrColor{ 1.0f, 0.0f, 0.0f, 1.0f };
-                Draw2D.AddRectRotation(CurrRect, CurrColor, CurrAngle);
+                Draw2D.AddRect(CurrRect, CurrColor, CurrAngle);
+
+                CurrRect.PosX += RectSize;
+                CurrRect.PosY -= RectSize;
+                Draw2D.AddRect(CurrRect, TexRect, CurrAngle);
             }
         }
-        if (Draw2D.RotationBatchCmds.Num > 0)
+        if (Draw2D.RotationColorBatchCmds.Num > 0)
         {
             DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
             DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
@@ -425,8 +429,26 @@ namespace Leviathan
                 DX_ImmContext,
                 DrawStateInstRectColorRotation,
                 MeshInstStateRectRotation,
-                Draw2D.RotationBatchCmds.Num,
-                Draw2D.RotationBatchCmds.Data
+                Draw2D.RotationColorBatchCmds.Num,
+                Draw2D.RotationColorBatchCmds.Data
+            );
+        }
+        if (Draw2D.RotationTextureBatchCmds.Num > 0)
+        {
+            DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
+            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
+            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
+
+            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
+            SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
+
+            DrawMeshInstanced
+            (
+                DX_ImmContext,
+                DrawStateInstRectTextureRotation,
+                MeshInstStateRectRotation,
+                Draw2D.RotationTextureBatchCmds.Num,
+                Draw2D.RotationTextureBatchCmds.Data
             );
         }
 
@@ -644,7 +666,7 @@ namespace Leviathan
             DrawStateInstLine = CreateDrawState(DX_Device, InstLineShaderFilename, DefinesInst, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
         }
 
-        {
+        { // InstRectColorRotation
             const D3D_SHADER_MACRO DefinesInst[] =
             {
                 "INST_RECT_COLOR", "1",
@@ -661,6 +683,32 @@ namespace Leviathan
             };
 
             DrawStateInstRectColorRotation = CreateDrawState
+            (
+                DX_Device,
+                InstRectShaderFilename,
+                DefinesInst,
+                InputLayoutDesc,
+                ARRAY_SIZE(InputLayoutDesc)
+            );
+        }
+
+        { // InstRectColorRotation
+            const D3D_SHADER_MACRO DefinesInst[] =
+            {
+                "INST_RECT_COLOR", "0",
+                "INST_RECT_TEXTURE", "1",
+                "INST_RECT_ROTATION", "1",
+                nullptr, nullptr
+            };
+            D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
+            {
+                { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+                { "RECT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+                { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+                { "ANGLE", 0, DXGI_FORMAT_R32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+            };
+
+            DrawStateInstRectTextureRotation = CreateDrawState
             (
                 DX_Device,
                 InstRectShaderFilename,
@@ -716,6 +764,7 @@ namespace Leviathan
             ARRAY_SIZE(Indices_Rect),
             Indices_Rect
         );
+        ASSERT(sizeof(InstRectColorData) == sizeof(InstRectTextureData));
 
         MeshInstStateLine = CreateMeshInstState
         (

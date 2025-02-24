@@ -8,7 +8,8 @@ namespace Leviathan
         TextureBatchCmds.Empty();
         TextBatchCmds.Empty();
         LineBatchCmds.Empty();
-        RotationBatchCmds.Empty();
+        RotationColorBatchCmds.Empty();
+        RotationTextureBatchCmds.Empty();
     }
 
     void BatchDraw2D::AddRect(const InstRectColorData& InInstRectColorData)
@@ -62,8 +63,13 @@ namespace Leviathan
         AddLine(InstLineData{ InLine, InColor });
     }
 
-    void BatchDraw2D::AddRectRotation(const RectF& InRect, const fColor& InColor, float AngleZ)
+    void BatchDraw2D::AddRect(const RectF& InRect, const fColor& InColor, float AngleZ)
     {
-        RotationBatchCmds.Add(InstRectColorRotationData{ InRect, InColor, AngleZ });
+        RotationColorBatchCmds.Add(InstRectColorRotationData{ InRect, InColor, AngleZ });
+    }
+
+    void BatchDraw2D::AddRect(const RectF& InPosRect, const RectF& InTexRect, float AngleZ)
+    {
+        RotationTextureBatchCmds.Add(InstRectTextureRotationData{ InPosRect, InTexRect, AngleZ });
     }
 }
