@@ -93,12 +93,18 @@ namespace Leviathan
     v2f Subtract(const v2f& A, const v2f& B);
     v3f Subtract(const v3f& A, const v3f& B);
     v4f Subtract(const v4f& A, const v4f& B);
+    v2f Mult(const v2f& A, float S);
+    v3f Mult(const v3f& A, float S);
+    v4f Mult(const v4f& A, float S);
     v2f operator+(const v2f& A, const v2f& B);
     v3f operator+(const v3f& A, const v3f& B);
     v4f operator+(const v4f& A, const v4f& B);
     v2f operator-(const v2f& A, const v2f& B);
     v3f operator-(const v3f& A, const v3f& B);
     v4f operator-(const v4f& A, const v4f& B);
+    v2f operator*(const v2f& A, float S);
+    v3f operator*(const v3f& A, float S);
+    v4f operator*(const v4f& A, float S);
 
     v2f operator-(const v2f& A);
     v3f operator-(const v3f& A);

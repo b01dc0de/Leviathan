@@ -233,6 +233,7 @@ namespace Leviathan
         v4f Result{ A.X + B.X, A.Y + B.Y, A.Z + B.Z, A.W + B.W };
         return Result;
     }
+
     v2f Subtract(const v2f& A, const v2f& B)
     {
         v2f Result{ A.X - B.X, A.Y - B.Y };
@@ -246,6 +247,22 @@ namespace Leviathan
     v4f Subtract(const v4f& A, const v4f& B)
     {
         v4f Result{ A.X - B.X, A.Y - B.Y, A.Z - B.Z, A.W - B.W };
+        return Result;
+    }
+
+    v2f Mult(const v2f& A, float S)
+    {
+        v2f Result{ A.X * S, A.Y * S };
+        return Result;
+    }
+    v3f Mult(const v3f& A, float S)
+    {
+        v3f Result{ A.X * S, A.Y * S, A.Z * S };
+        return Result;
+    }
+    v4f Mult(const v4f& A, float S)
+    {
+        v4f Result{ A.X * S, A.Y * S, A.Z * S, A.W * S };
         return Result;
     }
 
@@ -273,6 +290,19 @@ namespace Leviathan
     v4f operator-(const v4f& A, const v4f& B)
     {
         return Subtract(A, B);
+    }
+
+    v2f operator*(const v2f& A, float S)
+    {
+        return Mult(A, S);
+    }
+    v3f operator*(const v3f& A, float S)
+    {
+        return Mult(A, S);
+    }
+    v4f operator*(const v4f& A, float S)
+    {
+        return Mult(A, S);
     }
 
     v2f operator-(const v2f& A)
