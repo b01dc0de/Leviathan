@@ -3,6 +3,9 @@
 
 namespace Leviathan
 {
+    constexpr float fPi = 3.141592653589793f;
+    constexpr float fTau = fPi * 2.0f;
+
     struct v2i
     {
         int X = 0;
