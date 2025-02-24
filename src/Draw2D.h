@@ -39,12 +39,20 @@ namespace Leviathan
         fColor Color;
     };
 
+    struct InstRectColorRotationData
+    {
+        RectF Rect;
+        fColor Color;
+        float AngleZ;
+    };
+
     struct BatchDraw2D
     {
         Array<InstRectColorData> ColorBatchCmds;
         Array<InstRectTextureData> TextureBatchCmds;
         Array<InstRectTextureData> TextBatchCmds;
         Array<InstLineData> LineBatchCmds;
+        Array<InstRectColorRotationData> RotationBatchCmds;
 
         void Clear();
         void AddRect(const InstRectColorData& InInstRectColorData);
@@ -55,6 +63,8 @@ namespace Leviathan
         void AddTextRect(const RectF& InPosRect, const RectF& InTexRect);
         void AddLine(const InstLineData& InLineData);
         void AddLine(const LineF& InLine, const fColor& InColor);
+
+        void AddRectRotation(const RectF& InRect, const fColor& InColor, float AngleZ);
     };
 }
 

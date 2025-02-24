@@ -17,6 +17,7 @@ namespace Leviathan
 
 #define DX_CHECK(DXResult) if (FAILED(DXResult)) { DebugBreak(); }
 
+#include "DrawState.h"
 #include "Draw2D.h"
 
 #endif // LEVIATHAN_GRAPHICS_H
