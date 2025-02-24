@@ -866,6 +866,7 @@ namespace Leviathan
         SafeRelease(MeshStateQuad);
         SafeRelease(MeshInstStateRect);
         SafeRelease(MeshInstStateLine);
+        SafeRelease(MeshInstStateRectRotation);
 
         SafeRelease(LvDebugTexture);
         SafeRelease(LvTestTexture);
@@ -880,6 +881,8 @@ namespace Leviathan
         SafeRelease(DrawStateInstRectColor);
         SafeRelease(DrawStateInstRectTexture);
         SafeRelease(DrawStateInstLine);
+        SafeRelease(DrawStateInstRectColorRotation);
+        SafeRelease(DrawStateInstRectTextureRotation);
 
         SafeRelease(DXGI_SwapChain1);
         SafeRelease(DX_Backbuffer);
