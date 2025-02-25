@@ -46,6 +46,10 @@ namespace Leviathan
         MeshInstStateT MeshInstStateLine;
         MeshInstStateT MeshInstStateRectRotation;
 
+        LvTexture2D BulletLimboPlayer;
+        LvTexture2D BulletLimboBullet;
+        LvTexture2D BulletLimboEnemy;
+
         LvTexture2D LvDebugTexture;
         LvTexture2D LvTestTexture;
         ID3D11SamplerState* DX_DefaultSamplerState = nullptr;
@@ -197,102 +201,34 @@ namespace Leviathan
         UpdateShaderResource(Context, ViewProjBuffer, CameraData, sizeof(Camera));
     }
 
+    void DrawDebugDemo();
+
     constexpr int DefaultSize_BatchDraw2D = 1024;
-    static bool bDrawGameAndDemo = false;
     static bool bDrawGame = true;
+    static bool bForceDrawDebugDemo = true;
+    m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
+    constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
     void Graphics::Draw()
     {
-        static bool bDrawInstLines = true;
-        static bool bDrawTriangle = true;
-        static bool bDrawTexQuad = true;
-        static bool bDrawInstRects = true;
-        static bool bDrawCube = true;
-        static bool bDrawHandmadeText = true;
-        static bool bDrawInstRotationDemo = true;
-
         Draw2D.Clear();
 
         DX_ImmContext->RSSetState(DX_RasterizerState);
-        constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
         DX_ImmContext->OMSetDepthStencilState(nullptr, 0);
         DX_ImmContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
         v4f ClearColor = { 30.0f / 255.0f, 30.0f / 255.0f, 45.0f / 255.0f, 1.0f };
-        float fClearDepth = 1.0f;
+        constexpr float fClearDepth = 1.0f;
         DX_ImmContext->ClearRenderTargetView(DX_RenderTargetView, &ClearColor.X);
         DX_ImmContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, fClearDepth, 0);
-        m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
 
         ID3D11Buffer* World_ViewProjBuffers[] = { DX_WorldBuffer, DX_ViewProjBuffer };
         ID3D11SamplerState* DefaultSampler[] = { DX_DefaultSamplerState };
         ID3D11ShaderResourceView* TestTextureSRV[] = { LvTestTexture.SRV };
-        ID3D11ShaderResourceView* HandmadeFontTextureSRV[] = { HandmadeText.LvTex2D.SRV };
 
         SetShaderSamplers(DX_ImmContext, ARRAY_SIZE(DefaultSampler), DefaultSampler);
+        
+        if (!bDrawGame || bForceDrawDebugDemo) { DrawDebugDemo(); }
 
-        if (!bDrawGame && bDrawInstLines)
-        {
-            DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
-            DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
-            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
-
-            for (int Idx = 0; Idx < ARRAY_SIZE(InstData_Lines); Idx++)
-            {
-                Draw2D.AddLine(InstData_Lines[Idx].Line, InstData_Lines[Idx].Color);
-            }
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-
-            DrawMeshInstanced(DX_ImmContext, DrawStateInstLine, MeshInstStateLine, Draw2D.LineBatchCmds.Num, Draw2D.LineBatchCmds.Data);
-        }
-
-        if (!bDrawGame && bDrawTriangle)
-        { // Draw triangle
-            DX_ImmContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
-            m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(256.0f, -256.0f, 0.0f);
-            UpdateShaderWorld(DX_ImmContext, &TriangleWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-
-            DrawMesh(DX_ImmContext, DrawStateColor, MeshStateTriangle);
-        }
-
-        if (!bDrawGame && bDrawTexQuad)
-        { // Draw tex quad
-            DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
-            m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(+256.0f, +256.0f, 0.0f);
-            UpdateShaderWorld(DX_ImmContext, &TexQuadWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-            SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
-
-            DrawMesh(DX_ImmContext, DrawStateTexture, MeshStateQuad);
-        }
-        DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
-
-        if (!bDrawGame && bDrawInstRects)
-        { // Draw Instanced Rects
-            DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
-            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-            SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
-
-            DrawMeshInstanced
-            (
-                DX_ImmContext,
-                DrawStateInstRectTexture,
-                MeshInstStateRect,
-                ARRAY_SIZE(InstRectTextureDataArray),
-                InstRectTextureDataArray
-            );
-        }
-
-        // Get instanced draw commands from game:
         if (bDrawGame) { GameManager::Draw(Draw2D); }
         if (Draw2D.ColorBatchCmds.Num > 0)
         {
@@ -332,23 +268,27 @@ namespace Leviathan
                 Draw2D.RotationColorBatchCmds.Data
             );
         }
-
-        if (!bDrawGame && bDrawCube)
-        { // Draw cube
+        if (Draw2D.RotationTextureBatchCmds.Num > 0)
+        {
+            DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
             DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
 
-            static float RotationX = 0.0f;
-            static float RotationY = 0.0f;
-            static constexpr float RotSpeed = (1.0f / 60.0f) / 10.0f;
-            RotationX += RotSpeed;
-            RotationY += RotSpeed * 0.5f;
-            m4f CubeWorld = m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
-            UpdateShaderWorld(DX_ImmContext, &CubeWorld);
-            UpdateShaderViewProj(DX_ImmContext, &GameCamera);
+            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
+            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
+
+            ID3D11ShaderResourceView* BulletLimboTextures[] = { BulletLimboPlayer.SRV };
 
             SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
+            SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(BulletLimboTextures), BulletLimboTextures);
 
-            DrawMesh(DX_ImmContext, DrawStateColor, MeshStateCube);
+            DrawMeshInstanced
+            (
+                DX_ImmContext,
+                DrawStateInstRectTextureRotation,
+                MeshInstStateRectRotation,
+                Draw2D.RotationTextureBatchCmds.Num,
+                Draw2D.RotationTextureBatchCmds.Data
+            );
         }
 
         Draw2D.Clear();
@@ -375,7 +315,109 @@ namespace Leviathan
             );
         }
 
-        if (!bDrawGame && bDrawHandmadeText)
+        DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+
+        UINT SyncInterval = 0, PresentFlags = 0;
+        DXGI_PRESENT_PARAMETERS PresentParams = {};
+        DXGI_SwapChain1->Present1(SyncInterval, PresentFlags, &PresentParams);
+    }
+
+    void DrawDebugDemo()
+    {
+        static bool bDrawInstLines = true;
+        static bool bDrawTriangle = true;
+        static bool bDrawTexQuad = true;
+        static bool bDrawInstRects = true;
+        static bool bDrawCube = true;
+        static bool bDrawHandmadeText = true;
+        static bool bDrawInstRotationDemo = true;
+
+        ID3D11Buffer* World_ViewProjBuffers[] = { DX_WorldBuffer, DX_ViewProjBuffer };
+        ID3D11ShaderResourceView* HandmadeFontTextureSRV[] = { HandmadeText.LvTex2D.SRV };
+        ID3D11SamplerState* DefaultSampler[] = { DX_DefaultSamplerState };
+        ID3D11ShaderResourceView* TestTextureSRV[] = { LvTestTexture.SRV };
+
+        if (bDrawInstLines)
+        {
+            DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
+            DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
+            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
+            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
+
+            for (int Idx = 0; Idx < ARRAY_SIZE(InstData_Lines); Idx++)
+            {
+                Draw2D.AddLine(InstData_Lines[Idx].Line, InstData_Lines[Idx].Color);
+            }
+
+            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
+
+            DrawMeshInstanced(DX_ImmContext, DrawStateInstLine, MeshInstStateLine, Draw2D.LineBatchCmds.Num, Draw2D.LineBatchCmds.Data);
+        }
+
+        if (bDrawTriangle)
+        { // Draw triangle
+            DX_ImmContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
+            m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(256.0f, -256.0f, 0.0f);
+            UpdateShaderWorld(DX_ImmContext, &TriangleWorld);
+            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
+
+            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
+
+            DrawMesh(DX_ImmContext, DrawStateColor, MeshStateTriangle);
+        }
+
+        if (bDrawTexQuad)
+        { // Draw tex quad
+            DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
+            m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(+256.0f, +256.0f, 0.0f);
+            UpdateShaderWorld(DX_ImmContext, &TexQuadWorld);
+            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
+
+            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
+            SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
+
+            DrawMesh(DX_ImmContext, DrawStateTexture, MeshStateQuad);
+        }
+        DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
+
+        if (bDrawInstRects)
+        { // Draw Instanced Rects
+            DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
+            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
+            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
+
+            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
+            SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
+
+            DrawMeshInstanced
+            (
+                DX_ImmContext,
+                DrawStateInstRectTexture,
+                MeshInstStateRect,
+                ARRAY_SIZE(InstRectTextureDataArray),
+                InstRectTextureDataArray
+            );
+        }
+
+        if (bDrawCube)
+        { // Draw cube
+            DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+
+            static float RotationX = 0.0f;
+            static float RotationY = 0.0f;
+            static constexpr float RotSpeed = (1.0f / 60.0f) / 10.0f;
+            RotationX += RotSpeed;
+            RotationY += RotSpeed * 0.5f;
+            m4f CubeWorld = m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
+            UpdateShaderWorld(DX_ImmContext, &CubeWorld);
+            UpdateShaderViewProj(DX_ImmContext, &GameCamera);
+
+            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
+
+            DrawMesh(DX_ImmContext, DrawStateColor, MeshStateCube);
+        }
+
+        if (bDrawHandmadeText)
         {
             DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
 
@@ -410,7 +452,7 @@ namespace Leviathan
             );
         }
 
-        if (!bDrawGame && bDrawInstRotationDemo)
+        if (bDrawInstRotationDemo)
         {
             constexpr int RotationDemoNum = 12;
             constexpr float RectSize = 50.0f;
@@ -419,17 +461,18 @@ namespace Leviathan
             const v2f Origin{ AppWidth / 2.0f, AppHeight * 0.75f };
             RectF Rect = { Origin.X, Origin.Y, RectSize, RectSize };
             RectF TexRect = { 0.0f, 0.0f, 1.0f, 1.0f };
+            float fTime = (float)Clock::Time();
             for (int Idx = 0; Idx < RotationDemoNum; Idx++)
             {
                 float CurrAngle = (float)Idx / (float)RotationDemoNum * fTau;
                 RectF CurrRect = Rect;
-                CurrRect.PosX += cosf(CurrAngle) * CircleSize;
-                CurrRect.PosY += sinf(CurrAngle) * CircleSize;
+                CurrRect.PosX += cosf(CurrAngle * fTime) * CircleSize * sinf(fTime);
+                CurrRect.PosY += sinf(CurrAngle * fTime) * CircleSize * cosf(-fTime);
                 fColor CurrColor{ 1.0f, 0.0f, 0.0f, 1.0f };
                 Draw2D.AddRect(CurrRect, CurrColor, CurrAngle);
 
-                CurrRect.PosX += RectSize;
-                CurrRect.PosY -= RectSize;
+                CurrRect.PosX += RectSize * sinf(fTime * 0.5f);
+                CurrRect.PosY -= RectSize * sinf(fTime * 2.0f);
                 Draw2D.AddRect(CurrRect, TexRect, CurrAngle);
             }
         }
@@ -470,12 +513,6 @@ namespace Leviathan
                 Draw2D.RotationTextureBatchCmds.Data
             );
         }
-
-        DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-
-        UINT SyncInterval = 0, PresentFlags = 0;
-        DXGI_PRESENT_PARAMETERS PresentParams = {};
-        DXGI_SwapChain1->Present1(SyncInterval, PresentFlags, &PresentParams);
     }
 
     void Graphics::Init()
@@ -866,6 +903,10 @@ namespace Leviathan
         OrthoCamera.Ortho((float)AppWidth, (float)AppHeight, -2.0f);
 
         UserInterface::Init(D2_RenderTarget);
+
+        BulletLimboPlayer = LoadTextureBMP("Assets/Sprites/BulletLimbo_Player.bmp", DX_Device);
+        BulletLimboBullet = LoadTextureBMP("Assets/Sprites/BulletLimbo_Bullet.bmp", DX_Device);
+        BulletLimboEnemy = LoadTextureBMP("Assets/Sprites/BulletLimbo_Enemy.bmp", DX_Device);
 
         //LvFont JetBrainsMono = LoadOpenTypeFont_WIP();
     }

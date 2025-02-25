@@ -16,6 +16,10 @@ namespace Game
         float PlayerAngle;
         float PlayerSpeed;
 
+        LvTexture2D Sprite_Player;
+        LvTexture2D Sprite_Bullet;
+        LvTexture2D Sprite_Enemy;
+
         void Update();
         void Draw(BatchDraw2D& Draw2D);
         void Init();
@@ -24,7 +28,7 @@ namespace Game
 
     bool StickInputNotDead(v2f& Stick)
     {
-        constexpr float fDeadzone = 0.001f;
+        constexpr float fDeadzone = 0.01f;
         return Abs(Stick.X) > fDeadzone || Abs(Stick.Y) > fDeadzone;
     }
 
@@ -44,16 +48,11 @@ namespace Game
     }
     void BulletLimboState::Draw(BatchDraw2D& Draw2D)
     {
-        Draw2D.AddRect
-        (
-            RectF{ PlayerPos.X, PlayerPos.Y, DrawInfo.PlayerSize + DrawInfo.OutlineSize, DrawInfo.PlayerSize + DrawInfo.OutlineSize },
-            fColor{ 1.0f, 1.0f, 1.0f, 1.0f },
-            PlayerAngle
-        );
+        RectF FullTexRect{ 0.0f, 0.0f, 1.0f, 1.0f };
         Draw2D.AddRect
         (
             RectF{ PlayerPos.X, PlayerPos.Y, DrawInfo.PlayerSize, DrawInfo.PlayerSize},
-            fColor{ 0.0f, 0.0f, 0.0f, 1.0f },
+            FullTexRect,
             PlayerAngle
         );
     }
@@ -62,6 +61,10 @@ namespace Game
         PlayerPos = { (float)AppWidth / 2.0f, (float)AppHeight / 2.0f };
         PlayerAngle = 0.0f;
         PlayerSpeed = 1.0f;
+
+        Sprite_Player;
+        Sprite_Bullet;
+        Sprite_Enemy;
     }
     void BulletLimboState::Term()
     {
