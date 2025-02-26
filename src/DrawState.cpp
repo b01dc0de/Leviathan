@@ -338,11 +338,12 @@ namespace Leviathan
             while (NumRemainingInsts > 0)
             {
                 size_t CurrDrawNumInsts = Min(NumRemainingInsts, NumInstPerCall);
-                // Map instance data
-                D3D11_MAPPED_SUBRESOURCE InstDataMapWrite = {};
-                DX_CHECK(Context->Map(MeshInst.InstBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &InstDataMapWrite));
-                memcpy(InstDataMapWrite.pData, InstReadPtr, CurrDrawNumInsts * MeshInst.InstDataSize);
-                Context->Unmap(MeshInst.InstBuffer, 0);
+                { // Map instance data
+                    D3D11_MAPPED_SUBRESOURCE InstDataMapWrite = {};
+                    DX_CHECK(Context->Map(MeshInst.InstBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &InstDataMapWrite));
+                    memcpy(InstDataMapWrite.pData, InstReadPtr, CurrDrawNumInsts * MeshInst.InstDataSize);
+                    Context->Unmap(MeshInst.InstBuffer, 0);
+                }
 
                 // Draw instances
                 DrawMeshInst(Context, MeshInst, CurrDrawNumInsts);

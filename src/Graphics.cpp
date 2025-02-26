@@ -227,7 +227,7 @@ namespace Leviathan
 
         SetShaderSamplers(DX_ImmContext, ARRAY_SIZE(DefaultSampler), DefaultSampler);
         
-        if (!bDrawGame || bForceDrawDebugDemo) { DrawDebugDemo(); }
+        if (!bDrawGame || bForceDrawDebugDemo) { DrawDebugDemo(); Draw2D.Clear(); }
 
         if (bDrawGame) { GameManager::Draw(Draw2D); }
         if (Draw2D.ColorBatchCmds.Num > 0)
