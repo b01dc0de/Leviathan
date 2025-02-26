@@ -58,7 +58,7 @@ namespace Leviathan
         {
             InputVisualizer::DrawKeyboard(Draw2D);
             InputVisualizer::DrawMouse(Draw2D);
-            InputVisualizer::DrawGamepad(Draw2D);
+            InputVisualizer::DrawGamepads(Draw2D);
         }
 
         // DirectWrite Test

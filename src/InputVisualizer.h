@@ -10,7 +10,7 @@ namespace Leviathan
         static constexpr float LineWidth = 2.0f;
         static void DrawKeyboard(BatchDraw2D& Draw2D);
         static void DrawMouse(BatchDraw2D& Draw2D);
-        static void DrawGamepad(BatchDraw2D& Draw2D);
+        static void DrawGamepads(BatchDraw2D& Draw2D);
     };
 }
 

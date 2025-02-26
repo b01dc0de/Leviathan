@@ -237,10 +237,10 @@ namespace Leviathan
 
     struct VisualGamepad
     {
-        static void Draw(BatchDraw2D& Draw2D, const v2f& Origin, float Scale);
+        static void Draw(BatchDraw2D& Draw2D, int GamepadIdx, const v2f& Origin, float Scale);
     };
 
-    void VisualGamepad::Draw(BatchDraw2D& Draw2D, const v2f& Origin, float Scale)
+    void VisualGamepad::Draw(BatchDraw2D& Draw2D, int GamepadIdx, const v2f& Origin, float Scale)
     {
         static constexpr v2f GamepadRegionSize{ 16.0f, 16.0f };
         static constexpr v2f DPadButtonsCenter{ 0.25f, -0.5f };
@@ -269,6 +269,11 @@ namespace Leviathan
             {},//LV_GAMEPAD_LEFT_THUMB,
             {},//LV_GAMEPAD_RIGHT_THUMB,
         };
+
+        if ((GamepadIdx < 0 || GamepadIdx > GamepadState::NumGamepads) || !GamepadState::bActive[GamepadIdx])
+        {
+            return;
+        }
 
         v2f AdjRegionSize{ GamepadRegionSize.X * Scale, GamepadRegionSize.Y * Scale };
 
@@ -412,10 +417,14 @@ namespace Leviathan
         }
     }
 
-    void InputVisualizer::DrawGamepad(BatchDraw2D& Draw2D)
+    void InputVisualizer::DrawGamepads(BatchDraw2D& Draw2D)
     {
         static const v2f Origin{ 1100.0f, AppHeight - 200.0f };
         static const float Scale = 7.5f;
-        VisualGamepad::Draw(Draw2D, Origin, Scale);
+        for (int GamepadIdx = 0; GamepadIdx < GamepadState::NumGamepads; GamepadIdx++)
+        {
+            v2f CurrOrigin{ Origin.X, Origin.Y - 150.0f * GamepadIdx };
+            VisualGamepad::Draw(Draw2D, GamepadIdx, CurrOrigin, Scale);
+        }
     }
 }
