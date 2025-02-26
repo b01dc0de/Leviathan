@@ -2,6 +2,14 @@
 
 namespace Leviathan
 {
+    struct VIDrawParams
+    {
+        v2f Origin{ 0.0f };
+        float Scale{ 1.0f };
+        fColor ColorBack{0.0f, 0.0f, 0.0f, 1.0f};
+        fColor ColorFront{ 1.0f, 1.0f, 1.0f, 1.0f };
+    };
+
     struct VisualKey
     {
         LvKeyCode LvCode = LV_KEY_NONE;
@@ -15,8 +23,8 @@ namespace Leviathan
         VisualKey KeyList[LV_KEY_COUNT];
 
         void Init();
-        static void DrawKey(BatchDraw2D& Draw2D, const VisualKey& Key, const v2f& Origin, float Scale);
-        static void Draw(BatchDraw2D& Draw2D, const v2f& Origin, float Scale);
+        static void DrawKey(BatchDraw2D& Draw2D, const VisualKey& Key, const VIDrawParams& Params);
+        static void Draw(BatchDraw2D& Draw2D, const VIDrawParams&);
     };
 
     void VisualKeyboard::Init()
@@ -87,26 +95,25 @@ namespace Leviathan
         bInit = true;
     }
 
-    void VisualKeyboard::DrawKey(BatchDraw2D& Draw2D, const VisualKey& Key, const v2f& Origin, float Scale)
+    void VisualKeyboard::DrawKey(BatchDraw2D& Draw2D, const VisualKey& Key, const VIDrawParams& Params)
     {
-        float SizeX = (Key.Size.X * Scale);
-        float SizeY = (Key.Size.Y * Scale);
-        float PosX = Origin.X + (Key.Pos.X * Scale);
-        float PosY = Origin.Y - (Key.Pos.Y * Scale) - SizeY;
+        float SizeX = (Key.Size.X * Params.Scale);
+        float SizeY = (Key.Size.Y * Params.Scale);
+        float PosX = Params.Origin.X + (Key.Pos.X * Params.Scale);
+        float PosY = Params.Origin.Y - (Key.Pos.Y * Params.Scale) - SizeY;
         RectF KeyQuad = { PosX, PosY, SizeX, SizeY };
         bool bIsDown = KeyboardState::GetKey(Key.LvCode, true);
-        fColor ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
         if (bIsDown)
         {
-            Draw2D.AddRect(KeyQuad, ColorWhite);
+            Draw2D.AddRect(KeyQuad, Params.ColorFront);
         }
         else
         {
-            Draw2D.AddBox(KeyQuad, ColorWhite, InputVisualizer::LineWidth);
+            Draw2D.AddBox(KeyQuad, Params.ColorFront, InputVisualizer::LineWidth);
         }
     }
 
-    void VisualKeyboard::Draw(BatchDraw2D& Draw2D, const v2f& Origin, float Scale)
+    void VisualKeyboard::Draw(BatchDraw2D& Draw2D, const VIDrawParams& Params)
     {
         static VisualKeyboard vKeyboard;
         if (!vKeyboard.bInit) { vKeyboard.Init(); }
@@ -115,82 +122,82 @@ namespace Leviathan
         {
             v2f BackgroundSize
             {
-                vKeyboard.KeyList[LV_KEY_NONE].Size.X * Scale,
-                vKeyboard.KeyList[LV_KEY_NONE].Size.Y * Scale
+                vKeyboard.KeyList[LV_KEY_NONE].Size.X * Params.Scale,
+                vKeyboard.KeyList[LV_KEY_NONE].Size.Y * Params.Scale
             };
             RectF BackgroundQuad
             {
-                Origin.X,
-                Origin.Y - BackgroundSize.Y,
+                Params.Origin.X,
+                Params.Origin.Y - BackgroundSize.Y,
                 BackgroundSize.X,
                 BackgroundSize.Y
             };
-            Draw2D.AddRect(BackgroundQuad, fColor{0.0f, 0.0f, 0.0f, 1.0f});
-            Draw2D.AddBox(BackgroundQuad, fColor{1.0f, 1.0f, 1.0f, 1.0f}, InputVisualizer::LineWidth);
+            Draw2D.AddRect(BackgroundQuad, Params.ColorBack);
+            Draw2D.AddBox(BackgroundQuad, Params.ColorFront, InputVisualizer::LineWidth);
         }
         for (int KeyIdx = LV_KEY_ESC; KeyIdx < LV_KEY_COUNT; KeyIdx++)
         {
-            DrawKey(Draw2D, vKeyboard.KeyList[KeyIdx], Origin, Scale);
+            DrawKey(Draw2D, vKeyboard.KeyList[KeyIdx], Params);
         }
     }
 
     void InputVisualizer::DrawKeyboard(BatchDraw2D& Draw2D)
     {
-        v2f Origin{975.0f, (float)AppHeight - 10.0f};
-        float Scale = 20.0f;
-        VisualKeyboard::Draw(Draw2D, Origin, Scale);
+        VIDrawParams Params = { };
+        Params.Origin = { 975.0f, (float)AppHeight - 10.0f };
+        Params.Scale = 20.0f;
+        Params.ColorBack = { 0.0f, 0.9f, 0.9f, 1.0f };
+        Params.ColorFront = { 1.0f, 0.1f, 0.1f, 1.0f };
+        VisualKeyboard::Draw(Draw2D, Params);
     }
 
     struct VisualMouse
     {
-        static void Draw(BatchDraw2D& Draw2D, const v2f& Origin, float Scale);
+        static void Draw(BatchDraw2D& Draw2D, const VIDrawParams& Params);
     };
 
-    void VisualMouse::Draw(BatchDraw2D& Draw2D, const v2f& Origin, float Scale)
+    void VisualMouse::Draw(BatchDraw2D& Draw2D, const VIDrawParams& Params)
     {
         static constexpr v2f RegionSize{ 16.0f, 9.0f * 2.0f };
         static constexpr v2f ButtonSize{ RegionSize.X / 3.0f, RegionSize.Y / 2.0f };
         static constexpr float WheelSize = RegionSize.X / 4.0f;
 
-        constexpr fColor ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
-        constexpr fColor ColorBlack{ 0.0f, 0.0f, 0.0f, 1.0f };
-
         static constexpr bool bDrawBG = true;
         if (bDrawBG)
         {
-            v2f AdjRegionSize { RegionSize.X * Scale, RegionSize.Y * Scale };
-            RectF RegionQuad{ Origin.X, Origin.Y - AdjRegionSize.Y, AdjRegionSize.X, AdjRegionSize.Y };
-            Draw2D.AddRect(RegionQuad, ColorBlack);
-            Draw2D.AddBox(RegionQuad, ColorWhite, InputVisualizer::LineWidth);
+            v2f AdjRegionSize { RegionSize.X * Params.Scale, RegionSize.Y * Params.Scale };
+            RectF RegionQuad{ Params.Origin.X, Params.Origin.Y - AdjRegionSize.Y, AdjRegionSize.X, AdjRegionSize.Y };
+            Draw2D.AddRect(RegionQuad, Params.ColorBack);
+            Draw2D.AddBox(RegionQuad, Params.ColorFront, InputVisualizer::LineWidth);
         }
 
-        const v2f AdjButtonSize{ ButtonSize.X * Scale, ButtonSize.Y * Scale };
-        const float AdjWheelSize = WheelSize * Scale;
-        RectF LeftQuad{ Origin.X, Origin.Y - AdjButtonSize.Y, AdjButtonSize.X, AdjButtonSize.Y };
+        const v2f AdjButtonSize{ ButtonSize.X * Params.Scale, ButtonSize.Y * Params.Scale };
+        const float AdjWheelSize = WheelSize * Params.Scale;
+        RectF LeftQuad{ Params.Origin.X, Params.Origin.Y - AdjButtonSize.Y, AdjButtonSize.X, AdjButtonSize.Y };
         RectF MiddleQuad{ LeftQuad.PosX + AdjButtonSize.X, LeftQuad.PosY, AdjButtonSize.X, AdjButtonSize.Y - AdjWheelSize };
         RectF RightQuad{ MiddleQuad.PosX + AdjButtonSize.X, LeftQuad.PosY, AdjButtonSize.X, AdjButtonSize.Y };
         { // Buttons
-            if (MouseState::bLeftKey) { Draw2D.AddRect(LeftQuad, ColorWhite); }
-            else { Draw2D.AddBox(LeftQuad, ColorWhite, InputVisualizer::LineWidth); }
-            if (MouseState::bRightKey) { Draw2D.AddRect(RightQuad, ColorWhite); }
-            else { Draw2D.AddBox(RightQuad, ColorWhite, InputVisualizer::LineWidth); }
-            if (MouseState::bMiddleKey) { Draw2D.AddRect(MiddleQuad, ColorWhite); }
-            else { Draw2D.AddBox(MiddleQuad, ColorWhite, InputVisualizer::LineWidth); }
+            if (MouseState::bLeftKey) { Draw2D.AddRect(LeftQuad, Params.ColorFront); }
+            else { Draw2D.AddBox(LeftQuad, Params.ColorFront, InputVisualizer::LineWidth); }
+            if (MouseState::bRightKey) { Draw2D.AddRect(RightQuad, Params.ColorFront); }
+            else { Draw2D.AddBox(RightQuad, Params.ColorFront, InputVisualizer::LineWidth); }
+            if (MouseState::bMiddleKey) { Draw2D.AddRect(MiddleQuad, Params.ColorFront); }
+            else { Draw2D.AddBox(MiddleQuad, Params.ColorFront, InputVisualizer::LineWidth); }
         }
 
         static constexpr v2f MouseAreaSize{ RegionSize.X, RegionSize.Y / 2.0f };
         static constexpr v2f MouseAreaPos{ 0.0f, 0.0f - RegionSize.Y };
 
-        v2f AdjMouseAreaSize { MouseAreaSize.X * Scale, MouseAreaSize.Y * Scale };
-        v2f AdjMouseAreaPos{ MouseAreaPos.X * Scale, MouseAreaPos.Y * Scale };
+        v2f AdjMouseAreaSize { MouseAreaSize.X * Params.Scale, MouseAreaSize.Y * Params.Scale };
+        v2f AdjMouseAreaPos{ MouseAreaPos.X * Params.Scale, MouseAreaPos.Y * Params.Scale };
         RectF MouseWindowQuad
         {
-            AdjMouseAreaPos.X + Origin.X,
-            AdjMouseAreaPos.Y + Origin.Y,
+            AdjMouseAreaPos.X + Params.Origin.X,
+            AdjMouseAreaPos.Y + Params.Origin.Y,
             AdjMouseAreaSize.X,
             AdjMouseAreaSize.Y
         };
-        static float HalfCursorSize = Scale * 0.5f;
+        static float HalfCursorSize = Params.Scale * 0.5f;
         { // Cursor
             v2f CursorPos =
             {
@@ -204,17 +211,17 @@ namespace Leviathan
                 HalfCursorSize * 2.0f,
                 HalfCursorSize * 2.0f
             };
-            Draw2D.AddRect(MouseWindowQuad, ColorWhite);
-            Draw2D.AddRect(CursorQuad, ColorBlack);
+            Draw2D.AddRect(MouseWindowQuad, Params.ColorFront);
+            Draw2D.AddRect(CursorQuad, Params.ColorBack);
         }
 
-        const v2f AdjWheelPos{ Origin.X + (RegionSize.X * Scale * 0.5f) - (AdjWheelSize * 0.5f), Origin.Y - AdjWheelSize };
+        const v2f AdjWheelPos{ Params.Origin.X + (RegionSize.X * Params.Scale * 0.5f) - (AdjWheelSize * 0.5f), Params.Origin.Y - AdjWheelSize };
         static float WheelAngle = 0.0f;
         static float VisualSpeed = 0.25f;
         WheelAngle += MouseState::MouseWheel * VisualSpeed;
         { // Wheel
             RectF WheelQuad{ AdjWheelPos.X, AdjWheelPos.Y, AdjWheelSize, AdjWheelSize };
-            Draw2D.AddBox(WheelQuad, fColor{1.0f, 0.0f, 0.0f, 1.0f}, InputVisualizer::LineWidth);
+            Draw2D.AddBox(WheelQuad, Params.ColorFront, InputVisualizer::LineWidth);
             const v2f WheelLineCenter { AdjWheelPos.X + AdjWheelSize * 0.5f, AdjWheelPos.Y + AdjWheelSize * 0.5f };
             const v2f WheelLineEnd { WheelLineCenter.X + (cosf(WheelAngle) * AdjWheelSize * 0.5f), WheelLineCenter.Y + (sinf(WheelAngle) * AdjWheelSize * 0.5f) };
             RectF WheelAngleQuad
@@ -224,23 +231,26 @@ namespace Leviathan
                 Abs(WheelLineCenter.X - WheelLineEnd.X),
                 Abs(WheelLineCenter.Y - WheelLineEnd.Y)
             };
-            Draw2D.AddRect(WheelAngleQuad, fColor{ 0.0f, 1.0f, 1.0f, 1.0f });
+            Draw2D.AddRect(WheelAngleQuad, Params.ColorFront);
         }
     }
 
     void InputVisualizer::DrawMouse(BatchDraw2D& Draw2D)
     {
-        static v2f Origin{ 1000.0f, AppHeight - 200.0f };
-        static float Scale = 5.0f;
-        VisualMouse::Draw(Draw2D, Origin, Scale);
+        VIDrawParams Params = {};
+        Params.Origin = { 1000.0f, AppHeight - 200.0f };
+        Params.Scale = 5.0f;
+        Params.ColorBack = { 0.9f, 0.0f, 0.9f, 1.0f };
+        Params.ColorFront = { 0.1f, 1.0f, 0.1f, 1.0f };
+        VisualMouse::Draw(Draw2D, Params);
     }
 
     struct VisualGamepad
     {
-        static void Draw(BatchDraw2D& Draw2D, int GamepadIdx, const v2f& Origin, float Scale);
+        static void Draw(BatchDraw2D& Draw2D, int GamepadIdx, const VIDrawParams& Params);
     };
 
-    void VisualGamepad::Draw(BatchDraw2D& Draw2D, int GamepadIdx, const v2f& Origin, float Scale)
+    void VisualGamepad::Draw(BatchDraw2D& Draw2D, int GamepadIdx, const VIDrawParams& Params)
     {
         static constexpr v2f GamepadRegionSize{ 16.0f, 16.0f };
         static constexpr v2f DPadButtonsCenter{ 0.25f, -0.5f };
@@ -275,10 +285,12 @@ namespace Leviathan
             return;
         }
 
-        v2f AdjRegionSize{ GamepadRegionSize.X * Scale, GamepadRegionSize.Y * Scale };
+        const v2f& Origin = Params.Origin;
+        float Scale = Params.Scale;
+        const fColor ColorBack = Params.ColorBack;
+        const fColor ColorFront = Params.ColorFront;
 
-        static constexpr fColor ColorBlack{ 0.0f, 0.0f, 0.0f, 0.0f };
-        static constexpr fColor ColorWhite{ 1.0f, 1.0f, 1.0f, 1.0f };
+        v2f AdjRegionSize{ GamepadRegionSize.X * Scale, GamepadRegionSize.Y * Scale };
 
         static constexpr bool bDrawBG = true;
         if (bDrawBG)
@@ -288,8 +300,8 @@ namespace Leviathan
                 Origin.X, Origin.Y - AdjRegionSize.Y,
                 AdjRegionSize.X, AdjRegionSize.Y
             };
-            Draw2D.AddRect(BackgroundQuad, ColorBlack);
-            Draw2D.AddBox(BackgroundQuad, ColorWhite, InputVisualizer::LineWidth);
+            Draw2D.AddRect(BackgroundQuad, ColorBack);
+            Draw2D.AddBox(BackgroundQuad, ColorFront, InputVisualizer::LineWidth);
         }
 
         v2f AdjDPadOrigin{ DPadButtonsCenter.X * AdjRegionSize.X + Origin.X, DPadButtonsCenter.Y * AdjRegionSize.Y + Origin.Y };
@@ -304,8 +316,8 @@ namespace Leviathan
                 ButtonPos[ButtonIdx].Y * GamepadRegionSize.Y * Scale + Origin.Y - AdjFaceButtonsSize,
                 AdjFaceButtonsSize, AdjFaceButtonsSize
             };
-            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx)) { Draw2D.AddRect(ButtonQuad, ColorWhite); }
-            else { Draw2D.AddBox(ButtonQuad, ColorWhite, InputVisualizer::LineWidth); }
+            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx)) { Draw2D.AddRect(ButtonQuad, ColorFront); }
+            else { Draw2D.AddBox(ButtonQuad, ColorFront, InputVisualizer::LineWidth); }
         }
         for (int ButtonIdx = LV_GAMEPAD_START; ButtonIdx < LV_GAMEPAD_LEFT_THUMB; ButtonIdx++)
         {
@@ -316,8 +328,8 @@ namespace Leviathan
                 ControlButtonsSize.X * GamepadRegionSize.X * Scale,
                 ControlButtonsSize.Y * GamepadRegionSize.X * Scale
             };
-            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx)) { Draw2D.AddRect(ButtonQuad, ColorWhite); }
-            else { Draw2D.AddBox(ButtonQuad, ColorWhite, InputVisualizer::LineWidth); }
+            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx)) { Draw2D.AddRect(ButtonQuad, ColorFront); }
+            else { Draw2D.AddBox(ButtonQuad, ColorFront, InputVisualizer::LineWidth); }
         }
 
         v2f AdjTriggerSize{ TriggerButtonsSize.X * AdjRegionSize.X, TriggerButtonsSize.Y * AdjRegionSize.Y };
@@ -335,18 +347,18 @@ namespace Leviathan
                 Origin.X + AdjTriggerSize.X, Origin.Y - AdjTriggerSize.Y,
                 AdjTriggerSize.X, AdjTriggerSize.Y
             };
-            Draw2D.AddBox(LeftTriggerQuad, ColorWhite, InputVisualizer::LineWidth);
-            Draw2D.AddBox(RightTriggerQuad, ColorWhite, InputVisualizer::LineWidth);
+            Draw2D.AddBox(LeftTriggerQuad, ColorFront, InputVisualizer::LineWidth);
+            Draw2D.AddBox(RightTriggerQuad, ColorFront, InputVisualizer::LineWidth);
             if (LTrigger > TriggerDeadzone)
             {
                 LeftTriggerQuad.SizeX = AdjTriggerSize.X * LTrigger;
-                Draw2D.AddRect(LeftTriggerQuad, ColorWhite);
+                Draw2D.AddRect(LeftTriggerQuad, ColorFront);
             }
             if (RTrigger > TriggerDeadzone)
             {
                 RightTriggerQuad.SizeX = AdjTriggerSize.X * RTrigger;
                 RightTriggerQuad.PosX += AdjTriggerSize.X - RightTriggerQuad.SizeX;
-                Draw2D.AddRect(RightTriggerQuad, ColorWhite);
+                Draw2D.AddRect(RightTriggerQuad, ColorFront);
             }
         }
 
@@ -368,12 +380,12 @@ namespace Leviathan
                 AdjStickSize, AdjStickSize
             };
 
-            fColor LeftLineColor = ColorWhite;
-            fColor RightLineColor = ColorWhite;
-            if (GamepadState::GetButton(LV_GAMEPAD_LEFT_THUMB)) { Draw2D.AddRect(LeftStickQuad, ColorWhite); LeftLineColor = ColorBlack; }
-            else { Draw2D.AddBox(LeftStickQuad, ColorWhite, InputVisualizer::LineWidth); }
-            if (GamepadState::GetButton(LV_GAMEPAD_RIGHT_THUMB)) { Draw2D.AddRect(RightStickQuad, ColorWhite); RightLineColor = ColorBlack; }
-            else { Draw2D.AddBox(RightStickQuad, ColorWhite, InputVisualizer::LineWidth); }
+            fColor LeftLineColor = ColorFront;
+            fColor RightLineColor = ColorFront;
+            if (GamepadState::GetButton(LV_GAMEPAD_LEFT_THUMB)) { Draw2D.AddRect(LeftStickQuad, ColorFront); LeftLineColor = ColorBack; }
+            else { Draw2D.AddBox(LeftStickQuad, ColorFront, InputVisualizer::LineWidth); }
+            if (GamepadState::GetButton(LV_GAMEPAD_RIGHT_THUMB)) { Draw2D.AddRect(RightStickQuad, ColorFront); RightLineColor = ColorBack; }
+            else { Draw2D.AddBox(RightStickQuad, ColorFront, InputVisualizer::LineWidth); }
 
             v2f LeftStickCenter
             {
@@ -419,12 +431,16 @@ namespace Leviathan
 
     void InputVisualizer::DrawGamepads(BatchDraw2D& Draw2D)
     {
-        static const v2f Origin{ 1100.0f, AppHeight - 200.0f };
-        static const float Scale = 7.5f;
+        VIDrawParams Params = {};
+        Params.Origin = { 1100.0f, AppHeight - 200.0f };
+        Params.Scale = 7.5f;
+        Params.ColorBack = { 0.9f, 0.9f, 0.0f, 1.0f };
+        Params.ColorFront = { 0.1f, 0.1f, 1.0f, 1.0f };
         for (int GamepadIdx = 0; GamepadIdx < GamepadState::NumGamepads; GamepadIdx++)
         {
-            v2f CurrOrigin{ Origin.X, Origin.Y - 150.0f * GamepadIdx };
-            VisualGamepad::Draw(Draw2D, GamepadIdx, CurrOrigin, Scale);
+            VIDrawParams CurrParams = Params;
+            CurrParams.Origin = { Params.Origin.X, Params.Origin.Y - 150.0f * GamepadIdx };
+            VisualGamepad::Draw(Draw2D, GamepadIdx, CurrParams);
         }
     }
 }
