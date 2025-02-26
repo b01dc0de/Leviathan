@@ -154,21 +154,25 @@ namespace Leviathan
 
     struct GamepadState
     {
+        static constexpr int NumGamepads = 4;
         static constexpr float StickDeadzone = 0.025f;
-        static bool Buttons[LV_GAMEPAD_BUTTON_COUNT];
-        static float LeftTrigger;
-        static float RightTrigger;
-        static float LeftStickX;
-        static float LeftStickY;
-        static float RightStickX;
-        static float RightStickY;
+        static constexpr double SecondsPerConnectCheck = 8.0;
+        static bool bActive[NumGamepads];
+        static double LastConnectCheck[NumGamepads];
+        static bool Buttons[NumGamepads][LV_GAMEPAD_BUTTON_COUNT];
+        static float LeftTrigger[NumGamepads];
+        static float RightTrigger[NumGamepads];
+        static float LeftStickX[NumGamepads];
+        static float LeftStickY[NumGamepads];
+        static float RightStickX[NumGamepads];
+        static float RightStickY[NumGamepads];
         static unsigned int LastReading;
 
-        static float GetLeftTrigger();
-        static float GetRightTrigger();
-        static v2f GetLeftStick();
-        static v2f GetRightStick();
-        static bool GetButton(LvGamepadButton LvButton);
+        static float GetLeftTrigger(int GamepadIdx = 0);
+        static float GetRightTrigger(int GamepadIdx = 0);
+        static v2f GetLeftStick(int GamepadIdx = 0);
+        static v2f GetRightStick(int GamepadIdx = 0);
+        static bool GetButton(LvGamepadButton LvButton, int GamepadIdx = 0);
         static void Win32_UpdateXInput();
         static void Tick();
     };

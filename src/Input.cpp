@@ -453,7 +453,7 @@ namespace Leviathan
                 int Y = GET_Y_LPARAM(lParam);
                 SetMousePosAbs(X, Y);
             } break;
-            case WM_MOUSELEAVE: { } break;
+            case WM_MOUSELEAVE: {} break;
             case WM_LBUTTONDOWN: { bLeftKey = true; } break;
             case WM_LBUTTONUP: { bLeftKey = false; } break;
             case WM_RBUTTONDOWN: { bRightKey = true; } break;
@@ -500,79 +500,101 @@ namespace Leviathan
         MouseState::MouseWheel = 0.0f;
     }
 
-    bool GamepadState::Buttons[] = {};
-    float GamepadState::LeftStickX = 0.0f;
-    float GamepadState::LeftStickY = 0.0f;
-    float GamepadState::RightStickX = 0.0f;
-    float GamepadState::RightStickY = 0.0f;
-    float GamepadState::LeftTrigger = 0.0f;
-    float GamepadState::RightTrigger = 0.0f;
+    bool GamepadState::bActive[] = { false, false, false, false };
+    double GamepadState::LastConnectCheck[] = {
+        -GamepadState::SecondsPerConnectCheck,
+        -GamepadState::SecondsPerConnectCheck,
+        -GamepadState::SecondsPerConnectCheck,
+        -GamepadState::SecondsPerConnectCheck
+    };
+    bool GamepadState::Buttons[][LV_GAMEPAD_BUTTON_COUNT] = { };
+    float GamepadState::LeftStickX[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float GamepadState::LeftStickY[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float GamepadState::RightStickX[] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float GamepadState::RightStickY[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float GamepadState::LeftTrigger[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float GamepadState::RightTrigger[] = { 0.0f, 0.0f, 0.0f, 0.0f };
     unsigned int GamepadState::LastReading = 0;
 
-    bool GamepadState::GetButton(LvGamepadButton LvButton)
+    bool GamepadState::GetButton(LvGamepadButton LvButton, int GamepadIdx)
     {
-        return Buttons[LvButton];
+        return Buttons[GamepadIdx][LvButton];
     }
 
-    float GamepadState::GetLeftTrigger()
+    float GamepadState::GetLeftTrigger(int GamepadIdx)
     {
-        return LeftTrigger;
+        return LeftTrigger[GamepadIdx];
     }
 
-    float GamepadState::GetRightTrigger()
+    float GamepadState::GetRightTrigger(int GamepadIdx)
     {
-        return RightTrigger;
+        return RightTrigger[GamepadIdx];
     }
 
-    v2f GamepadState::GetLeftStick()
+    v2f GamepadState::GetLeftStick(int GamepadIdx)
     {
-        return v2f{LeftStickX, LeftStickY};
+        return v2f{LeftStickX[GamepadIdx], LeftStickY[GamepadIdx]};
     }
 
-    v2f GamepadState::GetRightStick()
+    v2f GamepadState::GetRightStick(int GamepadIdx)
     {
-        return v2f{RightStickX, RightStickY};
+        return v2f{RightStickX[GamepadIdx], RightStickY[GamepadIdx]};
     }
 
     void GamepadState::Win32_UpdateXInput()
     {
-        constexpr float MaxTriggerValue = 255.0f;
-        constexpr float MaxStickValue = 32767.0f;
+        constexpr float fMaxTriggerValue = 255.0f;
+        constexpr float fMaxStickValue = 32767.0f;
 
-        XINPUT_STATE Controller0 = {};
-        DWORD dwResult = XInputGetState(0, &Controller0);
-        if (dwResult == ERROR_SUCCESS && LastReading != Controller0.dwPacketNumber)
+        double CurrTime = Clock::Time();
+
+        for (int GamepadIdx = 0; GamepadIdx < NumGamepads; GamepadIdx++)
         {
-            WORD& wButtons = Controller0.Gamepad.wButtons;
-            Buttons[LV_GAMEPAD_DPAD_UP] = wButtons & XINPUT_GAMEPAD_DPAD_UP;
-            Buttons[LV_GAMEPAD_DPAD_DOWN] = wButtons & XINPUT_GAMEPAD_DPAD_DOWN;
-            Buttons[LV_GAMEPAD_DPAD_LEFT] = wButtons & XINPUT_GAMEPAD_DPAD_LEFT;
-            Buttons[LV_GAMEPAD_DPAD_RIGHT] = wButtons & XINPUT_GAMEPAD_DPAD_RIGHT;
-            Buttons[LV_GAMEPAD_FACE_UP] = wButtons & XINPUT_GAMEPAD_Y;
-            Buttons[LV_GAMEPAD_FACE_DOWN] = wButtons & XINPUT_GAMEPAD_A;
-            Buttons[LV_GAMEPAD_FACE_LEFT] = wButtons & XINPUT_GAMEPAD_X;
-            Buttons[LV_GAMEPAD_FACE_RIGHT] = wButtons & XINPUT_GAMEPAD_B;
-            Buttons[LV_GAMEPAD_START] = wButtons & XINPUT_GAMEPAD_START;
-            Buttons[LV_GAMEPAD_SELECT] = wButtons & XINPUT_GAMEPAD_BACK;
-            Buttons[LV_GAMEPAD_LEFT_SHOULDER] = wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER;
-            Buttons[LV_GAMEPAD_RIGHT_SHOULDER] = wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER;
-            Buttons[LV_GAMEPAD_LEFT_THUMB] = wButtons & XINPUT_GAMEPAD_LEFT_THUMB;
-            Buttons[LV_GAMEPAD_RIGHT_THUMB] = wButtons & XINPUT_GAMEPAD_RIGHT_THUMB;
+            if (!bActive[GamepadIdx] && CurrTime - LastConnectCheck[GamepadIdx] < SecondsPerConnectCheck)
+            {
+                continue;
+            }
+            XINPUT_STATE CurrController = {};
+            DWORD dwResult = XInputGetState(GamepadIdx, &CurrController);
+            bActive[GamepadIdx] = dwResult == ERROR_SUCCESS;
+            if (dwResult == ERROR_SUCCESS && LastReading != CurrController.dwPacketNumber)
+            {
+                WORD& wButtons = CurrController.Gamepad.wButtons;
+                Buttons[GamepadIdx][LV_GAMEPAD_DPAD_UP] = wButtons & XINPUT_GAMEPAD_DPAD_UP;
+                Buttons[GamepadIdx][LV_GAMEPAD_DPAD_DOWN] = wButtons & XINPUT_GAMEPAD_DPAD_DOWN;
+                Buttons[GamepadIdx][LV_GAMEPAD_DPAD_LEFT] = wButtons & XINPUT_GAMEPAD_DPAD_LEFT;
+                Buttons[GamepadIdx][LV_GAMEPAD_DPAD_RIGHT] = wButtons & XINPUT_GAMEPAD_DPAD_RIGHT;
+                Buttons[GamepadIdx][LV_GAMEPAD_FACE_UP] = wButtons & XINPUT_GAMEPAD_Y;
+                Buttons[GamepadIdx][LV_GAMEPAD_FACE_DOWN] = wButtons & XINPUT_GAMEPAD_A;
+                Buttons[GamepadIdx][LV_GAMEPAD_FACE_LEFT] = wButtons & XINPUT_GAMEPAD_X;
+                Buttons[GamepadIdx][LV_GAMEPAD_FACE_RIGHT] = wButtons & XINPUT_GAMEPAD_B;
+                Buttons[GamepadIdx][LV_GAMEPAD_START] = wButtons & XINPUT_GAMEPAD_START;
+                Buttons[GamepadIdx][LV_GAMEPAD_SELECT] = wButtons & XINPUT_GAMEPAD_BACK;
+                Buttons[GamepadIdx][LV_GAMEPAD_LEFT_SHOULDER] = wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER;
+                Buttons[GamepadIdx][LV_GAMEPAD_RIGHT_SHOULDER] = wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER;
+                Buttons[GamepadIdx][LV_GAMEPAD_LEFT_THUMB] = wButtons & XINPUT_GAMEPAD_LEFT_THUMB;
+                Buttons[GamepadIdx][LV_GAMEPAD_RIGHT_THUMB] = wButtons & XINPUT_GAMEPAD_RIGHT_THUMB;
 
-            LeftTrigger = (float)Controller0.Gamepad.bLeftTrigger / MaxTriggerValue;
-            RightTrigger = (float)Controller0.Gamepad.bRightTrigger / MaxTriggerValue;
+                LeftTrigger[GamepadIdx] = (float)CurrController.Gamepad.bLeftTrigger / fMaxTriggerValue;
+                RightTrigger[GamepadIdx] = (float)CurrController.Gamepad.bRightTrigger / fMaxTriggerValue;
 
-            LeftStickX = (float)Controller0.Gamepad.sThumbLX / MaxStickValue;
-            LeftStickY = (float)Controller0.Gamepad.sThumbLY / MaxStickValue;
-            RightStickX = (float)Controller0.Gamepad.sThumbRX / MaxStickValue;
-            RightStickY = (float)Controller0.Gamepad.sThumbRY / MaxStickValue;
+                LeftStickX[GamepadIdx] = (float)CurrController.Gamepad.sThumbLX / fMaxStickValue;
+                LeftStickY[GamepadIdx] = (float)CurrController.Gamepad.sThumbLY / fMaxStickValue;
+                RightStickX[GamepadIdx] = (float)CurrController.Gamepad.sThumbRX / fMaxStickValue;
+                RightStickY[GamepadIdx] = (float)CurrController.Gamepad.sThumbRY / fMaxStickValue;
 
-            if (LeftStickX < 0.0f ? (LeftStickX > -StickDeadzone) : (LeftStickX < StickDeadzone)) { LeftStickX = 0.0f; }
-            if (LeftStickY < 0.0f ? (LeftStickY > -StickDeadzone) : (LeftStickY < StickDeadzone)) { LeftStickY = 0.0f; }
-            if (RightStickX < 0.0f ? (RightStickX > -StickDeadzone) : (RightStickX < StickDeadzone)) { RightStickX = 0.0f; }
-            if (RightStickY < 0.0f ? (RightStickY > -StickDeadzone) : (RightStickY < StickDeadzone)) { RightStickY = 0.0f; }
+                if (LeftStickX[GamepadIdx] < 0.0f ? (LeftStickX[GamepadIdx] > -StickDeadzone) : (LeftStickX[GamepadIdx] < StickDeadzone)) { LeftStickX[GamepadIdx] = 0.0f; }
+                if (LeftStickY[GamepadIdx] < 0.0f ? (LeftStickY[GamepadIdx] > -StickDeadzone) : (LeftStickY[GamepadIdx] < StickDeadzone)) { LeftStickY[GamepadIdx] = 0.0f; }
+                if (RightStickX[GamepadIdx] < 0.0f ? (RightStickX[GamepadIdx] > -StickDeadzone) : (RightStickX[GamepadIdx] < StickDeadzone)) { RightStickX[GamepadIdx] = 0.0f; }
+                if (RightStickY[GamepadIdx] < 0.0f ? (RightStickY[GamepadIdx] > -StickDeadzone) : (RightStickY[GamepadIdx] < StickDeadzone)) { RightStickY[GamepadIdx] = 0.0f; }
 
-            LastReading = Controller0.dwPacketNumber;
+                LastReading = CurrController.dwPacketNumber;
+            }
+            else if (dwResult == ERROR_DEVICE_NOT_CONNECTED)
+            {
+                bActive[GamepadIdx] = false;
+                LastConnectCheck[GamepadIdx] = CurrTime;
+            }
         }
     }
 
