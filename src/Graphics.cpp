@@ -45,7 +45,6 @@ namespace Leviathan
         MeshInstStateT MeshInstStateRect;
         MeshInstStateT MeshInstStateLine;
         MeshInstStateT MeshInstStateRectRotation;
-        MeshInstStateT MeshInstStateRectRotationTexture;
 
         LvTexture2D BulletLimboPlayer;
         LvTexture2D BulletLimboBullet;

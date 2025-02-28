@@ -94,7 +94,7 @@ VS_OUTPUT VSMain(VS_INPUT Input)
     Output.RGBA = Input.RGBA;
 #endif //INST_RECT_COLOR
 #if INST_RECT_TEXTURE
-    float2 PosInvY = float2(Input.Pos.x, 1 - Input.Pos.y);
+    float2 PosInvY = float2(Input.Pos.x + (0.5 * INST_RECT_ROTATION), 1 - Input.Pos.y + (0.5 * INST_RECT_ROTATION));
     Output.TexUV = RectTransform(PosInvY, Input.UVRect);
 #endif // INST_RECT_TEXTURE
     return Output;
