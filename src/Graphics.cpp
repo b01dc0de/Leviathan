@@ -326,6 +326,25 @@ namespace Leviathan
                 Draw2D.ColorBatchCmds.Data
             );
         }
+        if (Draw2D.RotationColorBatchCmds.Num > 0)
+        {
+            DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
+            DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+
+            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
+            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
+
+            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
+
+            DrawMeshInstanced
+            (
+                DX_ImmContext,
+                DrawStateInstRectColorRotation,
+                MeshInstStateRectRotation,
+                Draw2D.RotationColorBatchCmds.Num,
+                Draw2D.RotationColorBatchCmds.Data
+            );
+        }
 
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
 

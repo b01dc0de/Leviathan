@@ -224,6 +224,7 @@ namespace Leviathan
             Draw2D.AddBox(WheelQuad, Params.ColorFront, InputVisualizer::LineWidth);
             const v2f WheelLineCenter { AdjWheelPos.X + AdjWheelSize * 0.5f, AdjWheelPos.Y + AdjWheelSize * 0.5f };
             const v2f WheelLineEnd { WheelLineCenter.X + (cosf(WheelAngle) * AdjWheelSize * 0.5f), WheelLineCenter.Y + (sinf(WheelAngle) * AdjWheelSize * 0.5f) };
+            /*
             RectF WheelAngleQuad
             {
                 Min(WheelLineCenter.X, WheelLineEnd.X),
@@ -232,6 +233,15 @@ namespace Leviathan
                 Abs(WheelLineCenter.Y - WheelLineEnd.Y)
             };
             Draw2D.AddRect(WheelAngleQuad, Params.ColorFront);
+            */
+            LineF WheelLine
+            {
+                WheelLineCenter.X,
+                WheelLineCenter.Y,
+                WheelLineEnd.X,
+                WheelLineEnd.Y
+            };
+            Draw2D.AddLine(WheelLine, Params.ColorFront);
         }
     }
 
@@ -398,34 +408,20 @@ namespace Leviathan
                 RightStickQuad.PosY + RightStickQuad.SizeY / 2.0f
             };
 
-            v2f LeftStickInputPos
+            LineF LeftStickLine
             {
+                LeftStickCenter.X, LeftStickCenter.Y,
                 LeftStickCenter.X + LStick.X * AdjStickSize / 2.0f,
                 LeftStickCenter.Y + LStick.Y * AdjStickSize / 2.0f
             };
-            v2f RightStickInputPos
+            LineF RightStickLine
             {
+                RightStickCenter.X, RightStickCenter.Y,
                 RightStickCenter.X + RStick.X * AdjStickSize / 2.0f,
                 RightStickCenter.Y + RStick.Y * AdjStickSize / 2.0f
             };
-
-            RectF LeftInputQuad
-            {
-                Min(LeftStickInputPos.X, LeftStickCenter.X),
-                Min(LeftStickInputPos.Y, LeftStickCenter.Y),
-                Abs(LeftStickInputPos.X - LeftStickCenter.X),
-                Abs(LeftStickInputPos.Y - LeftStickCenter.Y)
-            };
-            RectF RightInputQuad
-            {
-                Min(RightStickInputPos.X, RightStickCenter.X),
-                Min(RightStickInputPos.Y, RightStickCenter.Y),
-                Abs(RightStickInputPos.X - RightStickCenter.X),
-                Abs(RightStickInputPos.Y - LeftStickCenter.Y)
-            };
-
-            Draw2D.AddRect(LeftInputQuad, LeftLineColor);
-            Draw2D.AddRect(RightInputQuad, RightLineColor);
+            Draw2D.AddLine(LeftStickLine, LeftLineColor);
+            Draw2D.AddLine(RightStickLine, RightLineColor);
         }
     }
 
