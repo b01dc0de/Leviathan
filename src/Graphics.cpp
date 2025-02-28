@@ -45,6 +45,7 @@ namespace Leviathan
         MeshInstStateT MeshInstStateRect;
         MeshInstStateT MeshInstStateLine;
         MeshInstStateT MeshInstStateRectRotation;
+        MeshInstStateT MeshInstStateRectRotationTexture;
 
         LvTexture2D BulletLimboPlayer;
         LvTexture2D BulletLimboBullet;
@@ -140,6 +141,13 @@ namespace Leviathan
         { { 1.0f, 1.0f, +0.5f, +1.0f } },
         { { 0.0f, 0.0f, +0.5f, +1.0f } },
         { { 1.0f, 0.0f, +0.5f, +1.0f } },
+    };
+    VxMin Vertices_RotationRect[] =
+    {
+        {-0.5f, +0.5f, +0.5f, +1.0f},
+        {+0.5f, +0.5f, +0.5f, +1.0f},
+        {-0.5f, -0.5f, +0.5f, +1.0f},
+        {+0.5f, -0.5f, +0.5f, +1.0f},
     };
     unsigned int Indices_Rect[] =
     {
@@ -462,6 +470,7 @@ namespace Leviathan
             RectF Rect = { Origin.X, Origin.Y, RectSize, RectSize };
             RectF TexRect = { 0.0f, 0.0f, 1.0f, 1.0f };
             float fTime = (float)Clock::Time();
+            static bool bDrawCoolRotations = true;
             for (int Idx = 0; Idx < RotationDemoNum; Idx++)
             {
                 float CurrAngle = (float)Idx / (float)RotationDemoNum * fTau;
@@ -474,6 +483,30 @@ namespace Leviathan
                 CurrRect.PosX += RectSize * sinf(fTime * 0.5f);
                 CurrRect.PosY -= RectSize * sinf(fTime * 2.0f);
                 Draw2D.AddRect(CurrRect, TexRect, CurrAngle);
+            }
+
+            {
+                const v2f TestOrigin{ 100.0f, 100.0f };
+                for (int Idx = 0; Idx < 4; Idx++)
+                {
+                    RectF CurrRect =
+                    {
+                        TestOrigin.X + (Idx % 2 == 1 ? RectSize : -RectSize),
+                        TestOrigin.Y + (Idx / 2 == 0 ? RectSize : -RectSize),
+                        RectSize,
+                        RectSize
+                    };
+                    float CurrAngle = fTime;
+                    fColor CurrColor =
+                    {
+                        Idx & 1 ? 1.0f : 0.0f,
+                        Idx & 2 ? 1.0f : 0.0f,
+                        Idx & 3 ? 1.0f : 0.0f,
+                        1.0f
+                    };
+                    Draw2D.AddRect(CurrRect, CurrColor, CurrAngle);
+                }
+
             }
         }
         if (Draw2D.RotationColorBatchCmds.Num > 0)
@@ -841,8 +874,8 @@ namespace Leviathan
             sizeof(VxMin),
             sizeof(InstRectColorRotationData),
             DefaultSize_BatchDraw2D,
-            ARRAY_SIZE(Vertices_PlatonicRect),
-            Vertices_PlatonicRect,
+            ARRAY_SIZE(Vertices_RotationRect),
+            Vertices_RotationRect,
             ARRAY_SIZE(Indices_Rect),
             Indices_Rect,
             D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST
@@ -896,7 +929,7 @@ namespace Leviathan
             ));
         }
 
-        v3f CameraPos{5.0f, 5.0f, -5.0f};
+        v3f CameraPos{ 5.0f, 5.0f, -5.0f };
         v3f CameraLookAt{ 0.0f, 0.0f, 0.0f };
         GameCamera.Persp(CameraPos, CameraLookAt);
 
