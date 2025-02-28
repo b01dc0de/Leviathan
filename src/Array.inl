@@ -37,12 +37,13 @@ namespace Leviathan
             ASSERT(Capacity > 0);
             Num = 0;
         }
-        void Inc()
+        void Inc(int MinCapacity)
         {
+            ASSERT(MinCapacity > Capacity);
             int OldCapacity = Capacity;
             T* OldData = Data;
 
-            Capacity = (int)(Capacity * Array_IncRate);
+            while (Capacity < MinCapacity) { Capacity = (int)(Capacity * Array_IncRate); }
             Data = new T[Capacity];
             for (int ItemIdx = 0; ItemIdx < Num; ItemIdx++)
             {
@@ -77,11 +78,24 @@ namespace Leviathan
         {
             if (Num == Capacity)
             {
-                Inc();
+                Inc(Num + 1);
             }
             int ItemIdx = Num;
             Data[Num++] = Item;
             return ItemIdx;
+        }
+        int Add(const T* Items, int NumItems)
+        {
+            int NewNum = Num + NumItems;
+            if (NewNum > Capacity)
+            {
+                Inc(NewNum);
+            }
+            for (int ItemIdx = 0; ItemIdx < NumItems; ItemIdx++)
+            {
+                Data[Num++] = Items[ItemIdx];
+            }
+            return Num - 1;
         }
         void Remove(int Idx)
         {

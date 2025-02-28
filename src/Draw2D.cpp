@@ -20,17 +20,14 @@ namespace Leviathan
     void BatchDraw2D::AddBox(const RectF& InRect, const fColor& InColor, float LineWeight)
     {
         float HalfLineWeight = LineWeight / 2.0f;
-        RectF LeftSide{InRect.PosX - HalfLineWeight, InRect.PosY - HalfLineWeight, LineWeight, InRect.SizeY + HalfLineWeight};
-        RectF RightSide{ InRect.PosX + InRect.SizeX - HalfLineWeight, InRect.PosY - HalfLineWeight, LineWeight, InRect.SizeY + HalfLineWeight};
+        InstRectColorData BoxRects[] = {
+            { { InRect.PosX - HalfLineWeight, InRect.PosY - HalfLineWeight, LineWeight, InRect.SizeY + HalfLineWeight }, InColor }, // Left
+            { { InRect.PosX + InRect.SizeX - HalfLineWeight, InRect.PosY - HalfLineWeight, LineWeight, InRect.SizeY + HalfLineWeight }, InColor }, // Right
+            { { InRect.PosX - HalfLineWeight, InRect.PosY - HalfLineWeight + InRect.SizeY, InRect.SizeX + HalfLineWeight, LineWeight }, InColor }, // Top
+            { { InRect.PosX - HalfLineWeight, InRect.PosY - HalfLineWeight, InRect.SizeX + HalfLineWeight, LineWeight }, InColor } // Bottom
+        };
 
-        RectF TopSide{ InRect.PosX - HalfLineWeight, InRect.PosY - HalfLineWeight + InRect.SizeY, InRect.SizeX + HalfLineWeight, LineWeight};
-        RectF BottomSide{ InRect.PosX - HalfLineWeight, InRect.PosY - HalfLineWeight, InRect.SizeX + HalfLineWeight, LineWeight };
-
-        // TODO: Add this as array (will require new Array<>::Add method)
-        AddRect(LeftSide, InColor);
-        AddRect(TopSide, InColor);
-        AddRect(RightSide, InColor);
-        AddRect(BottomSide, InColor);
+        ColorBatchCmds.Add(BoxRects, ARRAY_SIZE(BoxRects));
     }
 
     void BatchDraw2D::AddRect(const RectF& InRect, const RectF& InTexRect)
