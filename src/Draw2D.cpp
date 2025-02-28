@@ -7,7 +7,6 @@ namespace Leviathan
         ColorBatchCmds.Empty();
         TextureBatchCmds.Empty();
         TextBatchCmds.Empty();
-        LineBatchCmds.Empty();
         RotationColorBatchCmds.Empty();
         RotationTextureBatchCmds.Empty();
     }
@@ -40,11 +39,6 @@ namespace Leviathan
         TextBatchCmds.Add(InstRectTextureData{ InPosRect, InTexRect });
     }
 
-    void BatchDraw2D::AddLine(const LineF& InLine, const fColor& InColor)
-    {
-        LineBatchCmds.Add(InstLineData{ InLine, InColor });
-    }
-
     void BatchDraw2D::AddRect(const RectF& InRect, const fColor& InColor, float AngleZ)
     {
         RotationColorBatchCmds.Add(InstRectColorRotationData{ InRect, InColor, AngleZ });
@@ -54,4 +48,26 @@ namespace Leviathan
     {
         RotationTextureBatchCmds.Add(InstRectTextureRotationData{ InPosRect, InTexRect, AngleZ });
     }
+
+    void BatchDraw2D::AddLine(const LineF& InLine, const fColor& InColor)
+    {
+        constexpr float DefaultLineThickness = 2.0f;
+        v2f MinPoint{ Min(InLine.BeginX, InLine.EndX), Min(InLine.BeginY, InLine.EndY)};
+        v2f MaxPoint{ Max(InLine.BeginX, InLine.EndX), Max(InLine.BeginY, InLine.EndY)};
+        v2f Delta = MaxPoint - MinPoint;
+        float LineLength = Length(Delta);
+        float DiffX = InLine.EndX - InLine.BeginX;
+        float DiffY = InLine.EndY - InLine.BeginY;
+
+        RectF LineRect
+        {
+            MinPoint.X + Delta.X / 2.0f,
+            MinPoint.Y + Delta.Y / 2.0f,
+            LineLength,
+            DefaultLineThickness
+        };
+        float LineAngle = atan2f(DiffY, DiffX);
+        AddRect(LineRect, InColor, LineAngle);
+    }
+
 }

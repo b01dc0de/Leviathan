@@ -145,9 +145,6 @@
     <FxCompile Include="src\hlsl\InstRectShader.hlsl">
       <Filter>src\hlsl</Filter>
     </FxCompile>
-    <FxCompile Include="src\hlsl\InstLineShader.hlsl">
-      <Filter>src\hlsl</Filter>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Array.inl">

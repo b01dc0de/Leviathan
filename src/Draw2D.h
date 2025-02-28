@@ -33,12 +33,6 @@ namespace Leviathan
         RectF TexRect;
     };
 
-    struct InstLineData
-    {
-        LineF Line;
-        fColor Color;
-    };
-
     struct InstRectColorRotationData
     {
         RectF Rect;
@@ -58,7 +52,6 @@ namespace Leviathan
         Array<InstRectColorData> ColorBatchCmds;
         Array<InstRectTextureData> TextureBatchCmds;
         Array<InstRectTextureData> TextBatchCmds;
-        Array<InstLineData> LineBatchCmds;
         Array<InstRectColorRotationData> RotationColorBatchCmds;
         Array<InstRectTextureRotationData> RotationTextureBatchCmds;
 
@@ -67,10 +60,10 @@ namespace Leviathan
         void AddBox(const RectF& InRect, const fColor& InColor, float LineWeight = 1.0f);
         void AddRect(const RectF& InRect, const RectF& InTexRect);
         void AddTextRect(const RectF& InPosRect, const RectF& InTexRect);
-        void AddLine(const LineF& InLine, const fColor& InColor);
 
         void AddRect(const RectF& InRect, const fColor& InColor, float AngleZ);
         void AddRect(const RectF& InPosRect, const RectF& InTexRect, float AngleZ);
+        void AddLine(const LineF& InLine, const fColor& InColor);
     };
 }
 

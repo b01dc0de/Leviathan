@@ -30,7 +30,6 @@ namespace Leviathan
         DrawStateT DrawStateTexture;
         DrawStateT DrawStateInstRectColor;
         DrawStateT DrawStateInstRectTexture;
-        DrawStateT DrawStateInstLine;
         DrawStateT DrawStateInstRectColorRotation;
         DrawStateT DrawStateInstRectTextureRotation;
 
@@ -43,7 +42,6 @@ namespace Leviathan
         MeshStateT MeshStateCube;
         MeshStateT MeshStateQuad;
         MeshInstStateT MeshInstStateRect;
-        MeshInstStateT MeshInstStateLine;
         MeshInstStateT MeshInstStateRectRotation;
 
         LvTexture2D BulletLimboPlayer;
@@ -174,12 +172,19 @@ namespace Leviathan
 
     float HalfWidth = (float)AppWidth / 2.0f;
     float HalfHeight = (float)AppHeight / 2.0f;
-    InstLineData InstData_Lines[]
+    LineF InstData_LinePos[]
     {
-        { {0.0f, 0.0f, AppWidth, AppHeight}, {1.0f, 0.0f, 0.0f, 1.0f} },
-        { {0.0f, AppHeight, AppWidth, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },
-        { {HalfWidth, 0.0f, HalfWidth, AppHeight}, {0.0f, 0.0f, 1.0f, 1.0f} },
-        { {0.0f, HalfHeight, AppWidth, HalfHeight}, {1.0f, 1.0f, 1.0f, 1.0f} },
+        {0.0f, 0.0f, AppWidth, AppHeight},
+        {0.0f, AppHeight, AppWidth, 0.0f},
+        {HalfWidth, 0.0f, HalfWidth, AppHeight},
+        {0.0f, HalfHeight, AppWidth, HalfHeight},
+    };
+    fColor InstData_LineColors[]
+    {
+        {1.0f, 0.0f, 0.0f, 1.0f},
+        {0.0f, 1.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f, 1.0f},
+        {1.0f, 1.0f, 1.0f, 1.0f}
     };
     VxMin Vertices_PlatonicLine[] =
     {
@@ -351,14 +356,22 @@ namespace Leviathan
             UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
             UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
 
-            for (int Idx = 0; Idx < ARRAY_SIZE(InstData_Lines); Idx++)
+            ASSERT(ARRAY_SIZE(InstData_LinePos) == ARRAY_SIZE(InstData_LineColors));
+            for (int Idx = 0; Idx < ARRAY_SIZE(InstData_LinePos); Idx++)
             {
-                Draw2D.AddLine(InstData_Lines[Idx].Line, InstData_Lines[Idx].Color);
+                Draw2D.AddLine(InstData_LinePos[Idx], InstData_LineColors[Idx]);
             }
 
             SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
 
-            DrawMeshInstanced(DX_ImmContext, DrawStateInstLine, MeshInstStateLine, Draw2D.LineBatchCmds.Num, Draw2D.LineBatchCmds.Data);
+            DrawMeshInstanced
+            (
+                DX_ImmContext,
+                DrawStateInstRectColorRotation,
+                MeshInstStateRectRotation,
+                Draw2D.RotationColorBatchCmds.Num,
+                Draw2D.RotationColorBatchCmds.Data
+            );
         }
 
         if (bDrawTriangle)
@@ -741,19 +754,6 @@ namespace Leviathan
             DrawStateInstRectTexture = CreateDrawState(DX_Device, InstRectShaderFilename, DefinesInst, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
         }
 
-        { // InstLine
-            const wchar_t* InstLineShaderFilename = L"src/hlsl/InstLineShader.hlsl";
-            const D3D_SHADER_MACRO* DefinesInst = nullptr;
-            D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
-            {
-                { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-                { "LINE", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-                { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
-            };
-
-            DrawStateInstLine = CreateDrawState(DX_Device, InstLineShaderFilename, DefinesInst, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
-        }
-
         { // InstRectColorRotation
             const D3D_SHADER_MACRO DefinesInst[] =
             {
@@ -854,19 +854,6 @@ namespace Leviathan
         );
         ASSERT(sizeof(InstRectColorData) == sizeof(InstRectTextureData));
 
-        MeshInstStateLine = CreateMeshInstState
-        (
-            DX_Device,
-            sizeof(VxMin),
-            sizeof(InstLineData),
-            DefaultSize_BatchDraw2D,
-            ARRAY_SIZE(Vertices_PlatonicLine),
-            Vertices_PlatonicLine,
-            0,
-            nullptr,
-            D3D_PRIMITIVE_TOPOLOGY_LINELIST
-        );
-
         MeshInstStateRectRotation = CreateMeshInstState
         (
             DX_Device,
@@ -957,7 +944,6 @@ namespace Leviathan
         SafeRelease(MeshStateCube);
         SafeRelease(MeshStateQuad);
         SafeRelease(MeshInstStateRect);
-        SafeRelease(MeshInstStateLine);
         SafeRelease(MeshInstStateRectRotation);
 
         SafeRelease(LvDebugTexture);
@@ -972,7 +958,6 @@ namespace Leviathan
         SafeRelease(DrawStateTexture);
         SafeRelease(DrawStateInstRectColor);
         SafeRelease(DrawStateInstRectTexture);
-        SafeRelease(DrawStateInstLine);
         SafeRelease(DrawStateInstRectColorRotation);
         SafeRelease(DrawStateInstRectTextureRotation);
 
