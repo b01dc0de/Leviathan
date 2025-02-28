@@ -63,13 +63,10 @@ namespace Leviathan
         Array<InstRectTextureRotationData> RotationTextureBatchCmds;
 
         void Clear();
-        void AddRect(const InstRectColorData& InInstRectColorData);
         void AddRect(const RectF& InRect, const fColor& InColor);
         void AddBox(const RectF& InRect, const fColor& InColor, float LineWeight = 1.0f);
-        void AddRect(const InstRectTextureData& InInstRectTextureData);
         void AddRect(const RectF& InRect, const RectF& InTexRect);
         void AddTextRect(const RectF& InPosRect, const RectF& InTexRect);
-        void AddLine(const InstLineData& InLineData);
         void AddLine(const LineF& InLine, const fColor& InColor);
 
         void AddRect(const RectF& InRect, const fColor& InColor, float AngleZ);
