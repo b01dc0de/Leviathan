@@ -214,10 +214,12 @@ namespace Leviathan
     }
 
     void DrawDebugDemo();
+    void DrawBatch2D(BatchDraw2D& Draw2D, ID3D11ShaderResourceView* TextureSRV, bool bClear = false);
 
     constexpr int DefaultSize_BatchDraw2D = 1024;
     static bool bDrawGame = true;
     static bool bForceDrawDebugDemo = true;
+    static bool bDrawUI = true;
     m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
     constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
     void Graphics::Draw()
@@ -235,118 +237,23 @@ namespace Leviathan
 
         ID3D11Buffer* World_ViewProjBuffers[] = { DX_WorldBuffer, DX_ViewProjBuffer };
         ID3D11SamplerState* DefaultSampler[] = { DX_DefaultSamplerState };
-        ID3D11ShaderResourceView* TestTextureSRV[] = { LvTestTexture.SRV };
-
+        SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
         SetShaderSamplers(DX_ImmContext, ARRAY_SIZE(DefaultSampler), DefaultSampler);
         
-        if (!bDrawGame || bForceDrawDebugDemo) { DrawDebugDemo(); Draw2D.Clear(); }
-
-        if (bDrawGame) { GameManager::Draw(Draw2D); }
-        if (Draw2D.ColorBatchCmds.Num > 0)
+        if (!bDrawGame || bForceDrawDebugDemo)
         {
-            DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
-            DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-
-            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-
-            DrawMeshInstanced
-            (
-                DX_ImmContext,
-                DrawStateInstRectColor,
-                MeshInstStateRect,
-                Draw2D.ColorBatchCmds.Num,
-                Draw2D.ColorBatchCmds.Data
-            );
+            DrawDebugDemo();
         }
-        if (Draw2D.RotationColorBatchCmds.Num > 0)
+        if (bDrawGame)
         {
-            DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
-            DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-
-            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-
-            DrawMeshInstanced
-            (
-                DX_ImmContext,
-                DrawStateInstRectColorRotation,
-                MeshInstStateRectRotation,
-                Draw2D.RotationColorBatchCmds.Num,
-                Draw2D.RotationColorBatchCmds.Data
-            );
+            GameManager::Draw(Draw2D);
+            DrawBatch2D(Draw2D, BulletLimboPlayer.SRV, true);
         }
-        if (Draw2D.RotationTextureBatchCmds.Num > 0)
+        if (bDrawUI)
         {
-            DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
-            DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-
-            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
-
-            ID3D11ShaderResourceView* BulletLimboTextures[] = { BulletLimboPlayer.SRV };
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-            SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(BulletLimboTextures), BulletLimboTextures);
-
-            DrawMeshInstanced
-            (
-                DX_ImmContext,
-                DrawStateInstRectTextureRotation,
-                MeshInstStateRectRotation,
-                Draw2D.RotationTextureBatchCmds.Num,
-                Draw2D.RotationTextureBatchCmds.Data
-            );
+            UserInterface::Draw(D2_RenderTarget, Draw2D);
+            DrawBatch2D(Draw2D, LvTestTexture.SRV, true);
         }
-
-        Draw2D.Clear();
-
-        static bool bDrawUI = true;
-        if (bDrawUI) { UserInterface::Draw(D2_RenderTarget, Draw2D); }
-        if (Draw2D.ColorBatchCmds.Num > 0)
-        {
-            DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-            DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
-            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-            SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
-
-            DrawMeshInstanced
-            (
-                DX_ImmContext,
-                DrawStateInstRectColor,
-                MeshInstStateRect,
-                Draw2D.ColorBatchCmds.Num,
-                Draw2D.ColorBatchCmds.Data
-            );
-        }
-        if (Draw2D.RotationColorBatchCmds.Num > 0)
-        {
-            DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
-            DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-
-            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-
-            DrawMeshInstanced
-            (
-                DX_ImmContext,
-                DrawStateInstRectColorRotation,
-                MeshInstStateRectRotation,
-                Draw2D.RotationColorBatchCmds.Num,
-                Draw2D.RotationColorBatchCmds.Data
-            );
-        }
-
-        DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
 
         UINT SyncInterval = 0, PresentFlags = 0;
         DXGI_PRESENT_PARAMETERS PresentParams = {};
@@ -367,31 +274,6 @@ namespace Leviathan
         ID3D11ShaderResourceView* HandmadeFontTextureSRV[] = { HandmadeText.LvTex2D.SRV };
         ID3D11SamplerState* DefaultSampler[] = { DX_DefaultSamplerState };
         ID3D11ShaderResourceView* TestTextureSRV[] = { LvTestTexture.SRV };
-
-        if (bDrawInstLines)
-        {
-            DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
-            DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
-            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
-
-            ASSERT(ARRAY_SIZE(InstData_LinePos) == ARRAY_SIZE(InstData_LineColors));
-            for (int Idx = 0; Idx < ARRAY_SIZE(InstData_LinePos); Idx++)
-            {
-                Draw2D.AddLine(InstData_LinePos[Idx], InstData_LineColors[Idx]);
-            }
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-
-            DrawMeshInstanced
-            (
-                DX_ImmContext,
-                DrawStateInstRectColorRotation,
-                MeshInstStateRectRotation,
-                Draw2D.RotationColorBatchCmds.Num,
-                Draw2D.RotationColorBatchCmds.Data
-            );
-        }
 
         if (bDrawTriangle)
         { // Draw triangle
@@ -456,39 +338,30 @@ namespace Leviathan
             DrawMesh(DX_ImmContext, DrawStateColor, MeshStateCube);
         }
 
+        if (bDrawInstLines)
+        {
+            ASSERT(ARRAY_SIZE(InstData_LinePos) == ARRAY_SIZE(InstData_LineColors));
+            for (int Idx = 0; Idx < ARRAY_SIZE(InstData_LinePos); Idx++)
+            {
+                Draw2D.AddLine(InstData_LinePos[Idx], InstData_LineColors[Idx]);
+            }
+        }
+
         if (bDrawHandmadeText)
         {
-            DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
-
             v2f TextOrigin{ AppWidth / 2.0f, AppHeight / 2.0f };
             const float TextScale = 300.0f;
             const char TextMsg[] = "HELLO WORLD";
-            HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextMsg, ARRAY_SIZE(TextMsg) - 1);
-
             const char TextRow0[] = "ABCDEFGHIJKL";
             const char TextRow1[] = "MNOPQRSTUVWX";
             const char TextRow2[] = "YZ0123456789";
+            HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextMsg, ARRAY_SIZE(TextMsg) - 1);
             TextOrigin.Y -= 60.0f;
             HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextRow0, ARRAY_SIZE(TextRow0) - 1);
             TextOrigin.Y -= 60.0f;
             HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextRow1, ARRAY_SIZE(TextRow1) - 1);
             TextOrigin.Y -= 60.0f;
             HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextRow2, ARRAY_SIZE(TextRow2) - 1);
-
-            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-            SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(HandmadeFontTextureSRV), HandmadeFontTextureSRV);
-
-            DrawMeshInstanced
-            (
-                DX_ImmContext,
-                DrawStateInstRectTexture,
-                MeshInstStateRect,
-                Draw2D.TextBatchCmds.Num,
-                Draw2D.TextBatchCmds.Data
-            );
         }
 
         if (bDrawInstRotationDemo)
@@ -540,16 +413,34 @@ namespace Leviathan
 
             }
         }
+
+        DrawBatch2D(Draw2D, LvTestTexture.SRV, true);
+    }
+
+    void DrawBatch2D(BatchDraw2D& Draw2D, ID3D11ShaderResourceView* TextureSRV, bool bClear)
+    {
+        DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+        DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
+        UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
+        UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
+
+        ID3D11Buffer* World_ViewProjBuffers[] = { DX_WorldBuffer, DX_ViewProjBuffer };
+        SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
+
+        // Color:
+        if (Draw2D.ColorBatchCmds.Num > 0)
+        {
+            DrawMeshInstanced
+            (
+                DX_ImmContext,
+                DrawStateInstRectColor,
+                MeshInstStateRect,
+                Draw2D.ColorBatchCmds.Num,
+                Draw2D.ColorBatchCmds.Data
+            );
+        }
         if (Draw2D.RotationColorBatchCmds.Num > 0)
         {
-            DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
-            DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-
-            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-
             DrawMeshInstanced
             (
                 DX_ImmContext,
@@ -559,14 +450,30 @@ namespace Leviathan
                 Draw2D.RotationColorBatchCmds.Data
             );
         }
+
+        // Texture:
+        DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
+        if (Draw2D.TextureBatchCmds.Num > 0) { } // TODO:
+        if (Draw2D.TextBatchCmds.Num > 0)
+        {
+            ASSERT(HandmadeText.LvTex2D.SRV);
+            SetShaderResourceViews(DX_ImmContext, 1, &HandmadeText.LvTex2D.SRV);
+
+            DrawMeshInstanced
+            (
+                DX_ImmContext,
+                DrawStateInstRectTexture,
+                MeshInstStateRect,
+                Draw2D.TextBatchCmds.Num,
+                Draw2D.TextBatchCmds.Data
+            );
+        }
         if (Draw2D.RotationTextureBatchCmds.Num > 0)
         {
-            DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
-            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-            SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
+            if (TextureSRV)
+            {
+                SetShaderResourceViews(DX_ImmContext, 1, &TextureSRV);
+            }
 
             DrawMeshInstanced
             (
@@ -577,6 +484,7 @@ namespace Leviathan
                 Draw2D.RotationTextureBatchCmds.Data
             );
         }
+        if (bClear) { Draw2D.Clear(); }
     }
 
     void Graphics::Init()
