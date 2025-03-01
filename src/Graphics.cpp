@@ -275,12 +275,13 @@ namespace Leviathan
         ID3D11SamplerState* DefaultSampler[] = { DX_DefaultSamplerState };
         ID3D11ShaderResourceView* TestTextureSRV[] = { LvTestTexture.SRV };
 
+        UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
+
         if (bDrawTriangle)
         { // Draw triangle
             DX_ImmContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
             m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(256.0f, -256.0f, 0.0f);
             UpdateShaderWorld(DX_ImmContext, &TriangleWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
 
             SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
 
@@ -292,7 +293,6 @@ namespace Leviathan
             DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
             m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(+256.0f, +256.0f, 0.0f);
             UpdateShaderWorld(DX_ImmContext, &TexQuadWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
 
             SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
             SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
@@ -305,7 +305,6 @@ namespace Leviathan
         { // Draw Instanced Rects
             DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
             UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
-            UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
 
             SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
             SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
@@ -579,14 +578,15 @@ namespace Leviathan
         Instanced2DDepthStencilStateDesc.DepthEnable = TRUE;
         Instanced2DDepthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
         Instanced2DDepthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+        //Instanced2DDepthStencilStateDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
         Instanced2DDepthStencilStateDesc.StencilEnable = FALSE;
         DX_Device->CreateDepthStencilState(&Instanced2DDepthStencilStateDesc, &DX_Draw2DDepthStencilState);
 
         { // AlphaBlendState:
             D3D11_RENDER_TARGET_BLEND_DESC AlphaRTBlendDesc = {};
             AlphaRTBlendDesc.BlendEnable = TRUE;
-            AlphaRTBlendDesc.SrcBlend = D3D11_BLEND_SRC_COLOR;
-            AlphaRTBlendDesc.DestBlend = D3D11_BLEND_DEST_COLOR;
+            AlphaRTBlendDesc.SrcBlend = D3D11_BLEND_SRC_ALPHA;
+            AlphaRTBlendDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
             AlphaRTBlendDesc.BlendOp = D3D11_BLEND_OP_ADD;
             AlphaRTBlendDesc.SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
             AlphaRTBlendDesc.DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
