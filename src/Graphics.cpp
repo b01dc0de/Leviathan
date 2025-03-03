@@ -216,7 +216,7 @@ namespace Leviathan
 
     constexpr int DefaultSize_BatchDraw2D = 1024;
     static bool bDrawGame = true;
-    static bool bForceDrawDebugDemo = true;
+    static bool bForceDrawDebugDemo = false;
     static bool bDrawUI = true;
     m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
     constexpr UINT DefaultSampleMask = 0xFFFFFFFF;

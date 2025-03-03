@@ -44,8 +44,8 @@ namespace Leviathan
         }
     }
 
-    bool bVisualizeInput = true;
-    bool bDrawTimeStats = true;
+    bool bVisualizeInput = false;
+    bool bDrawTimeStats = false;
 
     void UserInterface::Draw(ID2D1RenderTarget* In2DRT, BatchDraw2D& Draw2D)
     {
