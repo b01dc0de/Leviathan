@@ -70,3 +70,4 @@ namespace Leviathan
 using Leviathan::BatchDraw2D;
 
 #endif // LEVIATHAN_BATCHDRAW2D_H
+

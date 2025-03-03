@@ -99,3 +99,4 @@ namespace Leviathan
         SafeRelease(D2_BlackBrush);
     }
 }
+

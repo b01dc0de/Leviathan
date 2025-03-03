@@ -149,3 +149,4 @@ namespace Leviathan
 }
 
 #endif // LEVIATHAN_MATH_H
+

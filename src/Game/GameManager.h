@@ -12,3 +12,4 @@ struct GameManager
 };
 
 #endif // GAME_GAMEMANAGER_H
+

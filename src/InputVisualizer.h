@@ -15,3 +15,4 @@ namespace Leviathan
 }
 
 #endif // LEVIATHAN_INPUTVISUALIZER_H
+

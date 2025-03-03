@@ -13,3 +13,4 @@ namespace Leviathan
 }
 
 #endif // LEVIATHAN_PERFORMANCEGRAPH_H
+

@@ -14,3 +14,4 @@ namespace Leviathan
 }
 
 #endif // LEVIATHAN_CLOCK_H
+

@@ -917,3 +917,4 @@ namespace Leviathan
         SafeRelease(DX_Device);
     }
 }
+

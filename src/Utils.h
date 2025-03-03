@@ -35,3 +35,4 @@ namespace Leviathan
 }
 
 #endif // LEVIATHAN_UTILS_H
+

@@ -10,6 +10,9 @@
     <Filter Include="src\Game">
       <UniqueIdentifier>{2a7e032a-a3ef-4381-9cb6-1ee097ac686c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\UnityBuild">
+      <UniqueIdentifier>{eedcef4a-e1b8-4bd7-9966-a11a878426aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Leviathan.cpp">
@@ -71,6 +74,9 @@
     </ClCompile>
     <ClCompile Include="src\Fonts.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UnityBuildMain.cpp">
+      <Filter>src\UnityBuild</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
