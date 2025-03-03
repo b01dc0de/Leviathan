@@ -367,7 +367,6 @@ namespace Leviathan
         {
             constexpr int RotationDemoNum = 12;
             constexpr float RectSize = 50.0f;
-            constexpr float fTau = 3.141592653589793f * 2.0f;
             constexpr float CircleSize = 200.0f;
             const v2f Origin{ AppWidth / 2.0f, AppHeight * 0.75f };
             RectF Rect = { Origin.X, Origin.Y, RectSize, RectSize };
@@ -376,7 +375,7 @@ namespace Leviathan
             static bool bDrawCoolRotations = true;
             for (int Idx = 0; Idx < RotationDemoNum; Idx++)
             {
-                float CurrAngle = (float)Idx / (float)RotationDemoNum * fTau;
+                float CurrAngle = (float)Idx / (float)RotationDemoNum * fTAU;
                 RectF CurrRect = Rect;
                 CurrRect.PosX += cosf(CurrAngle * fTime) * CircleSize * sinf(fTime);
                 CurrRect.PosY += sinf(CurrAngle * fTime) * CircleSize * cosf(-fTime);

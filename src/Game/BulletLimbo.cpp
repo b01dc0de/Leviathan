@@ -32,18 +32,14 @@ namespace Game
     {
         v2f LeftStick = GamepadState::GetLeftStick();
         v2f RightStick = GamepadState::GetRightStick();
-        bool bLeftStick = StickInputNotDead(LeftStick);
-        bool bRightStick = StickInputNotDead(RightStick);
-        if (bLeftStick)
-        {
-            PlayerPos = PlayerPos + (LeftStick * PlayerSpeed);
-        }
+        PlayerPos = PlayerPos + (LeftStick * PlayerSpeed);
         if (GamepadState::GetButton(LV_GAMEPAD_RIGHT_SHOULDER)) { }
-        else if (bRightStick) { PlayerAngle = atan2f(RightStick.Y, RightStick.X); }
-        else if (bLeftStick) { PlayerAngle = atan2f(LeftStick.Y, LeftStick.X); }
+        else if (Length(RightStick) > 0.01f){ PlayerAngle = atan2f(RightStick.Y, RightStick.X); }
+        else if (Length(LeftStick) > 0.025f) { PlayerAngle = atan2f(LeftStick.Y, LeftStick.X); }
     }
     void BulletLimboState::Draw(BatchDraw2D& Draw2D)
     {
+        constexpr float PlayerAngleVisualOffset = -fPI / 4.0f;
         float fOneThird = 1.0f / 3.0f;
         RectF PlayerTexRect{ 0.0f, 0.0f, fOneThird, 1.0f };
         RectF EnemyTexRect{ fOneThird, 0.0f, fOneThird, 1.0f };
@@ -52,7 +48,7 @@ namespace Game
         (
             RectF{ PlayerPos.X, PlayerPos.Y, DrawInfo.PlayerSize, DrawInfo.PlayerSize},
             PlayerTexRect,
-            PlayerAngle
+            PlayerAngle + PlayerAngleVisualOffset
         );
     }
     void BulletLimboState::Init()
