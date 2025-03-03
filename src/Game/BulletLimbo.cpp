@@ -16,10 +16,6 @@ namespace Game
         float PlayerAngle;
         float PlayerSpeed;
 
-        LvTexture2D Sprite_Player;
-        LvTexture2D Sprite_Bullet;
-        LvTexture2D Sprite_Enemy;
-
         void Update();
         void Draw(BatchDraw2D& Draw2D);
         void Init();
@@ -49,9 +45,9 @@ namespace Game
     void BulletLimboState::Draw(BatchDraw2D& Draw2D)
     {
         float fOneThird = 1.0f / 3.0f;
-        RectF PlayerTexRect{ 0.0f, 0.0f, fOneThird, 1.0f};
-        RectF EnemyTexRect{ fOneThird, 0.0f, fOneThird, 1.0f};
-        RectF BulletTexRect{ fOneThird * 2.0f, 0.0f, fOneThird, 1.0f};
+        RectF PlayerTexRect{ 0.0f, 0.0f, fOneThird, 1.0f };
+        RectF EnemyTexRect{ fOneThird, 0.0f, fOneThird, 1.0f };
+        RectF BulletTexRect{ fOneThird * 2.0f, 0.0f, fOneThird, 1.0f };
         Draw2D.AddRect
         (
             RectF{ PlayerPos.X, PlayerPos.Y, DrawInfo.PlayerSize, DrawInfo.PlayerSize},

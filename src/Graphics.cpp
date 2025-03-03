@@ -222,6 +222,8 @@ namespace Leviathan
     constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
     void Graphics::Draw()
     {
+        if (KeyboardState::GetKey(LV_KEY_F3)) { bForceDrawDebugDemo = !bForceDrawDebugDemo; }
+
         Draw2D.Clear();
 
         DX_ImmContext->RSSetState(DX_RasterizerState);
