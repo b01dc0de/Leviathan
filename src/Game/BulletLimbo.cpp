@@ -48,11 +48,14 @@ namespace Game
     }
     void BulletLimboState::Draw(BatchDraw2D& Draw2D)
     {
-        RectF FullTexRect{ 0.0f, 0.0f, 1.0f, 1.0f };
+        float fOneThird = 1.0f / 3.0f;
+        RectF PlayerTexRect{ 0.0f, 0.0f, fOneThird, 1.0f};
+        RectF EnemyTexRect{ fOneThird, 0.0f, fOneThird, 1.0f};
+        RectF BulletTexRect{ fOneThird * 2.0f, 0.0f, fOneThird, 1.0f};
         Draw2D.AddRect
         (
             RectF{ PlayerPos.X, PlayerPos.Y, DrawInfo.PlayerSize, DrawInfo.PlayerSize},
-            FullTexRect,
+            PlayerTexRect,
             PlayerAngle
         );
     }
@@ -61,10 +64,6 @@ namespace Game
         PlayerPos = { (float)AppWidth / 2.0f, (float)AppHeight / 2.0f };
         PlayerAngle = 0.0f;
         PlayerSpeed = 1.0f;
-
-        Sprite_Player;
-        Sprite_Bullet;
-        Sprite_Enemy;
     }
     void BulletLimboState::Term()
     {

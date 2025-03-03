@@ -44,9 +44,7 @@ namespace Leviathan
         MeshInstStateT MeshInstStateRect;
         MeshInstStateT MeshInstStateRectRotation;
 
-        LvTexture2D BulletLimboPlayer;
-        LvTexture2D BulletLimboBullet;
-        LvTexture2D BulletLimboEnemy;
+        LvSpriteSheet BulletLimboSpriteSheet;
 
         LvTexture2D LvDebugTexture;
         LvTexture2D LvTestTexture;
@@ -247,7 +245,7 @@ namespace Leviathan
         if (bDrawGame)
         {
             GameManager::Draw(Draw2D);
-            DrawBatch2D(Draw2D, BulletLimboPlayer.SRV, true);
+            DrawBatch2D(Draw2D, BulletLimboSpriteSheet.LvTex.SRV, true);
         }
         if (bDrawUI)
         {
@@ -578,7 +576,6 @@ namespace Leviathan
         Instanced2DDepthStencilStateDesc.DepthEnable = TRUE;
         Instanced2DDepthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
         Instanced2DDepthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-        //Instanced2DDepthStencilStateDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
         Instanced2DDepthStencilStateDesc.StencilEnable = FALSE;
         DX_Device->CreateDepthStencilState(&Instanced2DDepthStencilStateDesc, &DX_Draw2DDepthStencilState);
 
@@ -850,11 +847,7 @@ namespace Leviathan
 
         UserInterface::Init(D2_RenderTarget);
 
-        BulletLimboPlayer = LoadTextureBMP("Assets/Sprites/BulletLimbo_Player.bmp", DX_Device);
-        BulletLimboBullet = LoadTextureBMP("Assets/Sprites/BulletLimbo_Bullet.bmp", DX_Device);
-        BulletLimboEnemy = LoadTextureBMP("Assets/Sprites/BulletLimbo_Enemy.bmp", DX_Device);
-
-        //LvFont JetBrainsMono = LoadOpenTypeFont_WIP();
+        BulletLimboSpriteSheet = LoadSpriteSheet("Assets/Sprites/BulletLimbo_SpriteSheet.bmp", DX_Device, 1, 3);
     }
 
     void Graphics::Term()

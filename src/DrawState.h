@@ -3,6 +3,7 @@
 
 #include "Leviathan.h"
 #include "Image.h"
+#include "Draw2D.h"
 
 namespace Leviathan
 {
@@ -113,10 +114,22 @@ namespace Leviathan
     LvTexture2D LoadTextureFromImage(ImageT& Image, ID3D11Device* InDevice);
     LvTexture2D LoadTextureBMP(const char* Filename, ID3D11Device* InDevice);
 
+    struct LvSpriteSheet
+    {
+        LvTexture2D LvTex;
+        int NumRows = 0;
+        int NumCols = 0;
+        int RectCount = 0;
+        RectF* RectUVs = nullptr;
+    };
+
+    LvSpriteSheet LoadSpriteSheet(const char* Filename, ID3D11Device* InDevice, int Rows, int Cols);
+
     void SafeRelease(MeshStateT& InMeshState);
     void SafeRelease(MeshInstStateT& InMeshInstState);
     void SafeRelease(DrawStateT& InDrawState);
     void SafeRelease(LvTexture2D& InLvTex2D);
+    void SafeRelease(LvSpriteSheet& InSpriteSheet);
 }
 
 #endif // LEVIATHAN_DRAWSTATE_H

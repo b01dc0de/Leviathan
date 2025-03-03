@@ -419,6 +419,45 @@ namespace Leviathan
         return Result;
     }
 
+    RectF* InitRectUVs(int Rows, int Cols)
+    {
+        ASSERT(Rows > 0);
+        ASSERT(Cols > 0);
+        int RectCount = Rows * Cols;
+        RectF* RectUVs = new RectF[RectCount];
+        float RectHeight = 1.0f / Rows;
+        float RectWidth = 1.0f / Cols;
+        int RectIdx = 0;
+        for (int RowIdx = 0; RowIdx < Rows; RowIdx++)
+        {
+            for (int ColIdx = 0; ColIdx < Cols; ColIdx++)
+            {
+                RectUVs[RectIdx] = RectF
+                {
+                    RectWidth * ColIdx, RectHeight * RowIdx,
+                    RectWidth, RectHeight
+                };
+            }
+        }
+        return RectUVs;
+    }
+
+    LvSpriteSheet LoadSpriteSheet(const char* Filename, ID3D11Device* InDevice, int Rows, int Cols)
+    {
+        LvSpriteSheet Result = {};
+
+        Result.LvTex = LoadTextureBMP(Filename, InDevice);
+        if (Result.LvTex.Texture)
+        {
+            Result.NumRows = Rows;
+            Result.NumCols = Cols;
+            Result.RectCount = Rows * Cols;
+            Result.RectUVs = InitRectUVs(Rows, Cols);
+        }
+
+        return Result;
+    }
+
     void SafeRelease(MeshStateT& InMeshState)
     {
         SafeRelease(InMeshState.VxBuffer);
@@ -443,5 +482,15 @@ namespace Leviathan
     {
         SafeRelease(InLvTex2D.Texture);
         SafeRelease(InLvTex2D.SRV);
+    }
+
+    void SafeRelease(LvSpriteSheet& InSpriteSheet)
+    {
+        SafeRelease(InSpriteSheet.LvTex);
+        if (InSpriteSheet.RectUVs)
+        {
+            delete[] InSpriteSheet.RectUVs;
+            InSpriteSheet.RectUVs = nullptr;
+        }
     }
 }
