@@ -7,10 +7,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Leviathan", "Leviathan.vcxp
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_Unity|x64 = Debug_Unity|x64
 		Debug|x64 = Debug|x64
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A2FB232F-5F0C-4F77-ABBC-94E66AA113FF}.Debug_Unity|x64.ActiveCfg = Debug_Unity|x64
+		{A2FB232F-5F0C-4F77-ABBC-94E66AA113FF}.Debug_Unity|x64.Build.0 = Debug_Unity|x64
 		{A2FB232F-5F0C-4F77-ABBC-94E66AA113FF}.Debug|x64.ActiveCfg = Debug|x64
 		{A2FB232F-5F0C-4F77-ABBC-94E66AA113FF}.Debug|x64.Build.0 = Debug|x64
 		{A2FB232F-5F0C-4F77-ABBC-94E66AA113FF}.Release|x64.ActiveCfg = Release|x64
@@ -18,5 +21,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6757B39D-C2FB-4FC5-89C8-B89896D9D271}
 	EndGlobalSection
 EndGlobal

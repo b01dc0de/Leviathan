@@ -387,6 +387,7 @@ namespace Leviathan
                 Draw2D.AddRect(CurrRect, TexRect, CurrAngle);
             }
 
+            if (0)
             {
                 const v2f TestOrigin{ 100.0f, 100.0f };
                 for (int Idx = 0; Idx < 4; Idx++)

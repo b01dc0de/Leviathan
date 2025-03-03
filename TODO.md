@@ -1,5 +1,17 @@
-- [ ] Allow for InstRects to be rotated
-- [ ] Determine better way of handling draw order
-- [ ] Fix alpha + blend states inconsistencies
-- [ ] Wireframe debug drawing
-- [ ] TrueTypeFont support
+- Graphics
+    - [ ] Determine better way of handling draw order
+    - [ ] Wireframe debug drawing
+    - [ ] TT/OT font support
+    - [ ] Implement GraphicsEntity as graphics layer for games
+    - [ ] Better graphics interface (Device, DeviceContext, management of DxHandles, etc.)
+    - [ ] 
+
+- GameEntity
+    - Convert games to use GameEntity system
+        - [ ] Tetris
+        - [ ] Snake
+        - [ ] BulletLimbo
+
+- Basic 3D Meshes
+    - Sphere
+    - Cylinder

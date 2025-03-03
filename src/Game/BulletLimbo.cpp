@@ -70,12 +70,6 @@ namespace Game
         }
     }
 
-    bool StickInputNotDead(v2f& Stick)
-    {
-        constexpr float fDeadzone = 0.01f;
-        return Abs(Stick.X) > fDeadzone || Abs(Stick.Y) > fDeadzone;
-    }
-
     void BulletLimboState::Update()
     {
         PlayerBulletManager::Update();
@@ -95,6 +89,7 @@ namespace Game
             LastBulletTime = CurrTime;
         }
     }
+
     void BulletLimboState::Draw(BatchDraw2D& Draw2D)
     {
         constexpr float PlayerAngleVisualOffset = -fPI / 4.0f;

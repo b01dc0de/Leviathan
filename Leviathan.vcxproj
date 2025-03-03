@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug_Unity|x64">
+      <Configuration>Debug_Unity</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -24,6 +28,12 @@
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -39,11 +49,19 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)build\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(Configuration)\inter\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">
     <OutDir>$(SolutionDir)build\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\inter\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
@@ -54,6 +72,19 @@
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>D3D11.lib;D3DCompiler.lib;DXGI.lib;D2d1.lib;Dwrite.lib;xinput.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
@@ -84,26 +115,71 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Draw2D.cpp" />
-    <ClCompile Include="src\Camera.cpp" />
-    <ClCompile Include="src\Clock.cpp" />
-    <ClCompile Include="src\DrawState.cpp" />
-    <ClCompile Include="src\Engine.cpp" />
-    <ClCompile Include="src\Fonts.cpp" />
-    <ClCompile Include="src\GameEntity.cpp" />
-    <ClCompile Include="src\Game\BulletLimbo.cpp" />
-    <ClCompile Include="src\Game\GameManager.cpp" />
-    <ClCompile Include="src\Game\Snake.cpp" />
-    <ClCompile Include="src\Game\Tetris.cpp" />
-    <ClCompile Include="src\Graphics.cpp" />
-    <ClCompile Include="src\Image.cpp" />
-    <ClCompile Include="src\Input.cpp" />
-    <ClCompile Include="src\InputVisualizer.cpp" />
-    <ClCompile Include="src\Leviathan.cpp" />
-    <ClCompile Include="src\Math.cpp" />
-    <ClCompile Include="src\PerformanceGraph.cpp" />
-    <ClCompile Include="src\UserInterface.cpp" />
-    <ClCompile Include="src\Utils.cpp" />
+    <ClCompile Include="src\Draw2D.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Camera.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Clock.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\DrawState.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Engine.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Fonts.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\GameEntity.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Game\BulletLimbo.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Game\GameManager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Game\Snake.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Game\Tetris.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Graphics.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Image.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Input.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\InputVisualizer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Leviathan.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Math.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\PerformanceGraph.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\UnityBuildMain.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\UserInterface.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Utils.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Array.h" />
@@ -131,10 +207,12 @@
   <ItemGroup>
     <FxCompile Include="src\hlsl\BaseShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="src\hlsl\InstRectShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
