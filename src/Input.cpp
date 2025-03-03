@@ -507,7 +507,7 @@ namespace Leviathan
         -GamepadState::SecondsPerConnectCheck,
         -GamepadState::SecondsPerConnectCheck
     };
-    bool GamepadState::Buttons[][LV_GAMEPAD_BUTTON_COUNT] = { };
+    bool GamepadState::Buttons[][LV_GAMEPAD_BUTTON_COUNT] = { {}, {}, {}, {} };
     float GamepadState::LeftStickX[] = { 0.0f, 0.0f, 0.0f, 0.0f };
     float GamepadState::LeftStickY[] = { 0.0f, 0.0f, 0.0f, 0.0f };
     float GamepadState::RightStickX[] = {0.0f, 0.0f, 0.0f, 0.0f};

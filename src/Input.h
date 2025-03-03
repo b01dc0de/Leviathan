@@ -156,7 +156,7 @@ namespace Leviathan
     {
         static constexpr int NumGamepads = 4;
         static constexpr float StickDeadzone = 0.025f;
-        static constexpr double SecondsPerConnectCheck = 8.0;
+        static constexpr double SecondsPerConnectCheck = 5.0;
         static bool bActive[NumGamepads];
         static double LastConnectCheck[NumGamepads];
         static bool Buttons[NumGamepads][LV_GAMEPAD_BUTTON_COUNT];

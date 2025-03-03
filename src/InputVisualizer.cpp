@@ -326,7 +326,7 @@ namespace Leviathan
                 ButtonPos[ButtonIdx].Y * GamepadRegionSize.Y * Scale + Origin.Y - AdjFaceButtonsSize,
                 AdjFaceButtonsSize, AdjFaceButtonsSize
             };
-            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx)) { Draw2D.AddRect(ButtonQuad, ColorFront); }
+            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx, GamepadIdx)) { Draw2D.AddRect(ButtonQuad, ColorFront); }
             else { Draw2D.AddBox(ButtonQuad, ColorFront, InputVisualizer::LineWidth); }
         }
         for (int ButtonIdx = LV_GAMEPAD_START; ButtonIdx < LV_GAMEPAD_LEFT_THUMB; ButtonIdx++)
@@ -338,13 +338,13 @@ namespace Leviathan
                 ControlButtonsSize.X * GamepadRegionSize.X * Scale,
                 ControlButtonsSize.Y * GamepadRegionSize.X * Scale
             };
-            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx)) { Draw2D.AddRect(ButtonQuad, ColorFront); }
+            if (GamepadState::GetButton((LvGamepadButton)ButtonIdx, GamepadIdx)) { Draw2D.AddRect(ButtonQuad, ColorFront); }
             else { Draw2D.AddBox(ButtonQuad, ColorFront, InputVisualizer::LineWidth); }
         }
 
         v2f AdjTriggerSize{ TriggerButtonsSize.X * AdjRegionSize.X, TriggerButtonsSize.Y * AdjRegionSize.Y };
-        float LTrigger = GamepadState::GetLeftTrigger();
-        float RTrigger = GamepadState::GetRightTrigger();
+        float LTrigger = GamepadState::GetLeftTrigger(GamepadIdx);
+        float RTrigger = GamepadState::GetRightTrigger(GamepadIdx);
         { // Triggers
             static constexpr float TriggerDeadzone = 0.05f;
             RectF LeftTriggerQuad
@@ -372,8 +372,8 @@ namespace Leviathan
             }
         }
 
-        v2f LStick = GamepadState::GetLeftStick();
-        v2f RStick = GamepadState::GetRightStick();
+        v2f LStick = GamepadState::GetLeftStick(GamepadIdx);
+        v2f RStick = GamepadState::GetRightStick(GamepadIdx);
         { // Sticks
             float AdjStickSize = ThumbStickSize * AdjRegionSize.X;
 
@@ -392,9 +392,17 @@ namespace Leviathan
 
             fColor LeftLineColor = ColorFront;
             fColor RightLineColor = ColorFront;
-            if (GamepadState::GetButton(LV_GAMEPAD_LEFT_THUMB)) { Draw2D.AddRect(LeftStickQuad, ColorFront); LeftLineColor = ColorBack; }
+            if (GamepadState::GetButton(LV_GAMEPAD_LEFT_THUMB, GamepadIdx))
+            {
+                Draw2D.AddRect(LeftStickQuad, ColorFront);
+                LeftLineColor = ColorBack;
+            }
             else { Draw2D.AddBox(LeftStickQuad, ColorFront, InputVisualizer::LineWidth); }
-            if (GamepadState::GetButton(LV_GAMEPAD_RIGHT_THUMB)) { Draw2D.AddRect(RightStickQuad, ColorFront); RightLineColor = ColorBack; }
+            if (GamepadState::GetButton(LV_GAMEPAD_RIGHT_THUMB, GamepadIdx))
+            {
+                Draw2D.AddRect(RightStickQuad, ColorFront);
+                RightLineColor = ColorBack;
+            }
             else { Draw2D.AddBox(RightStickQuad, ColorFront, InputVisualizer::LineWidth); }
 
             v2f LeftStickCenter
