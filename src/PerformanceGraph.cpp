@@ -8,9 +8,12 @@ namespace Leviathan
         constexpr float Ms16_Baseline = 0.5f;
         constexpr float Ms33_Baseline = 0.75f;
         constexpr int NumSamples = 120;
+        constexpr int NumFramesPerSample = 10;
         constexpr int NumGraphLines = 4;
 
         float FrameTimeSamples[NumSamples];
+        float NextSampleSum = 0.0f;
+        int CurrNumSamples = 0;
         int LastSampleIdx = 0;
 
         void Init();
@@ -29,8 +32,18 @@ namespace Leviathan
 
     void PerformanceGraph::Tick()
     {
-        LastSampleIdx = (LastSampleIdx + 1) % NumSamples;
-        FrameTimeSamples[LastSampleIdx] = Clock::DeltaTime();
+        NextSampleSum += Clock::DeltaTime();
+        CurrNumSamples++;
+
+        if (CurrNumSamples == NumFramesPerSample)
+        {
+            LastSampleIdx = (LastSampleIdx + 1) % NumSamples;
+
+            FrameTimeSamples[LastSampleIdx] = NextSampleSum / NumFramesPerSample;
+
+            NextSampleSum = 0.0f;
+            CurrNumSamples = 0;
+        }
     }
 
     void PerformanceGraph::Draw(BatchDraw2D& Draw2D, v2f Origin, float Scale)
