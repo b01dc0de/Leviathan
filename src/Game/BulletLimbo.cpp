@@ -9,7 +9,6 @@ namespace Game
         constexpr struct DrawInfoT
         {
             float PlayerSize = 25.0f;
-            float OutlineSize = 2.0f;
             float BulletSize = 15.0f;
         } DrawInfo;
         v2f PlayerPos;
@@ -39,21 +38,22 @@ namespace Game
         static Array<BulletData> Bullets;
         static void SpawnBullet(v2f Pos, v2f Vel, double SpawnTime);
         static void Update();
+        static bool IsOffscreen(v2f Pos);
     };
 
     Array<BulletData> PlayerBulletManager::Bullets{};
 
+    bool PlayerBulletManager::IsOffscreen(v2f Pos)
+    {
+        return (Pos.X + BulletSize) < 0.0f ||
+            AppWidth < (Pos.X - BulletSize) ||
+            (Pos.Y + BulletSize) < 0.0f ||
+            AppHeight < (Pos.Y - BulletSize);
+    }
+
     void PlayerBulletManager::SpawnBullet(v2f Pos, v2f Vel, double SpawnTime)
     {
         Bullets.Add(BulletData{Pos, Vel, SpawnTime});
-    }
-
-    bool IsOffscreen(v2f Pos)
-    {
-        return 0.0f < (Pos.X + PlayerBulletManager::BulletSize) ||
-            (Pos.X - PlayerBulletManager::BulletSize) > AppWidth ||
-            0.0f < (Pos.Y + PlayerBulletManager::BulletSize) ||
-            (Pos.Y - PlayerBulletManager::BulletSize) > AppHeight;
     }
 
     void PlayerBulletManager::Update()
@@ -63,7 +63,7 @@ namespace Game
         {
             BulletData& CurrData = Bullets[BulletIdx];
             CurrData.Pos = CurrData.Pos + (CurrData.Vel * BaseBulletSpeed);
-            if (CurrTime - Bullets[BulletIdx].SpawnTime > BulletLifetime/*|| IsOffscreen(Bullets[BulletIdx].Pos)*/ )
+            if (CurrTime - Bullets[BulletIdx].SpawnTime > BulletLifetime|| IsOffscreen(Bullets[BulletIdx].Pos))
             {
                 Bullets.Remove(BulletIdx--);
             }
