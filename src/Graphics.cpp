@@ -19,6 +19,7 @@ namespace Leviathan
         ID3D11Texture2D* DX_Backbuffer = nullptr;
         ID3D11RenderTargetView* DX_RenderTargetView = nullptr;
         ID3D11RasterizerState* DX_RasterizerState = nullptr;
+        ID3D11RasterizerState* DX_WireframeRasterizerState = nullptr;
         ID3D11Texture2D* DX_DepthStencil = nullptr;
         ID3D11DepthStencilView* DX_DepthStencilView = nullptr;
         ID3D11DepthStencilState* DX_DefaultDepthStencilState = nullptr;
@@ -218,15 +219,18 @@ namespace Leviathan
     static bool bDrawGame = true;
     static bool bForceDrawDebugDemo = false;
     static bool bDrawUI = true;
+    static bool bEnableWireframeRaster = false;
     m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
     constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
     void Graphics::Draw()
     {
         if (KeyboardState::GetKey(LV_KEY_F3)) { bForceDrawDebugDemo = !bForceDrawDebugDemo; }
+        if (KeyboardState::GetKey(LV_KEY_F4)) { bEnableWireframeRaster = !bEnableWireframeRaster; }
 
         Draw2D.Clear();
 
-        DX_ImmContext->RSSetState(DX_RasterizerState);
+        if (bEnableWireframeRaster) { DX_ImmContext->RSSetState(DX_WireframeRasterizerState); }
+        else { DX_ImmContext->RSSetState(DX_RasterizerState); }
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
         DX_ImmContext->OMSetDepthStencilState(nullptr, 0);
         DX_ImmContext->OMSetRenderTargets(1, &DX_RenderTargetView, DX_DepthStencilView);
@@ -554,6 +558,11 @@ namespace Leviathan
         RasterDesc.MultisampleEnable = TRUE;
         RasterDesc.AntialiasedLineEnable = TRUE;
         DX_CHECK(DX_Device->CreateRasterizerState(&RasterDesc, &DX_RasterizerState));
+
+        D3D11_RASTERIZER_DESC WireframeRasterDesc = RasterDesc;
+        WireframeRasterDesc.FillMode = D3D11_FILL_WIREFRAME;
+        WireframeRasterDesc.CullMode = D3D11_CULL_NONE;
+        DX_CHECK(DX_Device->CreateRasterizerState(&WireframeRasterDesc, &DX_WireframeRasterizerState));
 
         D3D11_TEXTURE2D_DESC DepthDesc = {};
         DepthDesc.Width = AppWidth;
@@ -887,6 +896,7 @@ namespace Leviathan
         SafeRelease(DX_Backbuffer);
         SafeRelease(DX_RenderTargetView);
         SafeRelease(DX_RasterizerState);
+        SafeRelease(DX_WireframeRasterizerState);
         SafeRelease(DX_DepthStencil);
         SafeRelease(DX_DepthStencilView);
         SafeRelease(DX_Draw2DDepthStencilState);
