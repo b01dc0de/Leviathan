@@ -41,7 +41,7 @@ namespace Leviathan
 
         MeshStateT MeshStateTriangle;
         MeshStateT MeshStateCube;
-        MeshStateT MeshStateQuad;
+        MeshStateT MeshStateRect;
         MeshInstStateT MeshInstStateRect;
         MeshInstStateT MeshInstStateRectRotation;
 
@@ -60,96 +60,6 @@ namespace Leviathan
     }
 
 #define DX_UUID_HELPER(Type, Ptr) __uuidof(Type), (void**)&Ptr
-
-    struct VxMin
-    {
-        v4f Pos;
-    };
-
-    struct VxColor
-    {
-        v4f Pos;
-        v4f Col;
-    };
-
-    struct VxTexture
-    {
-        v4f Pos;
-        v2f TexUV;
-    };
-
-    VxColor Vertices_Triangle[] =
-    {
-        { {+0.0f, +0.5f, +0.5f, 1.0f}, {0.0f, 1.0f, 1.0f, 1.0f} },
-        { {-0.5f, -0.5f, +0.5f, 1.0f}, {1.0f, 0.0f, 1.0f, 1.0f} },
-        { {+0.5f, -0.5f, +0.5f, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f} },
-    };
-    unsigned int Indices_Triangle[] =
-    {
-        0, 1, 2
-    };
-
-    constexpr float fUnit = 1.0f;
-    VxColor Vertices_Cube[] =
-    {
-        {{-fUnit, +fUnit, +fUnit, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f}}, // 0
-        {{+fUnit, +fUnit, +fUnit, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f}}, // 1
-        {{-fUnit, -fUnit, +fUnit, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f}}, // 2
-        {{+fUnit, -fUnit, +fUnit, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // 3
-
-        {{-fUnit, +fUnit, -fUnit, 1.0f}, {0.0f, 1.0f, 1.0f, 1.0f}}, // 4
-        {{+fUnit, +fUnit, -fUnit, 1.0f}, {1.0f, 0.0f, 1.0f, 1.0f}}, // 5
-        {{-fUnit, -fUnit, -fUnit, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f}}, // 6
-        {{+fUnit, -fUnit, -fUnit, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}}, // 7
-    };
-    unsigned int Indices_Cube[] =
-    {
-        // Front
-        0, 2, 1,
-        1, 2, 3,
-        // Back
-        5, 7, 4,
-        4, 7, 6,
-        // Top
-        4, 0, 5,
-        5, 0, 1,
-        // Bottom
-        2, 6, 3,
-        3, 6, 7,
-        // Left
-        4, 6, 0,
-        0, 6, 2,
-        // Right
-        1, 3, 5,
-        5, 3, 7,
-    };
-
-    VxTexture Vertices_Rect[] =
-    {
-        { {-0.5f, +0.5f, +0.5f, +1.0f}, { 0.0f, 0.0f } },
-        { {+0.5f, +0.5f, +0.5f, +1.0f}, { 1.0f, 0.0f } },
-        { {-0.5f, -0.5f, +0.5f, +1.0f}, { 0.0f, 1.0f } },
-        { {+0.5f, -0.5f, +0.5f, +1.0f}, { 1.0f, 1.0f } },
-    };
-    VxMin Vertices_PlatonicRect[] =
-    {
-        { { 0.0f, 1.0f, +0.5f, +1.0f } },
-        { { 1.0f, 1.0f, +0.5f, +1.0f } },
-        { { 0.0f, 0.0f, +0.5f, +1.0f } },
-        { { 1.0f, 0.0f, +0.5f, +1.0f } },
-    };
-    VxMin Vertices_RotationRect[] =
-    {
-        {-0.5f, +0.5f, +0.5f, +1.0f},
-        {+0.5f, +0.5f, +0.5f, +1.0f},
-        {-0.5f, -0.5f, +0.5f, +1.0f},
-        {+0.5f, -0.5f, +0.5f, +1.0f},
-    };
-    unsigned int Indices_Rect[] =
-    {
-        0, 2, 1,
-        1, 2, 3
-    };
 
     struct SpriteTransform
     {
@@ -215,7 +125,6 @@ namespace Leviathan
     void DrawDebugDemo();
     void DrawBatch2D(BatchDraw2D& Draw2D, ID3D11ShaderResourceView* TextureSRV, bool bClear = false);
 
-    constexpr int DefaultSize_BatchDraw2D = 1024;
     static bool bDrawGame = true;
     static bool bForceDrawDebugDemo = false;
     static bool bDrawUI = true;
@@ -301,7 +210,7 @@ namespace Leviathan
             SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
             SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
 
-            DrawMesh(DX_ImmContext, DrawStateTexture, MeshStateQuad);
+            DrawMesh(DX_ImmContext, DrawStateTexture, MeshStateRect);
         }
         DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
 
@@ -741,8 +650,7 @@ namespace Leviathan
             );
         }
 
-        Draw2D.ColorBatchCmds.Reserve(DefaultSize_BatchDraw2D);
-        Draw2D.TextureBatchCmds.Reserve(DefaultSize_BatchDraw2D);
+        Draw2D.Init();
 
         D3D11_BUFFER_DESC WorldBufferDesc = {};
         WorldBufferDesc.ByteWidth = sizeof(m4f);
@@ -757,50 +665,11 @@ namespace Leviathan
         ViewProjBufferDesc.CPUAccessFlags = 0;
         DX_CHECK(DX_Device->CreateBuffer(&ViewProjBufferDesc, nullptr, &DX_ViewProjBuffer));
 
-        MeshStateTriangle = CreateMeshState
-        (
-            DX_Device,
-            sizeof(VxColor),
-            ARRAY_SIZE(Vertices_Triangle),
-            Vertices_Triangle,
-            ARRAY_SIZE(Indices_Triangle),
-            Indices_Triangle
-        );
-        MeshStateCube = CreateMeshState
-        (
-            DX_Device,
-            sizeof(VxColor),
-            ARRAY_SIZE(Vertices_Cube),
-            Vertices_Cube,
-            ARRAY_SIZE(Indices_Cube),
-            Indices_Cube
-        );
-
-        MeshInstStateRect = CreateMeshInstState
-        (
-            DX_Device,
-            sizeof(VxMin),
-            sizeof(InstRectColorData),
-            DefaultSize_BatchDraw2D,
-            ARRAY_SIZE(Vertices_PlatonicRect),
-            Vertices_PlatonicRect,
-            ARRAY_SIZE(Indices_Rect),
-            Indices_Rect
-        );
+        MeshStateTriangle = LoadMeshStateTriangle();
+        MeshStateCube = LoadMeshStateCube();
+        MeshInstStateRect = LoadMeshInstStateRect();
+        MeshInstStateRectRotation = LoadMeshInstStateRectRotation();
         ASSERT(sizeof(InstRectColorData) == sizeof(InstRectTextureData));
-
-        MeshInstStateRectRotation = CreateMeshInstState
-        (
-            DX_Device,
-            sizeof(VxMin),
-            sizeof(InstRectColorRotationData),
-            DefaultSize_BatchDraw2D,
-            ARRAY_SIZE(Vertices_RotationRect),
-            Vertices_RotationRect,
-            ARRAY_SIZE(Indices_Rect),
-            Indices_Rect,
-            D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST
-        );
 
         { // Default sampler state:
             D3D11_TEXTURE_ADDRESS_MODE SamplerAddressMode = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -825,15 +694,7 @@ namespace Leviathan
         //HandmadeText.Init(DX_Device, "Assets/HandmadeTextFont_0.bmp", 12, 6);
         HandmadeText.Init(DX_Device, "Assets/HandmadeTextFont_1.bmp", 12, 6);
 
-        MeshStateQuad = CreateMeshState
-        (
-            DX_Device,
-            sizeof(VxTexture),
-            ARRAY_SIZE(Vertices_Rect),
-            Vertices_Rect,
-            ARRAY_SIZE(Indices_Rect),
-            Indices_Rect
-        );
+        MeshStateRect = LoadMeshStateRect();
 
         { // Direct2D
             DX_CHECK(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &D2_Factory));
@@ -873,7 +734,7 @@ namespace Leviathan
 
         SafeRelease(MeshStateTriangle);
         SafeRelease(MeshStateCube);
-        SafeRelease(MeshStateQuad);
+        SafeRelease(MeshStateRect);
         SafeRelease(MeshInstStateRect);
         SafeRelease(MeshInstStateRectRotation);
 
@@ -915,6 +776,16 @@ namespace Leviathan
         }
 
         SafeRelease(DX_Device);
+    }
+
+    ID3D11Device* Graphics::Device()
+    {
+        return DX_Device;
+    }
+
+    ID3D11DeviceContext* Context()
+    {
+        return DX_ImmContext;
     }
 }
 

@@ -2,6 +2,15 @@
 
 namespace Leviathan
 {
+    void BatchDraw2D::Init()
+    {
+        ColorBatchCmds.Reserve(DefaultSize);
+        TextureBatchCmds.Reserve(DefaultSize);
+        TextBatchCmds.Reserve(DefaultSize);
+        RotationColorBatchCmds.Reserve(DefaultSize);
+        RotationTextureBatchCmds.Reserve(DefaultSize);
+    }
+
     void BatchDraw2D::Clear()
     {
         ColorBatchCmds.Empty();

@@ -17,6 +17,7 @@
     #include "Input.cpp"
     #include "InputVisualizer.cpp"
     #include "Math.cpp"
+    #include "MeshState.h"
     #include "PerformanceGraph.cpp"
     #include "UserInterface.cpp"
     #include "Utils.cpp"

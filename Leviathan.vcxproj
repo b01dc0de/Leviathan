@@ -166,6 +166,9 @@
     <ClCompile Include="src\Math.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\MeshState.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\PerformanceGraph.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -200,6 +203,7 @@
     <ClInclude Include="src\InputVisualizer.h" />
     <ClInclude Include="src\Leviathan.h" />
     <ClInclude Include="src\Math.h" />
+    <ClInclude Include="src\MeshState.h" />
     <ClInclude Include="src\PerformanceGraph.h" />
     <ClInclude Include="src\UserInterface.h" />
     <ClInclude Include="src\Utils.h" />

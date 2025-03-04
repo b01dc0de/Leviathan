@@ -55,6 +55,9 @@ namespace Leviathan
         Array<InstRectColorRotationData> RotationColorBatchCmds;
         Array<InstRectTextureRotationData> RotationTextureBatchCmds;
 
+        static constexpr int DefaultSize = 1024;
+
+        void Init();
         void Clear();
         void AddRect(const RectF& InRect, const fColor& InColor);
         void AddBox(const RectF& InRect, const fColor& InColor, float LineWeight = 1.0f);
