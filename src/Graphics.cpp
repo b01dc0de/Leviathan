@@ -190,24 +190,22 @@ namespace Leviathan
 
         UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
 
+        SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
+
         if (bDrawTriangle)
-        { // Draw triangle
+        {
             DX_ImmContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
             m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(256.0f, -256.0f, 0.0f);
             UpdateShaderWorld(DX_ImmContext, &TriangleWorld);
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
 
             DrawMesh(DX_ImmContext, DrawStateColor, MeshStateTriangle);
         }
 
         if (bDrawTexQuad)
-        { // Draw tex quad
+        {
             DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
             m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(+256.0f, +256.0f, 0.0f);
             UpdateShaderWorld(DX_ImmContext, &TexQuadWorld);
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
             SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
 
             DrawMesh(DX_ImmContext, DrawStateTexture, MeshStateRect);
@@ -215,11 +213,9 @@ namespace Leviathan
         DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
 
         if (bDrawInstRects)
-        { // Draw Instanced Rects
+        {
             DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
             UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
-
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
             SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
 
             DrawMeshInstanced
@@ -233,7 +229,7 @@ namespace Leviathan
         }
 
         if (bDrawCube)
-        { // Draw cube
+        {
             DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
 
             static float RotationX = 0.0f;

@@ -13,135 +13,162 @@
     <Filter Include="src\UnityBuild">
       <UniqueIdentifier>{eedcef4a-e1b8-4bd7-9966-a11a878426aa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Graphics">
+      <UniqueIdentifier>{0f1d0b9d-7df2-4376-a7c0-eef9aee2d2c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Input">
+      <UniqueIdentifier>{5242fc1a-b64b-4b4a-9473-09db8642a6d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Game\BulletLimbo">
+      <UniqueIdentifier>{1907bd64-66a5-4a5a-9796-0516cb1c5f23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Game\Tetris">
+      <UniqueIdentifier>{e5d43aab-0457-424e-a18b-902609d32e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Game\Snake">
+      <UniqueIdentifier>{34b8a0b4-4f0d-4fef-97f4-2c26f072207d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Math">
+      <UniqueIdentifier>{a56f8c32-9a4b-4dc7-b713-1dea235655f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Utils">
+      <UniqueIdentifier>{cb1aafa2-521a-462c-b6ee-51859e5dd5db}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Leviathan.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Graphics.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Math.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\Engine.cpp">
       <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Input.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UserInterface.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\InputVisualizer.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Camera.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\DrawState.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Image.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Game\Tetris.cpp">
-      <Filter>src\Game</Filter>
     </ClCompile>
     <ClCompile Include="src\Clock.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Draw2D.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Game\Snake.cpp">
-      <Filter>src\Game</Filter>
-    </ClCompile>
     <ClCompile Include="src\Game\GameManager.cpp">
       <Filter>src\Game</Filter>
     </ClCompile>
-    <ClCompile Include="src\Utils.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GameEntity.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PerformanceGraph.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Game\BulletLimbo.cpp">
-      <Filter>src\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Fonts.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\UnityBuildMain.cpp">
       <Filter>src\UnityBuild</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Draw2D.cpp">
+      <Filter>src\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DrawState.cpp">
+      <Filter>src\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics.cpp">
+      <Filter>src\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UserInterface.cpp">
+      <Filter>src\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Game\BulletLimbo.cpp">
+      <Filter>src\Game\BulletLimbo</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Game\Snake.cpp">
+      <Filter>src\Game\Snake</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Game\Tetris.cpp">
+      <Filter>src\Game\Tetris</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Fonts.cpp">
+      <Filter>src\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Image.cpp">
+      <Filter>src\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Input.cpp">
+      <Filter>src\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="src\InputVisualizer.cpp">
+      <Filter>src\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GameEntity.cpp">
+      <Filter>src\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math.cpp">
+      <Filter>src\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera.cpp">
+      <Filter>src\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utils.cpp">
+      <Filter>src\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PerformanceGraph.cpp">
+      <Filter>src\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshState.cpp">
+      <Filter>src\Graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Graphics.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Math.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\Engine.h">
       <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Input.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UserInterface.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\InputVisualizer.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Camera.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\DrawState.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Image.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Game\Tetris.h">
-      <Filter>src\Game</Filter>
     </ClInclude>
     <ClInclude Include="src\Clock.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Array.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Draw2D.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Game\Snake.h">
-      <Filter>src\Game</Filter>
-    </ClInclude>
     <ClInclude Include="src\Game\GameManager.h">
       <Filter>src\Game</Filter>
     </ClInclude>
-    <ClInclude Include="src\Utils.h">
-      <Filter>src</Filter>
+    <ClInclude Include="src\Draw2D.h">
+      <Filter>src\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="src\GameEntity.h">
-      <Filter>src</Filter>
+    <ClInclude Include="src\DrawState.h">
+      <Filter>src\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="src\PerformanceGraph.h">
-      <Filter>src</Filter>
+    <ClInclude Include="src\Graphics.h">
+      <Filter>src\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UserInterface.h">
+      <Filter>src\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="src\Game\BulletLimbo.h">
-      <Filter>src\Game</Filter>
+      <Filter>src\Game\BulletLimbo</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Game\Snake.h">
+      <Filter>src\Game\Snake</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Game\Tetris.h">
+      <Filter>src\Game\Tetris</Filter>
     </ClInclude>
     <ClInclude Include="src\Fonts.h">
-      <Filter>src</Filter>
+      <Filter>src\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Image.h">
+      <Filter>src\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Input.h">
+      <Filter>src\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputVisualizer.h">
+      <Filter>src\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GameEntity.h">
+      <Filter>src\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math.h">
+      <Filter>src\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera.h">
+      <Filter>src\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utils.h">
+      <Filter>src\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Array.h">
+      <Filter>src\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PerformanceGraph.h">
+      <Filter>src\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MeshState.h">
+      <Filter>src\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -154,7 +181,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Array.inl">
-      <Filter>src</Filter>
+      <Filter>src\Utils</Filter>
     </None>
   </ItemGroup>
 </Project>
