@@ -518,27 +518,67 @@ namespace Leviathan
 
     bool GamepadState::GetButton(LvGamepadButton LvButton, int GamepadIdx)
     {
-        return Buttons[GamepadIdx][LvButton];
+        constexpr bool bDefaultValue = false;
+        if (IsValidIdx(GamepadIdx))
+        {
+            return Buttons[GamepadIdx][LvButton];
+        }
+        return bDefaultValue;
+    }
+
+    bool GamepadState::IsValidIdx(int GamepadIdx)
+    {
+        return (0 <= GamepadIdx) && (GamepadIdx < NumGamepads);
+    }
+
+    bool GamepadState::IsConnected(int GamepadIdx)
+    {
+        constexpr bool bDefaultValue = false;
+        if (IsValidIdx(GamepadIdx))
+        {
+            return bActive[GamepadIdx];
+        }
+        return bDefaultValue;
     }
 
     float GamepadState::GetLeftTrigger(int GamepadIdx)
     {
-        return LeftTrigger[GamepadIdx];
+        constexpr float fDefaultValue = false;
+        if (IsValidIdx(GamepadIdx))
+        {
+            return LeftTrigger[GamepadIdx];
+        }
+        return fDefaultValue;
     }
 
     float GamepadState::GetRightTrigger(int GamepadIdx)
     {
-        return RightTrigger[GamepadIdx];
+        constexpr float fDefaultValue = false;
+        if (IsValidIdx(GamepadIdx))
+        {
+            return RightTrigger[GamepadIdx];
+        }
+        return fDefaultValue;
     }
 
     v2f GamepadState::GetLeftStick(int GamepadIdx)
     {
-        return v2f{LeftStickX[GamepadIdx], LeftStickY[GamepadIdx]};
+        constexpr v2f vDefaultValue{ 0.0f, 0.0f };
+        if (IsValidIdx(GamepadIdx))
+        {
+            return v2f{ LeftStickX[GamepadIdx], LeftStickY[GamepadIdx] };
+        }
+        return vDefaultValue;
     }
 
     v2f GamepadState::GetRightStick(int GamepadIdx)
     {
-        return v2f{RightStickX[GamepadIdx], RightStickY[GamepadIdx]};
+        constexpr v2f vDefaultValue{ 0.0f, 0.0f };
+        if (IsValidIdx(GamepadIdx))
+        {
+            return v2f{ RightStickX[GamepadIdx], RightStickY[GamepadIdx] };
+        }
+        return vDefaultValue;
     }
 
     void GamepadState::Win32_UpdateXInput()
@@ -643,3 +683,4 @@ namespace Leviathan
     }
 }
 
+  

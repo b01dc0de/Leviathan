@@ -168,6 +168,8 @@ namespace Leviathan
         static float RightStickY[NumGamepads];
         static unsigned int LastReading;
 
+        static bool IsValidIdx(int GamepadIdx);
+        static bool IsConnected(int GamepadIdx = 0);
         static float GetLeftTrigger(int GamepadIdx = 0);
         static float GetRightTrigger(int GamepadIdx = 0);
         static v2f GetLeftStick(int GamepadIdx = 0);
