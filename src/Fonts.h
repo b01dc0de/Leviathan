@@ -18,12 +18,6 @@ namespace Leviathan
         RectF GetGlyph(char GlyphChar);
         void Term();
     };
-
-    struct LvFont
-    {
-    };
-
-    LvFont LoadOpenTypeFont_WIP();
 }
 
 #endif // LEVIATHAN_FONTS_H

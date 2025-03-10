@@ -126,7 +126,7 @@ namespace Leviathan
     void DrawBatch2D(BatchDraw2D& Draw2D, ID3D11ShaderResourceView* TextureSRV, bool bClear = false);
 
     static bool bDrawGame = true;
-    static bool bForceDrawDebugDemo = false;
+    static bool bForceDrawDebugDemo = true;
     static bool bDrawUI = true;
     static bool bEnableWireframeRaster = false;
     m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
@@ -687,8 +687,7 @@ namespace Leviathan
         LvDebugTexture = LoadTextureFromImage(DebugImage, DX_Device);
         LvTestTexture = LoadTextureBMP("Assets/TestTexture.bmp", DX_Device);
 
-        //HandmadeText.Init(DX_Device, "Assets/HandmadeTextFont_0.bmp", 12, 6);
-        HandmadeText.Init(DX_Device, "Assets/HandmadeTextFont_1.bmp", 12, 6);
+        HandmadeText.Init(DX_Device, "Assets/HandmadeTextFont.bmp", 12, 6);
 
         MeshStateRect = LoadMeshStateRect();
 
