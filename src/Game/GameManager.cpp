@@ -2,8 +2,10 @@
 #include "BulletLimbo.h"
 #include "Tetris.h"
 #include "Snake.h"
+#include "../Input.h"
 
 using namespace Game;
+using namespace Leviathan;
 
 enum struct GameType
 {
@@ -26,6 +28,12 @@ struct GameDefinition
     ProcCallback Term = nullptr;
 };
 
+GameType GetNextGame(GameType CurrGame)
+{
+    GameType NextGame = (GameType)(((int)CurrGame + 1) % (int)GameType::Count);
+    return NextGame;
+}
+
 const GameDefinition GameDefines[(size_t)GameType::Count] =
 {
     // BulletLimbo
@@ -41,6 +49,17 @@ void GameManager::Update()
     const GameDefinition& CurrGame = GameDefines[(size_t)SelectedGame];
     ASSERT(CurrGame.Update);
     CurrGame.Update();
+
+    if (KeyboardState::GetKey(LV_KEY_1))
+    {
+        CurrGame.Term();
+
+        SelectedGame = GetNextGame(SelectedGame);
+
+        const GameDefinition& NextGame = GameDefines[(size_t)SelectedGame];
+        NextGame.Init();
+        NextGame.Update();
+    }
 }
 
 void GameManager::Draw(BatchDraw2D& Draw2D)
