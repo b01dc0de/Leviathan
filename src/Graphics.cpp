@@ -42,6 +42,7 @@ namespace Leviathan
 
         MeshStateT MeshStateTriangle;
         MeshStateT MeshStateCube;
+        MeshStateT MeshStateCubeFacesColor;
         MeshStateT MeshStateCubeFacesTex;
         MeshStateT MeshStateRect;
         MeshInstStateT MeshInstStateRect;
@@ -250,8 +251,13 @@ namespace Leviathan
 
             SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
 
-            static bool bCubeTexture = true;
-            if (bCubeTexture)
+            static bool bCubeFacesColor = true;
+            static bool bCubeFacesTexture = false;
+            if (bCubeFacesColor)
+            {
+                DrawMesh(DX_ImmContext, DrawStateColor, MeshStateCubeFacesColor);
+            }
+            else if (bCubeFacesTexture)
             {
                 SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
                 DrawMesh(DX_ImmContext, DrawStateTexture, MeshStateCubeFacesTex);
@@ -752,11 +758,13 @@ namespace Leviathan
 
         MeshStateTriangle = LoadMeshStateTriangle();
         MeshStateCube = LoadMeshStateCube();
+        MeshStateCubeFacesColor = LoadMeshStateCubeFacesColor();
+        MeshStateCubeFacesTex = LoadMeshStateCubeFacesTex();
+
         MeshInstStateRect = LoadMeshInstStateRect();
         MeshInstStateRectRotation = LoadMeshInstStateRectRotation();
         ASSERT(sizeof(InstRectColorData) == sizeof(InstRectTextureData));
 
-        MeshStateCubeFacesTex = LoadMeshStateCubeFacesTex();
         MeshInstStateVoxelColor = LoadMeshInstStateVoxel();
 
         { // Default sampler state:
@@ -821,6 +829,7 @@ namespace Leviathan
 
         SafeRelease(MeshStateTriangle);
         SafeRelease(MeshStateCube);
+        SafeRelease(MeshStateCubeFacesColor);
         SafeRelease(MeshStateCubeFacesTex);
         SafeRelease(MeshStateRect);
         SafeRelease(MeshInstStateRect);

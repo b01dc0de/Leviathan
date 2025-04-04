@@ -59,6 +59,45 @@ namespace Leviathan
         1, 3, 5,
         5, 3, 7,
     };
+    constexpr v4f SpeedCubeFaceColor_White{ 1.0f, 1.0f, 1.0f, 1.0f };
+    constexpr v4f SpeedCubeFaceColor_Yellow{ 1.0f, 1.0f, 0.0f, 1.0f };
+    constexpr v4f SpeedCubeFaceColor_Green{ 0.0f, 1.0f, 0.0f, 1.0f };
+    constexpr v4f SpeedCubeFaceColor_Blue{ 0.0f, 0.0f, 1.0f, 1.0f };
+    constexpr v4f SpeedCubeFaceColor_Orange{ 1.0f, 0.5f, 0.0f, 1.0f };
+    constexpr v4f SpeedCubeFaceColor_Red{ 1.0f, 0.0f, 0.0f, 1.0f };
+    VxColor Vertices_CubeFacesColor[] =
+    {
+        // Front: 0, 2, 1, 3
+        { {-fUnit, +fUnit, +fUnit, 1.0f}, SpeedCubeFaceColor_Green }, // 0
+        { {+fUnit, +fUnit, +fUnit, 1.0f}, SpeedCubeFaceColor_Green }, // 1
+        { {-fUnit, -fUnit, +fUnit, 1.0f}, SpeedCubeFaceColor_Green }, // 2
+        { {+fUnit, -fUnit, +fUnit, 1.0f}, SpeedCubeFaceColor_Green }, // 3
+        // Back: 5, 7, 4, 6
+        { {+fUnit, +fUnit, -fUnit, 1.0f}, SpeedCubeFaceColor_Blue }, // 5
+        { {-fUnit, +fUnit, -fUnit, 1.0f}, SpeedCubeFaceColor_Blue }, // 4
+        { {+fUnit, -fUnit, -fUnit, 1.0f}, SpeedCubeFaceColor_Blue }, // 7
+        { {-fUnit, -fUnit, -fUnit, 1.0f}, SpeedCubeFaceColor_Blue }, // 6
+        // Top: 4, 0, 5, 1
+        { {-fUnit, +fUnit, -fUnit, 1.0f}, SpeedCubeFaceColor_White }, // 4
+        { {+fUnit, +fUnit, -fUnit, 1.0f}, SpeedCubeFaceColor_White }, // 5
+        { {-fUnit, +fUnit, +fUnit, 1.0f}, SpeedCubeFaceColor_White }, // 0
+        { {+fUnit, +fUnit, +fUnit, 1.0f}, SpeedCubeFaceColor_White }, // 1
+        // Bottom: 2, 6, 3, 7
+        { {-fUnit, -fUnit, +fUnit, 1.0f}, SpeedCubeFaceColor_Yellow }, // 2
+        { {+fUnit, -fUnit, +fUnit, 1.0f}, SpeedCubeFaceColor_Yellow }, // 3
+        { {-fUnit, -fUnit, -fUnit, 1.0f}, SpeedCubeFaceColor_Yellow }, // 6
+        { {+fUnit, -fUnit, -fUnit, 1.0f}, SpeedCubeFaceColor_Yellow }, // 7
+        // Left: 4, 6, 0, 2
+        { {-fUnit, +fUnit, -fUnit, 1.0f}, SpeedCubeFaceColor_Orange }, // 4
+        { {-fUnit, +fUnit, +fUnit, 1.0f}, SpeedCubeFaceColor_Orange }, // 0
+        { {-fUnit, -fUnit, -fUnit, 1.0f}, SpeedCubeFaceColor_Orange }, // 6
+        { {-fUnit, -fUnit, +fUnit, 1.0f}, SpeedCubeFaceColor_Orange }, // 2
+        // Right: 1, 3, 5, 7
+        { {+fUnit, +fUnit, +fUnit, 1.0f}, SpeedCubeFaceColor_Red }, // 1
+        { {+fUnit, +fUnit, -fUnit, 1.0f}, SpeedCubeFaceColor_Red }, // 5
+        { {+fUnit, -fUnit, +fUnit, 1.0f}, SpeedCubeFaceColor_Red }, // 3
+        { {+fUnit, -fUnit, -fUnit, 1.0f}, SpeedCubeFaceColor_Red }, // 7
+    };
     VxTexture Vertices_CubeFacesTex[] =
     {
         // Front: 0, 2, 1, 3
@@ -270,6 +309,18 @@ namespace Leviathan
             sizeof(VxTexture),
             ARRAY_SIZE(Vertices_CubeFacesTex),
             Vertices_CubeFacesTex,
+            ARRAY_SIZE(Indices_CubeFaces),
+            Indices_CubeFaces
+        );
+    }
+    MeshStateT LoadMeshStateCubeFacesColor()
+    {
+        return CreateMeshState
+        (
+            Graphics::Device(),
+            sizeof(VxColor),
+            ARRAY_SIZE(Vertices_CubeFacesColor),
+            Vertices_CubeFacesColor,
             ARRAY_SIZE(Indices_CubeFaces),
             Indices_CubeFaces
         );
