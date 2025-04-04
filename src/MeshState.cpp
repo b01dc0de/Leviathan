@@ -59,6 +59,60 @@ namespace Leviathan
         1, 3, 5,
         5, 3, 7,
     };
+    VxTexture Vertices_CubeFacesTex[] =
+    {
+        // Front: 0, 2, 1, 3
+        { {-fUnit, +fUnit, +fUnit, 1.0f}, {0.0f, 0.0f} }, // 0
+        { {+fUnit, +fUnit, +fUnit, 1.0f}, {1.0f, 0.0f} }, // 1
+        { {-fUnit, -fUnit, +fUnit, 1.0f}, {0.0f, 1.0f} }, // 2
+        { {+fUnit, -fUnit, +fUnit, 1.0f}, {1.0f, 1.0f} }, // 3
+        // Back: 5, 7, 4, 6
+        { {+fUnit, +fUnit, -fUnit, 1.0f}, {0.0f, 0.0f} }, // 5
+        { {-fUnit, +fUnit, -fUnit, 1.0f}, {1.0f, 0.0f} }, // 4
+        { {+fUnit, -fUnit, -fUnit, 1.0f}, {0.0f, 1.0f} }, // 7
+        { {-fUnit, -fUnit, -fUnit, 1.0f}, {1.0f, 1.0f} }, // 6
+        // Top: 4, 0, 5, 1
+        { {-fUnit, +fUnit, -fUnit, 1.0f}, {0.0f, 0.0f} }, // 4
+        { {+fUnit, +fUnit, -fUnit, 1.0f}, {1.0f, 0.0f} }, // 5
+        { {-fUnit, +fUnit, +fUnit, 1.0f}, {0.0f, 1.0f} }, // 0
+        { {+fUnit, +fUnit, +fUnit, 1.0f}, {1.0f, 1.0f} }, // 1
+        // Bottom: 2, 6, 3, 7
+        { {-fUnit, -fUnit, +fUnit, 1.0f}, {0.0f, 0.0f} }, // 2
+        { {+fUnit, -fUnit, +fUnit, 1.0f}, {1.0f, 0.0f} }, // 3
+        { {-fUnit, -fUnit, -fUnit, 1.0f}, {0.0f, 1.0f} }, // 6
+        { {+fUnit, -fUnit, -fUnit, 1.0f}, {1.0f, 1.0f} }, // 7
+        // Left: 4, 6, 0, 2
+        { {-fUnit, +fUnit, -fUnit, 1.0f}, {0.0f, 0.0f} }, // 4
+        { {-fUnit, +fUnit, +fUnit, 1.0f}, {1.0f, 0.0f} }, // 0
+        { {-fUnit, -fUnit, -fUnit, 1.0f}, {0.0f, 1.0f} }, // 6
+        { {-fUnit, -fUnit, +fUnit, 1.0f}, {1.0f, 1.0f} }, // 2
+        // Right: 1, 3, 5, 7
+        { {+fUnit, +fUnit, +fUnit, 1.0f}, {0.0f, 0.0f} }, // 1
+        { {+fUnit, +fUnit, -fUnit, 1.0f}, {1.0f, 0.0f} }, // 5
+        { {+fUnit, -fUnit, +fUnit, 1.0f}, {0.0f, 1.0f} }, // 3
+        { {+fUnit, -fUnit, -fUnit, 1.0f}, {1.0f, 1.0f} }, // 7
+    };
+    unsigned int Indices_CubeFaces[] =
+    {
+        // Front
+        0, 2, 1,
+        1, 2, 3,
+        // Back
+        0+4, 2+4, 1+4,
+        1+4, 2+4, 3+4,
+        // Top
+        0+8, 2+8, 1+8,
+        1+8, 2+8, 3+8,
+        // Bottom
+        0+12, 2+12, 1+12,
+        1+12, 2+12, 3+12,
+        // Left
+        0+16, 2+16, 1+16,
+        1+16, 2+16, 3+16,
+        // Right
+        0+20, 2+20, 1+20,
+        1+20, 2+20, 3+20,
+    };
 
     VxTexture Vertices_Rect[] =
     {
@@ -206,6 +260,18 @@ namespace Leviathan
             Vertices_Cube,
             ARRAY_SIZE(Indices_Cube),
             Indices_Cube
+        );
+    }
+    MeshStateT LoadMeshStateCubeFacesTex()
+    {
+        return CreateMeshState
+        (
+            Graphics::Device(),
+            sizeof(VxTexture),
+            ARRAY_SIZE(Vertices_CubeFacesTex),
+            Vertices_CubeFacesTex,
+            ARRAY_SIZE(Indices_CubeFaces),
+            Indices_CubeFaces
         );
     }
     MeshInstStateT LoadMeshInstStateVoxel()
