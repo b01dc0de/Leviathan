@@ -1,4 +1,4 @@
-#include "Graphics.h" // BatchDraw2D.h included in Graphics.h
+#include "Graphics.h" // Draw2D.h included in Graphics.h
 
 namespace Leviathan
 {

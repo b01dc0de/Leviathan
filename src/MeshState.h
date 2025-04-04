@@ -79,6 +79,7 @@ namespace Leviathan
     MeshStateT LoadMeshStateTriangle();
     MeshStateT LoadMeshStateRect();
     MeshStateT LoadMeshStateCube();
+    MeshInstStateT LoadMeshInstStateVoxel();
     MeshInstStateT LoadMeshInstStateRect();
     MeshInstStateT LoadMeshInstStateRectRotation();
 }

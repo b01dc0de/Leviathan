@@ -3,7 +3,6 @@
 
 namespace Leviathan
 {
-
     int CompileShaderHelper
     (
         LPCWSTR SourceFileName,

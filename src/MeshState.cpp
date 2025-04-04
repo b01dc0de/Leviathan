@@ -26,6 +26,18 @@ namespace Leviathan
         {{-fUnit, -fUnit, -fUnit, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f}}, // 6
         {{+fUnit, -fUnit, -fUnit, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}}, // 7
     };
+    VxMin Vertices_CubeMin[] =
+    {
+        {-fUnit, +fUnit, +fUnit, 1.0f}, // 0
+        {+fUnit, +fUnit, +fUnit, 1.0f}, // 1
+        {-fUnit, -fUnit, +fUnit, 1.0f}, // 2
+        {+fUnit, -fUnit, +fUnit, 1.0f}, // 3
+
+        {-fUnit, +fUnit, -fUnit, 1.0f}, // 4
+        {+fUnit, +fUnit, -fUnit, 1.0f}, // 5
+        {-fUnit, -fUnit, -fUnit, 1.0f}, // 6
+        {+fUnit, -fUnit, -fUnit, 1.0f}, // 7
+    };
     unsigned int Indices_Cube[] =
     {
         // Front
@@ -192,6 +204,20 @@ namespace Leviathan
             sizeof(VxColor),
             ARRAY_SIZE(Vertices_Cube),
             Vertices_Cube,
+            ARRAY_SIZE(Indices_Cube),
+            Indices_Cube
+        );
+    }
+    MeshInstStateT LoadMeshInstStateVoxel()
+    {
+        return CreateMeshInstState
+        (
+            Graphics::Device(),
+            sizeof(VxMin),
+            sizeof(InstVoxelColorData),
+            BatchDraw2D::DefaultSize,
+            ARRAY_SIZE(Vertices_CubeMin),
+            Vertices_CubeMin,
             ARRAY_SIZE(Indices_Cube),
             Indices_Cube
         );

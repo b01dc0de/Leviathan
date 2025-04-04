@@ -4,9 +4,6 @@
     <Filter Include="src">
       <UniqueIdentifier>{6fb049f0-1154-4a73-83ac-41cd67e8c20e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\hlsl">
-      <UniqueIdentifier>{bb33e0c7-7c2b-4a5c-a1ec-20e35a58fb75}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\Game">
       <UniqueIdentifier>{2a7e032a-a3ef-4381-9cb6-1ee097ac686c}</UniqueIdentifier>
     </Filter>
@@ -19,20 +16,14 @@
     <Filter Include="src\Input">
       <UniqueIdentifier>{5242fc1a-b64b-4b4a-9473-09db8642a6d6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\Game\BulletLimbo">
-      <UniqueIdentifier>{1907bd64-66a5-4a5a-9796-0516cb1c5f23}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Game\Tetris">
-      <UniqueIdentifier>{e5d43aab-0457-424e-a18b-902609d32e5f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Game\Snake">
-      <UniqueIdentifier>{34b8a0b4-4f0d-4fef-97f4-2c26f072207d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\Math">
       <UniqueIdentifier>{a56f8c32-9a4b-4dc7-b713-1dea235655f2}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Utils">
       <UniqueIdentifier>{cb1aafa2-521a-462c-b6ee-51859e5dd5db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hlsl">
+      <UniqueIdentifier>{bb33e0c7-7c2b-4a5c-a1ec-20e35a58fb75}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -62,15 +53,6 @@
     </ClCompile>
     <ClCompile Include="src\UserInterface.cpp">
       <Filter>src\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Game\BulletLimbo.cpp">
-      <Filter>src\Game\BulletLimbo</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Game\Snake.cpp">
-      <Filter>src\Game\Snake</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Game\Tetris.cpp">
-      <Filter>src\Game\Tetris</Filter>
     </ClCompile>
     <ClCompile Include="src\Fonts.cpp">
       <Filter>src\Graphics</Filter>
@@ -102,6 +84,18 @@
     <ClCompile Include="src\MeshState.cpp">
       <Filter>src\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\Game\BulletLimbo.cpp">
+      <Filter>src\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Game\Snake.cpp">
+      <Filter>src\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Game\Tetris.cpp">
+      <Filter>src\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Draw3D.cpp">
+      <Filter>src\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -127,15 +121,6 @@
     </ClInclude>
     <ClInclude Include="src\UserInterface.h">
       <Filter>src\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Game\BulletLimbo.h">
-      <Filter>src\Game\BulletLimbo</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Game\Snake.h">
-      <Filter>src\Game\Snake</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Game\Tetris.h">
-      <Filter>src\Game\Tetris</Filter>
     </ClInclude>
     <ClInclude Include="src\Fonts.h">
       <Filter>src\Graphics</Filter>
@@ -170,13 +155,28 @@
     <ClInclude Include="src\MeshState.h">
       <Filter>src\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="src\Game\BulletLimbo.h">
+      <Filter>src\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Game\Snake.h">
+      <Filter>src\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Game\Tetris.h">
+      <Filter>src\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Draw3D.h">
+      <Filter>src\Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\hlsl\BaseShader.hlsl">
-      <Filter>src\hlsl</Filter>
+      <Filter>hlsl</Filter>
     </FxCompile>
     <FxCompile Include="src\hlsl\InstRectShader.hlsl">
-      <Filter>src\hlsl</Filter>
+      <Filter>hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="src\hlsl\InstVoxelShader.hlsl">
+      <Filter>hlsl</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

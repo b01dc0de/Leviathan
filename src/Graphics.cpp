@@ -33,6 +33,7 @@ namespace Leviathan
         DrawStateT DrawStateInstRectTexture;
         DrawStateT DrawStateInstRectColorRotation;
         DrawStateT DrawStateInstRectTextureRotation;
+        DrawStateT DrawStateInstVoxelColor;
 
         ID3D11Buffer* DX_WorldBuffer = nullptr;
         ID3D11Buffer* DX_ViewProjBuffer = nullptr;
@@ -44,6 +45,7 @@ namespace Leviathan
         MeshStateT MeshStateRect;
         MeshInstStateT MeshInstStateRect;
         MeshInstStateT MeshInstStateRectRotation;
+        MeshInstStateT MeshInstStateVoxelColor;
 
         LvSpriteSheet BulletLimboSpriteSheet;
 
@@ -109,6 +111,7 @@ namespace Leviathan
     Camera OrthoCamera;
     Camera GameCamera;
     BatchDraw2D Draw2D;
+    BatchDrawVoxel Draw3D;
     HandmadeTextSheet HandmadeText;
 
     void UpdateShaderWorld(ID3D11DeviceContext* Context, m4f* WorldData)
@@ -124,6 +127,7 @@ namespace Leviathan
 
     void DrawDebugDemo();
     void DrawBatch2D(BatchDraw2D& Draw2D, ID3D11ShaderResourceView* TextureSRV, bool bClear = false);
+    void DrawBatch3D(BatchDrawVoxel& Draw3D, bool bClear = false);
 
     static bool bDrawGame = true;
     static bool bForceDrawDebugDemo = true;
@@ -135,6 +139,7 @@ namespace Leviathan
     {
         if (KeyboardState::GetKey(LV_KEY_F3)) { bForceDrawDebugDemo = !bForceDrawDebugDemo; }
         if (KeyboardState::GetKey(LV_KEY_F4)) { bEnableWireframeRaster = !bEnableWireframeRaster; }
+        if (KeyboardState::GetKey(LV_KEY_F8)) { bDrawGame = !bDrawGame; }
 
         Draw2D.Clear();
 
@@ -175,13 +180,14 @@ namespace Leviathan
 
     void DrawDebugDemo()
     {
-        static bool bDrawInstLines = true;
-        static bool bDrawTriangle = true;
-        static bool bDrawTexQuad = true;
-        static bool bDrawInstRects = true;
+        static bool bDrawInstLines = false;
+        static bool bDrawTriangle = false;
+        static bool bDrawTexQuad = false;
+        static bool bDrawInstRects = false;
         static bool bDrawCube = true;
-        static bool bDrawHandmadeText = true;
-        static bool bDrawInstRotationDemo = true;
+        static bool bDrawInstVoxels = true;
+        static bool bDrawHandmadeText = false;
+        static bool bDrawInstRotationDemo = false;
 
         ID3D11Buffer* World_ViewProjBuffers[] = { DX_WorldBuffer, DX_ViewProjBuffer };
         ID3D11ShaderResourceView* HandmadeFontTextureSRV[] = { HandmadeText.LvTex2D.SRV };
@@ -244,6 +250,31 @@ namespace Leviathan
             SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
 
             DrawMesh(DX_ImmContext, DrawStateColor, MeshStateCube);
+        }
+
+        if (bDrawInstVoxels)
+        {
+            constexpr int NumInstVoxels = 12;
+            constexpr float VoxelStoneHedgeSize = 5.0f;
+            constexpr float MaxScale = 1.0f;
+
+            static float RotationX = 0.0f;
+            static float RotationY = 0.0f;
+            static constexpr float RotSpeed = (1.0f / 60.0f) / 10.0f;
+
+            RotationX += RotSpeed;
+            RotationY += RotSpeed;
+
+            for (int Idx = 0; Idx < NumInstVoxels; Idx++)
+            {
+                float Value = (float)Idx / (float)NumInstVoxels;
+                float Radians = Value * fTAU;
+                v4f Pos{cosf(Radians + RotationX) * VoxelStoneHedgeSize, sinf(RotationY) * VoxelStoneHedgeSize * 0.25f, sinf(Radians) * VoxelStoneHedgeSize};
+                v4f Color{cosf(RotationX), sinf(RotationY), Value, 1.0f};
+                float Scale = ((float)(Idx + 1) / (float)NumInstVoxels) * MaxScale;
+                Draw3D.AddVoxel(Pos, Color, Scale);
+            }
+            DrawBatch3D(Draw3D, true);
         }
 
         if (bDrawInstLines)
@@ -393,6 +424,30 @@ namespace Leviathan
             );
         }
         if (bClear) { Draw2D.Clear(); }
+    }
+
+    void DrawBatch3D(BatchDrawVoxel& Draw3D, bool bClear)
+    {
+        DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+        DX_ImmContext->OMSetDepthStencilState(DX_DefaultDepthStencilState, 0);
+        //UpdateShaderWorld(DX_ImmContext, &World);
+        UpdateShaderViewProj(DX_ImmContext, &GameCamera);
+
+        SetShaderConstantBuffers(DX_ImmContext, 1, &DX_ViewProjBuffer, 0);
+
+        // Color:
+        if (Draw3D.ColorCmds.Num > 0)
+        {
+            DrawMeshInstanced
+            (
+                DX_ImmContext,
+                DrawStateInstVoxelColor,
+                MeshInstStateVoxelColor,
+                Draw3D.ColorCmds.Num,
+                Draw3D.ColorCmds.Data
+            );
+        }
+        if (bClear) { Draw3D.Clear(); }
     }
 
     void Graphics::Init()
@@ -646,6 +701,30 @@ namespace Leviathan
             );
         }
 
+        const wchar_t* InstVoxelShaderFilename = L"src/hlsl/InstVoxelShader.hlsl";
+        { // InstVoxelColor
+            const D3D_SHADER_MACRO Defines[] =
+            {
+                nullptr, nullptr
+            };
+            D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
+            {
+                { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+                { "INSTPOS", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+                { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+                { "SCALE", 0, DXGI_FORMAT_R32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+            };
+
+            DrawStateInstVoxelColor = CreateDrawState
+            (
+                DX_Device,
+                InstVoxelShaderFilename,
+                Defines,
+                InputLayoutDesc,
+                ARRAY_SIZE(InputLayoutDesc)
+            );
+        }
+
         Draw2D.Init();
 
         D3D11_BUFFER_DESC WorldBufferDesc = {};
@@ -666,6 +745,8 @@ namespace Leviathan
         MeshInstStateRect = LoadMeshInstStateRect();
         MeshInstStateRectRotation = LoadMeshInstStateRectRotation();
         ASSERT(sizeof(InstRectColorData) == sizeof(InstRectTextureData));
+
+        MeshInstStateVoxelColor = LoadMeshInstStateVoxel();
 
         { // Default sampler state:
             D3D11_TEXTURE_ADDRESS_MODE SamplerAddressMode = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -732,6 +813,7 @@ namespace Leviathan
         SafeRelease(MeshStateRect);
         SafeRelease(MeshInstStateRect);
         SafeRelease(MeshInstStateRectRotation);
+        SafeRelease(MeshInstStateVoxelColor);
 
         SafeRelease(LvDebugTexture);
         SafeRelease(LvTestTexture);
@@ -747,6 +829,7 @@ namespace Leviathan
         SafeRelease(DrawStateInstRectTexture);
         SafeRelease(DrawStateInstRectColorRotation);
         SafeRelease(DrawStateInstRectTextureRotation);
+        SafeRelease(DrawStateInstVoxelColor);
 
         SafeRelease(DXGI_SwapChain1);
         SafeRelease(DX_Backbuffer);

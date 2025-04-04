@@ -124,6 +124,7 @@
     <ClCompile Include="src\Clock.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\Draw3D.cpp" />
     <ClCompile Include="src\DrawState.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -189,6 +190,7 @@
     <ClInclude Include="src\Draw2D.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\Clock.h" />
+    <ClInclude Include="src\Draw3D.h" />
     <ClInclude Include="src\DrawState.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Fonts.h" />
@@ -215,6 +217,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="src\hlsl\InstRectShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="src\hlsl\InstVoxelShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
