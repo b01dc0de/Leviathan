@@ -66,6 +66,7 @@ namespace Leviathan
         static m4f RotAxisX(float Angle);
         static m4f RotAxisY(float Angle);
         static m4f RotAxisZ(float Angle);
+        static m4f RotAxis(v3f Axis, float Angle);
     };
 
     bool Equals(const v2i& A, const v2i& B);

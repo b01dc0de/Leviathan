@@ -123,6 +123,35 @@ namespace Leviathan
         return Result;
     }
 
+    m4f m4f::RotAxis(v3f Axis, float Angle)
+    {
+        v3f k = Norm(Axis);
+
+        float C = cosf(Angle);
+        float S = sinf(Angle);
+
+        float c_inv = 1.0f - C;
+
+        float k_xx = k.X * k.X;
+        float k_yy = k.Y * k.Y;
+        float k_zz = k.Z * k.Z;
+
+        float k_xy = k.X * k.Y;
+        float k_yz = k.Y * k.Z;
+        float k_xz = k.X * k.Z;
+
+        float s_x = S * k.X;
+        float s_y = S * k.Y;
+        float s_z = S * k.Z;
+
+        m4f Result;
+        Result.R0 = { C + k_xx * c_inv, +s_z + k_xy * c_inv, -s_y + k_xz * c_inv, 0.0f };
+        Result.R1 = { -s_z + k_xy * c_inv, C + k_yy * c_inv, +s_x + k_yz * c_inv, 0.0f };
+        Result.R2 = { +s_y + k_xz * c_inv, -s_x + k_yz * c_inv, C + k_zz * c_inv, 0.0f };
+        Result.R3 = { 0.0f, 0.0f, 0.0f, 1.0f };
+        return Result;
+    }
+
     bool Equals(const v2i& A, const v2i& B)
     {
         return A.X == B.X && A.Y == B.Y;
