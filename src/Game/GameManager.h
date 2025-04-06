@@ -5,7 +5,6 @@
 
 struct GameManager
 {
-
     static void Update();
     static void Draw(GameGraphicsContext& GFXContext);
     static void Init();

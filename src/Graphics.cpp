@@ -49,9 +49,6 @@ namespace Leviathan
         MeshInstStateT MeshInstStateRectRotation;
         MeshInstStateT MeshInstStateVoxelColor;
 
-        MeshStateT MeshStateSpeedCube;
-        int SpeedCube_IxPerPiece;
-
         LvSpriteSheet BulletLimboSpriteSheet;
 
         LvTexture2D LvDebugTexture;
@@ -134,8 +131,8 @@ namespace Leviathan
     void DrawBatch2D(BatchDraw2D& Draw2D, ID3D11ShaderResourceView* TextureSRV, bool bClear = false);
     void DrawBatch3D(BatchDrawVoxel& Draw3D, bool bClear = false);
 
-    static bool bDrawGame = false;
-    static bool bForceDrawDebugDemo = true;
+    static bool bDrawGame = true;
+    static bool bForceDrawDebugDemo = false;
     static bool bDrawUI = false;
     static bool bEnableWireframeRaster = false;
     m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
@@ -164,7 +161,12 @@ namespace Leviathan
         SetShaderSamplers(DX_ImmContext, ARRAY_SIZE(DefaultSampler), DefaultSampler);
 
         GameGraphicsContext GameContext{
-            &Draw2D
+            DX_ImmContext,
+            DX_WorldBuffer,
+            DX_ViewProjBuffer,
+            &GameCamera,
+            &Draw2D,
+            &DrawStateColor
         };
         
         if (!bDrawGame || bForceDrawDebugDemo)
@@ -194,7 +196,6 @@ namespace Leviathan
         static bool bDrawTexQuad = false;
         static bool bDrawInstRects = false;
         static bool bDrawCube = true;
-        static bool bDrawSpeedCube = true;
         static bool bDrawInstVoxels = false;
         static bool bDrawHandmadeText = false;
         static bool bDrawInstRotationDemo = false;
@@ -244,32 +245,7 @@ namespace Leviathan
             );
         }
 
-        if (bDrawSpeedCube)
-        {
-            DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-            UpdateShaderViewProj(DX_ImmContext, &GameCamera);
-
-            static float RotationX = 0.0f;
-            static float RotationY = 0.0f;
-            static constexpr float RotSpeed = (1.0f / 60.0f) / 100.0f;
-            RotationX += RotSpeed;
-            RotationY += RotSpeed * 0.5f;
-            m4f SpeedCubeRotation = m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
-
-            m4f PieceWorld = SpeedCubeRotation;
-            UpdateShaderWorld(DX_ImmContext, &PieceWorld);
-
-            constexpr int NumPiecesPerRow = 9;
-            constexpr int NumRows = 3;
-            constexpr int NumPieces = NumPiecesPerRow * NumRows;
-            for (int PieceIdx = 0; PieceIdx < NumPieces; PieceIdx++)
-            {
-                int StartIx = PieceIdx * SpeedCube_IxPerPiece;
-                DrawMeshIxRange(DX_ImmContext, DrawStateColor, MeshStateSpeedCube, StartIx, SpeedCube_IxPerPiece);
-            }
-        }
-        else if (bDrawCube)
+        if (bDrawCube)
         {
             DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
 
@@ -793,8 +769,6 @@ namespace Leviathan
         MeshStateCube = LoadMeshStateCube();
         MeshStateCubeFacesColor = LoadMeshStateCubeFacesColor();
         MeshStateCubeFacesTex = LoadMeshStateCubeFacesTex();
-
-        MeshStateSpeedCube = LoadMeshStateSpeedCube(&SpeedCube_IxPerPiece);
 
         MeshInstStateRect = LoadMeshInstStateRect();
         MeshInstStateRectRotation = LoadMeshInstStateRectRotation();

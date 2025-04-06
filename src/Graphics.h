@@ -19,11 +19,23 @@ namespace Leviathan
         static ID3D11DeviceContext* Context();
     };
 
+    struct Camera;
+    void UpdateShaderWorld(ID3D11DeviceContext* Context, m4f* WorldData);
+    void UpdateShaderViewProj(ID3D11DeviceContext* Context, Camera* CameraData);
+
     inline void SafeRelease(IUnknown* Ptr) { if (Ptr) { Ptr->Release(); Ptr = nullptr; } }
 
+    struct DrawStateT;
     struct GameGraphicsContext
     {
+        ID3D11DeviceContext* ImmContext;
+        ID3D11Buffer* WorldBuffer;
+        ID3D11Buffer* ViewProjBuffer;
+        Camera* GameCamera;
+
         BatchDraw2D* Draw2D;
+
+        DrawStateT* DrawStateColor;
     };
 }
 

@@ -2,6 +2,7 @@
 #include "BulletLimbo.h"
 #include "Tetris.h"
 #include "Snake.h"
+#include "SpeedCube.h"
 #include "../Input.h"
 
 using namespace Game;
@@ -12,10 +13,11 @@ enum struct GameType
     BulletLimbo,
     Tetris,
     GridSnake,
+    SpeedCube,
     Count
 };
 
-static GameType SelectedGame = GameType::BulletLimbo;
+static GameType SelectedGame = GameType::SpeedCube;
 
 struct GameDefinition
 {
@@ -42,6 +44,8 @@ const GameDefinition GameDefines[(size_t)GameType::Count] =
     { Tetris::Update, Tetris::Draw, Tetris::Init, Tetris::Term },
     // Snake
     { GridSnake::Update, GridSnake::Draw, GridSnake::Init, GridSnake::Term },
+    // SpeedCube
+    { SpeedCube::Update, SpeedCube::Draw, SpeedCube::Init, SpeedCube::Term },
 };
 
 void GameManager::Update()
@@ -61,7 +65,6 @@ void GameManager::Update()
         NextGame.Update();
     }
 }
-
 
 void GameManager::Draw(GameGraphicsContext& GFXContext)
 {
