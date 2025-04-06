@@ -43,6 +43,7 @@ namespace Leviathan
     );
 
     void DrawMesh(ID3D11DeviceContext* Context, DrawStateT& PipelineState, MeshStateT& Mesh);
+    void DrawMeshIxRange(ID3D11DeviceContext* Context, DrawStateT& PipelineState, MeshStateT& Mesh, int StartIx, int NumIx);
     void DrawMeshInstanced
     (
         ID3D11DeviceContext* Context,

@@ -49,6 +49,9 @@ namespace Leviathan
         MeshInstStateT MeshInstStateRectRotation;
         MeshInstStateT MeshInstStateVoxelColor;
 
+        MeshStateT MeshStateSpeedCube;
+        int SpeedCube_IxPerPiece;
+
         LvSpriteSheet BulletLimboSpriteSheet;
 
         LvTexture2D LvDebugTexture;
@@ -133,7 +136,7 @@ namespace Leviathan
 
     static bool bDrawGame = false;
     static bool bForceDrawDebugDemo = true;
-    static bool bDrawUI = true;
+    static bool bDrawUI = false;
     static bool bEnableWireframeRaster = false;
     m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
     constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
@@ -243,58 +246,23 @@ namespace Leviathan
             SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
             UpdateShaderViewProj(DX_ImmContext, &GameCamera);
 
-            constexpr int PiecesPerRow = 9;
-            constexpr int NumRows = 3;
-            constexpr int NumPieces = PiecesPerRow * NumRows;
-            static v3f SpeedCubePiecePos[NumPieces] = { };
-            static bool bInit = false;
-            if (!bInit)
-            {
-                constexpr float fSCUnit = 2.0f;
-                for (int RowIdx = 0; RowIdx < NumRows; RowIdx++)
-                {
-                    // Start one row above xz axis
-                    float RowY = fSCUnit - (RowIdx * fSCUnit);
-                    for (int PieceIdx = 0; PieceIdx < PiecesPerRow; PieceIdx++)
-                    {
-                        v3f Pos{ 0.0f, RowY, 0.0f };
-
-                        int PieceX = PieceIdx % 3;
-                        int PieceZ = PieceIdx / 3;
-
-                        Pos.X = -fSCUnit + (PieceX * fSCUnit);
-                        Pos.Z = -fSCUnit + (PieceZ * fSCUnit);
-
-                        SpeedCubePiecePos[(RowIdx * PiecesPerRow) + PieceIdx] = Pos;
-                    }
-                }
-                bInit = true;
-            }
-
             static float RotationX = 0.0f;
             static float RotationY = 0.0f;
             static constexpr float RotSpeed = (1.0f / 60.0f) / 100.0f;
             RotationX += RotSpeed;
             RotationY += RotSpeed * 0.5f;
-            //m4f SpeedCubeRotation = m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
+            m4f SpeedCubeRotation = m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
 
+            m4f PieceWorld = SpeedCubeRotation;
+            UpdateShaderWorld(DX_ImmContext, &PieceWorld);
+
+            constexpr int NumPiecesPerRow = 9;
+            constexpr int NumRows = 3;
+            constexpr int NumPieces = NumPiecesPerRow * NumRows;
             for (int PieceIdx = 0; PieceIdx < NumPieces; PieceIdx++)
-            //for (int PieceIdx = 0; PieceIdx < 9; PieceIdx++)
             {
-                //if (PieceIdx != 4 && PieceIdx != 10 && PieceIdx != 12 && PieceIdx != 14 && PieceIdx != 16 && PieceIdx != 18 && PieceIdx != 22) { continue; }
-                v3f PiecePos = SpeedCubePiecePos[PieceIdx];
-                v4f PiecePosV4{ PiecePos.X, PiecePos.Y, PiecePos.Z, 1.0f };
-
-                m4f RotY = m4f::RotAxis(v3f{ 0.0f, RotationY, 0.0f }, RotationY);
-                //m4f RotX = m4f::RotAxis(v3f{ -RotationX, 0.0f, 0.0f }, RotationX);
-                m4f SpeedCubeRotation = /*RotX * */RotY;
-
-                PiecePosV4 = SpeedCubeRotation * PiecePosV4;
-                PiecePos = { PiecePosV4.X, PiecePosV4.Y, PiecePosV4.Z };
-                m4f PieceWorld = SpeedCubeRotation * m4f::Trans(PiecePos);
-                //m4f PieceWorld = m4f::Trans(PiecePos) * SpeedCubeRotation;
-                UpdateShaderWorld(DX_ImmContext, &PieceWorld);
-                DrawMesh(DX_ImmContext, DrawStateColor, MeshStateCubeFacesColor);
+                int StartIx = PieceIdx * SpeedCube_IxPerPiece;
+                DrawMeshIxRange(DX_ImmContext, DrawStateColor, MeshStateSpeedCube, StartIx, SpeedCube_IxPerPiece);
             }
         }
         else if (bDrawCube)
@@ -821,6 +789,8 @@ namespace Leviathan
         MeshStateCube = LoadMeshStateCube();
         MeshStateCubeFacesColor = LoadMeshStateCubeFacesColor();
         MeshStateCubeFacesTex = LoadMeshStateCubeFacesTex();
+
+        MeshStateSpeedCube = LoadMeshStateSpeedCube(&SpeedCube_IxPerPiece);
 
         MeshInstStateRect = LoadMeshInstStateRect();
         MeshInstStateRectRotation = LoadMeshInstStateRectRotation();

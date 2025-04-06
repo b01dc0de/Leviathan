@@ -325,6 +325,60 @@ namespace Leviathan
             Indices_CubeFaces
         );
     }
+    MeshStateT LoadMeshStateSpeedCube(int* IxPerPiece)
+    {
+        ASSERT(IxPerPiece);
+
+        constexpr int NumPiecesPerRow = 9;
+        constexpr int NumRows = 3;
+        constexpr int NumPieces = NumPiecesPerRow * NumRows;
+
+        VxColor Vertices_SpeedCube[NumPieces][ARRAY_SIZE(Vertices_CubeFacesColor)] = { };
+        unsigned int Indices_SpeedCube[NumPieces][ARRAY_SIZE(Indices_CubeFaces)] = { };
+
+        float SpeedCubeUnit = fUnit * 2.0f + 0.1f;
+        for (int PieceIdx = 0; PieceIdx < NumPieces; PieceIdx++)
+        {
+            int RowIdx = PieceIdx / NumPiecesPerRow;
+            int PieceIdxWithinRow = PieceIdx % NumPiecesPerRow;
+
+            float PieceX = -SpeedCubeUnit + (float)(PieceIdxWithinRow % 3) * SpeedCubeUnit;
+            float PieceY = +SpeedCubeUnit - (float)RowIdx * SpeedCubeUnit;
+            float PieceZ = -SpeedCubeUnit + (float)(PieceIdxWithinRow / 3) * SpeedCubeUnit;
+            v4f vOffset = { PieceX, PieceY, PieceZ, 0.0f };
+            for (int VxIdx = 0; VxIdx < ARRAY_SIZE(Vertices_CubeFacesColor); VxIdx++)
+            {
+                Vertices_SpeedCube[PieceIdx][VxIdx] =
+                {
+                    Vertices_CubeFacesColor[VxIdx].Pos + vOffset, // v4f Pos
+                    Vertices_CubeFacesColor[VxIdx].Col, // v4f Col
+                };
+            }
+
+            int PieceFirstIx = ARRAY_SIZE(Vertices_CubeFacesColor) * PieceIdx;
+            for (int IxIdx = 0; IxIdx < ARRAY_SIZE(Indices_CubeFaces); IxIdx++)
+            {
+                Indices_SpeedCube[PieceIdx][IxIdx] = Indices_CubeFaces[IxIdx] + PieceFirstIx;
+            }
+        }
+
+        *IxPerPiece = ARRAY_SIZE(Indices_CubeFaces);
+
+        int TotalVxCount = ARRAY_SIZE(Vertices_SpeedCube) * ARRAY_SIZE(Vertices_CubeFacesColor);
+        int TotalIxCount = ARRAY_SIZE(Indices_SpeedCube) * ARRAY_SIZE(Indices_CubeFaces);
+
+        return CreateMeshState
+        (
+            Graphics::Device(),
+            sizeof(VxColor),
+            //ARRAY_SIZE(Vertices_SpeedCube) * ARRAY_SIZE(Vertices_CubeFacesColor),
+            TotalVxCount,
+            Vertices_SpeedCube,
+            //ARRAY_SIZE(Indices_SpeedCube) * ARRAY_SIZE(Indices_CubeFaces),
+            TotalIxCount,
+            Indices_SpeedCube[0]
+        );
+    }
     MeshInstStateT LoadMeshInstStateVoxel()
     {
         return CreateMeshInstState

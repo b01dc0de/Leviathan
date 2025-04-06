@@ -209,6 +209,30 @@ namespace Leviathan
             Context->Draw(Mesh.NumVerts, StartVx);
         }
     }
+    void DrawMeshIxRange(ID3D11DeviceContext* Context, DrawStateT& PipelineState, MeshStateT& Mesh, int StartIx, int NumIx)
+    {
+        ASSERT(Context);
+        ASSERT(Mesh.IxBuffer);
+        ASSERT(0 <= StartIx && StartIx < Mesh.NumInds);
+        ASSERT(StartIx % 3 == 0 && NumIx % 3 == 0);
+        ASSERT(StartIx + NumIx <= Mesh.NumInds);
+
+        UINT VxStride = Mesh.VertexSize;
+        UINT VxOffset = 0;
+        Context->IASetInputLayout(PipelineState.InputLayout);
+        Context->IASetVertexBuffers(0, 1, &Mesh.VxBuffer, &VxStride, &VxOffset);
+        if (Mesh.IxBuffer) { Context->IASetIndexBuffer(Mesh.IxBuffer, MeshStateT::IxFormat, 0); }
+        Context->IASetPrimitiveTopology(MeshStateT::FormatTriangleList);
+
+        Context->VSSetShader(PipelineState.VertexShader, nullptr, 0);
+        Context->PSSetShader(PipelineState.PixelShader, nullptr, 0);
+
+        if (Mesh.IxBuffer)
+        {
+            constexpr UINT StartVx = 0;
+            Context->DrawIndexed(NumIx, StartIx, StartVx);
+        }
+    }
 
     void DrawMeshInst(ID3D11DeviceContext* Context, MeshInstStateT& MeshInst, size_t NumInsts)
     {
