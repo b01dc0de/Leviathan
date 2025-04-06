@@ -6,6 +6,10 @@ namespace Game
 
     namespace SpeedCubeState
     {
+        constexpr int NumPiecesPerRow = 9;
+        constexpr int NumRows = 3;
+        constexpr int NumPieces = NumPiecesPerRow * NumRows;
+
         MeshStateT SpeedCubeMesh;
         int IxPerPiece;
 
@@ -241,18 +245,60 @@ namespace Game
         static float RotationX = 0.0f;
         static float RotationY = 0.0f;
         static constexpr float RotSpeed = (1.0f / 60.0f) / 100.0f;
-        RotationX += RotSpeed;
-        RotationY += RotSpeed * 0.5f;
-        m4f SpeedCubeRotation = m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
+        //RotationX += RotSpeed;
+        //RotationY += RotSpeed * 0.5f;
 
-        m4f PieceWorld = SpeedCubeRotation;
-        UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
+        static float FakeTime = 0.0f;
+        FakeTime += RotSpeed;
 
-        constexpr int NumPiecesPerRow = 9;
-        constexpr int NumRows = 3;
-        constexpr int NumPieces = NumPiecesPerRow * NumRows;
+        static bool bRotateTopBottom = true;
+        static bool bRotateLeftRight = true;
+        static bool bRotateFrontBack = true;
+
+        auto GetRow = [](int PieceIdx) -> int
+        {
+            return PieceIdx / NumPiecesPerRow;
+        };
+        auto IsLeft = [](int PieceIdx) -> bool
+        {
+            return (PieceIdx % NumPiecesPerRow) % 3 == 2;
+        };
+        auto IsRight = [](int PieceIdx) -> bool
+        {
+            return (PieceIdx % NumPiecesPerRow) % 3 == 0;
+        };
+        auto IsFront = [](int PieceIdx) -> bool
+        {
+            return (PieceIdx % NumPiecesPerRow) / 3 == 2;
+        };
+        auto IsBack = [](int PieceIdx) -> bool
+        {
+            return (PieceIdx % NumPiecesPerRow) / 3 == 0;
+        };
+
         for (int PieceIdx = 0; PieceIdx < NumPieces; PieceIdx++)
         {
+            m4f PieceWorld = m4f::Identity();
+            if (bRotateTopBottom)
+            {
+                if (GetRow(PieceIdx) == 0) { PieceWorld = PieceWorld * m4f::RotAxisY(FakeTime); }
+                else if (GetRow(PieceIdx) == 2) { PieceWorld = PieceWorld * m4f::RotAxisY(-FakeTime); }
+            }
+            //else if (bRotateLeftRight)
+            if (bRotateLeftRight)
+            {
+                if (IsLeft(PieceIdx)) { PieceWorld = PieceWorld * m4f::RotAxisX(FakeTime); }
+                else if (IsRight(PieceIdx)) { PieceWorld = PieceWorld * m4f::RotAxisX(-FakeTime); }
+            }
+            //else if (bRotateFrontBack)
+            if (bRotateFrontBack)
+            {
+                if (IsFront(PieceIdx)) { PieceWorld = PieceWorld * m4f::RotAxisZ(FakeTime); }
+                else if (IsBack(PieceIdx)) { PieceWorld = PieceWorld * m4f::RotAxisZ(-FakeTime); }
+            }
+
+            UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
+
             int StartIx = PieceIdx * IxPerPiece;
             DrawMeshIxRange(GFXContext.ImmContext, *GFXContext.DrawStateColor, SpeedCubeMesh, StartIx, IxPerPiece);
         }
