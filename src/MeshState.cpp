@@ -325,6 +325,97 @@ namespace Leviathan
             Indices_CubeFaces
         );
     }
+
+    bool Helper_FaceIsExternal(int PieceIdx, int FaceIdx)
+    {
+        // FaceIdx:
+        //      0 -> Front / Green
+        //      1 -> Back / Blue
+        //      2 -> Top / White
+        //      3 -> Bottom / Yellow
+        //      4 -> Left / Orange
+        //      5 -> Right / Red
+        constexpr int Face_Green = 0;
+        constexpr int Face_Blue = 1;
+        constexpr int Face_White = 2;
+        constexpr int Face_Yellow = 3;
+        constexpr int Face_Orange = 4;
+        constexpr int Face_Red = 5;
+
+        switch (PieceIdx)
+        {
+            // Internal Core
+            case 13: { return false; } // All faces are internal
+                   break;
+
+            // Center 
+            //  4 -> White
+            //  10 -> Blue
+            //  12 -> Orange
+            //  14 -> Red
+            //  16 -> Green
+            //  22 -> Yellow
+            case 4: { return FaceIdx == Face_White; }
+            case 10: { return FaceIdx == Face_Blue; }
+            case 12: { return FaceIdx == Face_Orange; }
+            case 14: { return FaceIdx == Face_Red; }
+            case 16: { return FaceIdx == Face_Green; }
+            case 22: { return FaceIdx == Face_Yellow; }
+                   break;
+
+           // Corner
+           //  0 -> White/Blue/Orange
+           //  2 -> White/Blue/Red
+           //  6 -> White/Green/Orange
+           //  8 -> White/Green/Red
+            case 0: { return FaceIdx == Face_White || FaceIdx == Face_Blue || FaceIdx == Face_Orange; }
+            case 2: { return FaceIdx == Face_White || FaceIdx == Face_Blue || FaceIdx == Face_Red; }
+            case 6: { return FaceIdx == Face_White || FaceIdx == Face_Green || FaceIdx == Face_Orange; }
+            case 8: { return FaceIdx == Face_White || FaceIdx == Face_Green || FaceIdx == Face_Red; }
+            //  18 -> Yellow/Blue/Orange
+            //  20 -> Yellow/Blue/Red
+            //  24 -> Yellow/Green/Orange
+            //  26 -> Yellow/Green/Red
+            case 18: { return FaceIdx == Face_Yellow || FaceIdx == Face_Blue || FaceIdx == Face_Orange; }
+            case 20: { return FaceIdx == Face_Yellow || FaceIdx == Face_Blue || FaceIdx == Face_Red; }
+            case 24: { return FaceIdx == Face_Yellow || FaceIdx == Face_Green || FaceIdx == Face_Orange; }
+            case 26: { return FaceIdx == Face_Yellow || FaceIdx == Face_Green || FaceIdx == Face_Red; }
+                   break;
+            
+            // Edge
+            //  1 -> White/Blue
+            //  3 -> White/Orange
+            //  5 -> White/Red
+            //  7 -> White/Green
+            case 1: { return FaceIdx == Face_White || FaceIdx == Face_Blue; }
+            case 3: { return FaceIdx == Face_White || FaceIdx == Face_Orange; }
+            case 5: { return FaceIdx == Face_White || FaceIdx == Face_Red; }
+            case 7: { return FaceIdx == Face_White || FaceIdx == Face_Green; }
+            //  9 -> Blue/Orange
+            //  11 -> Blue/Red
+            //  15 -> Green/Orange
+            //  17 -> Green/Red
+            case 9: { return FaceIdx == Face_Blue || FaceIdx == Face_Orange; }
+            case 11: { return FaceIdx == Face_Blue || FaceIdx == Face_Red; }
+            case 15: { return FaceIdx == Face_Green || FaceIdx == Face_Orange; }
+            case 17: { return FaceIdx == Face_Green || FaceIdx == Face_Red; }
+            //  19 -> Yellow/Blue
+            //  21 -> Yellow/Orange
+            //  23 -> Yellow/Red
+            //  25 -> Yellow/Green
+            case 19: { return FaceIdx == Face_Yellow || FaceIdx == Face_Blue; }
+            case 21: { return FaceIdx == Face_Yellow || FaceIdx == Face_Orange; }
+            case 23: { return FaceIdx == Face_Yellow || FaceIdx == Face_Red; }
+            case 25: { return FaceIdx == Face_Yellow || FaceIdx == Face_Green; }
+                   break;
+
+            default: { ASSERT(false); } // shouldn't get here!
+        }
+
+        ASSERT(false); // shouldn't get here!
+
+        return false;
+    };
     MeshStateT LoadMeshStateSpeedCube(int* IxPerPiece)
     {
         ASSERT(IxPerPiece);
@@ -353,6 +444,13 @@ namespace Leviathan
                     Vertices_CubeFacesColor[VxIdx].Pos + vOffset, // v4f Pos
                     Vertices_CubeFacesColor[VxIdx].Col, // v4f Col
                 };
+
+                constexpr int VxPerFace = 4;
+                int FaceIdx = VxIdx / VxPerFace;
+                if (!Helper_FaceIsExternal(PieceIdx, FaceIdx))
+                {
+                    Vertices_SpeedCube[PieceIdx][VxIdx].Col = { 0.0f, 0.0f, 0.0f, 1.0f };
+                }
             }
 
             int PieceFirstIx = ARRAY_SIZE(Vertices_CubeFacesColor) * PieceIdx;

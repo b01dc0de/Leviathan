@@ -837,7 +837,7 @@ namespace Leviathan
             ));
         }
 
-        v3f CameraPos{ 5.0f, 5.0f, -5.0f };
+        v3f CameraPos{ 5.0f, 10.0f, 10.0f };
         v3f CameraLookAt{ 0.0f, 0.0f, 0.0f };
         GameCamera.Persp(CameraPos, CameraLookAt);
 
