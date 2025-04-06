@@ -1,20 +1,17 @@
-#ifndef GAME_SNAKE_H
-#define GAME_SNAKE_H
+#ifndef GAME_SPEEDCUBE_H
+#define GAME_SPEEDCUBE_H
 
 #include "../Leviathan.h"
 
 namespace Game
 {
-
-    namespace GridSnake
+    namespace SpeedCube
     {
         void Update();
         void Draw(GameGraphicsContext& GFXContext);
         void Init();
         void Term();
     }
-
 }
 
-#endif // GAME_TETRIS_H
-
+#endif // GAME_SPEEDCUBE_H

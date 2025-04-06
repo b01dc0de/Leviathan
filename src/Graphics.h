@@ -2,6 +2,10 @@
 #define LEVIATHAN_GRAPHICS_H
 
 #include "Leviathan.h"
+#include "DrawState.h"
+#include "Draw3D.h"
+#include "Draw2D.h"
+#include "MeshState.h"
 
 namespace Leviathan
 {
@@ -16,14 +20,16 @@ namespace Leviathan
     };
 
     inline void SafeRelease(IUnknown* Ptr) { if (Ptr) { Ptr->Release(); Ptr = nullptr; } }
+
+    struct GameGraphicsContext
+    {
+        BatchDraw2D* Draw2D;
+    };
 }
 
-#define DX_CHECK(DXResult) if (FAILED(DXResult)) { DebugBreak(); }
+using Leviathan::GameGraphicsContext;
 
-#include "DrawState.h"
-#include "Draw3D.h"
-#include "Draw2D.h"
-#include "MeshState.h"
+#define DX_CHECK(DXResult) if (FAILED(DXResult)) { DebugBreak(); }
 
 #endif // LEVIATHAN_GRAPHICS_H
 

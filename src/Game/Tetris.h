@@ -8,7 +8,7 @@ namespace Game
     namespace Tetris
     {
         void Update();
-        void Draw(BatchDraw2D& Draw2D);
+        void Draw(GameGraphicsContext& GFXContext);
         void Init();
         void Term();
     }

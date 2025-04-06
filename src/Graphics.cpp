@@ -162,6 +162,10 @@ namespace Leviathan
         ID3D11SamplerState* DefaultSampler[] = { DX_DefaultSamplerState };
         SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
         SetShaderSamplers(DX_ImmContext, ARRAY_SIZE(DefaultSampler), DefaultSampler);
+
+        GameGraphicsContext GameContext{
+            &Draw2D
+        };
         
         if (!bDrawGame || bForceDrawDebugDemo)
         {
@@ -169,8 +173,8 @@ namespace Leviathan
         }
         if (bDrawGame)
         {
-            GameManager::Draw(Draw2D);
-            DrawBatch2D(Draw2D, BulletLimboSpriteSheet.LvTex.SRV, true);
+            GameManager::Draw(GameContext);
+            DrawBatch2D(*GameContext.Draw2D, BulletLimboSpriteSheet.LvTex.SRV, true);
         }
         if (bDrawUI)
         {

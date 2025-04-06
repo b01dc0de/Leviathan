@@ -20,7 +20,7 @@ static GameType SelectedGame = GameType::BulletLimbo;
 struct GameDefinition
 {
     using ProcCallback = void (*)(void);
-    using DrawCallback = void (*)(BatchDraw2D&);
+    using DrawCallback = void (*)(GameGraphicsContext&);
 
     ProcCallback Update = nullptr;
     DrawCallback Draw = nullptr;
@@ -62,11 +62,12 @@ void GameManager::Update()
     }
 }
 
-void GameManager::Draw(BatchDraw2D& Draw2D)
+
+void GameManager::Draw(GameGraphicsContext& GFXContext)
 {
     const GameDefinition& CurrGame = GameDefines[(size_t)SelectedGame];
     ASSERT(CurrGame.Draw);
-    CurrGame.Draw(Draw2D);
+    CurrGame.Draw(GFXContext);
 }
 void GameManager::Init()
 {

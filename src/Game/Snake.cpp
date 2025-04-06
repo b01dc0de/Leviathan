@@ -205,8 +205,10 @@ namespace Game
         GridSnakeState::Update();
     }
 
-    void GridSnake::Draw(BatchDraw2D& Draw2D)
+    void GridSnake::Draw(GameGraphicsContext& GFXContext)
     {
+        BatchDraw2D& Draw2D = *GFXContext.Draw2D;
+
         // Draw Grid
         Draw2D.AddBox(RectF{ VisualGridPos.X, VisualGridPos.Y, VisualGridSize, VisualGridSize }, GridColor);
 
