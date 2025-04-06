@@ -13,100 +13,184 @@ namespace Game
         MeshStateT SpeedCubeMesh;
         int IxPerPiece;
 
-        bool FaceIsExternal(int PieceIdx, int FaceIdx);
-        void LoadSpeedCubeMesh();
-    }
-
-    bool SpeedCubeState::FaceIsExternal(int PieceIdx, int FaceIdx)
-    {
-        // FaceIdx:
-        //      0 -> Front / Green
-        //      1 -> Back / Blue
-        //      2 -> Top / White
-        //      3 -> Bottom / Yellow
-        //      4 -> Left / Orange
-        //      5 -> Right / Red
-        constexpr int Face_Green = 0;
-        constexpr int Face_Blue = 1;
-        constexpr int Face_White = 2;
-        constexpr int Face_Yellow = 3;
-        constexpr int Face_Orange = 4;
-        constexpr int Face_Red = 5;
-
-        switch (PieceIdx)
+        enum CubePieceType
         {
-            // Internal Core
-            case 13: { return false; } // All faces are internal
-                   break;
+            Piece_None,
+            Piece_Center,
+            Piece_Edge,
+            Piece_Corner,
+        };
 
-            // Center 
-            //  4 -> White
-            //  10 -> Blue
-            //  12 -> Orange
-            //  14 -> Red
-            //  16 -> Green
-            //  22 -> Yellow
-            case 4: { return FaceIdx == Face_White; }
-            case 10: { return FaceIdx == Face_Blue; }
-            case 12: { return FaceIdx == Face_Orange; }
-            case 14: { return FaceIdx == Face_Red; }
-            case 16: { return FaceIdx == Face_Green; }
-            case 22: { return FaceIdx == Face_Yellow; }
-                   break;
+        enum CubeFaceColor
+        {
+            Face_White,
+            Face_Yellow,
+            Face_Green,
+            Face_Blue,
+            Face_Orange,
+            Face_Red,
+        };
 
-           // Corner
-           //  0 -> White/Blue/Orange
-           //  2 -> White/Blue/Red
-           //  6 -> White/Green/Orange
-           //  8 -> White/Green/Red
-            case 0: { return FaceIdx == Face_White || FaceIdx == Face_Blue || FaceIdx == Face_Orange; }
-            case 2: { return FaceIdx == Face_White || FaceIdx == Face_Blue || FaceIdx == Face_Red; }
-            case 6: { return FaceIdx == Face_White || FaceIdx == Face_Green || FaceIdx == Face_Orange; }
-            case 8: { return FaceIdx == Face_White || FaceIdx == Face_Green || FaceIdx == Face_Red; }
-            //  18 -> Yellow/Blue/Orange
-            //  20 -> Yellow/Blue/Red
-            //  24 -> Yellow/Green/Orange
-            //  26 -> Yellow/Green/Red
-            case 18: { return FaceIdx == Face_Yellow || FaceIdx == Face_Blue || FaceIdx == Face_Orange; }
-            case 20: { return FaceIdx == Face_Yellow || FaceIdx == Face_Blue || FaceIdx == Face_Red; }
-            case 24: { return FaceIdx == Face_Yellow || FaceIdx == Face_Green || FaceIdx == Face_Orange; }
-            case 26: { return FaceIdx == Face_Yellow || FaceIdx == Face_Green || FaceIdx == Face_Red; }
-                   break;
+        enum PieceFaceDirection
+        {
+            FaceDir_PosX,
+            FaceDir_NegX,
+            FaceDir_PosY,
+            FaceDir_NegY,
+            FaceDir_PosZ,
+            FaceDir_NegZ,
+        };
 
-            // Edge
-            //  1 -> White/Blue
-            //  3 -> White/Orange
-            //  5 -> White/Red
-            //  7 -> White/Green
-            case 1: { return FaceIdx == Face_White || FaceIdx == Face_Blue; }
-            case 3: { return FaceIdx == Face_White || FaceIdx == Face_Orange; }
-            case 5: { return FaceIdx == Face_White || FaceIdx == Face_Red; }
-            case 7: { return FaceIdx == Face_White || FaceIdx == Face_Green; }
-            //  9 -> Blue/Orange
-            //  11 -> Blue/Red
-            //  15 -> Green/Orange
-            //  17 -> Green/Red
-            case 9: { return FaceIdx == Face_Blue || FaceIdx == Face_Orange; }
-            case 11: { return FaceIdx == Face_Blue || FaceIdx == Face_Red; }
-            case 15: { return FaceIdx == Face_Green || FaceIdx == Face_Orange; }
-            case 17: { return FaceIdx == Face_Green || FaceIdx == Face_Red; }
-            //  19 -> Yellow/Blue
-            //  21 -> Yellow/Orange
-            //  23 -> Yellow/Red
-            //  25 -> Yellow/Green
-            case 19: { return FaceIdx == Face_Yellow || FaceIdx == Face_Blue; }
-            case 21: { return FaceIdx == Face_Yellow || FaceIdx == Face_Orange; }
-            case 23: { return FaceIdx == Face_Yellow || FaceIdx == Face_Red; }
-            case 25: { return FaceIdx == Face_Yellow || FaceIdx == Face_Green; }
-                   break;
-
-            default: { ASSERT(false); } // shouldn't get here!
+        PieceFaceDirection RotateFaceDir_X(PieceFaceDirection StartDir, bool bClockWise)
+        {
+            switch (StartDir)
+            {
+                case FaceDir_PosX: case FaceDir_NegX: { return StartDir; }
+                case FaceDir_PosY: { return bClockWise ? FaceDir_NegZ : FaceDir_PosZ; }
+                case FaceDir_NegY: { return bClockWise ? FaceDir_PosZ : FaceDir_NegZ; }
+                case FaceDir_PosZ: { return bClockWise ? FaceDir_PosY : FaceDir_NegY; }
+                case FaceDir_NegZ: { return bClockWise ? FaceDir_NegY : FaceDir_PosY; }
+            }
+            ASSERT(false);
+            return StartDir;
         }
 
-        ASSERT(false); // shouldn't get here!
+        PieceFaceDirection RotateFaceDir_Y(PieceFaceDirection StartDir, bool bClockWise)
+        {
+            switch (StartDir)
+            {
+                case FaceDir_PosX: { return bClockWise ? FaceDir_PosZ : FaceDir_NegZ; }
+                case FaceDir_NegX: { return bClockWise ? FaceDir_NegZ : FaceDir_PosZ; }
+                case FaceDir_PosY: case FaceDir_NegY: { return StartDir; }
+                case FaceDir_PosZ: { return bClockWise ? FaceDir_NegX : FaceDir_PosX; }
+                case FaceDir_NegZ: { return bClockWise ? FaceDir_PosX : FaceDir_NegX; }
+            }
+            ASSERT(false);
+            return StartDir;
+        }
 
-        return false;
-    };
+        PieceFaceDirection RotateFaceDir_Z(PieceFaceDirection StartDir, bool bClockWise)
+        {
+            switch (StartDir)
+            {
+                case FaceDir_PosX: { return bClockWise ? FaceDir_NegY : FaceDir_PosY; }
+                case FaceDir_NegX: { return bClockWise ? FaceDir_PosY : FaceDir_NegY; }
+                case FaceDir_PosY: { return bClockWise ? FaceDir_PosX : FaceDir_NegX; }
+                case FaceDir_NegY: { return bClockWise ? FaceDir_NegX : FaceDir_PosX; }
+                case FaceDir_PosZ: case FaceDir_NegZ: { return StartDir; }
+            }
+            ASSERT(false); return StartDir;
+        }
+
+        struct CenterPiece
+        {
+            CubeFaceColor ColorA;
+            PieceFaceDirection DirA;
+        };
+
+        struct EdgePiece
+        {
+            CubeFaceColor ColorA;
+            PieceFaceDirection DirA;
+            CubeFaceColor ColorB;
+            PieceFaceDirection DirB;
+        };
+
+        struct CornerPiece
+        {
+            CubeFaceColor ColorA;
+            PieceFaceDirection DirA;
+            CubeFaceColor ColorB;
+            PieceFaceDirection DirB;
+            CubeFaceColor ColorC;
+            PieceFaceDirection DirC;
+        };
+
+
+        struct CubePieces
+        {
+            static constexpr int NumCenters = 6;
+            static constexpr int NumEdges = 12;
+            static constexpr int NumCorners = 8;
+            CenterPiece Centers[6];
+            EdgePiece Edges[12];
+            CornerPiece Corners[8];
+
+            void Init()
+            {
+                #define FACE_COLDIR_WHITE() Face_White, FaceDir_PosY
+                #define FACE_COLDIR_YELLOW() Face_Yellow, FaceDir_NegY
+                #define FACE_COLDIR_GREEN() Face_Green, FaceDir_PosZ
+                #define FACE_COLDIR_BLUE() Face_Blue, FaceDir_NegZ
+                #define FACE_COLDIR_ORANGE() Face_Orange, FaceDir_NegX
+                #define FACE_COLDIR_RED() Face_Red, FaceDir_PosX
+                {
+                    Centers[0] = { FACE_COLDIR_WHITE()};
+                    Centers[1] = { FACE_COLDIR_BLUE()};
+                    Centers[2] = { FACE_COLDIR_ORANGE()};
+                    Centers[3] = { FACE_COLDIR_RED()};
+                    Centers[4] = { FACE_COLDIR_GREEN()};
+                    Centers[5] = { FACE_COLDIR_YELLOW()};
+                }
+                {
+                    Edges[0] = { FACE_COLDIR_WHITE(), FACE_COLDIR_BLUE() };
+                    Edges[1] = { FACE_COLDIR_WHITE(), FACE_COLDIR_ORANGE() };
+                    Edges[2] = { FACE_COLDIR_WHITE(), FACE_COLDIR_RED() };
+                    Edges[3] = { FACE_COLDIR_WHITE(), FACE_COLDIR_GREEN() };
+
+                    Edges[4] = { FACE_COLDIR_BLUE(), FACE_COLDIR_ORANGE() };
+                    Edges[5] = { FACE_COLDIR_BLUE(), FACE_COLDIR_RED() };
+                    Edges[6] = { FACE_COLDIR_GREEN(), FACE_COLDIR_ORANGE() };
+                    Edges[7] = { FACE_COLDIR_GREEN(), FACE_COLDIR_RED() };
+
+                    Edges[8] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_BLUE() };
+                    Edges[9] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_ORANGE() };
+                    Edges[10] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_RED() };
+                    Edges[11] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_GREEN() };
+                }
+                {
+                    Corners[0] = { FACE_COLDIR_WHITE(), FACE_COLDIR_BLUE(), FACE_COLDIR_ORANGE() };
+                    Corners[1] = { FACE_COLDIR_WHITE(), FACE_COLDIR_BLUE(), FACE_COLDIR_RED() };
+                    Corners[2] = { FACE_COLDIR_WHITE(), FACE_COLDIR_GREEN(), FACE_COLDIR_ORANGE() };
+                    Corners[3] = { FACE_COLDIR_WHITE(), FACE_COLDIR_GREEN(), FACE_COLDIR_RED() };
+
+                    Corners[4] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_BLUE(), FACE_COLDIR_ORANGE() };
+                    Corners[5] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_BLUE(), FACE_COLDIR_RED() };
+                    Corners[6] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_GREEN(), FACE_COLDIR_ORANGE() };
+                    Corners[7] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_GREEN(), FACE_COLDIR_RED() };
+                }
+            }
+            void Turn_Top_CW()
+            {
+                // Centers: 0
+                // Edges:
+                //  0 -> 2
+                //  1 -> 0
+                //  3 -> 1
+                //  2 -> 3
+                // Corners:
+                //  0 -> 1
+                //  1 -> 3
+                //  2 -> 0
+                //  3 -> 2
+            }
+            void Turn_Top_CCW() {};
+            void Turn_Bot_CW() {};
+            void Turn_Bot_CCW() {};
+            void Turn_Left_CW() {};
+            void Turn_Left_CCW() {};
+            void Turn_Right_CW() {};
+            void Turn_Right_CCW() {};
+            void Turn_Front_CW() {};
+            void Turn_Front_CCW() {};
+            void Turn_Back_CW() {};
+            void Turn_Back_CCW() {};
+        };
+
+        void LoadSpeedCubeMesh();
+
+        bool FaceIsExternal(int PieceIdx, int FaceIdx);
+    }
 
     void SpeedCubeState::LoadSpeedCubeMesh()
     {
@@ -176,6 +260,7 @@ namespace Game
         constexpr int NumRows = 3;
         constexpr int NumPieces = NumPiecesPerRow * NumRows;
 
+        // TODO: Move this off the stack
         VxColor Vertices_SpeedCube[NumPieces][ARRAY_SIZE(Vertices_CubeFacesColor)] = { };
         unsigned int Indices_SpeedCube[NumPieces][ARRAY_SIZE(Indices_CubeFaces)] = { };
 
@@ -313,5 +398,97 @@ namespace Game
     {
         SafeRelease(SpeedCubeMesh);
     }
+
+    bool SpeedCubeState::FaceIsExternal(int PieceIdx, int FaceIdx)
+    {
+        // FaceIdx:
+        //      0 -> Front / Green
+        //      1 -> Back / Blue
+        //      2 -> Top / White
+        //      3 -> Bottom / Yellow
+        //      4 -> Left / Orange
+        //      5 -> Right / Red
+        constexpr int Face_Green = 0;
+        constexpr int Face_Blue = 1;
+        constexpr int Face_White = 2;
+        constexpr int Face_Yellow = 3;
+        constexpr int Face_Orange = 4;
+        constexpr int Face_Red = 5;
+
+        switch (PieceIdx)
+        {
+            // Internal Core
+            case 13: { return false; } // All faces are internal
+                   break;
+
+            // Center 
+            //  4 -> White
+            //  10 -> Blue
+            //  12 -> Orange
+            //  14 -> Red
+            //  16 -> Green
+            //  22 -> Yellow
+            case 4: { return FaceIdx == Face_White; }
+            case 10: { return FaceIdx == Face_Blue; }
+            case 12: { return FaceIdx == Face_Orange; }
+            case 14: { return FaceIdx == Face_Red; }
+            case 16: { return FaceIdx == Face_Green; }
+            case 22: { return FaceIdx == Face_Yellow; }
+                   break;
+
+           // Corner
+           //  0 -> White/Blue/Orange
+           //  2 -> White/Blue/Red
+           //  6 -> White/Green/Orange
+           //  8 -> White/Green/Red
+            case 0: { return FaceIdx == Face_White || FaceIdx == Face_Blue || FaceIdx == Face_Orange; }
+            case 2: { return FaceIdx == Face_White || FaceIdx == Face_Blue || FaceIdx == Face_Red; }
+            case 6: { return FaceIdx == Face_White || FaceIdx == Face_Green || FaceIdx == Face_Orange; }
+            case 8: { return FaceIdx == Face_White || FaceIdx == Face_Green || FaceIdx == Face_Red; }
+            //  18 -> Yellow/Blue/Orange
+            //  20 -> Yellow/Blue/Red
+            //  24 -> Yellow/Green/Orange
+            //  26 -> Yellow/Green/Red
+            case 18: { return FaceIdx == Face_Yellow || FaceIdx == Face_Blue || FaceIdx == Face_Orange; }
+            case 20: { return FaceIdx == Face_Yellow || FaceIdx == Face_Blue || FaceIdx == Face_Red; }
+            case 24: { return FaceIdx == Face_Yellow || FaceIdx == Face_Green || FaceIdx == Face_Orange; }
+            case 26: { return FaceIdx == Face_Yellow || FaceIdx == Face_Green || FaceIdx == Face_Red; }
+                   break;
+
+            // Edge
+            //  1 -> White/Blue
+            //  3 -> White/Orange
+            //  5 -> White/Red
+            //  7 -> White/Green
+            case 1: { return FaceIdx == Face_White || FaceIdx == Face_Blue; }
+            case 3: { return FaceIdx == Face_White || FaceIdx == Face_Orange; }
+            case 5: { return FaceIdx == Face_White || FaceIdx == Face_Red; }
+            case 7: { return FaceIdx == Face_White || FaceIdx == Face_Green; }
+            //  9 -> Blue/Orange
+            //  11 -> Blue/Red
+            //  15 -> Green/Orange
+            //  17 -> Green/Red
+            case 9: { return FaceIdx == Face_Blue || FaceIdx == Face_Orange; }
+            case 11: { return FaceIdx == Face_Blue || FaceIdx == Face_Red; }
+            case 15: { return FaceIdx == Face_Green || FaceIdx == Face_Orange; }
+            case 17: { return FaceIdx == Face_Green || FaceIdx == Face_Red; }
+            //  19 -> Yellow/Blue
+            //  21 -> Yellow/Orange
+            //  23 -> Yellow/Red
+            //  25 -> Yellow/Green
+            case 19: { return FaceIdx == Face_Yellow || FaceIdx == Face_Blue; }
+            case 21: { return FaceIdx == Face_Yellow || FaceIdx == Face_Orange; }
+            case 23: { return FaceIdx == Face_Yellow || FaceIdx == Face_Red; }
+            case 25: { return FaceIdx == Face_Yellow || FaceIdx == Face_Green; }
+                   break;
+
+            default: { ASSERT(false); } // shouldn't get here!
+        }
+
+        ASSERT(false); // shouldn't get here!
+
+        return false;
+    };
+
 }
 
