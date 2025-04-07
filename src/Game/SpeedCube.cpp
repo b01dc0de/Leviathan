@@ -9,183 +9,162 @@ namespace Game
         constexpr int NumPiecesPerRow = 9;
         constexpr int NumRows = 3;
         constexpr int NumPieces = NumPiecesPerRow * NumRows;
+        constexpr int MaxTurns = 4;
 
         MeshStateT SpeedCubeMesh;
         int IxPerPiece;
 
-        enum CubePieceType
+        struct Piece
         {
-            Piece_None,
-            Piece_Center,
-            Piece_Edge,
-            Piece_Corner,
+            int ID;
+            int Turns[3];
         };
 
-        enum CubeFaceColor
-        {
-            Face_White,
-            Face_Yellow,
-            Face_Green,
-            Face_Blue,
-            Face_Orange,
-            Face_Red,
-        };
-
-        enum PieceFaceDirection
-        {
-            FaceDir_PosX,
-            FaceDir_NegX,
-            FaceDir_PosY,
-            FaceDir_NegY,
-            FaceDir_PosZ,
-            FaceDir_NegZ,
-        };
-
-        PieceFaceDirection RotateFaceDir_X(PieceFaceDirection StartDir, bool bClockWise)
-        {
-            switch (StartDir)
-            {
-                case FaceDir_PosX: case FaceDir_NegX: { return StartDir; }
-                case FaceDir_PosY: { return bClockWise ? FaceDir_NegZ : FaceDir_PosZ; }
-                case FaceDir_NegY: { return bClockWise ? FaceDir_PosZ : FaceDir_NegZ; }
-                case FaceDir_PosZ: { return bClockWise ? FaceDir_PosY : FaceDir_NegY; }
-                case FaceDir_NegZ: { return bClockWise ? FaceDir_NegY : FaceDir_PosY; }
-            }
-            ASSERT(false);
-            return StartDir;
-        }
-
-        PieceFaceDirection RotateFaceDir_Y(PieceFaceDirection StartDir, bool bClockWise)
-        {
-            switch (StartDir)
-            {
-                case FaceDir_PosX: { return bClockWise ? FaceDir_PosZ : FaceDir_NegZ; }
-                case FaceDir_NegX: { return bClockWise ? FaceDir_NegZ : FaceDir_PosZ; }
-                case FaceDir_PosY: case FaceDir_NegY: { return StartDir; }
-                case FaceDir_PosZ: { return bClockWise ? FaceDir_NegX : FaceDir_PosX; }
-                case FaceDir_NegZ: { return bClockWise ? FaceDir_PosX : FaceDir_NegX; }
-            }
-            ASSERT(false);
-            return StartDir;
-        }
-
-        PieceFaceDirection RotateFaceDir_Z(PieceFaceDirection StartDir, bool bClockWise)
-        {
-            switch (StartDir)
-            {
-                case FaceDir_PosX: { return bClockWise ? FaceDir_NegY : FaceDir_PosY; }
-                case FaceDir_NegX: { return bClockWise ? FaceDir_PosY : FaceDir_NegY; }
-                case FaceDir_PosY: { return bClockWise ? FaceDir_PosX : FaceDir_NegX; }
-                case FaceDir_NegY: { return bClockWise ? FaceDir_NegX : FaceDir_PosX; }
-                case FaceDir_PosZ: case FaceDir_NegZ: { return StartDir; }
-            }
-            ASSERT(false); return StartDir;
-        }
-
-        struct CenterPiece
-        {
-            CubeFaceColor ColorA;
-            PieceFaceDirection DirA;
-        };
-
-        struct EdgePiece
-        {
-            CubeFaceColor ColorA;
-            PieceFaceDirection DirA;
-            CubeFaceColor ColorB;
-            PieceFaceDirection DirB;
-        };
-
-        struct CornerPiece
-        {
-            CubeFaceColor ColorA;
-            PieceFaceDirection DirA;
-            CubeFaceColor ColorB;
-            PieceFaceDirection DirB;
-            CubeFaceColor ColorC;
-            PieceFaceDirection DirC;
-        };
-
-
+        const char* GetIDName(int ID);
         struct CubePieces
         {
             static constexpr int NumCenters = 6;
             static constexpr int NumEdges = 12;
             static constexpr int NumCorners = 8;
-            CenterPiece Centers[6];
-            EdgePiece Edges[12];
-            CornerPiece Corners[8];
+            Piece Centers[6];
+            Piece Edges[12];
+            Piece Corners[8];
 
             void Init()
             {
-                #define FACE_COLDIR_WHITE() Face_White, FaceDir_PosY
-                #define FACE_COLDIR_YELLOW() Face_Yellow, FaceDir_NegY
-                #define FACE_COLDIR_GREEN() Face_Green, FaceDir_PosZ
-                #define FACE_COLDIR_BLUE() Face_Blue, FaceDir_NegZ
-                #define FACE_COLDIR_ORANGE() Face_Orange, FaceDir_NegX
-                #define FACE_COLDIR_RED() Face_Red, FaceDir_PosX
                 {
-                    Centers[0] = { FACE_COLDIR_WHITE()};
-                    Centers[1] = { FACE_COLDIR_BLUE()};
-                    Centers[2] = { FACE_COLDIR_ORANGE()};
-                    Centers[3] = { FACE_COLDIR_RED()};
-                    Centers[4] = { FACE_COLDIR_GREEN()};
-                    Centers[5] = { FACE_COLDIR_YELLOW()};
+                    Centers[0] = { 4 };
+                    Centers[1] = { 10 };
+                    Centers[2] = { 12 };
+                    Centers[3] = { 14 };
+                    Centers[4] = { 16 };
+                    Centers[5] = { 22 };
                 }
                 {
-                    Edges[0] = { FACE_COLDIR_WHITE(), FACE_COLDIR_BLUE() };
-                    Edges[1] = { FACE_COLDIR_WHITE(), FACE_COLDIR_ORANGE() };
-                    Edges[2] = { FACE_COLDIR_WHITE(), FACE_COLDIR_RED() };
-                    Edges[3] = { FACE_COLDIR_WHITE(), FACE_COLDIR_GREEN() };
-
-                    Edges[4] = { FACE_COLDIR_BLUE(), FACE_COLDIR_ORANGE() };
-                    Edges[5] = { FACE_COLDIR_BLUE(), FACE_COLDIR_RED() };
-                    Edges[6] = { FACE_COLDIR_GREEN(), FACE_COLDIR_ORANGE() };
-                    Edges[7] = { FACE_COLDIR_GREEN(), FACE_COLDIR_RED() };
-
-                    Edges[8] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_BLUE() };
-                    Edges[9] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_ORANGE() };
-                    Edges[10] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_RED() };
-                    Edges[11] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_GREEN() };
+                    Edges[0] = { 1 };
+                    Edges[1] = { 3 };
+                    Edges[2] = { 5 };
+                    Edges[3] = { 7 };
+                    Edges[4] = { 9 };
+                    Edges[5] = { 11 };
+                    Edges[6] = { 15 };
+                    Edges[7] = { 17 };
+                    Edges[8] = { 19 };
+                    Edges[9] = { 21 };
+                    Edges[10] = { 23 };
+                    Edges[11] = { 25 };
                 }
                 {
-                    Corners[0] = { FACE_COLDIR_WHITE(), FACE_COLDIR_BLUE(), FACE_COLDIR_ORANGE() };
-                    Corners[1] = { FACE_COLDIR_WHITE(), FACE_COLDIR_BLUE(), FACE_COLDIR_RED() };
-                    Corners[2] = { FACE_COLDIR_WHITE(), FACE_COLDIR_GREEN(), FACE_COLDIR_ORANGE() };
-                    Corners[3] = { FACE_COLDIR_WHITE(), FACE_COLDIR_GREEN(), FACE_COLDIR_RED() };
-
-                    Corners[4] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_BLUE(), FACE_COLDIR_ORANGE() };
-                    Corners[5] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_BLUE(), FACE_COLDIR_RED() };
-                    Corners[6] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_GREEN(), FACE_COLDIR_ORANGE() };
-                    Corners[7] = { FACE_COLDIR_YELLOW(), FACE_COLDIR_GREEN(), FACE_COLDIR_RED() };
+                    Corners[0] = { 0 };
+                    Corners[1] = { 2 };
+                    Corners[2] = { 6 };
+                    Corners[3] = { 8 };
+                    Corners[4] = { 18 };
+                    Corners[5] = { 20 };
+                    Corners[6] = { 24 };
+                    Corners[7] = { 26 };
                 }
             }
-            void Turn_Top_CW()
+            void DebugPrint()
             {
-                // Centers: 0
-                // Edges:
-                //  0 -> 2
-                //  1 -> 0
-                //  3 -> 1
-                //  2 -> 3
-                // Corners:
-                //  0 -> 1
-                //  1 -> 3
-                //  2 -> 0
-                //  3 -> 2
+                char PrintBuffer[4096];
+                sprintf_s(PrintBuffer, "Top Row: \n\t%s\t%s\t%s\n\t%s\t%s\t%s\n\t%s\t%s\t%s\n",
+                    GetIDName(Corners[0].ID), GetIDName(Edges[0].ID), GetIDName(Corners[1].ID),
+                    GetIDName(Edges[1].ID), GetIDName(Centers[0].ID), GetIDName(Edges[2].ID),
+                    GetIDName(Corners[2].ID), GetIDName(Edges[3].ID), GetIDName(Corners[3].ID)
+                );
+                OutputDebugStringA(PrintBuffer);
             }
-            void Turn_Top_CCW() {};
-            void Turn_Bot_CW() {};
-            void Turn_Bot_CCW() {};
-            void Turn_Left_CW() {};
-            void Turn_Left_CCW() {};
-            void Turn_Right_CW() {};
-            void Turn_Right_CCW() {};
-            void Turn_Front_CW() {};
-            void Turn_Front_CCW() {};
-            void Turn_Back_CW() {};
-            void Turn_Back_CCW() {};
+            struct TurnGroup
+            {
+                // Group[0]: Center
+                // Group[1, 4]: Edges
+                // Group[5, 8]: Corners
+                Piece* Group[9];
+                void TurnCW(int Axis, bool bPoleDirection)
+                {
+                    for (int GroupIdx = 0; GroupIdx < 9; GroupIdx++)
+                    {
+                        if (bPoleDirection) { Group[GroupIdx]->Turns[Axis]--; }
+                        else { Group[GroupIdx]->Turns[Axis]++; }
+                    }
+                    Piece Tmp = *Group[4];
+                    *Group[4] = *Group[3];
+                    *Group[3] = *Group[2];
+                    *Group[2] = *Group[1];
+                    *Group[1] = Tmp;
+                    Tmp = *Group[8];
+                    *Group[8] = *Group[7];
+                    *Group[7] = *Group[6];
+                    *Group[6] = *Group[5];
+                    *Group[5] = Tmp;
+                }
+                void TurnCCW(int Axis, bool bPoleDirection)
+                {
+                    for (int GroupIdx = 0; GroupIdx < 9; GroupIdx++)
+                    {
+                        Group[GroupIdx]->Turns[Axis]++;
+                        if (bPoleDirection) { Group[GroupIdx]->Turns[Axis]++; }
+                        else { Group[GroupIdx]->Turns[Axis]--; }
+                    }
+                    Piece Tmp = *Group[1];
+                    *Group[1] = *Group[2];
+                    *Group[2] = *Group[3];
+                    *Group[3] = *Group[4];
+                    *Group[4] = Tmp;
+                    Tmp = *Group[5];
+                    *Group[5] = *Group[6];
+                    *Group[6] = *Group[7];
+                    *Group[7] = *Group[8];
+                    *Group[8] = Tmp;
+                }
+            };
+            void Turn_Top(bool bClockWise)
+            {
+                TurnGroup TopGroup =
+                {
+                    &Centers[0],
+                    &Edges[0], &Edges[1],
+                    &Edges[3], &Edges[2],
+                    &Corners[0], &Corners[2],
+                    &Corners[3], &Corners[1]
+                };
+                if (bClockWise) { TopGroup.TurnCW(1, true); }
+                else { TopGroup.TurnCCW(1, true); }
+            }
+            void Turn_Left(bool bClockWise)
+            {
+                TurnGroup LeftGroup =
+                {
+                    &Centers[2],
+                    &Edges[1],
+                    &Edges[4],
+                    &Edges[9],
+                    &Edges[6],
+                    &Corners[0],
+                    &Corners[4],
+                    &Corners[6],
+                    &Corners[2]
+                };
+                
+                if (bClockWise) { LeftGroup.TurnCW(0, false); }
+                else { LeftGroup.TurnCCW(0, false); }
+
+                // Centers: 2
+                // Edges: 
+                //  1 -> 4
+                //  4 -> 9
+                //  9 -> 6
+                //  6 -> 1
+                // Corners:
+            };
+            void Turn_Right(bool bClockWise) {};
+            void Turn_Front(bool bClockWise) {};
+            void Turn_Bot(bool bClockWise) {};
+            void Turn_Back(bool bClockWise) {};
         };
+
+        CubePieces TheCube;
 
         void LoadSpeedCubeMesh();
 
@@ -317,7 +296,38 @@ namespace Game
 
     void SpeedCube::Update()
     {
+        bool bCCW = KeyboardState::GetKey(LV_KEY_SHIFT, true);
+        if (KeyboardState::GetKey(LV_KEY_ARROW_UP))
+        {
+            TheCube.Turn_Top(!bCCW);
+            TheCube.DebugPrint();
+        }
+        else if (KeyboardState::GetKey(LV_KEY_ARROW_LEFT))
+        {
+            TheCube.Turn_Left(!bCCW);
+            TheCube.DebugPrint();
+        }
+        else if (KeyboardState::GetKey(LV_KEY_ARROW_DOWN))
+        {
+            TheCube.Turn_Front(!bCCW);
+        }
+        else if (KeyboardState::GetKey(LV_KEY_ARROW_RIGHT))
+        {
+            TheCube.Turn_Right(!bCCW);
+        }
 
+        if (KeyboardState::GetKey(LV_KEY_Q))
+        {
+            TheCube.Corners[0].Turns[0]++;
+        }
+        else if (KeyboardState::GetKey(LV_KEY_W))
+        {
+            TheCube.Corners[0].Turns[1]++;
+        }
+        else if (KeyboardState::GetKey(LV_KEY_E))
+        {
+            TheCube.Corners[0].Turns[2]++;
+        }
     }
 
     void SpeedCube::Draw(GameGraphicsContext & GFXContext)
@@ -327,77 +337,90 @@ namespace Game
         SetShaderConstantBuffers(GFXContext.ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
         UpdateShaderViewProj(GFXContext.ImmContext, GFXContext.GameCamera);
 
-        static float RotationX = 0.0f;
-        static float RotationY = 0.0f;
         static constexpr float RotSpeed = (1.0f / 60.0f) / 100.0f;
-        //RotationX += RotSpeed;
-        //RotationY += RotSpeed * 0.5f;
-
         static float FakeTime = 0.0f;
         FakeTime += RotSpeed;
 
-        static bool bRotateTopBottom = true;
-        static bool bRotateLeftRight = true;
-        static bool bRotateFrontBack = true;
-
-        auto GetRow = [](int PieceIdx) -> int
+        auto GetTurnMatrix = [](int *Turns) -> m4f
         {
-            return PieceIdx / NumPiecesPerRow;
-        };
-        auto IsLeft = [](int PieceIdx) -> bool
-        {
-            return (PieceIdx % NumPiecesPerRow) % 3 == 2;
-        };
-        auto IsRight = [](int PieceIdx) -> bool
-        {
-            return (PieceIdx % NumPiecesPerRow) % 3 == 0;
-        };
-        auto IsFront = [](int PieceIdx) -> bool
-        {
-            return (PieceIdx % NumPiecesPerRow) / 3 == 2;
-        };
-        auto IsBack = [](int PieceIdx) -> bool
-        {
-            return (PieceIdx % NumPiecesPerRow) / 3 == 0;
+            constexpr float TurnsToRadians = fPI / 2.0f;
+            return m4f::RotAxisX(Turns[0] * TurnsToRadians) *
+                m4f::RotAxisY(Turns[1] * TurnsToRadians) *
+                m4f::RotAxisZ(Turns[2] * TurnsToRadians);
         };
 
-        for (int PieceIdx = 0; PieceIdx < NumPieces; PieceIdx++)
+        // Draw each cube piece
         {
-            m4f PieceWorld = m4f::Identity();
-            if (bRotateTopBottom)
+            for (int CenterIdx = 0; CenterIdx < 6; CenterIdx++)
             {
-                if (GetRow(PieceIdx) == 0) { PieceWorld = PieceWorld * m4f::RotAxisY(FakeTime); }
-                else if (GetRow(PieceIdx) == 2) { PieceWorld = PieceWorld * m4f::RotAxisY(-FakeTime); }
-            }
-            //else if (bRotateLeftRight)
-            if (bRotateLeftRight)
-            {
-                if (IsLeft(PieceIdx)) { PieceWorld = PieceWorld * m4f::RotAxisX(FakeTime); }
-                else if (IsRight(PieceIdx)) { PieceWorld = PieceWorld * m4f::RotAxisX(-FakeTime); }
-            }
-            //else if (bRotateFrontBack)
-            if (bRotateFrontBack)
-            {
-                if (IsFront(PieceIdx)) { PieceWorld = PieceWorld * m4f::RotAxisZ(FakeTime); }
-                else if (IsBack(PieceIdx)) { PieceWorld = PieceWorld * m4f::RotAxisZ(-FakeTime); }
-            }
+                switch (CenterIdx)
+                {
+                    case 0:
+                    case 2: { } break;
+                    default: { continue; } break;
+                }
+                Piece& Curr = TheCube.Centers[CenterIdx];
+                m4f PieceWorld = GetTurnMatrix(Curr.Turns);
 
-            UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
+                UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
+                int StartIx = Curr.ID * IxPerPiece;
+                DrawMeshIxRange(GFXContext.ImmContext, *GFXContext.DrawStateColor, SpeedCubeMesh, StartIx, IxPerPiece);
+            }
+            for (int EdgeIdx = 0; EdgeIdx < 12; EdgeIdx++)
+            {
+                switch (EdgeIdx)
+                {
+                    case 0:
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 6:
+                    case 9: { } break;
+                    default: { continue; } break;
+                }
+                Piece& Curr = TheCube.Edges[EdgeIdx];
+                m4f PieceWorld = GetTurnMatrix(Curr.Turns);
 
-            int StartIx = PieceIdx * IxPerPiece;
-            DrawMeshIxRange(GFXContext.ImmContext, *GFXContext.DrawStateColor, SpeedCubeMesh, StartIx, IxPerPiece);
+                UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
+                int StartIx = Curr.ID * IxPerPiece;
+                DrawMeshIxRange(GFXContext.ImmContext, *GFXContext.DrawStateColor, SpeedCubeMesh, StartIx, IxPerPiece);
+            }
+            for (int CornerIdx = 0; CornerIdx < 8; CornerIdx++)
+            {
+                switch (CornerIdx)
+                {
+                    case 0: {} break;
+                        /*
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 6: { } break;
+                        */
+                    default: { continue; } break;
+                }
+                Piece& Curr = TheCube.Corners[CornerIdx];
+                m4f PieceWorld = GetTurnMatrix(Curr.Turns);
+
+                UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
+                int StartIx = Curr.ID * IxPerPiece;
+                DrawMeshIxRange(GFXContext.ImmContext, *GFXContext.DrawStateColor, SpeedCubeMesh, StartIx, IxPerPiece);
+            }
         }
     }
 
     void SpeedCube::Init()
     {
         LoadSpeedCubeMesh();
+        TheCube.Init();
     }
 
     void SpeedCube::Term()
     {
         SafeRelease(SpeedCubeMesh);
     }
+
 
     bool SpeedCubeState::FaceIsExternal(int PieceIdx, int FaceIdx)
     {
@@ -436,11 +459,11 @@ namespace Game
             case 22: { return FaceIdx == Face_Yellow; }
                    break;
 
-           // Corner
-           //  0 -> White/Blue/Orange
-           //  2 -> White/Blue/Red
-           //  6 -> White/Green/Orange
-           //  8 -> White/Green/Red
+            // Corner
+            //  0 -> White/Blue/Orange
+            //  2 -> White/Blue/Red
+            //  6 -> White/Green/Orange
+            //  8 -> White/Green/Red
             case 0: { return FaceIdx == Face_White || FaceIdx == Face_Blue || FaceIdx == Face_Orange; }
             case 2: { return FaceIdx == Face_White || FaceIdx == Face_Blue || FaceIdx == Face_Red; }
             case 6: { return FaceIdx == Face_White || FaceIdx == Face_Green || FaceIdx == Face_Orange; }
@@ -489,6 +512,91 @@ namespace Game
 
         return false;
     };
+
+    const char* SpeedCubeState::GetIDName(int ID)
+    {
+        // FaceIdx:
+        //      0 -> Front / Green
+        //      1 -> Back / Blue
+        //      2 -> Top / White
+        //      3 -> Bottom / Yellow
+        //      4 -> Left / Orange
+        //      5 -> Right / Red
+        constexpr int Face_Green = 0;
+        constexpr int Face_Blue = 1;
+        constexpr int Face_White = 2;
+        constexpr int Face_Yellow = 3;
+        constexpr int Face_Orange = 4;
+        constexpr int Face_Red = 5;
+
+        switch (ID)
+        {
+            // Internal Core
+            case 13: { return "Core"; } // All faces are internal
+                   break;
+
+            // Center 
+            case 4: { return "White"; }
+            case 10: { return "Blue"; }
+            case 12: { return "Orange"; }
+            case 14: { return "Red"; }
+            case 16: { return "Green"; }
+            case 22: { return "Yellow"; }
+                   break;
+
+            // Corner
+            //  0 -> White/Blue/Orange
+            //  2 -> White/Blue/Red
+            //  6 -> White/Green/Orange
+            //  8 -> White/Green/Red
+            case 0: { return "White/Blue/Orange"; }
+            case 2: { return "White/Blue/Red"; }
+            case 6: { return "White/Green/Orange"; }
+            case 8: { return "White/Green/Red"; }
+            //  18 -> Yellow/Blue/Orange
+            //  20 -> Yellow/Blue/Red
+            //  24 -> Yellow/Green/Orange
+            //  26 -> Yellow/Green/Red
+            case 18: { return "Yellow/Blue/Orange"; }
+            case 20: { return "Yellow/Blue/Red"; }
+            case 24: { return "Yellow/Green/Orange"; }
+            case 26: { return "Yellow/Green/Red"; }
+                   break;
+
+            // Edge
+            //  1 -> White/Blue
+            //  3 -> White/Orange
+            //  5 -> White/Red
+            //  7 -> White/Green
+            case 1: { return "White/Blue"; }
+            case 3: { return "White/Orange"; }
+            case 5: { return "White/Red"; }
+            case 7: { return "White/Green"; }
+            //  9 -> Blue/Orange
+            //  11 -> Blue/Red
+            //  15 -> Green/Orange
+            //  17 -> Green/Red
+            case 9: { return "Blue/Orange"; }
+            case 11: { return "Blue/Red"; }
+            case 15: { return "Green/Orange"; }
+            case 17: { return "Green/Red"; }
+            //  19 -> Yellow/Blue
+            //  21 -> Yellow/Orange
+            //  23 -> Yellow/Red
+            //  25 -> Yellow/Green
+            case 19: { return "Yellow/Blue"; }
+            case 21: { return "Yellow/Orange"; }
+            case 23: { return "Yellow/Red"; }
+            case 25: { return "Yellow/Green"; }
+                   break;
+
+            default: { ASSERT(false); } // shouldn't get here!
+        }
+
+        ASSERT(false); // shouldn't get here!
+
+        return "ERROR";
+    }
 
 }
 
