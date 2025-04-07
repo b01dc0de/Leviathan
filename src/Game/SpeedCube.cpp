@@ -21,6 +21,71 @@ namespace Game
             m4f World = m4f::Identity();
         };
 
+        struct TurnGroup
+        {
+            // Group[0]: Center
+            // Group[1, 4]: Edges
+            // Group[5, 8]: Corners
+            int Axis;
+            bool bAxisSign;
+            bool bClockWise;
+            Piece* Group[9];
+
+            void Turn()
+            {
+                for (int GroupIdx = 0; GroupIdx < 9; GroupIdx++)
+                {
+                    float TurnRadians = fPI / 2.0f;
+                    m4f TurnWorld = m4f::Identity();
+                    if (bAxisSign == bClockWise) {
+                        Group[GroupIdx]->Turns[Axis]++;
+                        switch (Axis)
+                        {
+                            case 0: TurnWorld = m4f::RotAxisX(TurnRadians); break;
+                            case 1: TurnWorld = m4f::RotAxisY(TurnRadians); break;
+                            case 2: TurnWorld = m4f::RotAxisZ(TurnRadians); break;
+                        }
+                    }
+                    else {
+                        Group[GroupIdx]->Turns[Axis]--;
+                        switch (Axis)
+                        {
+                            case 0: TurnWorld = m4f::RotAxisX(-TurnRadians); break;
+                            case 1: TurnWorld = m4f::RotAxisY(-TurnRadians); break;
+                            case 2: TurnWorld = m4f::RotAxisZ(-TurnRadians); break;
+                        }
+                    }
+                    Group[GroupIdx]->World = Group[GroupIdx]->World * TurnWorld;
+                }
+                if (bClockWise)
+                {
+                    Piece Tmp = *Group[1];
+                    *Group[1] = *Group[2];
+                    *Group[2] = *Group[3];
+                    *Group[3] = *Group[4];
+                    *Group[4] = Tmp;
+                    Tmp = *Group[5];
+                    *Group[5] = *Group[6];
+                    *Group[6] = *Group[7];
+                    *Group[7] = *Group[8];
+                    *Group[8] = Tmp;
+                }
+                else
+                {
+                    Piece Tmp = *Group[4];
+                    *Group[4] = *Group[3];
+                    *Group[3] = *Group[2];
+                    *Group[2] = *Group[1];
+                    *Group[1] = Tmp;
+                    Tmp = *Group[8];
+                    *Group[8] = *Group[7];
+                    *Group[7] = *Group[6];
+                    *Group[6] = *Group[5];
+                    *Group[5] = Tmp;
+                }
+            }
+        };
+
         const char* GetIDName(int ID);
         struct CubePieces
         {
@@ -30,6 +95,11 @@ namespace Game
             Piece Centers[6];
             Piece Edges[12];
             Piece Corners[8];
+
+            bool bTurning;
+            TurnGroup ActiveTurn;
+            int TurnStepIdx;
+            static constexpr int NumTurnSteps = 512;
 
             void Init()
             {
@@ -65,10 +135,12 @@ namespace Game
                     Corners[6] = { 24 };
                     Corners[7] = { 26 };
                 }
+                bTurning = false;
+                ActiveTurn = {};
             }
             void DebugPrint()
             {
-                char PrintBuffer[4096];
+                char PrintBuffer[1024];
                 sprintf_s(PrintBuffer, "Top Row: \n\t%s\t%s\t%s\n\t%s\t%s\t%s\n\t%s\t%s\t%s\n",
                     GetIDName(Corners[0].ID), GetIDName(Edges[0].ID), GetIDName(Corners[1].ID),
                     GetIDName(Edges[1].ID), GetIDName(Centers[0].ID), GetIDName(Edges[2].ID),
@@ -76,116 +148,148 @@ namespace Game
                 );
                 OutputDebugStringA(PrintBuffer);
             }
-            struct TurnGroup
-            {
-                // Group[0]: Center
-                // Group[1, 4]: Edges
-                // Group[5, 8]: Corners
-                Piece* Group[9];
-                void Turn(int Axis, bool bPoleDirection, bool bClockWise)
-                {
-                    for (int GroupIdx = 0; GroupIdx < 9; GroupIdx++)
-                    {
-                        float TurnRadians = fPI / 2.0f;
-                        m4f TurnWorld = m4f::Identity();
-                        if (bPoleDirection == bClockWise) {
-                            Group[GroupIdx]->Turns[Axis]++;
-                            switch (Axis)
-                            {
-                                case 0: TurnWorld = m4f::RotAxisX(TurnRadians); break;
-                                case 1: TurnWorld = m4f::RotAxisY(TurnRadians); break;
-                                case 2: TurnWorld = m4f::RotAxisZ(TurnRadians); break;
-                            }
-                        }
-                        else {
-                            Group[GroupIdx]->Turns[Axis]--;
-                            switch (Axis)
-                            {
-                                case 0: TurnWorld = m4f::RotAxisX(-TurnRadians); break;
-                                case 1: TurnWorld = m4f::RotAxisY(-TurnRadians); break;
-                                case 2: TurnWorld = m4f::RotAxisZ(-TurnRadians); break;
-                            }
-                        }
-                        Group[GroupIdx]->World = Group[GroupIdx]->World * TurnWorld;
-                    }
-                    if (bClockWise)
-                    {
-                        Piece Tmp = *Group[1];
-                        *Group[1] = *Group[2];
-                        *Group[2] = *Group[3];
-                        *Group[3] = *Group[4];
-                        *Group[4] = Tmp;
-                        Tmp = *Group[5];
-                        *Group[5] = *Group[6];
-                        *Group[6] = *Group[7];
-                        *Group[7] = *Group[8];
-                        *Group[8] = Tmp;
-                    }
-                    else
-                    {
-                        Piece Tmp = *Group[4];
-                        *Group[4] = *Group[3];
-                        *Group[3] = *Group[2];
-                        *Group[2] = *Group[1];
-                        *Group[1] = Tmp;
-                        Tmp = *Group[8];
-                        *Group[8] = *Group[7];
-                        *Group[7] = *Group[6];
-                        *Group[6] = *Group[5];
-                        *Group[5] = Tmp;
-                    }
-                }
-            };
             void Turn_Top(bool bClockWise)
             {
-                TurnGroup TopGroup =
+                ASSERT(!bTurning);
+                if (bTurning) { return; }
+                ActiveTurn =
                 {
+                    1, true, bClockWise,
                     &Centers[0],
                     &Edges[0], &Edges[1],
                     &Edges[3], &Edges[2],
                     &Corners[0], &Corners[2],
                     &Corners[3], &Corners[1]
                 };
-                TopGroup.Turn(1, true, bClockWise);
+                bTurning = true;
+                TurnStepIdx = 0;
             }
             void Turn_Left(bool bClockWise)
             {
-                TurnGroup LeftGroup =
+                ASSERT(!bTurning);
+                if (bTurning) { return; }
+                ActiveTurn =
                 {
+                    0, false, bClockWise,
                     &Centers[2],
                     &Edges[1], &Edges[4],
                     &Edges[9], &Edges[6],
                     &Corners[0], &Corners[4],
                     &Corners[6], &Corners[2]
                 };
-                LeftGroup.Turn(0, false, bClockWise);
+                bTurning = true;
+                TurnStepIdx = 0;
             };
             void Turn_Right(bool bClockWise)
             {
-                TurnGroup RightGroup =
+                ASSERT(!bTurning);
+                if (bTurning) { return; }
+                ActiveTurn =
                 {
+                    0, true, bClockWise,
                     &Centers[3],
                     &Edges[2], &Edges[7],
                     &Edges[10], &Edges[5],
                     &Corners[1], &Corners[3],
                     &Corners[7], &Corners[5],
                 };
-                RightGroup.Turn(0, true, bClockWise);
+                bTurning = true;
+                TurnStepIdx = 0;
             };
             void Turn_Front(bool bClockWise)
             {
-                TurnGroup FrontGroup =
+                ASSERT(!bTurning);
+                if (bTurning) { return; }
+                ActiveTurn =
                 {
+                    2, true, bClockWise,
                     &Centers[4],
                     &Edges[3], &Edges[6],
                     &Edges[11], &Edges[7],
                     &Corners[2], &Corners[6],
                     &Corners[7], &Corners[3],
                 };
-                FrontGroup.Turn(2, true, bClockWise);
+                bTurning = true;
+                TurnStepIdx = 0;
             };
             void Turn_Bot(bool bClockWise) {};
             void Turn_Back(bool bClockWise) {};
+            void TurnStep()
+            {
+                TurnStepIdx++;
+                if (TurnStepIdx >= NumTurnSteps)
+                {
+                    ActiveTurn.Turn();
+                    ActiveTurn = {};
+                    TurnStepIdx = 0;
+                    bTurning = false;
+                }
+            }
+            m4f GetActiveTurnRot()
+            {
+                if (!bTurning)
+                {
+                    ASSERT(false);
+                    return m4f::Identity();
+                }
+                else
+                {
+                    float TurnRadians = (float)TurnStepIdx / (float)NumTurnSteps * fPI / 2.0f;
+                    if (ActiveTurn.bAxisSign != ActiveTurn.bClockWise)
+                    {
+                        TurnRadians = -TurnRadians;
+                    }
+                    switch (ActiveTurn.Axis)
+                    {
+                        case 0: return m4f::RotAxisX(TurnRadians); break;
+                        case 1: return m4f::RotAxisY(TurnRadians); break;
+                        case 2: return m4f::RotAxisZ(TurnRadians); break;
+                    }
+                }
+                return m4f::Identity();
+            }
+            bool PieceIsTurning(int PieceIdx)
+            {
+                if (!bTurning) return false;
+                else
+                {
+                    for (int GroupIdx = 0; GroupIdx < 9; GroupIdx++)
+                    {
+                        if (PieceIdx == ActiveTurn.Group[GroupIdx]->ID)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+            void Update()
+            {
+                if (bTurning)
+                {
+                    TurnStep();
+                }
+                else
+                {
+                    bool bCCW = KeyboardState::GetKey(LV_KEY_SHIFT, true);
+                    if (KeyboardState::GetKey(LV_KEY_ARROW_UP))
+                    {
+                        Turn_Top(!bCCW);
+                    }
+                    else if (KeyboardState::GetKey(LV_KEY_ARROW_LEFT))
+                    {
+                        Turn_Left(!bCCW);
+                    }
+                    else if (KeyboardState::GetKey(LV_KEY_ARROW_DOWN))
+                    {
+                        Turn_Front(!bCCW);
+                    }
+                    else if (KeyboardState::GetKey(LV_KEY_ARROW_RIGHT))
+                    {
+                        Turn_Right(!bCCW);
+                    }
+                }
+            }
         };
 
         CubePieces TheCube;
@@ -319,23 +423,7 @@ namespace Game
 
     void SpeedCube::Update()
     {
-        bool bCCW = KeyboardState::GetKey(LV_KEY_SHIFT, true);
-        if (KeyboardState::GetKey(LV_KEY_ARROW_UP))
-        {
-            TheCube.Turn_Top(!bCCW);
-        }
-        else if (KeyboardState::GetKey(LV_KEY_ARROW_LEFT))
-        {
-            TheCube.Turn_Left(!bCCW);
-        }
-        else if (KeyboardState::GetKey(LV_KEY_ARROW_DOWN))
-        {
-            TheCube.Turn_Front(!bCCW);
-        }
-        else if (KeyboardState::GetKey(LV_KEY_ARROW_RIGHT))
-        {
-            TheCube.Turn_Right(!bCCW);
-        }
+        TheCube.Update();
     }
 
     void SpeedCube::Draw(GameGraphicsContext & GFXContext)
@@ -345,13 +433,9 @@ namespace Game
         SetShaderConstantBuffers(GFXContext.ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
         UpdateShaderViewProj(GFXContext.ImmContext, GFXContext.GameCamera);
 
-        static constexpr float RotSpeed = (1.0f / 60.0f) / 100.0f;
-        static float FakeTime = 0.0f;
-        FakeTime += RotSpeed;
-
-        float CubeRotX = FakeTime * 2.0f;
-        float CubeRotY = FakeTime;
-        m4f CubeWorld = m4f::RotAxisY(CubeRotY) * m4f::RotAxisX(CubeRotX);
+        float CubeRotX = Clock::Time() * 2.0f;
+        float CubeRotY = Clock::Time();
+        m4f CubeWorld = m4f::Identity();//m4f::RotAxisY(CubeRotY) * m4f::RotAxisX(CubeRotX);
 
         // Draw each cube piece
         {
@@ -359,6 +443,11 @@ namespace Game
             {
                 Piece& Curr = TheCube.Centers[CenterIdx];
                 m4f PieceWorld = Curr.World * CubeWorld;
+
+                if (TheCube.PieceIsTurning(Curr.ID))
+                {
+                    PieceWorld = PieceWorld * TheCube.GetActiveTurnRot();
+                }
 
                 UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
                 int StartIx = Curr.ID * IxPerPiece;
@@ -369,6 +458,11 @@ namespace Game
                 Piece& Curr = TheCube.Edges[EdgeIdx];
                 m4f PieceWorld = Curr.World * CubeWorld;
 
+                if (TheCube.PieceIsTurning(Curr.ID))
+                {
+                    PieceWorld = PieceWorld * TheCube.GetActiveTurnRot();
+                }
+
                 UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
                 int StartIx = Curr.ID * IxPerPiece;
                 DrawMeshIxRange(GFXContext.ImmContext, *GFXContext.DrawStateColor, SpeedCubeMesh, StartIx, IxPerPiece);
@@ -377,6 +471,11 @@ namespace Game
             {
                 Piece& Curr = TheCube.Corners[CornerIdx];
                 m4f PieceWorld = Curr.World * CubeWorld;
+
+                if (TheCube.PieceIsTurning(Curr.ID))
+                {
+                    PieceWorld = PieceWorld * TheCube.GetActiveTurnRot();
+                }
 
                 UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
                 int StartIx = Curr.ID * IxPerPiece;
@@ -395,7 +494,6 @@ namespace Game
     {
         SafeRelease(SpeedCubeMesh);
     }
-
 
     bool SpeedCubeState::FaceIsExternal(int PieceIdx, int FaceIdx)
     {
