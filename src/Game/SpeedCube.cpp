@@ -82,13 +82,13 @@ namespace Game
                 // Group[1, 4]: Edges
                 // Group[5, 8]: Corners
                 Piece* Group[9];
-                void TurnCW(int Axis, bool bPoleDirection)
+                void Turn(int Axis, bool bPoleDirection, bool bClockWise)
                 {
                     for (int GroupIdx = 0; GroupIdx < 9; GroupIdx++)
                     {
                         float TurnRadians = fPI / 2.0f;
                         m4f TurnWorld = m4f::Identity();
-                        if (bPoleDirection) {
+                        if (bPoleDirection == bClockWise) {
                             Group[GroupIdx]->Turns[Axis]++;
                             switch (Axis)
                             {
@@ -108,34 +108,32 @@ namespace Game
                         }
                         Group[GroupIdx]->World = Group[GroupIdx]->World * TurnWorld;
                     }
-                    Piece Tmp = *Group[1];
-                    *Group[1] = *Group[2];
-                    *Group[2] = *Group[3];
-                    *Group[3] = *Group[4];
-                    *Group[4] = Tmp;
-                    Tmp = *Group[5];
-                    *Group[5] = *Group[6];
-                    *Group[6] = *Group[7];
-                    *Group[7] = *Group[8];
-                    *Group[8] = Tmp;
-                }
-                void TurnCCW(int Axis, bool bPoleDirection)
-                {
-                    for (int GroupIdx = 0; GroupIdx < 9; GroupIdx++)
+                    if (bClockWise)
                     {
-                        if (bPoleDirection) { Group[GroupIdx]->Turns[Axis]++; }
-                        else { Group[GroupIdx]->Turns[Axis]--; }
+                        Piece Tmp = *Group[1];
+                        *Group[1] = *Group[2];
+                        *Group[2] = *Group[3];
+                        *Group[3] = *Group[4];
+                        *Group[4] = Tmp;
+                        Tmp = *Group[5];
+                        *Group[5] = *Group[6];
+                        *Group[6] = *Group[7];
+                        *Group[7] = *Group[8];
+                        *Group[8] = Tmp;
                     }
-                    Piece Tmp = *Group[4];
-                    *Group[4] = *Group[3];
-                    *Group[3] = *Group[2];
-                    *Group[2] = *Group[1];
-                    *Group[1] = Tmp;
-                    Tmp = *Group[8];
-                    *Group[8] = *Group[7];
-                    *Group[7] = *Group[6];
-                    *Group[6] = *Group[5];
-                    *Group[5] = Tmp;
+                    else
+                    {
+                        Piece Tmp = *Group[4];
+                        *Group[4] = *Group[3];
+                        *Group[3] = *Group[2];
+                        *Group[2] = *Group[1];
+                        *Group[1] = Tmp;
+                        Tmp = *Group[8];
+                        *Group[8] = *Group[7];
+                        *Group[7] = *Group[6];
+                        *Group[6] = *Group[5];
+                        *Group[5] = Tmp;
+                    }
                 }
             };
             void Turn_Top(bool bClockWise)
@@ -148,8 +146,7 @@ namespace Game
                     &Corners[0], &Corners[2],
                     &Corners[3], &Corners[1]
                 };
-                if (bClockWise) { TopGroup.TurnCW(1, true); }
-                else { TopGroup.TurnCCW(1, true); }
+                TopGroup.Turn(1, true, bClockWise);
             }
             void Turn_Left(bool bClockWise)
             {
@@ -161,9 +158,7 @@ namespace Game
                     &Corners[0], &Corners[4],
                     &Corners[6], &Corners[2]
                 };
-                
-                if (bClockWise) { LeftGroup.TurnCW(0, false); }
-                else { LeftGroup.TurnCCW(0, false); }
+                LeftGroup.Turn(0, false, bClockWise);
             };
             void Turn_Right(bool bClockWise)
             {
@@ -175,9 +170,7 @@ namespace Game
                     &Corners[1], &Corners[3],
                     &Corners[7], &Corners[5],
                 };
-
-                if (bClockWise) { RightGroup.TurnCW(0, true); }
-                else { RightGroup.TurnCCW(0, true); }
+                RightGroup.Turn(0, true, bClockWise);
             };
             void Turn_Front(bool bClockWise)
             {
@@ -189,9 +182,7 @@ namespace Game
                     &Corners[2], &Corners[6],
                     &Corners[7], &Corners[3],
                 };
-
-                if (bClockWise) { FrontGroup.TurnCW(2, true); }
-                else { FrontGroup.TurnCCW(2, true); }
+                FrontGroup.Turn(2, true, bClockWise);
             };
             void Turn_Bot(bool bClockWise) {};
             void Turn_Back(bool bClockWise) {};
@@ -427,7 +418,6 @@ namespace Game
             // Internal Core
             case 13: { return false; } // All faces are internal
                    break;
-
             // Center 
             //  4 -> White
             //  10 -> Blue
@@ -442,7 +432,6 @@ namespace Game
             case 16: { return FaceIdx == Face_Green; }
             case 22: { return FaceIdx == Face_Yellow; }
                    break;
-
             // Corner
             //  0 -> White/Blue/Orange
             //  2 -> White/Blue/Red
@@ -461,7 +450,6 @@ namespace Game
             case 24: { return FaceIdx == Face_Yellow || FaceIdx == Face_Green || FaceIdx == Face_Orange; }
             case 26: { return FaceIdx == Face_Yellow || FaceIdx == Face_Green || FaceIdx == Face_Red; }
                    break;
-
             // Edge
             //  1 -> White/Blue
             //  3 -> White/Orange
@@ -488,37 +476,19 @@ namespace Game
             case 23: { return FaceIdx == Face_Yellow || FaceIdx == Face_Red; }
             case 25: { return FaceIdx == Face_Yellow || FaceIdx == Face_Green; }
                    break;
-
-            default: { ASSERT(false); } // shouldn't get here!
         }
 
         ASSERT(false); // shouldn't get here!
-
         return false;
     };
 
     const char* SpeedCubeState::GetIDName(int ID)
     {
-        // FaceIdx:
-        //      0 -> Front / Green
-        //      1 -> Back / Blue
-        //      2 -> Top / White
-        //      3 -> Bottom / Yellow
-        //      4 -> Left / Orange
-        //      5 -> Right / Red
-        constexpr int Face_Green = 0;
-        constexpr int Face_Blue = 1;
-        constexpr int Face_White = 2;
-        constexpr int Face_Yellow = 3;
-        constexpr int Face_Orange = 4;
-        constexpr int Face_Red = 5;
-
         switch (ID)
         {
             // Internal Core
             case 13: { return "Core"; } // All faces are internal
                    break;
-
             // Center 
             case 4: { return "White"; }
             case 10: { return "Blue"; }
@@ -527,7 +497,6 @@ namespace Game
             case 16: { return "Green"; }
             case 22: { return "Yellow"; }
                    break;
-
             // Corner
             //  0 -> White/Blue/Orange
             //  2 -> White/Blue/Red
@@ -546,7 +515,6 @@ namespace Game
             case 24: { return "Yellow/Green/Orange"; }
             case 26: { return "Yellow/Green/Red"; }
                    break;
-
             // Edge
             //  1 -> White/Blue
             //  3 -> White/Orange
@@ -573,12 +541,9 @@ namespace Game
             case 23: { return "Yellow/Red"; }
             case 25: { return "Yellow/Green"; }
                    break;
-
-            default: { ASSERT(false); } // shouldn't get here!
         }
 
         ASSERT(false); // shouldn't get here!
-
         return "ERROR";
     }
 
