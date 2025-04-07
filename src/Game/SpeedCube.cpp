@@ -272,9 +272,8 @@ namespace Game
         constexpr int NumRows = 3;
         constexpr int NumPieces = NumPiecesPerRow * NumRows;
 
-        // TODO: Move this off the stack
-        VxColor Vertices_SpeedCube[NumPieces][ARRAY_SIZE(Vertices_CubeFacesColor)] = { };
-        unsigned int Indices_SpeedCube[NumPieces][ARRAY_SIZE(Indices_CubeFaces)] = { };
+        VxColor* SpeedCubeVxs = new VxColor[NumPieces * ARRAY_SIZE(Vertices_CubeFacesColor)];
+        unsigned int* SpeedCubeIxs = new unsigned int[NumPieces * ARRAY_SIZE(Indices_CubeFaces)];
 
         float SpeedCubeUnit = fUnit * 2.0f + 0.1f;
         for (int PieceIdx = 0; PieceIdx < NumPieces; PieceIdx++)
@@ -288,7 +287,7 @@ namespace Game
             v4f vOffset = { PieceX, PieceY, PieceZ, 0.0f };
             for (int VxIdx = 0; VxIdx < ARRAY_SIZE(Vertices_CubeFacesColor); VxIdx++)
             {
-                Vertices_SpeedCube[PieceIdx][VxIdx] =
+                SpeedCubeVxs[PieceIdx * ARRAY_SIZE(Vertices_CubeFacesColor) + VxIdx] =
                 {
                     Vertices_CubeFacesColor[VxIdx].Pos + vOffset, // v4f Pos
                     Vertices_CubeFacesColor[VxIdx].Col, // v4f Col
@@ -298,31 +297,31 @@ namespace Game
                 int FaceIdx = VxIdx / VxPerFace;
                 if (!FaceIsExternal(PieceIdx, FaceIdx))
                 {
-                    Vertices_SpeedCube[PieceIdx][VxIdx].Col = { 0.0f, 0.0f, 0.0f, 1.0f };
+                    SpeedCubeVxs[PieceIdx * ARRAY_SIZE(Vertices_CubeFacesColor) + VxIdx].Col = { 0.0f, 0.0f, 0.0f, 1.0f };
                 }
             }
 
             int PieceFirstIx = ARRAY_SIZE(Vertices_CubeFacesColor) * PieceIdx;
             for (int IxIdx = 0; IxIdx < ARRAY_SIZE(Indices_CubeFaces); IxIdx++)
             {
-                Indices_SpeedCube[PieceIdx][IxIdx] = Indices_CubeFaces[IxIdx] + PieceFirstIx;
+                SpeedCubeIxs[PieceIdx * ARRAY_SIZE(Indices_CubeFaces) + IxIdx] = Indices_CubeFaces[IxIdx] + PieceFirstIx;
             }
         }
 
         IxPerPiece = ARRAY_SIZE(Indices_CubeFaces);
 
-        int TotalVxCount = ARRAY_SIZE(Vertices_SpeedCube) * ARRAY_SIZE(Vertices_CubeFacesColor);
-        int TotalIxCount = ARRAY_SIZE(Indices_SpeedCube) * ARRAY_SIZE(Indices_CubeFaces);
-
         SpeedCubeMesh = CreateMeshState
         (
             Graphics::Device(),
             sizeof(VxColor),
-            TotalVxCount,
-            Vertices_SpeedCube,
-            TotalIxCount,
-            Indices_SpeedCube[0]
+            NumPieces * ARRAY_SIZE(Vertices_CubeFacesColor),
+            SpeedCubeVxs,
+            NumPieces * ARRAY_SIZE(Indices_CubeFaces),
+            SpeedCubeIxs
         );
+
+        delete[] SpeedCubeVxs;
+        delete[] SpeedCubeIxs;
     }
 
     using namespace SpeedCubeState;
