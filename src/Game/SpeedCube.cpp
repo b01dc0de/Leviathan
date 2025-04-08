@@ -114,7 +114,10 @@ namespace Game
             bool bTurning;
             TurnGroup ActiveTurn;
             int TurnStepIdx;
-            static constexpr int NumTurnSteps = 1024;
+            float LastTurnStep;
+            static constexpr int NumTurnSteps = 32;
+            static constexpr float SecondsPerTurn = 0.25f;
+            static constexpr float SecondsPerTurnStep = SecondsPerTurn / NumTurnSteps;
 
             static constexpr int MvHistSize = 20;
             TurnMove MoveHistory[MvHistSize];
@@ -185,6 +188,7 @@ namespace Game
                 };
                 bTurning = true;
                 TurnStepIdx = 0;
+                LastTurnStep = Clock::Time();
             }
             void Turn_Left(bool bClockWise)
             {
@@ -201,6 +205,7 @@ namespace Game
                 };
                 bTurning = true;
                 TurnStepIdx = 0;
+                LastTurnStep = Clock::Time();
             };
             void Turn_Right(bool bClockWise)
             {
@@ -217,6 +222,7 @@ namespace Game
                 };
                 bTurning = true;
                 TurnStepIdx = 0;
+                LastTurnStep = Clock::Time();
             };
             void Turn_Front(bool bClockWise)
             {
@@ -233,6 +239,7 @@ namespace Game
                 };
                 bTurning = true;
                 TurnStepIdx = 0;
+                LastTurnStep = Clock::Time();
             };
             void Turn_Bot(bool bClockWise)
             {
@@ -249,6 +256,7 @@ namespace Game
                 };
                 bTurning = true;
                 TurnStepIdx = 0;
+                LastTurnStep = Clock::Time();
             };
             void Turn_Back(bool bClockWise)
             {
@@ -265,16 +273,22 @@ namespace Game
                 };
                 bTurning = true;
                 TurnStepIdx = 0;
+                LastTurnStep = Clock::Time();
             }
             void TurnStep()
             {
-                TurnStepIdx++;
-                if (TurnStepIdx >= NumTurnSteps)
+                float fTime = (float)Clock::Time();
+                if ((fTime - LastTurnStep) > SecondsPerTurnStep)
                 {
-                    ActiveTurn.Turn();
-                    ActiveTurn = {};
-                    TurnStepIdx = 0;
-                    bTurning = false;
+                    LastTurnStep = fTime;
+                    TurnStepIdx++;
+                    if (TurnStepIdx >= NumTurnSteps)
+                    {
+                        ActiveTurn.Turn();
+                        ActiveTurn = {};
+                        TurnStepIdx = 0;
+                        bTurning = false;
+                    }
                 }
             }
             m4f GetActiveTurnRot()
