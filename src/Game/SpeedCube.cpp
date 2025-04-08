@@ -212,8 +212,38 @@ namespace Game
                 bTurning = true;
                 TurnStepIdx = 0;
             };
-            void Turn_Bot(bool bClockWise) {};
-            void Turn_Back(bool bClockWise) {};
+            void Turn_Bot(bool bClockWise)
+            {
+                ASSERT(!bTurning);
+                if (bTurning) { return; }
+                ActiveTurn =
+                {
+                    1, false, bClockWise,
+                    &Centers[5],
+                    &Edges[8], &Edges[10],
+                    &Edges[11], &Edges[9],
+                    &Corners[4], &Corners[5],
+                    &Corners[7], &Corners[6],
+                };
+                bTurning = true;
+                TurnStepIdx = 0;
+            };
+            void Turn_Back(bool bClockWise)
+            {
+                ASSERT(!bTurning);
+                if (bTurning) { return; }
+                ActiveTurn =
+                {
+                    2, false, bClockWise,
+                    &Centers[1],
+                    &Edges[0], &Edges[5],
+                    &Edges[8], &Edges[4],
+                    &Corners[0], &Corners[1],
+                    &Corners[5], &Corners[4],
+                };
+                bTurning = true;
+                TurnStepIdx = 0;
+            }
             void TurnStep()
             {
                 TurnStepIdx++;
@@ -265,28 +295,53 @@ namespace Game
             }
             void Update()
             {
+                static bool bAutoTurn = true;
                 if (bTurning)
                 {
                     TurnStep();
                 }
+                else if (bAutoTurn)
+                {
+                    constexpr int TurnTypes = 6;
+                    int ChosenTurn = GetRandomInRange(0, TurnTypes - 1);
+                    bool bCCW = GetRandomInRange(0, 1) == 1;
+                    switch (ChosenTurn)
+                    {
+                        case 0: { Turn_Top(!bCCW); } break;
+                        case 1: { Turn_Left(!bCCW); } break;
+                        case 2: { Turn_Front(!bCCW); } break;
+                        case 3: { Turn_Right(!bCCW); } break;
+                        case 4: { Turn_Bot(!bCCW); } break;
+                        case 5: { Turn_Back(!bCCW); } break;
+                    }
+
+                }
                 else
                 {
                     bool bCCW = KeyboardState::GetKey(LV_KEY_SHIFT, true);
-                    if (KeyboardState::GetKey(LV_KEY_ARROW_UP))
+                    if (KeyboardState::GetKey(LV_KEY_W))
                     {
                         Turn_Top(!bCCW);
                     }
-                    else if (KeyboardState::GetKey(LV_KEY_ARROW_LEFT))
+                    else if (KeyboardState::GetKey(LV_KEY_Q))
                     {
                         Turn_Left(!bCCW);
                     }
-                    else if (KeyboardState::GetKey(LV_KEY_ARROW_DOWN))
+                    else if (KeyboardState::GetKey(LV_KEY_S))
                     {
                         Turn_Front(!bCCW);
                     }
-                    else if (KeyboardState::GetKey(LV_KEY_ARROW_RIGHT))
+                    else if (KeyboardState::GetKey(LV_KEY_E))
                     {
                         Turn_Right(!bCCW);
+                    }
+                    else if (KeyboardState::GetKey(LV_KEY_A))
+                    {
+                        Turn_Bot(!bCCW);
+                    }
+                    else if (KeyboardState::GetKey(LV_KEY_D))
+                    {
+                        Turn_Back(!bCCW);
                     }
                 }
             }
@@ -433,21 +488,27 @@ namespace Game
         SetShaderConstantBuffers(GFXContext.ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
         UpdateShaderViewProj(GFXContext.ImmContext, GFXContext.GameCamera);
 
-        float CubeRotX = Clock::Time() * 2.0f;
-        float CubeRotY = Clock::Time();
-        m4f CubeWorld = m4f::Identity();//m4f::RotAxisY(CubeRotY) * m4f::RotAxisX(CubeRotX);
+        m4f CubeWorld = m4f::Identity();
+
+        static bool bEnableCubeAutoRotate = true;
+        if (bEnableCubeAutoRotate)
+        {
+            float CubeRotX = Clock::Time() * 2.0f;
+            float CubeRotY = Clock::Time();
+            CubeWorld = m4f::RotAxisY(CubeRotY) * m4f::RotAxisX(CubeRotX);
+        }
 
         // Draw each cube piece
         {
             for (int CenterIdx = 0; CenterIdx < 6; CenterIdx++)
             {
                 Piece& Curr = TheCube.Centers[CenterIdx];
-                m4f PieceWorld = Curr.World * CubeWorld;
-
+                m4f PieceWorld = Curr.World;
                 if (TheCube.PieceIsTurning(Curr.ID))
                 {
                     PieceWorld = PieceWorld * TheCube.GetActiveTurnRot();
                 }
+                PieceWorld = PieceWorld * CubeWorld;
 
                 UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
                 int StartIx = Curr.ID * IxPerPiece;
@@ -456,12 +517,12 @@ namespace Game
             for (int EdgeIdx = 0; EdgeIdx < 12; EdgeIdx++)
             {
                 Piece& Curr = TheCube.Edges[EdgeIdx];
-                m4f PieceWorld = Curr.World * CubeWorld;
-
+                m4f PieceWorld = Curr.World;
                 if (TheCube.PieceIsTurning(Curr.ID))
                 {
                     PieceWorld = PieceWorld * TheCube.GetActiveTurnRot();
                 }
+                PieceWorld = PieceWorld * CubeWorld;
 
                 UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
                 int StartIx = Curr.ID * IxPerPiece;
@@ -470,13 +531,12 @@ namespace Game
             for (int CornerIdx = 0; CornerIdx < 8; CornerIdx++)
             {
                 Piece& Curr = TheCube.Corners[CornerIdx];
-                m4f PieceWorld = Curr.World * CubeWorld;
-
+                m4f PieceWorld = Curr.World;
                 if (TheCube.PieceIsTurning(Curr.ID))
                 {
                     PieceWorld = PieceWorld * TheCube.GetActiveTurnRot();
                 }
-
+                PieceWorld = PieceWorld * CubeWorld;
                 UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
                 int StartIx = Curr.ID * IxPerPiece;
                 DrawMeshIxRange(GFXContext.ImmContext, *GFXContext.DrawStateColor, SpeedCubeMesh, StartIx, IxPerPiece);
