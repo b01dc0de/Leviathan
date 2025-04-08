@@ -95,11 +95,6 @@ namespace Game
             Turn_Front,
             Turn_Back
         };
-        struct TurnMove
-        {
-            int Type;
-            bool bDir;
-        };
 
         const char* GetIDName(int ID);
         struct CubePieces
@@ -120,7 +115,7 @@ namespace Game
             static constexpr float SecondsPerTurnStep = SecondsPerTurn / NumTurnSteps;
 
             static constexpr int MvHistSize = 20;
-            TurnMove MoveHistory[MvHistSize];
+            int MoveHistory[MvHistSize];
             int HistIdx;
             bool HistDir;
 
@@ -364,16 +359,21 @@ namespace Game
                     
                     if (HistDir && HistIdx < MvHistSize)
                     {
-                        constexpr int TurnTypes = 6;
-                        int ChosenTurn = GetRandomInRange(0, TurnTypes - 1);
-                        bool bCCW = GetRandomInRange(0, 1) == 1;
-                        DoTurn(ChosenTurn, bCCW);
-                        MoveHistory[HistIdx++] = { ChosenTurn, bCCW };
+                        constexpr int EncodedMoveMax = 11; // 11 (6 * 2 - 1)
+                        int EncodedMove;
+                        do { EncodedMove = GetRandomInRange(0, EncodedMoveMax); }
+                        while (HistIdx > 0 && (MoveHistory[HistIdx - 1] / 2) == (EncodedMove / 2));
+                        int TurnType = EncodedMove / 2;
+                        bool bCCW = EncodedMove % 2 == 1;
+                        DoTurn(TurnType, bCCW);
+                        MoveHistory[HistIdx++] = EncodedMove;
                     }
                     else if (!HistDir && HistIdx >= 0)
                     {
-                        TurnMove Move = MoveHistory[HistIdx--];
-                        DoTurn(Move.Type, !Move.bDir);
+                        int EncodedMove = MoveHistory[HistIdx--];
+                        int TurnType = EncodedMove / 2;
+                        bool bCCW = EncodedMove % 2 == 1;
+                        DoTurn(TurnType, !bCCW);
                     }
                     else
                     {
