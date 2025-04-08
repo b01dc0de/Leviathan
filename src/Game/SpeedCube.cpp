@@ -324,22 +324,21 @@ namespace Game
                 }
                 return false;
             }
+            void DoTurn(int TurnType, bool bCW)
+            {
+                switch (TurnType)
+                {
+                    case 0: { Turn_Top(bCW); return; }
+                    case 1: { Turn_Bot(bCW); return; }
+                    case 2: { Turn_Left(bCW); return; }
+                    case 3: { Turn_Right(bCW); return; }
+                    case 4: { Turn_Front(bCW); return; }
+                    case 5: { Turn_Back(bCW); return; }
+                }
+                ASSERT(false);
+            };
             void Update()
             {
-                auto DoTurn = [this](int TurnType, bool bCCW)
-                {
-                    switch (TurnType)
-                    {
-                        case 0: { Turn_Top(!bCCW); return; }
-                        case 1: { Turn_Bot(!bCCW); return; }
-                        case 2: { Turn_Left(!bCCW); return; }
-                        case 3: { Turn_Right(!bCCW); return; }
-                        case 4: { Turn_Front(!bCCW); return; }
-                        case 5: { Turn_Back(!bCCW); return; }
-                    }
-                    ASSERT(false);
-                };
-
                 static bool bAutoTurn = true;
                 if (bTurning)
                 {
@@ -364,8 +363,8 @@ namespace Game
                         do { EncodedMove = GetRandomInRange(0, EncodedMoveMax); }
                         while (HistIdx > 0 && (MoveHistory[HistIdx - 1] / 2) == (EncodedMove / 2));
                         int TurnType = EncodedMove / 2;
-                        bool bCCW = EncodedMove % 2 == 1;
-                        DoTurn(TurnType, bCCW);
+                        bool bCW = EncodedMove % 2 == 0;
+                        DoTurn(TurnType, bCW);
                         MoveHistory[HistIdx++] = EncodedMove;
                     }
                     else if (!HistDir && HistIdx >= 0)
