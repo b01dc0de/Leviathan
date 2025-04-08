@@ -86,6 +86,21 @@ namespace Game
             }
         };
 
+        enum TurnType
+        {
+            Turn_Top,
+            Turn_Bot,
+            Turn_Left,
+            Turn_Right,
+            Turn_Front,
+            Turn_Back
+        };
+        struct TurnMove
+        {
+            int Type;
+            bool bDir;
+        };
+
         const char* GetIDName(int ID);
         struct CubePieces
         {
@@ -99,7 +114,12 @@ namespace Game
             bool bTurning;
             TurnGroup ActiveTurn;
             int TurnStepIdx;
-            static constexpr int NumTurnSteps = 512;
+            static constexpr int NumTurnSteps = 32;
+
+            static constexpr int MvHistSize = 20;
+            TurnMove MoveHistory[MvHistSize];
+            int HistIdx;
+            bool HistDir;
 
             void Init()
             {
@@ -137,6 +157,8 @@ namespace Game
                 }
                 bTurning = false;
                 ActiveTurn = {};
+                HistIdx = 0;
+                HistDir = true;
             }
             void DebugPrint()
             {
@@ -295,6 +317,20 @@ namespace Game
             }
             void Update()
             {
+                auto DoTurn = [this](int TurnType, bool bCCW)
+                {
+                    switch (TurnType)
+                    {
+                        case 0: { Turn_Top(!bCCW); return; }
+                        case 1: { Turn_Bot(!bCCW); return; }
+                        case 2: { Turn_Left(!bCCW); return; }
+                        case 3: { Turn_Right(!bCCW); return; }
+                        case 4: { Turn_Front(!bCCW); return; }
+                        case 5: { Turn_Back(!bCCW); return; }
+                    }
+                    ASSERT(false);
+                };
+
                 static bool bAutoTurn = true;
                 if (bTurning)
                 {
@@ -302,19 +338,36 @@ namespace Game
                 }
                 else if (bAutoTurn)
                 {
-                    constexpr int TurnTypes = 6;
-                    int ChosenTurn = GetRandomInRange(0, TurnTypes - 1);
-                    bool bCCW = GetRandomInRange(0, 1) == 1;
-                    switch (ChosenTurn)
-                    {
-                        case 0: { Turn_Top(!bCCW); } break;
-                        case 1: { Turn_Left(!bCCW); } break;
-                        case 2: { Turn_Front(!bCCW); } break;
-                        case 3: { Turn_Right(!bCCW); } break;
-                        case 4: { Turn_Bot(!bCCW); } break;
-                        case 5: { Turn_Back(!bCCW); } break;
-                    }
+                    static constexpr float WaitTime = 1.0f;
+                    static float LastWait = 0.0f;
+                    static bool bWaiting = false;
 
+                    if (bWaiting)
+                    {
+                        bWaiting = (Clock::Time() - LastWait) > WaitTime;
+                        return;
+                    }
+                    
+                    if (HistDir && HistIdx < MvHistSize)
+                    {
+                        constexpr int TurnTypes = 6;
+                        int ChosenTurn = GetRandomInRange(0, TurnTypes - 1);
+                        bool bCCW = GetRandomInRange(0, 1) == 1;
+                        DoTurn(ChosenTurn, bCCW);
+                        MoveHistory[HistIdx++] = { ChosenTurn, bCCW };
+                    }
+                    else if (!HistDir && HistIdx >= 0)
+                    {
+                        TurnMove Move = MoveHistory[HistIdx--];
+                        DoTurn(Move.Type, !Move.bDir);
+                    }
+                    else
+                    {
+                        HistIdx = HistDir ? MvHistSize - 1 : 0;
+                        HistDir = !HistDir;
+                        bWaiting = true;
+                        LastWait = Clock::Time();
+                    }
                 }
                 else
                 {
