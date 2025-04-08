@@ -23,8 +23,8 @@ namespace Leviathan
         VisualKey KeyList[LV_KEY_COUNT];
 
         void Init();
-        static void DrawKey(BatchDraw2D& Draw2D, const VisualKey& Key, const VIDrawParams& Params);
-        static void Draw(BatchDraw2D& Draw2D, const VIDrawParams&);
+        static void DrawKey(BatchDrawCmds& Draw2D, const VisualKey& Key, const VIDrawParams& Params);
+        static void Draw(BatchDrawCmds& Draw2D, const VIDrawParams&);
     };
 
     void VisualKeyboard::Init()
@@ -95,7 +95,7 @@ namespace Leviathan
         bInit = true;
     }
 
-    void VisualKeyboard::DrawKey(BatchDraw2D& Draw2D, const VisualKey& Key, const VIDrawParams& Params)
+    void VisualKeyboard::DrawKey(BatchDrawCmds& Draw2D, const VisualKey& Key, const VIDrawParams& Params)
     {
         float SizeX = (Key.Size.X * Params.Scale);
         float SizeY = (Key.Size.Y * Params.Scale);
@@ -113,7 +113,7 @@ namespace Leviathan
         }
     }
 
-    void VisualKeyboard::Draw(BatchDraw2D& Draw2D, const VIDrawParams& Params)
+    void VisualKeyboard::Draw(BatchDrawCmds& Draw2D, const VIDrawParams& Params)
     {
         static VisualKeyboard vKeyboard;
         if (!vKeyboard.bInit) { vKeyboard.Init(); }
@@ -141,7 +141,7 @@ namespace Leviathan
         }
     }
 
-    void InputVisualizer::DrawKeyboard(BatchDraw2D& Draw2D)
+    void InputVisualizer::DrawKeyboard(BatchDrawCmds& Draw2D)
     {
         VIDrawParams Params = { };
         Params.Origin = { 975.0f, (float)AppHeight - 10.0f };
@@ -153,10 +153,10 @@ namespace Leviathan
 
     struct VisualMouse
     {
-        static void Draw(BatchDraw2D& Draw2D, const VIDrawParams& Params);
+        static void Draw(BatchDrawCmds& Draw2D, const VIDrawParams& Params);
     };
 
-    void VisualMouse::Draw(BatchDraw2D& Draw2D, const VIDrawParams& Params)
+    void VisualMouse::Draw(BatchDrawCmds& Draw2D, const VIDrawParams& Params)
     {
         static constexpr v2f RegionSize{ 16.0f, 9.0f * 2.0f };
         static constexpr v2f ButtonSize{ RegionSize.X / 3.0f, RegionSize.Y / 2.0f };
@@ -245,7 +245,7 @@ namespace Leviathan
         }
     }
 
-    void InputVisualizer::DrawMouse(BatchDraw2D& Draw2D)
+    void InputVisualizer::DrawMouse(BatchDrawCmds& Draw2D)
     {
         VIDrawParams Params = {};
         Params.Origin = { 1000.0f, AppHeight - 200.0f };
@@ -257,10 +257,10 @@ namespace Leviathan
 
     struct VisualGamepad
     {
-        static void Draw(BatchDraw2D& Draw2D, int GamepadIdx, const VIDrawParams& Params);
+        static void Draw(BatchDrawCmds& Draw2D, int GamepadIdx, const VIDrawParams& Params);
     };
 
-    void VisualGamepad::Draw(BatchDraw2D& Draw2D, int GamepadIdx, const VIDrawParams& Params)
+    void VisualGamepad::Draw(BatchDrawCmds& Draw2D, int GamepadIdx, const VIDrawParams& Params)
     {
         static constexpr v2f GamepadRegionSize{ 16.0f, 16.0f };
         static constexpr v2f DPadButtonsCenter{ 0.25f, -0.5f };
@@ -433,7 +433,7 @@ namespace Leviathan
         }
     }
 
-    void InputVisualizer::DrawGamepads(BatchDraw2D& Draw2D)
+    void InputVisualizer::DrawGamepads(BatchDrawCmds& Draw2D)
     {
         VIDrawParams Params = {};
         Params.Origin = { 1100.0f, AppHeight - 200.0f };

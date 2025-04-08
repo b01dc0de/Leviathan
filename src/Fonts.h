@@ -14,7 +14,7 @@ namespace Leviathan
         RectF* GlyphRects;
 
         void Init(ID3D11Device* InDevice, const char* Filename, int InNumGlyphsX, int InNumGlyphsY);
-        void Draw(BatchDraw2D& Draw2D, v2f Origin, float Scale, const char* Msg, int MsgLength);
+        void Draw(BatchDrawCmds& Draw2D, v2f Origin, float Scale, const char* Msg, int MsgLength);
         RectF GetGlyph(char GlyphChar);
         void Term();
     };

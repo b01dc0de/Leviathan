@@ -8,7 +8,7 @@ namespace Leviathan
     namespace PerformanceGraph
     {
         void Tick();
-        void Draw(BatchDraw2D& Draw2D);
+        void Draw(BatchDrawCmds& Draw2D);
     };
 }
 

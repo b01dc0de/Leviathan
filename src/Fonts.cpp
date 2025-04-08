@@ -29,7 +29,7 @@ namespace Leviathan
         }
     }
 
-    void HandmadeTextSheet::Draw(BatchDraw2D& Draw2D, v2f Origin, float Scale, const char* Msg, int MsgLength)
+    void HandmadeTextSheet::Draw(BatchDrawCmds& Draw2D, v2f Origin, float Scale, const char* Msg, int MsgLength)
     {
         v2f TextPos = Origin;
         const v2f TextSize{ GlyphSize.X * Scale, GlyphSize.Y * Scale };

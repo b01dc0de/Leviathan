@@ -18,7 +18,7 @@ namespace Game
         constexpr double SecondsPerBullet = 0.05f;
 
         void Update();
-        void Draw(BatchDraw2D& Draw2D);
+        void Draw(BatchDrawCmds& Draw2D);
         void Init();
         void Term();
     }
@@ -90,7 +90,7 @@ namespace Game
         }
     }
 
-    void BulletLimboState::Draw(BatchDraw2D& Draw2D)
+    void BulletLimboState::Draw(BatchDrawCmds& Draw2D)
     {
         constexpr float PlayerAngleVisualOffset = -fPI / 4.0f;
         float fOneThird = 1.0f / 3.0f;
@@ -128,7 +128,7 @@ namespace Game
 
     void BulletLimbo::Draw(GameGraphicsContext& GFXContext)
     {
-        BatchDraw2D& Draw2D = *GFXContext.Draw2D;
+        BatchDrawCmds& Draw2D = *GFXContext.DrawBatch;
         BulletLimboState::Draw(Draw2D);
     }
     void BulletLimbo::Init() { BulletLimboState::Init(); }

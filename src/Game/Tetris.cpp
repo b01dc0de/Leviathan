@@ -497,7 +497,7 @@ namespace Game
                 static void ClearGrid();
                 static void Update();
                 static void ProcessInput();
-                static void DrawGrid(BatchDraw2D& Draw2D);
+                static void DrawGrid(BatchDrawCmds& Draw2D);
             };
             TetrisGameState Tetrion::State = TetrisGameState::ATTRACT;
             TetrisInput Tetrion::Input{};
@@ -780,7 +780,7 @@ namespace Game
             }
         }
 
-        void Tetrion::DrawGrid(BatchDraw2D& Draw2D)
+        void Tetrion::DrawGrid(BatchDrawCmds& Draw2D)
         {
             const float VisualGridHeight = Leviathan::AppHeight;
             const float VisualGridWidth = VisualGridHeight / 2.0f;
@@ -841,7 +841,7 @@ namespace Game
 
         void Draw(GameGraphicsContext& GFXContext)
         {
-            BatchDraw2D& Draw2D = *GFXContext.Draw2D;
+            BatchDrawCmds& Draw2D = *GFXContext.DrawBatch;
             Tetrion::DrawGrid(Draw2D);
         }
 

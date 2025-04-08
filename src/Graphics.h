@@ -2,9 +2,8 @@
 #define LEVIATHAN_GRAPHICS_H
 
 #include "Leviathan.h"
+#include "BatchDraw.h"
 #include "DrawState.h"
-#include "Draw3D.h"
-#include "Draw2D.h"
 #include "MeshState.h"
 
 namespace Leviathan
@@ -33,7 +32,7 @@ namespace Leviathan
         ID3D11Buffer* ViewProjBuffer;
         Camera* GameCamera;
 
-        BatchDraw2D* Draw2D;
+        BatchDrawCmds* DrawBatch;
 
         DrawStateT* DrawStateColor;
     };

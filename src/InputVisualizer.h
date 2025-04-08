@@ -8,9 +8,9 @@ namespace Leviathan
     struct InputVisualizer
     {
         static constexpr float LineWidth = 2.0f;
-        static void DrawKeyboard(BatchDraw2D& Draw2D);
-        static void DrawMouse(BatchDraw2D& Draw2D);
-        static void DrawGamepads(BatchDraw2D& Draw2D);
+        static void DrawKeyboard(BatchDrawCmds& Draw2D);
+        static void DrawMouse(BatchDrawCmds& Draw2D);
+        static void DrawGamepads(BatchDrawCmds& Draw2D);
     };
 }
 

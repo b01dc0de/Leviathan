@@ -10,7 +10,7 @@ namespace Leviathan
         static bool bDrawUI;
 
         static void Init(ID2D1RenderTarget* In2DRT);
-        static void Draw(ID2D1RenderTarget* In2DRT, BatchDraw2D& Draw2D);
+        static void Draw(ID2D1RenderTarget* In2DRT, BatchDrawCmds& Draw2D);
         static void Term();
     };
 }

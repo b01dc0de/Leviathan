@@ -54,10 +54,10 @@ namespace Game
         void MoveTail(v2i NewTail);
         void EatFruit();
         void Update();
-        void DrawCell(BatchDraw2D& Draw2D, v2i Cell, fColor Color);
+        void DrawCell(BatchDrawCmds& Draw2D, v2i Cell, fColor Color);
     }
 
-    void GridSnakeState::DrawCell(BatchDraw2D& Draw2D, v2i Cell, fColor Color)
+    void GridSnakeState::DrawCell(BatchDrawCmds& Draw2D, v2i Cell, fColor Color)
     {
         RectF CellQuad
         {
@@ -207,7 +207,7 @@ namespace Game
 
     void GridSnake::Draw(GameGraphicsContext& GFXContext)
     {
-        BatchDraw2D& Draw2D = *GFXContext.Draw2D;
+        BatchDrawCmds& Draw2D = *GFXContext.DrawBatch;
 
         // Draw Grid
         Draw2D.AddBox(RectF{ VisualGridPos.X, VisualGridPos.Y, VisualGridSize, VisualGridSize }, GridColor);

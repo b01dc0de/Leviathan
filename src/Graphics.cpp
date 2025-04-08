@@ -112,8 +112,7 @@ namespace Leviathan
 
     Camera OrthoCamera;
     Camera GameCamera;
-    BatchDraw2D Draw2D;
-    BatchDrawVoxel Draw3D;
+    BatchDrawCmds DrawBatch;
     HandmadeTextSheet HandmadeText;
 
     void UpdateShaderWorld(ID3D11DeviceContext* Context, m4f* WorldData)
@@ -128,12 +127,12 @@ namespace Leviathan
     }
 
     void DrawDebugDemo();
-    void DrawBatch2D(BatchDraw2D& Draw2D, ID3D11ShaderResourceView* TextureSRV, bool bClear = false);
-    void DrawBatch3D(BatchDrawVoxel& Draw3D, bool bClear = false);
+    void DrawBatch2D(BatchDrawCmds& Draw2D, ID3D11ShaderResourceView* TextureSRV, bool bClear = false);
+    void DrawBatch3D(BatchDrawCmds& Draw3D, bool bClear = false);
 
     static bool bDrawGame = true;
     static bool bForceDrawDebugDemo = false;
-    static bool bDrawUI = false;
+    static bool bDrawUI = true;
     static bool bEnableWireframeRaster = false;
     m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
     constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
@@ -143,7 +142,7 @@ namespace Leviathan
         if (KeyboardState::GetKey(LV_KEY_F4)) { bEnableWireframeRaster = !bEnableWireframeRaster; }
         if (KeyboardState::GetKey(LV_KEY_F8)) { bDrawGame = !bDrawGame; }
 
-        Draw2D.Clear();
+        DrawBatch.ClearCmdsAll();
 
         if (bEnableWireframeRaster) { DX_ImmContext->RSSetState(DX_WireframeRasterizerState); }
         else { DX_ImmContext->RSSetState(DX_RasterizerState); }
@@ -165,7 +164,7 @@ namespace Leviathan
             DX_WorldBuffer,
             DX_ViewProjBuffer,
             &GameCamera,
-            &Draw2D,
+            &DrawBatch,
             &DrawStateColor
         };
         
@@ -176,12 +175,12 @@ namespace Leviathan
         if (bDrawGame)
         {
             GameManager::Draw(GameContext);
-            DrawBatch2D(*GameContext.Draw2D, BulletLimboSpriteSheet.LvTex.SRV, true);
+            DrawBatch2D(*GameContext.DrawBatch, BulletLimboSpriteSheet.LvTex.SRV, true);
         }
         if (bDrawUI)
         {
-            UserInterface::Draw(D2_RenderTarget, Draw2D);
-            DrawBatch2D(Draw2D, LvTestTexture.SRV, true);
+            UserInterface::Draw(D2_RenderTarget, DrawBatch);
+            DrawBatch2D(DrawBatch, LvTestTexture.SRV, true);
         }
 
         UINT SyncInterval = 0, PresentFlags = 0;
@@ -297,9 +296,9 @@ namespace Leviathan
                 v4f Pos{cosf(Radians + RotationX) * VoxelStoneHedgeSize, sinf(RotationY) * VoxelStoneHedgeSize * 0.25f, sinf(Radians) * VoxelStoneHedgeSize};
                 v4f Color{cosf(RotationX), sinf(RotationY), Value, 1.0f};
                 float Scale = ((float)(Idx + 1) / (float)NumInstVoxels) * MaxScale;
-                Draw3D.AddVoxel(Pos, Color, Scale);
+                DrawBatch.AddVoxel(Pos, Color, Scale);
             }
-            DrawBatch3D(Draw3D, true);
+            DrawBatch3D(DrawBatch, true);
         }
 
         if (bDrawInstLines)
@@ -307,7 +306,7 @@ namespace Leviathan
             ASSERT(ARRAY_SIZE(InstData_LinePos) == ARRAY_SIZE(InstData_LineColors));
             for (int Idx = 0; Idx < ARRAY_SIZE(InstData_LinePos); Idx++)
             {
-                Draw2D.AddLine(InstData_LinePos[Idx], InstData_LineColors[Idx]);
+                DrawBatch.AddLine(InstData_LinePos[Idx], InstData_LineColors[Idx]);
             }
         }
 
@@ -319,13 +318,13 @@ namespace Leviathan
             const char TextRow0[] = "ABCDEFGHIJKL";
             const char TextRow1[] = "MNOPQRSTUVWX";
             const char TextRow2[] = "YZ0123456789";
-            HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextMsg, ARRAY_SIZE(TextMsg) - 1);
+            HandmadeText.Draw(DrawBatch, TextOrigin, TextScale, TextMsg, ARRAY_SIZE(TextMsg) - 1);
             TextOrigin.Y -= 60.0f;
-            HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextRow0, ARRAY_SIZE(TextRow0) - 1);
+            HandmadeText.Draw(DrawBatch, TextOrigin, TextScale, TextRow0, ARRAY_SIZE(TextRow0) - 1);
             TextOrigin.Y -= 60.0f;
-            HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextRow1, ARRAY_SIZE(TextRow1) - 1);
+            HandmadeText.Draw(DrawBatch, TextOrigin, TextScale, TextRow1, ARRAY_SIZE(TextRow1) - 1);
             TextOrigin.Y -= 60.0f;
-            HandmadeText.Draw(Draw2D, TextOrigin, TextScale, TextRow2, ARRAY_SIZE(TextRow2) - 1);
+            HandmadeText.Draw(DrawBatch, TextOrigin, TextScale, TextRow2, ARRAY_SIZE(TextRow2) - 1);
         }
 
         if (bDrawInstRotationDemo)
@@ -345,11 +344,11 @@ namespace Leviathan
                 CurrRect.PosX += cosf(CurrAngle * fTime) * CircleSize * sinf(fTime);
                 CurrRect.PosY += sinf(CurrAngle * fTime) * CircleSize * cosf(-fTime);
                 fColor CurrColor{ 1.0f, 0.0f, 0.0f, 1.0f };
-                Draw2D.AddRect(CurrRect, CurrColor, CurrAngle);
+                DrawBatch.AddRect(CurrRect, CurrColor, CurrAngle);
 
                 CurrRect.PosX += RectSize * sinf(fTime * 0.5f);
                 CurrRect.PosY -= RectSize * sinf(fTime * 2.0f);
-                Draw2D.AddRect(CurrRect, TexRect, CurrAngle);
+                DrawBatch.AddRect(CurrRect, TexRect, CurrAngle);
             }
 
             if (0)
@@ -372,16 +371,16 @@ namespace Leviathan
                         Idx & 3 ? 1.0f : 0.0f,
                         1.0f
                     };
-                    Draw2D.AddRect(CurrRect, CurrColor, CurrAngle);
+                    DrawBatch.AddRect(CurrRect, CurrColor, CurrAngle);
                 }
 
             }
         }
 
-        DrawBatch2D(Draw2D, LvTestTexture.SRV, true);
+        DrawBatch2D(DrawBatch, LvTestTexture.SRV, true);
     }
 
-    void DrawBatch2D(BatchDraw2D& Draw2D, ID3D11ShaderResourceView* TextureSRV, bool bClear)
+    void DrawBatch2D(BatchDrawCmds& DrawBatch, ID3D11ShaderResourceView* TextureSRV, bool bClear)
     {
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
         DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
@@ -392,33 +391,33 @@ namespace Leviathan
         SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
 
         // Color:
-        if (Draw2D.ColorBatchCmds.Num > 0)
+        if (DrawBatch.ColorBatchCmds.Num > 0)
         {
             DrawMeshInstanced
             (
                 DX_ImmContext,
                 DrawStateInstRectColor,
                 MeshInstStateRect,
-                Draw2D.ColorBatchCmds.Num,
-                Draw2D.ColorBatchCmds.Data
+                DrawBatch.ColorBatchCmds.Num,
+                DrawBatch.ColorBatchCmds.Data
             );
         }
-        if (Draw2D.RotationColorBatchCmds.Num > 0)
+        if (DrawBatch.RotationColorBatchCmds.Num > 0)
         {
             DrawMeshInstanced
             (
                 DX_ImmContext,
                 DrawStateInstRectColorRotation,
                 MeshInstStateRectRotation,
-                Draw2D.RotationColorBatchCmds.Num,
-                Draw2D.RotationColorBatchCmds.Data
+                DrawBatch.RotationColorBatchCmds.Num,
+                DrawBatch.RotationColorBatchCmds.Data
             );
         }
 
         // Texture:
         DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
-        if (Draw2D.TextureBatchCmds.Num > 0) { } // TODO:
-        if (Draw2D.TextBatchCmds.Num > 0)
+        if (DrawBatch.TextureBatchCmds.Num > 0) { } // TODO:
+        if (DrawBatch.TextBatchCmds.Num > 0)
         {
             ASSERT(HandmadeText.LvTex2D.SRV);
             SetShaderResourceViews(DX_ImmContext, 1, &HandmadeText.LvTex2D.SRV);
@@ -428,11 +427,11 @@ namespace Leviathan
                 DX_ImmContext,
                 DrawStateInstRectTexture,
                 MeshInstStateRect,
-                Draw2D.TextBatchCmds.Num,
-                Draw2D.TextBatchCmds.Data
+                DrawBatch.TextBatchCmds.Num,
+                DrawBatch.TextBatchCmds.Data
             );
         }
-        if (Draw2D.RotationTextureBatchCmds.Num > 0)
+        if (DrawBatch.RotationTextureBatchCmds.Num > 0)
         {
             if (TextureSRV)
             {
@@ -444,14 +443,14 @@ namespace Leviathan
                 DX_ImmContext,
                 DrawStateInstRectTextureRotation,
                 MeshInstStateRectRotation,
-                Draw2D.RotationTextureBatchCmds.Num,
-                Draw2D.RotationTextureBatchCmds.Data
+                DrawBatch.RotationTextureBatchCmds.Num,
+                DrawBatch.RotationTextureBatchCmds.Data
             );
         }
-        if (bClear) { Draw2D.Clear(); }
+        if (bClear) { DrawBatch.ClearCmds2D(); }
     }
 
-    void DrawBatch3D(BatchDrawVoxel& Draw3D, bool bClear)
+    void DrawBatch3D(BatchDrawCmds& DrawBatch, bool bClear)
     {
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
         DX_ImmContext->OMSetDepthStencilState(DX_DefaultDepthStencilState, 0);
@@ -461,18 +460,18 @@ namespace Leviathan
         SetShaderConstantBuffers(DX_ImmContext, 1, &DX_ViewProjBuffer, 0);
 
         // Color:
-        if (Draw3D.ColorCmds.Num > 0)
+        if (DrawBatch.ColorVoxelCmds.Num > 0)
         {
             DrawMeshInstanced
             (
                 DX_ImmContext,
                 DrawStateInstVoxelColor,
                 MeshInstStateVoxelColor,
-                Draw3D.ColorCmds.Num,
-                Draw3D.ColorCmds.Data
+                DrawBatch.ColorVoxelCmds.Num,
+                DrawBatch.ColorVoxelCmds.Data
             );
         }
-        if (bClear) { Draw3D.Clear(); }
+        if (bClear) { DrawBatch.ClearCmds3D(); }
     }
 
     void Graphics::Init()
@@ -750,7 +749,7 @@ namespace Leviathan
             );
         }
 
-        Draw2D.Init();
+        DrawBatch.Init();
 
         D3D11_BUFFER_DESC WorldBufferDesc = {};
         WorldBufferDesc.ByteWidth = sizeof(m4f);

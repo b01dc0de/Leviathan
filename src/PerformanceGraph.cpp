@@ -18,7 +18,7 @@ namespace Leviathan
 
         void Init();
         void Tick();
-        void Draw(BatchDraw2D& Draw2D, v2f Origin, float Scale);
+        void Draw(BatchDrawCmds& Draw2D, v2f Origin, float Scale);
     }
 
     void PerformanceGraph::Init()
@@ -46,7 +46,7 @@ namespace Leviathan
         }
     }
 
-    void PerformanceGraph::Draw(BatchDraw2D& Draw2D, v2f Origin, float Scale)
+    void PerformanceGraph::Draw(BatchDrawCmds& Draw2D, v2f Origin, float Scale)
     {
         // Add graph background
         constexpr fColor BackgroundColor{ Norm8Bit(0, 0, 0) };
@@ -103,7 +103,7 @@ namespace Leviathan
         SampleAvgY = SampleSum / NumSamples;
     }
 
-    void PerformanceGraph::Draw(BatchDraw2D& Draw2D)
+    void PerformanceGraph::Draw(BatchDrawCmds& Draw2D)
     {
         static bool bInit = false;
         if (!bInit) { Init(); bInit = true; }

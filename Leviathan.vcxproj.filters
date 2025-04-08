@@ -99,6 +99,9 @@
     <ClCompile Include="src\Game\SpeedCube.cpp">
       <Filter>src\Game</Filter>
     </ClCompile>
+    <ClCompile Include="src\BatchDraw.cpp">
+      <Filter>src\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -172,6 +175,9 @@
     </ClInclude>
     <ClInclude Include="src\Game\SpeedCube.h">
       <Filter>src\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="src\BatchDraw.h">
+      <Filter>src\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
