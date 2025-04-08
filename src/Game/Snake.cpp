@@ -205,7 +205,7 @@ namespace Game
         GridSnakeState::Update();
     }
 
-    void GridSnake::Draw(GameGraphicsContext& GFXContext)
+    void GridSnake::Draw(LvGFXContext& GFXContext)
     {
         BatchDrawCmds& Draw2D = *GFXContext.DrawBatch;
 

@@ -839,7 +839,7 @@ namespace Game
             Tetrion::Update();
         }
 
-        void Draw(GameGraphicsContext& GFXContext)
+        void Draw(LvGFXContext& GFXContext)
         {
             BatchDrawCmds& Draw2D = *GFXContext.DrawBatch;
             Tetrion::DrawGrid(Draw2D);

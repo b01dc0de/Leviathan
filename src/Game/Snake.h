@@ -9,7 +9,7 @@ namespace Game
     namespace GridSnake
     {
         void Update();
-        void Draw(GameGraphicsContext& GFXContext);
+        void Draw(LvGFXContext& GFXContext);
         void Init();
         void Term();
     }

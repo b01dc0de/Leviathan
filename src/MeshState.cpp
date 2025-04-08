@@ -264,7 +264,6 @@ namespace Leviathan
         return Result;
     }
 
-
     MeshStateT LoadMeshStateTriangle()
     {
         return CreateMeshState

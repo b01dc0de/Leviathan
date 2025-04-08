@@ -547,12 +547,11 @@ namespace Game
         TheCube.Update();
     }
 
-    void SpeedCube::Draw(GameGraphicsContext & GFXContext)
+    void SpeedCube::Draw(LvGFXContext & GFXContext)
     {
         GFXContext.ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-        ID3D11Buffer* World_ViewProjBuffers[] = { GFXContext.WorldBuffer, GFXContext.ViewProjBuffer };
-        SetShaderConstantBuffers(GFXContext.ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
-        UpdateShaderViewProj(GFXContext.ImmContext, GFXContext.GameCamera);
+        GFXContext.SetShaderConstantBuffers_WVP();
+        GFXContext.UpdateShaderViewProj(GFXContext.GameCamera);
 
         m4f CubeWorld = m4f::Identity();
 
@@ -576,7 +575,7 @@ namespace Game
                 }
                 PieceWorld = PieceWorld * CubeWorld;
 
-                UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
+                GFXContext.UpdateShaderWorld(&PieceWorld);
                 int StartIx = Curr.ID * IxPerPiece;
                 DrawMeshIxRange(GFXContext.ImmContext, *GFXContext.DrawStateColor, SpeedCubeMesh, StartIx, IxPerPiece);
             }
@@ -590,7 +589,7 @@ namespace Game
                 }
                 PieceWorld = PieceWorld * CubeWorld;
 
-                UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
+                GFXContext.UpdateShaderWorld(&PieceWorld);
                 int StartIx = Curr.ID * IxPerPiece;
                 DrawMeshIxRange(GFXContext.ImmContext, *GFXContext.DrawStateColor, SpeedCubeMesh, StartIx, IxPerPiece);
             }
@@ -603,7 +602,7 @@ namespace Game
                     PieceWorld = PieceWorld * TheCube.GetActiveTurnRot();
                 }
                 PieceWorld = PieceWorld * CubeWorld;
-                UpdateShaderWorld(GFXContext.ImmContext, &PieceWorld);
+                GFXContext.UpdateShaderWorld(&PieceWorld);
                 int StartIx = Curr.ID * IxPerPiece;
                 DrawMeshIxRange(GFXContext.ImmContext, *GFXContext.DrawStateColor, SpeedCubeMesh, StartIx, IxPerPiece);
             }

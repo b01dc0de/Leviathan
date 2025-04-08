@@ -126,7 +126,7 @@ namespace Game
 
     void BulletLimbo::Update() { BulletLimboState::Update(); }
 
-    void BulletLimbo::Draw(GameGraphicsContext& GFXContext)
+    void BulletLimbo::Draw(LvGFXContext& GFXContext)
     {
         BatchDrawCmds& Draw2D = *GFXContext.DrawBatch;
         BulletLimboState::Draw(Draw2D);

@@ -61,6 +61,8 @@ namespace Leviathan
         ID2D1Factory* D2_Factory = nullptr;
         IDXGISurface* DXGI_Surface = nullptr;
         ID2D1RenderTarget* D2_RenderTarget = nullptr;
+
+        LvGFXContext GlobalGFXContext;
     }
 
 #define DX_UUID_HELPER(Type, Ptr) __uuidof(Type), (void**)&Ptr
@@ -115,15 +117,20 @@ namespace Leviathan
     BatchDrawCmds DrawBatch;
     HandmadeTextSheet HandmadeText;
 
-    void UpdateShaderWorld(ID3D11DeviceContext* Context, m4f* WorldData)
+    void LvGFXContext::SetShaderConstantBuffers_WVP()
+    {
+        SetShaderConstantBuffers(ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
+    }
+
+    void LvGFXContext::UpdateShaderWorld(m4f* WorldData)
     {
         ID3D11Buffer* WorldBuffer = DX_WorldBuffer;
-        UpdateShaderResource(Context, WorldBuffer, WorldData, sizeof(m4f));
+        UpdateShaderResource(ImmContext, WorldBuffer, WorldData, sizeof(m4f));
     }
-    void UpdateShaderViewProj(ID3D11DeviceContext* Context, Camera* CameraData)
+    void LvGFXContext::UpdateShaderViewProj(Camera* CameraData)
     {
         ID3D11Buffer* ViewProjBuffer = DX_ViewProjBuffer;
-        UpdateShaderResource(Context, ViewProjBuffer, CameraData, sizeof(Camera));
+        UpdateShaderResource(ImmContext, ViewProjBuffer, CameraData, sizeof(Camera));
     }
 
     void DrawDebugDemo();
@@ -159,23 +166,14 @@ namespace Leviathan
         SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
         SetShaderSamplers(DX_ImmContext, ARRAY_SIZE(DefaultSampler), DefaultSampler);
 
-        GameGraphicsContext GameContext{
-            DX_ImmContext,
-            DX_WorldBuffer,
-            DX_ViewProjBuffer,
-            &GameCamera,
-            &DrawBatch,
-            &DrawStateColor
-        };
-        
         if (!bDrawGame || bForceDrawDebugDemo)
         {
             DrawDebugDemo();
         }
         if (bDrawGame)
         {
-            GameManager::Draw(GameContext);
-            DrawBatch2D(*GameContext.DrawBatch, BulletLimboSpriteSheet.LvTex.SRV, true);
+            GameManager::Draw(GlobalGFXContext);
+            DrawBatch2D(*GlobalGFXContext.DrawBatch, BulletLimboSpriteSheet.LvTex.SRV, true);
         }
         if (bDrawUI)
         {
@@ -199,20 +197,19 @@ namespace Leviathan
         static bool bDrawHandmadeText = false;
         static bool bDrawInstRotationDemo = false;
 
-        ID3D11Buffer* World_ViewProjBuffers[] = { DX_WorldBuffer, DX_ViewProjBuffer };
         ID3D11ShaderResourceView* HandmadeFontTextureSRV[] = { HandmadeText.LvTex2D.SRV };
         ID3D11SamplerState* DefaultSampler[] = { DX_DefaultSamplerState };
         ID3D11ShaderResourceView* TestTextureSRV[] = { LvTestTexture.SRV };
 
-        UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
+        GlobalGFXContext.UpdateShaderViewProj(&OrthoCamera);
 
-        SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
+        GlobalGFXContext.SetShaderConstantBuffers_WVP();
 
         if (bDrawTriangle)
         {
             DX_ImmContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
             m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(256.0f, -256.0f, 0.0f);
-            UpdateShaderWorld(DX_ImmContext, &TriangleWorld);
+            GlobalGFXContext.UpdateShaderWorld(&TriangleWorld);
 
             DrawMesh(DX_ImmContext, DrawStateColor, MeshStateTriangle);
         }
@@ -221,7 +218,7 @@ namespace Leviathan
         {
             DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
             m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(+256.0f, +256.0f, 0.0f);
-            UpdateShaderWorld(DX_ImmContext, &TexQuadWorld);
+            GlobalGFXContext.UpdateShaderWorld(&TexQuadWorld);
             SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
 
             DrawMesh(DX_ImmContext, DrawStateTexture, MeshStateRect);
@@ -231,7 +228,7 @@ namespace Leviathan
         if (bDrawInstRects)
         {
             DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
-            UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
+            GlobalGFXContext.UpdateShaderWorld(&DefaultSpriteWorld);
             SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
 
             DrawMeshInstanced
@@ -254,10 +251,10 @@ namespace Leviathan
             RotationX += RotSpeed;
             RotationY += RotSpeed * 0.5f;
             m4f CubeWorld = m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
-            UpdateShaderWorld(DX_ImmContext, &CubeWorld);
-            UpdateShaderViewProj(DX_ImmContext, &GameCamera);
+            GlobalGFXContext.UpdateShaderWorld(&CubeWorld);
+            GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
 
-            SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
+            GlobalGFXContext.SetShaderConstantBuffers_WVP();
 
             static bool bCubeFacesColor = true;
             static bool bCubeFacesTexture = false;
@@ -384,8 +381,8 @@ namespace Leviathan
     {
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
         DX_ImmContext->OMSetDepthStencilState(DX_Draw2DDepthStencilState, 0);
-        UpdateShaderWorld(DX_ImmContext, &DefaultSpriteWorld);
-        UpdateShaderViewProj(DX_ImmContext, &OrthoCamera);
+        GlobalGFXContext.UpdateShaderWorld(&DefaultSpriteWorld);
+        GlobalGFXContext.UpdateShaderViewProj(&OrthoCamera);
 
         ID3D11Buffer* World_ViewProjBuffers[] = { DX_WorldBuffer, DX_ViewProjBuffer };
         SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
@@ -455,7 +452,7 @@ namespace Leviathan
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
         DX_ImmContext->OMSetDepthStencilState(DX_DefaultDepthStencilState, 0);
         //UpdateShaderWorld(DX_ImmContext, &World);
-        UpdateShaderViewProj(DX_ImmContext, &GameCamera);
+        GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
 
         SetShaderConstantBuffers(DX_ImmContext, 1, &DX_ViewProjBuffer, 0);
 
@@ -823,6 +820,14 @@ namespace Leviathan
         UserInterface::Init(D2_RenderTarget);
 
         BulletLimboSpriteSheet = LoadSpriteSheet("Assets/Sprites/BulletLimbo_SpriteSheet.bmp", DX_Device, 1, 3);
+
+        GlobalGFXContext = {
+            DX_ImmContext,
+            { DX_WorldBuffer, DX_ViewProjBuffer},
+            &GameCamera,
+            &DrawBatch,
+            &DrawStateColor
+        };
     }
 
     void Graphics::Term()

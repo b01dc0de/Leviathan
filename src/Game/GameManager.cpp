@@ -22,7 +22,7 @@ static GameType SelectedGame = GameType::SpeedCube;
 struct GameDefinition
 {
     using ProcCallback = void (*)(void);
-    using DrawCallback = void (*)(GameGraphicsContext&);
+    using DrawCallback = void (*)(LvGFXContext&);
 
     ProcCallback Update = nullptr;
     DrawCallback Draw = nullptr;
@@ -66,7 +66,7 @@ void GameManager::Update()
     }
 }
 
-void GameManager::Draw(GameGraphicsContext& GFXContext)
+void GameManager::Draw(LvGFXContext& GFXContext)
 {
     const GameDefinition& CurrGame = GameDefines[(size_t)SelectedGame];
     ASSERT(CurrGame.Draw);

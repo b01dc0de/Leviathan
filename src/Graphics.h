@@ -19,26 +19,26 @@ namespace Leviathan
     };
 
     struct Camera;
-    void UpdateShaderWorld(ID3D11DeviceContext* Context, m4f* WorldData);
-    void UpdateShaderViewProj(ID3D11DeviceContext* Context, Camera* CameraData);
-
-    inline void SafeRelease(IUnknown* Ptr) { if (Ptr) { Ptr->Release(); Ptr = nullptr; } }
-
     struct DrawStateT;
-    struct GameGraphicsContext
+    struct LvGFXContext
     {
         ID3D11DeviceContext* ImmContext;
-        ID3D11Buffer* WorldBuffer;
-        ID3D11Buffer* ViewProjBuffer;
+        ID3D11Buffer* World_ViewProjBuffers[2];
         Camera* GameCamera;
 
         BatchDrawCmds* DrawBatch;
 
         DrawStateT* DrawStateColor;
+
+        void SetShaderConstantBuffers_WVP();
+        void UpdateShaderWorld(m4f* WorldData);
+        void UpdateShaderViewProj(Camera* CameraData);
     };
+
+    inline void SafeRelease(IUnknown* Ptr) { if (Ptr) { Ptr->Release(); Ptr = nullptr; } }
 }
 
-using Leviathan::GameGraphicsContext;
+using Leviathan::LvGFXContext;
 
 #define DX_CHECK(DXResult) if (FAILED(DXResult)) { DebugBreak(); }
 
