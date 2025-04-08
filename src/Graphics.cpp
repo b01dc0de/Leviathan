@@ -137,14 +137,15 @@ namespace Leviathan
     void DrawBatch2D(BatchDrawCmds& Draw2D, ID3D11ShaderResourceView* TextureSRV, bool bClear = false);
     void DrawBatch3D(BatchDrawCmds& Draw3D, bool bClear = false);
 
-    static bool bDrawGame = true;
-    static bool bForceDrawDebugDemo = false;
-    static bool bDrawUI = true;
-    static bool bEnableWireframeRaster = false;
     m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
     constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
     void Graphics::Draw()
     {
+        static bool bDrawGame = true;
+        static bool bForceDrawDebugDemo = false;
+        static bool bDrawUI = true;
+        static bool bEnableWireframeRaster = false;
+
         if (KeyboardState::GetKey(LV_KEY_F3)) { bForceDrawDebugDemo = !bForceDrawDebugDemo; }
         if (KeyboardState::GetKey(LV_KEY_F4)) { bEnableWireframeRaster = !bEnableWireframeRaster; }
         if (KeyboardState::GetKey(LV_KEY_F8)) { bDrawGame = !bDrawGame; }
@@ -192,10 +193,10 @@ namespace Leviathan
         static bool bDrawTriangle = false;
         static bool bDrawTexQuad = false;
         static bool bDrawInstRects = false;
-        static bool bDrawCube = true;
+        static bool bDrawCube = false;
         static bool bDrawInstVoxels = false;
         static bool bDrawHandmadeText = false;
-        static bool bDrawInstRotationDemo = false;
+        static bool bDrawInstRotationDemo = true;
 
         ID3D11ShaderResourceView* HandmadeFontTextureSRV[] = { HandmadeText.LvTex2D.SRV };
         ID3D11SamplerState* DefaultSampler[] = { DX_DefaultSamplerState };

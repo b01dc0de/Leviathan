@@ -144,6 +144,7 @@
     <ClCompile Include="src\Game\GameManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\Game\Labyrinth.cpp" />
     <ClCompile Include="src\Game\Snake.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -200,6 +201,7 @@
     <ClInclude Include="src\GameEntity.h" />
     <ClInclude Include="src\Game\BulletLimbo.h" />
     <ClInclude Include="src\Game\GameManager.h" />
+    <ClInclude Include="src\Game\Labyrinth.h" />
     <ClInclude Include="src\Game\Snake.h" />
     <ClInclude Include="src\Game\SpeedCube.h" />
     <ClInclude Include="src\Game\Tetris.h" />
