@@ -114,7 +114,7 @@ namespace Game
             bool bTurning;
             TurnGroup ActiveTurn;
             int TurnStepIdx;
-            static constexpr int NumTurnSteps = 32;
+            static constexpr int NumTurnSteps = 1024;
 
             static constexpr int MvHistSize = 20;
             TurnMove MoveHistory[MvHistSize];
@@ -339,12 +339,12 @@ namespace Game
                 else if (bAutoTurn)
                 {
                     static constexpr float WaitTime = 1.0f;
-                    static float LastWait = 0.0f;
-                    static bool bWaiting = false;
+                    static float LastWait = Clock::Time();
+                    static bool bWaiting = true;
 
                     if (bWaiting)
                     {
-                        bWaiting = (Clock::Time() - LastWait) > WaitTime;
+                        bWaiting = (Clock::Time() - LastWait) < WaitTime;
                         return;
                     }
                     
@@ -365,7 +365,7 @@ namespace Game
                     {
                         HistIdx = HistDir ? MvHistSize - 1 : 0;
                         HistDir = !HistDir;
-                        bWaiting = true;
+                        bWaiting = HistDir;
                         LastWait = Clock::Time();
                     }
                 }
