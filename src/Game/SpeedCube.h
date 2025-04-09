@@ -5,13 +5,17 @@
 
 namespace Game
 {
-    namespace SpeedCube
-    {
-        void Update();
-        void Draw(LvGFXContext& GFXContext);
-        void Init();
-        void Term();
-    }
+
+namespace SpeedCube
+{
+
+void Update();
+void Draw(LvGFXContext& GFXContext);
+void Init();
+void Term();
+
+}
+
 }
 
 #endif // GAME_SPEEDCUBE_H

@@ -5,13 +5,17 @@
 
 namespace Game
 {
-    namespace BulletLimbo
-    {
-        void Update();
-        void Draw(LvGFXContext& GFXContext);
-        void Init();
-        void Term();
-    }
+
+namespace BulletLimbo
+{
+
+void Update();
+void Draw(LvGFXContext& GFXContext);
+void Init();
+void Term();
+
+}
+
 }
 
 #endif // GAME_BULLETLIMBO_H

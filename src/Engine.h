@@ -3,16 +3,18 @@
 
 namespace Leviathan
 {
-    struct Engine
-    {
-        static void Init(HINSTANCE hInstance);
-        static void MainLoop();
-        static void Term();
-    };
 
-    extern unsigned int FrameNumber;
+struct Engine
+{
+    static void Init(HINSTANCE hInstance);
+    static void MainLoop();
+    static void Term();
+};
 
-    int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd);
+extern unsigned int FrameNumber;
+
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd);
+
 }
 
 #endif // LEVIATHAN_ENGINE_H

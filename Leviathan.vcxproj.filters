@@ -42,9 +42,6 @@
     <ClCompile Include="src\UnityBuildMain.cpp">
       <Filter>src\UnityBuild</Filter>
     </ClCompile>
-    <ClCompile Include="src\Draw2D.cpp">
-      <Filter>src\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="src\DrawState.cpp">
       <Filter>src\Graphics</Filter>
     </ClCompile>
@@ -93,9 +90,6 @@
     <ClCompile Include="src\Game\Tetris.cpp">
       <Filter>src\Game</Filter>
     </ClCompile>
-    <ClCompile Include="src\Draw3D.cpp">
-      <Filter>src\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="src\Game\SpeedCube.cpp">
       <Filter>src\Game</Filter>
     </ClCompile>
@@ -118,9 +112,6 @@
     </ClInclude>
     <ClInclude Include="src\Game\GameManager.h">
       <Filter>src\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Draw2D.h">
-      <Filter>src\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="src\DrawState.h">
       <Filter>src\Graphics</Filter>
@@ -172,9 +163,6 @@
     </ClInclude>
     <ClInclude Include="src\Game\Tetris.h">
       <Filter>src\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Draw3D.h">
-      <Filter>src\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="src\Game\SpeedCube.h">
       <Filter>src\Game</Filter>

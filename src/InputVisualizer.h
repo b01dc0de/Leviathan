@@ -5,13 +5,15 @@
 
 namespace Leviathan
 {
-    struct InputVisualizer
-    {
-        static constexpr float LineWidth = 2.0f;
-        static void DrawKeyboard(BatchDrawCmds& Draw2D);
-        static void DrawMouse(BatchDrawCmds& Draw2D);
-        static void DrawGamepads(BatchDrawCmds& Draw2D);
-    };
+
+struct InputVisualizer
+{
+    static constexpr float LineWidth = 2.0f;
+    static void DrawKeyboard(BatchDrawCmds& Draw2D);
+    static void DrawMouse(BatchDrawCmds& Draw2D);
+    static void DrawGamepads(BatchDrawCmds& Draw2D);
+};
+
 }
 
 #endif // LEVIATHAN_INPUTVISUALIZER_H

@@ -2,11 +2,13 @@
 
 namespace Leviathan
 {
-    int AppWidth = 1280;
-    int AppHeight = 720;
-    float AspectRatio = (float)AppWidth / (float)AppHeight;
-    bool bAppRunning = true;
-    HWND AppWindow = nullptr;
+
+int AppWidth = 1280;
+int AppHeight = 720;
+float AspectRatio = (float)AppWidth / (float)AppHeight;
+bool bAppRunning = true;
+HWND AppWindow = nullptr;
+
 }
 
 int WinMain

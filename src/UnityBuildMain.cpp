@@ -7,7 +7,6 @@
 #if BUILD_UNITY
     #include "Camera.cpp"
     #include "Clock.cpp"
-    #include "Draw2D.cpp"
     #include "DrawState.cpp"
     #include "Engine.cpp"
     #include "Fonts.cpp"

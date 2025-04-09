@@ -5,33 +5,35 @@
 
 namespace Leviathan
 {
-    using GameEntityID = int;
-    using GameEntityCallback = void (*)(void*);
 
-    constexpr GameEntityID InvalidID = 0;
+using GameEntityID = int;
+using GameEntityCallback = void (*)(void*);
 
-    struct GameEntity
-    {
-        GameEntityID ID = InvalidID;
-        bool bActive = false;
-        void* pData = nullptr;
-        GameEntityCallback Tick = nullptr;
-        GameEntityCallback Init = nullptr;
-        GameEntityCallback Term = nullptr;
-    };
+constexpr GameEntityID InvalidID = 0;
 
-    struct EntityManager
-    {
-        Array<GameEntity> Entities;
-        GameEntityID Counter = InvalidID;
+struct GameEntity
+{
+    GameEntityID ID = InvalidID;
+    bool bActive = false;
+    void* pData = nullptr;
+    GameEntityCallback Tick = nullptr;
+    GameEntityCallback Init = nullptr;
+    GameEntityCallback Term = nullptr;
+};
 
-        GameEntity* GetEntity(GameEntityID ID);
-        GameEntityID AddEntity(GameEntity NewEntity);
-        bool RemoveEntity(GameEntityID ID);
-        void Tick();
-        void Init();
-        void Term();
-    };
+struct EntityManager
+{
+    Array<GameEntity> Entities;
+    GameEntityID Counter = InvalidID;
+
+    GameEntity* GetEntity(GameEntityID ID);
+    GameEntityID AddEntity(GameEntity NewEntity);
+    bool RemoveEntity(GameEntityID ID);
+    void Tick();
+    void Init();
+    void Term();
+};
+
 }
 
 #endif // LEVIATHAN_GAMEENTITY_H

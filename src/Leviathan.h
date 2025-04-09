@@ -26,26 +26,28 @@
 
 namespace Leviathan
 {
-    using uchar = unsigned char;
-    using ushort = unsigned short;
-    using uint = unsigned int;
-    using ulong = unsigned long;
-    using ullong = unsigned long long;
 
-    using s8 = int8_t;
-    using s16 = int16_t;
-    using s32 = int32_t;
-    using s64 = int64_t;
-    using u8 = uint8_t;
-    using u16 = uint16_t;
-    using u32 = uint32_t;
-    using u64 = uint64_t;
+using uchar = unsigned char;
+using ushort = unsigned short;
+using uint = unsigned int;
+using ulong = unsigned long;
+using ullong = unsigned long long;
 
-    extern int AppWidth;
-    extern int AppHeight;
-    extern float AspectRatio;
-    extern bool bAppRunning;
-    extern HWND AppWindow;
+using s8 = int8_t;
+using s16 = int16_t;
+using s32 = int32_t;
+using s64 = int64_t;
+using u8 = uint8_t;
+using u16 = uint16_t;
+using u32 = uint32_t;
+using u64 = uint64_t;
+
+extern int AppWidth;
+extern int AppHeight;
+extern float AspectRatio;
+extern bool bAppRunning;
+extern HWND AppWindow;
+
 }
 
 #define LV_UNUSED(Var) (void)Var
@@ -54,9 +56,9 @@ namespace Leviathan
 #define APPNAMEW() (L"Leviathan")
 #define APPNAMEA() ("Leviathan")
 #if UNICODE
-    #define APPNAME() APPNAMEW()
+#define APPNAME() APPNAMEW()
 #else // UNICODE
-    #define APPNAME() APPNAMEA()
+#define APPNAME() APPNAMEA()
 #endif // UNICODE
 
 #include "Utils.h"

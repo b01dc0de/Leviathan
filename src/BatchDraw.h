@@ -6,85 +6,86 @@
 
 namespace Leviathan
 {
-    struct RectF
-    {
-        float PosX = 0.0f;
-        float PosY = 0.0f;
-        float SizeX = 0.0f;
-        float SizeY = 0.0f;
-    };
 
-    struct LineF
-    {
-        float BeginX = 0.0f;
-        float BeginY = 0.0f;
-        float EndX = 0.0f;
-        float EndY = 0.0f;
-    };
+struct RectF
+{
+    float PosX = 0.0f;
+    float PosY = 0.0f;
+    float SizeX = 0.0f;
+    float SizeY = 0.0f;
+};
 
-    struct InstRectColorData
-    {
-        RectF Rect;
-        fColor Color;
-    };
+struct LineF
+{
+    float BeginX = 0.0f;
+    float BeginY = 0.0f;
+    float EndX = 0.0f;
+    float EndY = 0.0f;
+};
 
-    struct InstRectTextureData
-    {
-        RectF PosRect;
-        RectF TexRect;
-    };
+struct InstRectColorData
+{
+    RectF Rect;
+    fColor Color;
+};
 
-    struct InstRectColorRotationData
-    {
-        RectF Rect;
-        fColor Color;
-        float AngleZ;
-    };
+struct InstRectTextureData
+{
+    RectF PosRect;
+    RectF TexRect;
+};
 
-    struct InstRectTextureRotationData
-    {
-        RectF PosRect;
-        RectF TexRect;
-        float AngleZ;
-    };
+struct InstRectColorRotationData
+{
+    RectF Rect;
+    fColor Color;
+    float AngleZ;
+};
 
-    struct InstVoxelColorData
-    {
-        v4f Pos;
-        v4f Color;
-        float Scale = 1.0f;
-    };
+struct InstRectTextureRotationData
+{
+    RectF PosRect;
+    RectF TexRect;
+    float AngleZ;
+};
 
-    struct BatchDrawCmds
-    {
-        // 2D:
-        Array<InstRectColorData> ColorBatchCmds;
-        Array<InstRectTextureData> TextureBatchCmds;
-        Array<InstRectTextureData> TextBatchCmds;
-        Array<InstRectColorRotationData> RotationColorBatchCmds;
-        Array<InstRectTextureRotationData> RotationTextureBatchCmds;
+struct InstVoxelColorData
+{
+    v4f Pos;
+    v4f Color;
+    float Scale = 1.0f;
+};
 
-        // 3D:
-        Array<InstVoxelColorData> ColorVoxelCmds;
+struct BatchDrawCmds
+{
+    // 2D:
+    Array<InstRectColorData> ColorBatchCmds;
+    Array<InstRectTextureData> TextureBatchCmds;
+    Array<InstRectTextureData> TextBatchCmds;
+    Array<InstRectColorRotationData> RotationColorBatchCmds;
+    Array<InstRectTextureRotationData> RotationTextureBatchCmds;
 
-        static constexpr int DefaultSize = 1024;
+    // 3D:
+    Array<InstVoxelColorData> ColorVoxelCmds;
 
-        void Init();
-        void ClearCmdsAll();
-        void ClearCmds2D();
-        void ClearCmds3D();
+    static constexpr int DefaultSize = 1024;
 
-        void AddRect(const RectF& InRect, const fColor& InColor);
-        void AddBox(const RectF& InRect, const fColor& InColor, float LineWeight = 1.0f);
-        void AddRect(const RectF& InRect, const RectF& InTexRect);
-        void AddTextRect(const RectF& InPosRect, const RectF& InTexRect);
+    void Init();
+    void ClearCmdsAll();
+    void ClearCmds2D();
+    void ClearCmds3D();
 
-        void AddRect(const RectF& InRect, const fColor& InColor, float AngleZ);
-        void AddRect(const RectF& InPosRect, const RectF& InTexRect, float AngleZ);
-        void AddLine(const LineF& InLine, const fColor& InColor);
+    void AddRect(const RectF& InRect, const fColor& InColor);
+    void AddBox(const RectF& InRect, const fColor& InColor, float LineWeight = 1.0f);
+    void AddRect(const RectF& InRect, const RectF& InTexRect);
+    void AddTextRect(const RectF& InPosRect, const RectF& InTexRect);
 
-        void AddVoxel(v4f Pos_, v4f Color_, float Scale_);
-    };
+    void AddRect(const RectF& InRect, const fColor& InColor, float AngleZ);
+    void AddRect(const RectF& InPosRect, const RectF& InTexRect, float AngleZ);
+    void AddLine(const LineF& InLine, const fColor& InColor);
+
+    void AddVoxel(v4f Pos_, v4f Color_, float Scale_);
+};
 
 }
 
