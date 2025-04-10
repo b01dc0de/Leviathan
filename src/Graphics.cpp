@@ -802,7 +802,7 @@ void Graphics::Init()
     LvDebugTexture = LoadTextureFromImage(DebugImage, DX_Device);
     LvTestTexture = LoadTextureBMP("Assets/TestTexture.bmp", DX_Device);
 
-    ProggyCleanFont.Init(DX_Device, "Assets/ProggyClean_12pt.bmp");
+    ProggyCleanFont.Init(DX_Device, "Assets/ProggyClean_24pt.bmp");
 
     MeshStateRect = LoadMeshStateRect();
 
