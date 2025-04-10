@@ -116,7 +116,7 @@ m4f GetMatrix(const SpriteTransform& InSprTrans)
 Camera OrthoCamera;
 Camera GameCamera;
 BatchDrawCmds DrawBatch;
-HandmadeTextSheet HandmadeText;
+LvFont ProggyCleanFont;
 
 void LvGFXContext::SetShaderConstantBuffers_WVP()
 {
@@ -143,7 +143,7 @@ constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
 void Graphics::Draw()
 {
     static bool bDrawGame = true;
-    static bool bForceDrawDebugDemo = false;
+    static bool bForceDrawDebugDemo = true;
     static bool bDrawUI = true;
     static bool bEnableWireframeRaster = false;
 
@@ -192,14 +192,15 @@ void DrawDebugDemo()
 {
     static bool bDrawInstLines = false;
     static bool bDrawTriangle = false;
-    static bool bDrawTexQuad = false;
+    static bool bDrawTexQuad = true;
     static bool bDrawInstRects = false;
     static bool bDrawCube = false;
     static bool bDrawInstVoxels = false;
-    static bool bDrawHandmadeText = false;
+    static bool bDrawText = true;
+    static bool bDrawTextSheet = true;
     static bool bDrawInstRotationDemo = true;
 
-    ID3D11ShaderResourceView* HandmadeFontTextureSRV[] = { HandmadeText.LvTex2D.SRV };
+    ID3D11ShaderResourceView* ProggyCleanFontTextureSRV[] = { ProggyCleanFont.LvTex2D.SRV };
     ID3D11SamplerState* DefaultSampler[] = { DX_DefaultSamplerState };
     ID3D11ShaderResourceView* TestTextureSRV[] = { LvTestTexture.SRV };
 
@@ -210,12 +211,22 @@ void DrawDebugDemo()
     if (bDrawTriangle)
     {
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
-        m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(256.0f, -256.0f, 0.0f);
+        m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(+256.0f, -256.0f, 0.0f);
         GlobalGFXContext.UpdateShaderWorld(&TriangleWorld);
 
         DrawMesh(DX_ImmContext, DrawStateColor, MeshStateTriangle);
     }
 
+    if (bDrawTextSheet)
+    {
+        //DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
+        DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+        m4f TexQuadWorld = m4f::Scale(200.0f, 400.0f, 1.0f) * m4f::Trans(-512.0f, -128.0f, 0.0f);
+        GlobalGFXContext.UpdateShaderWorld(&TexQuadWorld);
+        SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(ProggyCleanFontTextureSRV), ProggyCleanFontTextureSRV);
+
+        DrawMesh(DX_ImmContext, DrawStateTexture, MeshStateRect);
+    }
     if (bDrawTexQuad)
     {
         DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
@@ -309,21 +320,22 @@ void DrawDebugDemo()
         }
     }
 
-    if (bDrawHandmadeText)
+    if (bDrawText)
     {
+        DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
         v2f TextOrigin{ AppWidth / 2.0f, AppHeight / 2.0f };
         const float TextScale = 300.0f;
         const char TextMsg[] = "HELLO WORLD";
         const char TextRow0[] = "ABCDEFGHIJKL";
         const char TextRow1[] = "MNOPQRSTUVWX";
         const char TextRow2[] = "YZ0123456789";
-        HandmadeText.Draw(DrawBatch, TextOrigin, TextScale, TextMsg, ARRAY_SIZE(TextMsg) - 1);
+        ProggyCleanFont.Draw(DrawBatch, TextOrigin, TextScale, TextMsg, ARRAY_SIZE(TextMsg) - 1);
         TextOrigin.Y -= 60.0f;
-        HandmadeText.Draw(DrawBatch, TextOrigin, TextScale, TextRow0, ARRAY_SIZE(TextRow0) - 1);
+        ProggyCleanFont.Draw(DrawBatch, TextOrigin, TextScale, TextRow0, ARRAY_SIZE(TextRow0) - 1);
         TextOrigin.Y -= 60.0f;
-        HandmadeText.Draw(DrawBatch, TextOrigin, TextScale, TextRow1, ARRAY_SIZE(TextRow1) - 1);
+        ProggyCleanFont.Draw(DrawBatch, TextOrigin, TextScale, TextRow1, ARRAY_SIZE(TextRow1) - 1);
         TextOrigin.Y -= 60.0f;
-        HandmadeText.Draw(DrawBatch, TextOrigin, TextScale, TextRow2, ARRAY_SIZE(TextRow2) - 1);
+        ProggyCleanFont.Draw(DrawBatch, TextOrigin, TextScale, TextRow2, ARRAY_SIZE(TextRow2) - 1);
     }
 
     if (bDrawInstRotationDemo)
@@ -414,12 +426,13 @@ void DrawBatch2D(BatchDrawCmds& DrawBatch, ID3D11ShaderResourceView* TextureSRV,
     }
 
     // Texture:
-    DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
+    //DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
+    DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
     if (DrawBatch.TextureBatchCmds.Num > 0) {} // TODO:
     if (DrawBatch.TextBatchCmds.Num > 0)
     {
-        ASSERT(HandmadeText.LvTex2D.SRV);
-        SetShaderResourceViews(DX_ImmContext, 1, &HandmadeText.LvTex2D.SRV);
+        ASSERT(ProggyCleanFont.LvTex2D.SRV);
+        SetShaderResourceViews(DX_ImmContext, 1, &ProggyCleanFont.LvTex2D.SRV);
 
         DrawMeshInstanced
         (
@@ -794,7 +807,7 @@ void Graphics::Init()
     LvDebugTexture = LoadTextureFromImage(DebugImage, DX_Device);
     LvTestTexture = LoadTextureBMP("Assets/TestTexture.bmp", DX_Device);
 
-    HandmadeText.Init(DX_Device, "Assets/HandmadeTextFont.bmp", 12, 6);
+    ProggyCleanFont.Init(DX_Device, "Assets/ProggyClean_12pt.bmp");
 
     MeshStateRect = LoadMeshStateRect();
 
