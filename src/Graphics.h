@@ -5,6 +5,7 @@
 #include "BatchDraw.h"
 #include "DrawState.h"
 #include "MeshState.h"
+#include "Fonts.h"
 
 namespace Leviathan
 {

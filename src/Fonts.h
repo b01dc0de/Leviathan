@@ -1,7 +1,7 @@
 #ifndef LEVIATHAN_FONTS_H
 #define LEVIATHAN_FONTS_H
 
-#include "Graphics.h"
+#include "Leviathan.h"
 
 namespace Leviathan
 {
@@ -9,6 +9,7 @@ namespace Leviathan
 struct LvFont
 {
     LvTexture2D LvTex2D;
+    float GlyphAspectRatio;
     int NumGlyphsX;
     int NumGlyphsY;
     v2f GlyphSize;

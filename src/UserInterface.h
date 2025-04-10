@@ -9,10 +9,7 @@ namespace Leviathan
 struct UserInterface
 {
     static bool bDrawUI;
-
-    static void Init(ID2D1RenderTarget* In2DRT);
-    static void Draw(ID2D1RenderTarget* In2DRT, BatchDrawCmds& Draw2D);
-    static void Term();
+    static void Draw(BatchDrawCmds& Draw2D, LvFont& InFont);
 };
 
 }

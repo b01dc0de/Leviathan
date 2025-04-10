@@ -58,11 +58,6 @@ ID3D11SamplerState* DX_DefaultSamplerState = nullptr;
 
 D3D_FEATURE_LEVEL UsedFeatureLevel;
 
-// Direct2D:
-ID2D1Factory* D2_Factory = nullptr;
-IDXGISurface* DXGI_Surface = nullptr;
-ID2D1RenderTarget* D2_RenderTarget = nullptr;
-
 LvGFXContext GlobalGFXContext;
 }
 
@@ -168,18 +163,18 @@ void Graphics::Draw()
     SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
     SetShaderSamplers(DX_ImmContext, ARRAY_SIZE(DefaultSampler), DefaultSampler);
 
-    if (!bDrawGame || bForceDrawDebugDemo)
-    {
-        DrawDebugDemo();
-    }
     if (bDrawGame)
     {
         GameManager::Draw(GlobalGFXContext);
         DrawBatch2D(*GlobalGFXContext.DrawBatch, BulletLimboSpriteSheet.LvTex.SRV, true);
     }
+    if (!bDrawGame || bForceDrawDebugDemo)
+    {
+        DrawDebugDemo();
+    }
     if (bDrawUI)
     {
-        UserInterface::Draw(D2_RenderTarget, DrawBatch);
+        UserInterface::Draw(DrawBatch, ProggyCleanFont);
         DrawBatch2D(DrawBatch, LvTestTexture.SRV, true);
     }
 
@@ -217,16 +212,6 @@ void DrawDebugDemo()
         DrawMesh(DX_ImmContext, DrawStateColor, MeshStateTriangle);
     }
 
-    if (bDrawTextSheet)
-    {
-        //DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
-        DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-        m4f TexQuadWorld = m4f::Scale(200.0f, 400.0f, 1.0f) * m4f::Trans(-512.0f, -128.0f, 0.0f);
-        GlobalGFXContext.UpdateShaderWorld(&TexQuadWorld);
-        SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(ProggyCleanFontTextureSRV), ProggyCleanFontTextureSRV);
-
-        DrawMesh(DX_ImmContext, DrawStateTexture, MeshStateRect);
-    }
     if (bDrawTexQuad)
     {
         DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
@@ -320,21 +305,32 @@ void DrawDebugDemo()
         }
     }
 
+    if (bDrawTextSheet)
+    {
+        DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
+        //DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+        m4f TexQuadWorld = m4f::Scale(200.0f, 400.0f, 1.0f) * m4f::Trans(-512.0f, -128.0f, 0.0f);
+        GlobalGFXContext.UpdateShaderWorld(&TexQuadWorld);
+        SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(ProggyCleanFontTextureSRV), ProggyCleanFontTextureSRV);
+
+        DrawMesh(DX_ImmContext, DrawStateTexture, MeshStateRect);
+    }
+
     if (bDrawText)
     {
-        DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+        DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
         v2f TextOrigin{ AppWidth / 2.0f, AppHeight / 2.0f };
-        const float TextScale = 300.0f;
+        const float TextScale = 5.0f;
         const char TextMsg[] = "HELLO WORLD";
         const char TextRow0[] = "ABCDEFGHIJKL";
         const char TextRow1[] = "MNOPQRSTUVWX";
         const char TextRow2[] = "YZ0123456789";
         ProggyCleanFont.Draw(DrawBatch, TextOrigin, TextScale, TextMsg, ARRAY_SIZE(TextMsg) - 1);
-        TextOrigin.Y -= 60.0f;
+        TextOrigin.Y -= 50.0f;
         ProggyCleanFont.Draw(DrawBatch, TextOrigin, TextScale, TextRow0, ARRAY_SIZE(TextRow0) - 1);
-        TextOrigin.Y -= 60.0f;
+        TextOrigin.Y -= 50.0f;
         ProggyCleanFont.Draw(DrawBatch, TextOrigin, TextScale, TextRow1, ARRAY_SIZE(TextRow1) - 1);
-        TextOrigin.Y -= 60.0f;
+        TextOrigin.Y -= 50.0f;
         ProggyCleanFont.Draw(DrawBatch, TextOrigin, TextScale, TextRow2, ARRAY_SIZE(TextRow2) - 1);
     }
 
@@ -426,8 +422,7 @@ void DrawBatch2D(BatchDrawCmds& DrawBatch, ID3D11ShaderResourceView* TextureSRV,
     }
 
     // Texture:
-    //DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
-    DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+    DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
     if (DrawBatch.TextureBatchCmds.Num > 0) {} // TODO:
     if (DrawBatch.TextBatchCmds.Num > 0)
     {
@@ -811,28 +806,11 @@ void Graphics::Init()
 
     MeshStateRect = LoadMeshStateRect();
 
-    { // Direct2D
-        DX_CHECK(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &D2_Factory));
-        DX_CHECK(DXGI_SwapChain1->GetBuffer(0, DX_UUID_HELPER(IDXGISurface, DXGI_Surface)));
-        D2D1_RENDER_TARGET_PROPERTIES D2_RT_Properties = D2D1::RenderTargetProperties(
-            D2D1_RENDER_TARGET_TYPE_DEFAULT,
-            D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
-            0, 0
-        );
-        DX_CHECK(D2_Factory->CreateDxgiSurfaceRenderTarget(
-            DXGI_Surface,
-            &D2_RT_Properties,
-            &D2_RenderTarget
-        ));
-    }
-
     v3f CameraPos{ 5.0f, 10.0f, 10.0f };
     v3f CameraLookAt{ 0.0f, 0.0f, 0.0f };
     GameCamera.Persp(CameraPos, CameraLookAt);
 
     OrthoCamera.Ortho((float)AppWidth, (float)AppHeight, -2.0f);
-
-    UserInterface::Init(D2_RenderTarget);
 
     BulletLimboSpriteSheet = LoadSpriteSheet("Assets/Sprites/BulletLimbo_SpriteSheet.bmp", DX_Device, 1, 3);
 
@@ -847,14 +825,6 @@ void Graphics::Init()
 
 void Graphics::Term()
 {
-    UserInterface::Term();
-
-    { // Direct2D:
-        SafeRelease(D2_Factory);
-        SafeRelease(DXGI_Surface);
-        SafeRelease(D2_RenderTarget);
-    }
-
     SafeRelease(MeshStateTriangle);
     SafeRelease(MeshStateCube);
     SafeRelease(MeshStateCubeFacesColor);
@@ -891,7 +861,6 @@ void Graphics::Term()
     SafeRelease(DX_DefaultBlendState);
     SafeRelease(DX_AlphaBlendState);
 
-    SafeRelease(DXGI_Factory2);
     SafeRelease(DX_ImmContext);
 
     if (DX_Device)
