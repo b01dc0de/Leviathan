@@ -372,8 +372,8 @@ struct CubePieces
             {
                 int EncodedMove = MoveHistory[HistIdx--];
                 int TurnType = EncodedMove / 2;
-                bool bCCW = EncodedMove % 2 == 1;
-                DoTurn(TurnType, !bCCW);
+                bool bCW = EncodedMove % 2 == 0;
+                DoTurn(TurnType, !bCW);
             }
             else
             {
