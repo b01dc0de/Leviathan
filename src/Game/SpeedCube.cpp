@@ -113,7 +113,7 @@ struct CubePieces
     int TurnStepIdx;
     float LastTurnStep;
     static constexpr int NumTurnSteps = 32;
-    static constexpr float SecondsPerTurn = 0.25f;
+    static constexpr float SecondsPerTurn = 0.125f;
     static constexpr float SecondsPerTurnStep = SecondsPerTurn / NumTurnSteps;
 
     static constexpr int MvHistSize = 20;
