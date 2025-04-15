@@ -3,12 +3,15 @@
 namespace Leviathan
 {
 
+constexpr fColor DefaultColor_BG{Norm8Bit(41, 42, 59)};
+constexpr fColor DefaultColor_FG{Norm8Bit(203, 166, 247)};
+
 struct VIDrawParams
 {
     v2f Origin{ 0.0f };
     float Scale{ 1.0f };
-    fColor ColorBack{ 0.0f, 0.0f, 0.0f, 1.0f };
-    fColor ColorFront{ 1.0f, 1.0f, 1.0f, 1.0f };
+    fColor ColorBack{ DefaultColor_BG };
+    fColor ColorFront{ DefaultColor_FG };
 };
 
 struct VisualKey
@@ -147,8 +150,6 @@ void InputVisualizer::DrawKeyboard(BatchDrawCmds& Draw2D)
     VIDrawParams Params = { };
     Params.Origin = { 975.0f, (float)AppHeight - 10.0f };
     Params.Scale = 20.0f;
-    Params.ColorBack = { 0.0f, 0.9f, 0.9f, 1.0f };
-    Params.ColorFront = { 1.0f, 0.1f, 0.1f, 1.0f };
     VisualKeyboard::Draw(Draw2D, Params);
 }
 
@@ -251,8 +252,6 @@ void InputVisualizer::DrawMouse(BatchDrawCmds& Draw2D)
     VIDrawParams Params = {};
     Params.Origin = { 1000.0f, AppHeight - 200.0f };
     Params.Scale = 5.0f;
-    Params.ColorBack = { 0.9f, 0.0f, 0.9f, 1.0f };
-    Params.ColorFront = { 0.1f, 1.0f, 0.1f, 1.0f };
     VisualMouse::Draw(Draw2D, Params);
 }
 
@@ -439,8 +438,6 @@ void InputVisualizer::DrawGamepads(BatchDrawCmds& Draw2D)
     VIDrawParams Params = {};
     Params.Origin = { 1100.0f, AppHeight - 200.0f };
     Params.Scale = 7.5f;
-    Params.ColorBack = { 0.9f, 0.9f, 0.0f, 1.0f };
-    Params.ColorFront = { 0.1f, 0.1f, 1.0f, 1.0f };
     for (int GamepadIdx = 0; GamepadIdx < GamepadState::NumGamepads; GamepadIdx++)
     {
         VIDrawParams CurrParams = Params;
