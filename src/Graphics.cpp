@@ -492,7 +492,7 @@ void Graphics::Init()
 
     CreateDXGIFactory1(DX_UUID_HELPER(IDXGIFactory2, DXGI_Factory2));
 
-    UINT CreateDeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+    UINT CreateDeviceFlags = 0;
 #ifdef _DEBUG
     CreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif // _DEBUG
