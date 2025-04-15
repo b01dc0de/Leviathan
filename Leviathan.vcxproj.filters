@@ -7,21 +7,6 @@
     <Filter Include="src\Game">
       <UniqueIdentifier>{2a7e032a-a3ef-4381-9cb6-1ee097ac686c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\UnityBuild">
-      <UniqueIdentifier>{eedcef4a-e1b8-4bd7-9966-a11a878426aa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Graphics">
-      <UniqueIdentifier>{0f1d0b9d-7df2-4376-a7c0-eef9aee2d2c9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Input">
-      <UniqueIdentifier>{5242fc1a-b64b-4b4a-9473-09db8642a6d6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Math">
-      <UniqueIdentifier>{a56f8c32-9a4b-4dc7-b713-1dea235655f2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Utils">
-      <UniqueIdentifier>{cb1aafa2-521a-462c-b6ee-51859e5dd5db}</UniqueIdentifier>
-    </Filter>
     <Filter Include="hlsl">
       <UniqueIdentifier>{bb33e0c7-7c2b-4a5c-a1ec-20e35a58fb75}</UniqueIdentifier>
     </Filter>
@@ -39,47 +24,8 @@
     <ClCompile Include="src\Game\GameManager.cpp">
       <Filter>src\Game</Filter>
     </ClCompile>
-    <ClCompile Include="src\UnityBuildMain.cpp">
-      <Filter>src\UnityBuild</Filter>
-    </ClCompile>
-    <ClCompile Include="src\DrawState.cpp">
-      <Filter>src\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Graphics.cpp">
-      <Filter>src\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UserInterface.cpp">
-      <Filter>src\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Fonts.cpp">
-      <Filter>src\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Image.cpp">
-      <Filter>src\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Input.cpp">
-      <Filter>src\Input</Filter>
-    </ClCompile>
-    <ClCompile Include="src\InputVisualizer.cpp">
-      <Filter>src\Input</Filter>
-    </ClCompile>
     <ClCompile Include="src\GameEntity.cpp">
       <Filter>src\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Math.cpp">
-      <Filter>src\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Camera.cpp">
-      <Filter>src\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Utils.cpp">
-      <Filter>src\Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PerformanceGraph.cpp">
-      <Filter>src\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MeshState.cpp">
-      <Filter>src\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="src\Game\BulletLimbo.cpp">
       <Filter>src\Game</Filter>
@@ -93,11 +39,50 @@
     <ClCompile Include="src\Game\SpeedCube.cpp">
       <Filter>src\Game</Filter>
     </ClCompile>
-    <ClCompile Include="src\BatchDraw.cpp">
-      <Filter>src\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="src\Game\Labyrinth.cpp">
       <Filter>src\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Input.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\InputVisualizer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BatchDraw.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DrawState.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Fonts.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Image.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshState.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PerformanceGraph.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UserInterface.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UnityBuildMain.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utils.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -113,47 +98,8 @@
     <ClInclude Include="src\Game\GameManager.h">
       <Filter>src\Game</Filter>
     </ClInclude>
-    <ClInclude Include="src\DrawState.h">
-      <Filter>src\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Graphics.h">
-      <Filter>src\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\UserInterface.h">
-      <Filter>src\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Fonts.h">
-      <Filter>src\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Image.h">
-      <Filter>src\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Input.h">
-      <Filter>src\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="src\InputVisualizer.h">
-      <Filter>src\Input</Filter>
-    </ClInclude>
     <ClInclude Include="src\GameEntity.h">
       <Filter>src\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Math.h">
-      <Filter>src\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Camera.h">
-      <Filter>src\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Utils.h">
-      <Filter>src\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Array.h">
-      <Filter>src\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PerformanceGraph.h">
-      <Filter>src\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MeshState.h">
-      <Filter>src\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="src\Game\BulletLimbo.h">
       <Filter>src\Game</Filter>
@@ -167,11 +113,50 @@
     <ClInclude Include="src\Game\SpeedCube.h">
       <Filter>src\Game</Filter>
     </ClInclude>
-    <ClInclude Include="src\BatchDraw.h">
-      <Filter>src\Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="src\Game\Labyrinth.h">
       <Filter>src\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Input.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputVisualizer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\BatchDraw.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DrawState.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Fonts.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Image.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MeshState.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PerformanceGraph.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UserInterface.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Array.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utils.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -187,7 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Array.inl">
-      <Filter>src\Utils</Filter>
+      <Filter>src</Filter>
     </None>
   </ItemGroup>
 </Project>

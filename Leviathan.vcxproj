@@ -115,7 +115,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\BatchDraw.cpp" />
+    <ClCompile Include="src\BatchDraw.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\Camera.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -140,11 +142,15 @@
     <ClCompile Include="src\Game\GameManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\Game\Labyrinth.cpp" />
+    <ClCompile Include="src\Game\Labyrinth.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\Game\Snake.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\Game\SpeedCube.cpp" />
+    <ClCompile Include="src\Game\SpeedCube.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\Game\Tetris.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
     </ClCompile>
