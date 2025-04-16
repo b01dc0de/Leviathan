@@ -138,7 +138,7 @@ constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
 void Graphics::Draw()
 {
     static bool bDrawGame = true;
-    static bool bForceDrawDebugDemo = true;
+    static bool bForceDrawDebugDemo = false;
     static bool bDrawUI = true;
     static bool bEnableWireframeRaster = false;
 
