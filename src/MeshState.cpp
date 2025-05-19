@@ -313,6 +313,69 @@ MeshStateT LoadMeshStateCubeFacesTex()
         Indices_CubeFaces
     );
 }
+
+MeshStateT LoadMeshStateUnitCircle()
+{
+    static constexpr int NumPoints = 32;
+
+    int NumVerts = NumPoints + 1;
+    int NumTris = NumPoints;
+    int NumInds = NumTris * 3;
+
+    VxColor* Vertices_Circle = new VxColor[NumVerts];
+    unsigned int* Indices_Circle = new unsigned int[NumInds];
+
+    for (int TriIdx = 0; TriIdx < NumTris; TriIdx++)
+    {
+        Indices_Circle[(TriIdx * 3) + 0] = 0;
+        if (TriIdx == NumTris - 1)
+        {
+            Indices_Circle[(TriIdx * 3) + 1] = TriIdx + 1;
+            Indices_Circle[(TriIdx * 3) + 2] = 1;
+        }
+        else
+        {
+            Indices_Circle[(TriIdx * 3) + 1] = TriIdx + 1;
+            Indices_Circle[(TriIdx * 3) + 2] = TriIdx + 2;
+        }
+    }
+
+    constexpr float Default_Z = +0.5f;
+    constexpr float Default_W = +1.0f;
+    constexpr v4f Default_vColor{ 203.0f/255.0f, 166.0f/255.0f, 247.0f/255.0f, 1.0f };
+    // NOTE(CKA): Same default color as InputVisualizer's FG
+
+    for (int VxIdx = 0; VxIdx < NumVerts; VxIdx++)
+    {
+        Vertices_Circle[VxIdx].Pos = { 0.0f, 0.0f, Default_Z, Default_W };
+        Vertices_Circle[VxIdx].Col = Default_vColor;
+    }
+
+    for (int PointIdx = 0; PointIdx < NumPoints; PointIdx++)
+    {
+        float CurrAngle = ((float)PointIdx / (float)NumPoints) * fTAU;
+        float X = cosf(CurrAngle);
+        float Y = sinf(CurrAngle);
+        
+        // NOTE(CKA): First vertex is 0 (center of circle)
+        Vertices_Circle[PointIdx + 1].Pos.X = X;
+        Vertices_Circle[PointIdx + 1].Pos.Y = Y;
+    };
+
+    MeshStateT CircleMeshState = CreateMeshState(
+        Graphics::Device(),
+        sizeof(VxColor),
+        NumVerts,
+        Vertices_Circle,
+        NumInds,
+        Indices_Circle);
+
+    delete[] Vertices_Circle;
+    delete[] Indices_Circle;
+
+    return CircleMeshState;
+}
+
 MeshStateT LoadMeshStateCubeFacesColor()
 {
     return CreateMeshState
@@ -340,6 +403,7 @@ MeshInstStateT LoadMeshInstStateVoxel()
         Indices_Cube
     );
 }
+
 MeshInstStateT LoadMeshInstStateRect()
 {
     return CreateMeshInstState
@@ -354,6 +418,7 @@ MeshInstStateT LoadMeshInstStateRect()
         Indices_Rect
     );
 }
+
 MeshInstStateT LoadMeshInstStateRectRotation()
 {
     return CreateMeshInstState

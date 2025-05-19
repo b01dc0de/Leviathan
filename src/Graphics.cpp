@@ -46,6 +46,7 @@ MeshStateT MeshStateCube;
 MeshStateT MeshStateCubeFacesColor;
 MeshStateT MeshStateCubeFacesTex;
 MeshStateT MeshStateRect;
+MeshStateT MeshStateCircle;
 MeshInstStateT MeshInstStateRect;
 MeshInstStateT MeshInstStateRectRotation;
 MeshInstStateT MeshInstStateVoxelColor;
@@ -186,7 +187,7 @@ void Graphics::Draw()
 void DrawDebugDemo()
 {
     static bool bDrawInstLines = false;
-    static bool bDrawTriangle = false;
+    static bool bDrawShapes = true;
     static bool bDrawTexQuad = true;
     static bool bDrawInstRects = false;
     static bool bDrawCube = false;
@@ -203,13 +204,18 @@ void DrawDebugDemo()
 
     GlobalGFXContext.SetShaderConstantBuffers_WVP();
 
-    if (bDrawTriangle)
+    if (bDrawShapes)
     {
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, DefaultSampleMask);
+
         m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(+256.0f, -256.0f, 0.0f);
         GlobalGFXContext.UpdateShaderWorld(&TriangleWorld);
 
         DrawMesh(DX_ImmContext, DrawStateColor, MeshStateTriangle);
+
+        m4f CircleWorld = m4f::Scale(64.0f, 64.0f, 1.0f) * m4f::Trans(+384.0f, -256.0f, 0.0f);
+        GlobalGFXContext.UpdateShaderWorld(&CircleWorld);
+        DrawMesh(DX_ImmContext, DrawStateColor, MeshStateCircle);
     }
 
     if (bDrawTexQuad)
@@ -776,6 +782,8 @@ void Graphics::Init()
     MeshStateCubeFacesColor = LoadMeshStateCubeFacesColor();
     MeshStateCubeFacesTex = LoadMeshStateCubeFacesTex();
 
+    MeshStateCircle = LoadMeshStateUnitCircle();
+
     MeshInstStateRect = LoadMeshInstStateRect();
     MeshInstStateRectRotation = LoadMeshInstStateRectRotation();
     ASSERT(sizeof(InstRectColorData) == sizeof(InstRectTextureData));
@@ -830,6 +838,7 @@ void Graphics::Term()
     SafeRelease(MeshStateCubeFacesColor);
     SafeRelease(MeshStateCubeFacesTex);
     SafeRelease(MeshStateRect);
+    SafeRelease(MeshStateCircle);
     SafeRelease(MeshInstStateRect);
     SafeRelease(MeshInstStateRectRotation);
     SafeRelease(MeshInstStateVoxelColor);
