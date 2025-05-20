@@ -20,6 +20,8 @@ struct LvFont
     void Term();
 };
 
+void SafeRelease(LvFont& InFont);
+
 }
 
 #endif // LEVIATHAN_FONTS_H

@@ -40,6 +40,7 @@ ID3D11Buffer* DX_WorldBuffer = nullptr;
 ID3D11Buffer* DX_ViewProjBuffer = nullptr;
 const int WBufferSlot = 0;
 const int VPBufferSlot = 1;
+ID3D11SamplerState* DX_DefaultSamplerState = nullptr;
 
 MeshStateT MeshStateTriangle;
 MeshStateT MeshStateCube;
@@ -56,11 +57,18 @@ LvSpriteSheet BulletLimboSpriteSheet;
 
 LvTexture2D LvDebugTexture;
 LvTexture2D LvTestTexture;
-ID3D11SamplerState* DX_DefaultSamplerState = nullptr;
 
 D3D_FEATURE_LEVEL UsedFeatureLevel;
 
 LvGFXContext GlobalGFXContext;
+
+
+
+Camera OrthoCamera;
+Camera GameCamera;
+BatchDrawCmds DrawBatch;
+LvFont ProggyCleanFont;
+
 }
 
 #define DX_UUID_HELPER(Type, Ptr) __uuidof(Type), (void**)&Ptr
@@ -109,11 +117,6 @@ m4f GetMatrix(const SpriteTransform& InSprTrans)
 {
     return m4f::Scale(InSprTrans.Scale.X, InSprTrans.Scale.Y, 1.0f) * m4f::RotAxisZ(InSprTrans.RotAngle) * m4f::Trans(InSprTrans.Pos.X, InSprTrans.Pos.Y, 0.0f);
 }
-
-Camera OrthoCamera;
-Camera GameCamera;
-BatchDrawCmds DrawBatch;
-LvFont ProggyCleanFont;
 
 void LvGFXContext::SetShaderConstantBuffers_WVP()
 {
@@ -247,7 +250,6 @@ void DrawDebugDemo()
             InstRectTextureDataArray
         );
     }
-
 
     if (bDrawSphere)
     {
@@ -825,10 +827,13 @@ void Graphics::Init()
         DX_CHECK(DX_Device->CreateSamplerState(&DefaultSamplerDesc, &DX_DefaultSamplerState));
     }
 
-    ImageT DebugImage = {};
-    GetDebugImage(DebugImage);
-    LvDebugTexture = LoadTextureFromImage(DebugImage, DX_Device);
-    LvTestTexture = LoadTextureBMP("Assets/TestTexture.bmp", DX_Device);
+    {
+        ImageT DebugImage = {};
+        GetDebugImage(DebugImage);
+        LvDebugTexture = LoadTextureFromImage(DebugImage, DX_Device);
+        LvTestTexture = LoadTextureBMP("Assets/TestTexture.bmp", DX_Device);
+        SafeRelease(DebugImage);
+    }
 
     ProggyCleanFont.Init(DX_Device, "Assets/Fonts/ProggyClean_36pt.bmp");
 
@@ -853,6 +858,9 @@ void Graphics::Init()
 
 void Graphics::Term()
 {
+    SafeRelease(BulletLimboSpriteSheet);
+    SafeRelease(ProggyCleanFont);
+
     SafeRelease(MeshStateTriangle);
     SafeRelease(MeshStateCube);
     SafeRelease(MeshStateCubeFacesColor);
@@ -869,7 +877,6 @@ void Graphics::Term()
 
     SafeRelease(DX_WorldBuffer);
     SafeRelease(DX_ViewProjBuffer);
-
     SafeRelease(DX_DefaultSamplerState);
 
     SafeRelease(DrawStateColor);
@@ -887,10 +894,12 @@ void Graphics::Term()
     SafeRelease(DX_WireframeRasterizerState);
     SafeRelease(DX_DepthStencil);
     SafeRelease(DX_DepthStencilView);
+    SafeRelease(DX_DefaultDepthStencilState);
     SafeRelease(DX_Draw2DDepthStencilState);
     SafeRelease(DX_DefaultBlendState);
     SafeRelease(DX_AlphaBlendState);
 
+    SafeRelease(DXGI_Factory2);
     SafeRelease(DX_ImmContext);
 
     if (DX_Device)

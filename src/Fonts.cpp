@@ -50,5 +50,10 @@ void LvFont::Term()
     delete[] GlyphRects;
 }
 
+void SafeRelease(LvFont& InFont)
+{
+    InFont.Term();
+}
+
 }
 
