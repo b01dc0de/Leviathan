@@ -36,7 +36,7 @@ void UserInterface::Draw(BatchDrawCmds& Draw2D, LvFont& InFont)
         static constexpr int MsgBufferSize = 64;
         char MsgBuffer[MsgBufferSize];
         double CurrTime = Clock::Time();
-        int MsgLength = sprintf_s(MsgBuffer, "CurrTime: %.02f", CurrTime);
+        int MsgLength = sprintf_s(MsgBuffer, "CurrTime:%.02f", CurrTime);
         constexpr v2f Origin{ 1100.0f, 720.0f * 0.46f };
         InFont.Draw(Draw2D, Origin, 1.5f, MsgBuffer, MsgLength);
         PerformanceGraph::Draw(Draw2D);

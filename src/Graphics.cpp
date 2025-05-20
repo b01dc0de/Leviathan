@@ -139,7 +139,7 @@ m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
 constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
 void Graphics::Draw()
 {
-    static bool bDrawGame = false;
+    static bool bDrawGame = true;
     static bool bForceDrawDebugDemo = true;
     static bool bDrawUI = true;
     static bool bEnableWireframeRaster = false;
@@ -189,14 +189,14 @@ void DrawDebugDemo()
 {
     static bool bDrawInstLines = false;
     static bool bDrawShapes = true;
-    static bool bDrawTexQuad = true;
+    static bool bDrawTexQuad = false;
     static bool bDrawInstRects = false;
     static bool bDrawSphere = true;
     static bool bDrawCube = false;
     static bool bDrawInstVoxels = false;
-    static bool bDrawText = true;
+    static bool bDrawText = false;
     static bool bDrawTextSheet = true;
-    static bool bDrawInstRotationDemo = true;
+    static bool bDrawInstRotationDemo = false;
 
     ID3D11ShaderResourceView* ProggyCleanFontTextureSRV[] = { ProggyCleanFont.LvTex2D.SRV };
     ID3D11SamplerState* DefaultSampler[] = { DX_DefaultSamplerState };
@@ -257,8 +257,7 @@ void DrawDebugDemo()
         static constexpr float RotSpeed = (1.0f / 60.0f) / 10.0f;
         RotationX += RotSpeed;
         RotationY += RotSpeed * 0.5f;
-        m4f SphereWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
-        //m4f SphereWorld = m4f::Identity();// m4f::Scale(64.0f, 64.0f, 1.0f);// *m4f::Trans(0.0f, -256.0f, +0.5f);
+        m4f SphereWorld = m4f::Scale(4.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(-25.0f, -10.0f, 0.0f);
         GlobalGFXContext.UpdateShaderWorld(&SphereWorld);
         GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
         GlobalGFXContext.SetShaderConstantBuffers_WVP();
@@ -803,7 +802,7 @@ void Graphics::Init()
     MeshStateCubeFacesTex = LoadMeshStateCubeFacesTex();
 
     MeshStateCircle = LoadMeshStateUnitCircle();
-    MeshStateSphere = LoadMeshStateUnitSphere();;
+    MeshStateSphere = LoadMeshStateUnitSphere();
 
     MeshInstStateRect = LoadMeshInstStateRect();
     MeshInstStateRectRotation = LoadMeshInstStateRectRotation();
@@ -831,7 +830,7 @@ void Graphics::Init()
     LvDebugTexture = LoadTextureFromImage(DebugImage, DX_Device);
     LvTestTexture = LoadTextureBMP("Assets/TestTexture.bmp", DX_Device);
 
-    ProggyCleanFont.Init(DX_Device, "Assets/Fonts/ProggyClean_24pt.bmp");
+    ProggyCleanFont.Init(DX_Device, "Assets/Fonts/ProggyClean_36pt.bmp");
 
     MeshStateRect = LoadMeshStateRect();
 

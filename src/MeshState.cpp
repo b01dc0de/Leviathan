@@ -314,9 +314,10 @@ MeshStateT LoadMeshStateCubeFacesTex()
     );
 }
 
-MeshStateT LoadMeshStateUnitCircle()
+
+MeshStateT LoadMeshStateUnitCircle(int NumPoints)
 {
-    static constexpr int NumPoints = 32;
+    ASSERT(NumPoints >= 4);
 
     int NumVerts = NumPoints + 1;
     int NumTris = NumPoints;
@@ -378,12 +379,12 @@ MeshStateT LoadMeshStateUnitCircle()
     return CircleMeshState;
 }
 
-MeshStateT LoadMeshStateUnitSphere()
+MeshStateT LoadMeshStateUnitSphere(int NumStrips)
 {
+    ASSERT(NumStrips >= 4);
+
     constexpr float Default_W = +1.0f;
     constexpr v4f Default_vColor{ 203.0f/255.0f, 166.0f/255.0f, 247.0f/255.0f, 1.0f };
-
-    static constexpr int NumStrips = 16;
 
     int NumVerts = 2 + (NumStrips * NumStrips);
     int NumTris = (NumStrips * (NumStrips - 1) * 2) + NumStrips * 2;
@@ -392,8 +393,8 @@ MeshStateT LoadMeshStateUnitSphere()
     VxColor* Vertices_Sphere = new VxColor[NumVerts];
     unsigned int* Indices_Sphere = new unsigned int[NumInds];
 
-    static constexpr int NorthPoleVx = 0;
-    static constexpr int SouthPoleVx = 1;
+    static constexpr unsigned int NorthPoleVx = 0;
+    static constexpr unsigned int SouthPoleVx = 1;
     Vertices_Sphere[NorthPoleVx] = { {0.0f, +1.0f, 0.0f, Default_W}, Default_vColor };
     Vertices_Sphere[SouthPoleVx] = { {0.0f, -1.0f, 0.0f, Default_W}, Default_vColor };
 
@@ -414,8 +415,8 @@ MeshStateT LoadMeshStateUnitSphere()
     }
 
     int IxIdx = 0;
-    static constexpr int FirstParallelVx = 2;
-    static constexpr int BottomParallelVx = FirstParallelVx + NumStrips * (NumStrips - 1);
+    int FirstParallelVx = 2;
+    int BottomParallelVx = FirstParallelVx + NumStrips * (NumStrips - 1);
     // Setup top and bottom rows of triangles (north and south poles)
     for (int StripIdx = 0; StripIdx < NumStrips; StripIdx++)
     {
