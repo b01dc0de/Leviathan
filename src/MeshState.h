@@ -82,6 +82,7 @@ MeshStateT LoadMeshStateCube();
 MeshStateT LoadMeshStateCubeFacesColor();
 MeshStateT LoadMeshStateCubeFacesTex();
 MeshStateT LoadMeshStateUnitCircle();
+MeshStateT LoadMeshStateUnitSphere();
 MeshInstStateT LoadMeshInstStateVoxel();
 MeshInstStateT LoadMeshInstStateRect();
 MeshInstStateT LoadMeshInstStateRectRotation();

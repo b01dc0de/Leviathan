@@ -47,6 +47,7 @@ MeshStateT MeshStateCubeFacesColor;
 MeshStateT MeshStateCubeFacesTex;
 MeshStateT MeshStateRect;
 MeshStateT MeshStateCircle;
+MeshStateT MeshStateSphere;
 MeshInstStateT MeshInstStateRect;
 MeshInstStateT MeshInstStateRectRotation;
 MeshInstStateT MeshInstStateVoxelColor;
@@ -138,8 +139,8 @@ m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
 constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
 void Graphics::Draw()
 {
-    static bool bDrawGame = true;
-    static bool bForceDrawDebugDemo = false;
+    static bool bDrawGame = false;
+    static bool bForceDrawDebugDemo = true;
     static bool bDrawUI = true;
     static bool bEnableWireframeRaster = false;
 
@@ -190,6 +191,7 @@ void DrawDebugDemo()
     static bool bDrawShapes = true;
     static bool bDrawTexQuad = true;
     static bool bDrawInstRects = false;
+    static bool bDrawSphere = true;
     static bool bDrawCube = false;
     static bool bDrawInstVoxels = false;
     static bool bDrawText = true;
@@ -216,6 +218,7 @@ void DrawDebugDemo()
         m4f CircleWorld = m4f::Scale(64.0f, 64.0f, 1.0f) * m4f::Trans(+384.0f, -256.0f, 0.0f);
         GlobalGFXContext.UpdateShaderWorld(&CircleWorld);
         DrawMesh(DX_ImmContext, DrawStateColor, MeshStateCircle);
+
     }
 
     if (bDrawTexQuad)
@@ -243,6 +246,23 @@ void DrawDebugDemo()
             ARRAY_SIZE(InstRectTextureDataArray),
             InstRectTextureDataArray
         );
+    }
+
+
+    if (bDrawSphere)
+    {
+        DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+        static float RotationX = 0.0f;
+        static float RotationY = 0.0f;
+        static constexpr float RotSpeed = (1.0f / 60.0f) / 10.0f;
+        RotationX += RotSpeed;
+        RotationY += RotSpeed * 0.5f;
+        m4f SphereWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
+        //m4f SphereWorld = m4f::Identity();// m4f::Scale(64.0f, 64.0f, 1.0f);// *m4f::Trans(0.0f, -256.0f, +0.5f);
+        GlobalGFXContext.UpdateShaderWorld(&SphereWorld);
+        GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
+        GlobalGFXContext.SetShaderConstantBuffers_WVP();
+        DrawMesh(DX_ImmContext, DrawStateColor, MeshStateSphere);
     }
 
     if (bDrawCube)
@@ -783,6 +803,7 @@ void Graphics::Init()
     MeshStateCubeFacesTex = LoadMeshStateCubeFacesTex();
 
     MeshStateCircle = LoadMeshStateUnitCircle();
+    MeshStateSphere = LoadMeshStateUnitSphere();;
 
     MeshInstStateRect = LoadMeshInstStateRect();
     MeshInstStateRectRotation = LoadMeshInstStateRectRotation();
@@ -839,6 +860,7 @@ void Graphics::Term()
     SafeRelease(MeshStateCubeFacesTex);
     SafeRelease(MeshStateRect);
     SafeRelease(MeshStateCircle);
+    SafeRelease(MeshStateSphere);
     SafeRelease(MeshInstStateRect);
     SafeRelease(MeshInstStateRectRotation);
     SafeRelease(MeshInstStateVoxelColor);

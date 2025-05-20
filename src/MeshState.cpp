@@ -350,6 +350,7 @@ MeshStateT LoadMeshStateUnitCircle()
         Vertices_Circle[VxIdx].Pos = { 0.0f, 0.0f, Default_Z, Default_W };
         Vertices_Circle[VxIdx].Col = Default_vColor;
     }
+    //Vertices_Circle[0].Col = {0.0f, 0.0f, 0.0f, 0.0f};
 
     for (int PointIdx = 0; PointIdx < NumPoints; PointIdx++)
     {
@@ -358,8 +359,9 @@ MeshStateT LoadMeshStateUnitCircle()
         float Y = sinf(CurrAngle);
         
         // NOTE(CKA): First vertex is 0 (center of circle)
-        Vertices_Circle[PointIdx + 1].Pos.X = X;
-        Vertices_Circle[PointIdx + 1].Pos.Y = Y;
+        int VxIdx = PointIdx + 1;
+        Vertices_Circle[VxIdx].Pos.X = X;
+        Vertices_Circle[VxIdx].Pos.Y = Y;
     };
 
     MeshStateT CircleMeshState = CreateMeshState(
@@ -374,6 +376,115 @@ MeshStateT LoadMeshStateUnitCircle()
     delete[] Indices_Circle;
 
     return CircleMeshState;
+}
+
+MeshStateT LoadMeshStateUnitSphere()
+{
+    constexpr float Default_W = +1.0f;
+    constexpr v4f Default_vColor{ 203.0f/255.0f, 166.0f/255.0f, 247.0f/255.0f, 1.0f };
+
+    static constexpr int NumStrips = 16;
+
+    int NumVerts = 2 + (NumStrips * NumStrips);
+    int NumTris = (NumStrips * (NumStrips - 1) * 2) + NumStrips * 2;
+    int NumInds = NumTris * 3;
+
+    VxColor* Vertices_Sphere = new VxColor[NumVerts];
+    unsigned int* Indices_Sphere = new unsigned int[NumInds];
+
+    static constexpr int NorthPoleVx = 0;
+    static constexpr int SouthPoleVx = 1;
+    Vertices_Sphere[NorthPoleVx] = { {0.0f, +1.0f, 0.0f, Default_W}, Default_vColor };
+    Vertices_Sphere[SouthPoleVx] = { {0.0f, -1.0f, 0.0f, Default_W}, Default_vColor };
+
+    // Init sphere vertices
+    int VxIdx = 2;
+    for (int ParallelIdx = 0; ParallelIdx < NumStrips; ParallelIdx++)
+    {
+        float LatAngle = fPI * (0.5f - (float)(ParallelIdx + 1) / (NumStrips + 1));
+        float Y = sinf(LatAngle);
+        float WidthAtLat = cosf(LatAngle);
+        for (int StripIdx = 0; StripIdx < NumStrips; StripIdx++)
+        {
+            float Angle = (float)StripIdx / NumStrips * fTAU;
+            float X = cosf(Angle) * WidthAtLat;
+            float Z = sinf(-Angle) * WidthAtLat;
+            Vertices_Sphere[VxIdx++] = { {X, Y, Z, Default_W}, Default_vColor };
+        }
+    }
+
+    int IxIdx = 0;
+    static constexpr int FirstParallelVx = 2;
+    static constexpr int BottomParallelVx = FirstParallelVx + NumStrips * (NumStrips - 1);
+    // Setup top and bottom rows of triangles (north and south poles)
+    for (int StripIdx = 0; StripIdx < NumStrips; StripIdx++)
+    {
+        Indices_Sphere[IxIdx + 0] = NorthPoleVx;
+        Indices_Sphere[IxIdx + 1] = FirstParallelVx + StripIdx;
+        if (StripIdx == NumStrips - 1)
+        {
+            Indices_Sphere[IxIdx + 2] = FirstParallelVx;
+        }
+        else
+        {
+            Indices_Sphere[IxIdx + 2] = FirstParallelVx + StripIdx + 1;
+        }
+        IxIdx += 3;
+
+        Indices_Sphere[IxIdx + 0] = SouthPoleVx;
+        if (StripIdx == NumStrips - 1)
+        {
+            Indices_Sphere[IxIdx + 1] = BottomParallelVx;
+        }
+        else
+        {
+            Indices_Sphere[IxIdx + 1] = BottomParallelVx + StripIdx + 1;
+        }
+        Indices_Sphere[IxIdx + 2] = BottomParallelVx + StripIdx;
+        IxIdx += 3;
+    }
+
+    // Setup middle rows of triangles
+    for (int ParallelIdx = 0; ParallelIdx < (NumStrips - 1); ParallelIdx++)
+    {
+        int TopBeginVx = FirstParallelVx + (ParallelIdx * NumStrips);
+        int BotBeginVx = FirstParallelVx + (ParallelIdx + 1) * NumStrips;
+        for (int StripIdx = 0; StripIdx < NumStrips; StripIdx++)
+        {
+            int TopLeftVx = TopBeginVx + StripIdx;
+            int TopRightVx = TopLeftVx + 1;
+            int BotLeftVx = BotBeginVx + StripIdx;
+            int BotRightVx = BotLeftVx + 1;
+            if (StripIdx == NumStrips - 1)
+            {
+                TopRightVx = TopBeginVx;
+                BotRightVx = BotBeginVx;
+            }
+
+            Indices_Sphere[IxIdx + 0] = TopLeftVx;
+            Indices_Sphere[IxIdx + 1] = BotLeftVx;
+            Indices_Sphere[IxIdx + 2] = TopRightVx;
+            IxIdx += 3;
+
+            Indices_Sphere[IxIdx + 0] = TopRightVx;
+            Indices_Sphere[IxIdx + 1] = BotLeftVx;
+            Indices_Sphere[IxIdx + 2] = BotRightVx;
+            IxIdx += 3;
+        }
+    }
+
+    MeshStateT SphereMeshState = CreateMeshState(
+        Graphics::Device(),
+        sizeof(VxColor),
+        NumVerts,
+        Vertices_Sphere,
+        NumInds,
+        Indices_Sphere);
+
+    delete[] Vertices_Sphere;
+    delete[] Indices_Sphere;
+
+    return SphereMeshState;
 }
 
 MeshStateT LoadMeshStateCubeFacesColor()
