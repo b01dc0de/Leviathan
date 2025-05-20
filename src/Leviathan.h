@@ -20,6 +20,13 @@
 // XInput
 #include <Xinput.h>
 
+#define ENABLE_MEMORY_CHECK() (_DEBUG)
+#if ENABLE_MEMORY_CHECK()
+    #define _CRTDBG_MAP_ALLOC
+    #include <stdlib.h>
+    #include <crtdbg.h>
+#endif // ENABLE_MEMORY_CHECK()
+
 namespace Leviathan
 {
 
@@ -45,6 +52,7 @@ extern bool bAppRunning;
 extern HWND AppWindow;
 
 }
+
 
 #define LV_UNUSED(Var) (void)Var
 #define ASSERT(Expr) if (!(Expr)) { DebugBreak(); /* TODO: Log */ }

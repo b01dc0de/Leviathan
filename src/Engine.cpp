@@ -116,7 +116,9 @@ int WindowMsgLoop(HWND InWindow)
 
 void Engine::Init(HINSTANCE hInstance)
 {
-    OutputDebugStringA("LEVIATHAN -- INIT\n");
+#if ENABLE_MEMORY_CHECK()
+    _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+#endif // ENABLE_MEMORY_CHECK()
 
     HWND hWnd = InitWindow(hInstance, AppWidth, AppHeight);
     if (hWnd)
