@@ -16,8 +16,8 @@ namespace UserInterfaceState
 
 using namespace UserInterfaceState;
 
-bool bVisualizeInput = true;
-bool bDrawTimeStats = true;
+bool bVisualizeInput = false;
+bool bDrawTimeStats = false;
 
 void UserInterface::Draw(BatchDrawCmds& Draw2D, LvFont& InFont)
 {
