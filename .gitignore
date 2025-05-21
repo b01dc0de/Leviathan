@@ -1,11 +1,11 @@
 # VisualStudio:
 .vs/
+build/
 *.enc
 *.exe
 *.idb
 *.ilk
 *.log
-*.obj
 *.pdb
 *.recipe
 *.tlog
