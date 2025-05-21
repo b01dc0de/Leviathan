@@ -30,7 +30,7 @@ struct FileContentsT
     size_t Read(uchar*& ReadPtr, size_t DataSize, void* DstData);
 };
 
-FileContentsT LoadFileContents(const char* Filename);
+FileContentsT LoadFileContents(const char* Filename, bool bNullTerm = false);
 
 int GetRandomInRange(int Min, int Max);
 

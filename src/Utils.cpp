@@ -3,7 +3,7 @@
 namespace Leviathan
 {
 
-FileContentsT LoadFileContents(const char* Filename)
+FileContentsT LoadFileContents(const char* Filename, bool bNullTerm)
 {
     FileContentsT Result = {};
 
@@ -15,8 +15,20 @@ FileContentsT LoadFileContents(const char* Filename)
         long FileSize = ftell(FileHandle);
         fseek(FileHandle, 0, SEEK_SET);
 
-        uchar* Buffer = new uchar[FileSize];
-        fread_s(Buffer, FileSize, FileSize, 1, FileHandle);
+        uchar* Buffer = nullptr;
+
+        if (bNullTerm)
+        {
+            Buffer = new uchar[FileSize + 1];
+            fread_s(Buffer, FileSize, FileSize, 1, FileHandle);
+            Buffer[FileSize] = '\0';
+        }
+        else
+        {
+            Buffer = new uchar[FileSize];
+            fread_s(Buffer, FileSize, FileSize, 1, FileHandle);
+        }
+
 
         Result.Size = FileSize;
         Result.Contents = Buffer;
