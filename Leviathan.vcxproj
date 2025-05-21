@@ -115,6 +115,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\AssetProcessor.cpp" />
     <ClCompile Include="src\BatchDraw.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -192,6 +193,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Array.h" />
+    <ClInclude Include="src\AssetProcessor.h" />
     <ClInclude Include="src\BatchDraw.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\Clock.h" />

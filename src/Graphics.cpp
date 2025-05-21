@@ -1,4 +1,5 @@
 #include "Graphics.h"
+#include "AssetProcessor.h"
 #include "Camera.h"
 #include "DrawState.h"
 #include "Image.h"
@@ -49,6 +50,8 @@ MeshStateT MeshStateCubeFacesTex;
 MeshStateT MeshStateRect;
 MeshStateT MeshStateCircle;
 MeshStateT MeshStateSphere;
+MeshStateT MeshStateOBJPyramid;
+MeshStateT MeshStateOBJCylinder;
 MeshInstStateT MeshInstStateRect;
 MeshInstStateT MeshInstStateRectRotation;
 MeshInstStateT MeshInstStateVoxelColor;
@@ -264,6 +267,22 @@ void DrawDebugDemo()
         GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
         GlobalGFXContext.SetShaderConstantBuffers_WVP();
         DrawMesh(DX_ImmContext, DrawStateColor, MeshStateSphere);
+    }
+
+    static bool bDrawOBJTests= true;
+    if (bDrawOBJTests)
+    {
+        DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+        static float RotationX = 0.0f;
+        static float RotationY = 0.0f;
+        static constexpr float RotSpeed = (1.0f / 60.0f) / 25.0f;
+        RotationX += RotSpeed;
+        RotationY += RotSpeed * 0.5f;
+        m4f PyramidWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+10.0f, 0.0f, 0.0f);
+        GlobalGFXContext.UpdateShaderWorld(&PyramidWorld);
+        GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
+        GlobalGFXContext.SetShaderConstantBuffers_WVP();
+        DrawMesh(DX_ImmContext, DrawStateColor, MeshStateOBJPyramid);
     }
 
     if (bDrawCube)
@@ -854,6 +873,13 @@ void Graphics::Init()
         &DrawBatch,
         &DrawStateColor
     };
+
+    constexpr bool bTestOBJLoading = true;
+    if (bTestOBJLoading)
+    {
+        MeshStateOBJPyramid = LoadMeshOBJ("Assets/simple-pyramid-test.obj");
+    }
+    
 }
 
 void Graphics::Term()
@@ -868,6 +894,8 @@ void Graphics::Term()
     SafeRelease(MeshStateRect);
     SafeRelease(MeshStateCircle);
     SafeRelease(MeshStateSphere);
+    SafeRelease(MeshStateOBJPyramid);
+    SafeRelease(MeshStateOBJCylinder);
     SafeRelease(MeshInstStateRect);
     SafeRelease(MeshInstStateRectRotation);
     SafeRelease(MeshInstStateVoxelColor);

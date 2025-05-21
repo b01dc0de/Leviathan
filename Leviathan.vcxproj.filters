@@ -84,6 +84,9 @@
     <ClCompile Include="src\Utils.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\AssetProcessor.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Leviathan.h">
@@ -156,6 +159,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Utils.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AssetProcessor.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
