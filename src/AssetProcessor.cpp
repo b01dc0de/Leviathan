@@ -45,27 +45,15 @@ MeshStateT CreateMeshStateFromOBJ(ParsedOBJ& OBJ)
     int IndIdx = 0;
     for (int fIdx = 0; fIdx < OBJ.Faces.Num; fIdx++)
     {
-        ASSERT(IndIdx < NumInds);
-        // TODO: Doublecheck face indices are positive (or actually handle them correctly)
-        ASSERT(OBJ.Faces[fIdx].NumVerts == 3 || OBJ.Faces[fIdx].NumVerts == 4);
-        if (OBJ.Faces[fIdx].NumVerts == 3)
+        ASSERT(OBJ.Faces[fIdx].NumVerts >= 3);
+        int NumTris = OBJ.Faces[fIdx].NumVerts - 2;
+        for (int TriIdx = 0; TriIdx < NumTris; TriIdx++)
         {
-            Inds[IndIdx + 0] = OBJ.Faces[fIdx].vIdx[0] - 1;
-            Inds[IndIdx + 1] = OBJ.Faces[fIdx].vIdx[1] - 1;
-            Inds[IndIdx + 2] = OBJ.Faces[fIdx].vIdx[2] - 1;
+            ASSERT(IndIdx < NumInds);
+            Inds[IndIdx + 0] = OBJ.Faces[fIdx].vIdx[0];
+            Inds[IndIdx + 1] = OBJ.Faces[fIdx].vIdx[TriIdx + 1];
+            Inds[IndIdx + 2] = OBJ.Faces[fIdx].vIdx[TriIdx + 2];
             IndIdx += 3;
-        }
-        else if (OBJ.Faces[fIdx].NumVerts == 4)
-        {
-            Inds[IndIdx + 0] = OBJ.Faces[fIdx].vIdx[0] - 1;
-            Inds[IndIdx + 1] = OBJ.Faces[fIdx].vIdx[1] - 1;
-            Inds[IndIdx + 2] = OBJ.Faces[fIdx].vIdx[2] - 1;
-
-            Inds[IndIdx + 3] = OBJ.Faces[fIdx].vIdx[0] - 1;
-            Inds[IndIdx + 4] = OBJ.Faces[fIdx].vIdx[2] - 1;
-            Inds[IndIdx + 5] = OBJ.Faces[fIdx].vIdx[3] - 1;
-
-            IndIdx += 6;
         }
     }
 
@@ -132,9 +120,14 @@ MeshStateT ParseOBJFile(byte* Contents, size_t Size)
                 char* AfterDigit = nullptr;
 
                 FaceIndices NewFace{};
-                while (!bError && NewFace.NumVerts < FaceIndices::MaxVerts && *DigitBegin != '\n' && *DigitBegin != '\r')
+                while (!bError && (NewFace.NumVerts < FaceIndices::MaxVerts) && (ReadIdx < Size && *DigitBegin && *DigitBegin != '\n' && *DigitBegin != '\r'))
                 {
-                    NewFace.vIdx[NewFace.NumVerts++] = strtol(DigitBegin, &AfterDigit, 10);
+                    int NewIndex = strtol(DigitBegin, &AfterDigit, 10);
+                    if (NewIndex > 0)
+                    {
+                        NewFace.vIdx[NewFace.NumVerts++] = NewIndex - 1;
+                    }
+                    else { ASSERT(NewIndex > 0); bError = true; }
                     if (!AfterDigit) { bError = true; }
                     else { DigitBegin = AfterDigit; AfterDigit = nullptr; }
                 }

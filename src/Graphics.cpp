@@ -239,6 +239,9 @@ void DrawDebugDemo()
     static float RotationY = 0.0f;
     static constexpr float RotSpeed = (1.0f / 60.0f) / 25.0f;
 
+    RotationX += RotSpeed;
+    RotationY += RotSpeed * 0.5f;
+
     ID3D11ShaderResourceView* ProggyCleanFontTextureSRV[] = { ProggyCleanFont.LvTex2D.SRV };
     ID3D11SamplerState* DefaultSampler[] = { DX_DefaultSamplerState };
     ID3D11ShaderResourceView* TestTextureSRV[] = { LvTestTexture.SRV };
