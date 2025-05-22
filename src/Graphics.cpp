@@ -204,6 +204,10 @@ void DrawDebugDemo()
     static bool bDrawTextSheet = true;
     static bool bDrawInstRotationDemo = false;
 
+    static float RotationX = 0.0f;
+    static float RotationY = 0.0f;
+    static constexpr float RotSpeed = (1.0f / 60.0f) / 25.0f;
+
     ID3D11ShaderResourceView* ProggyCleanFontTextureSRV[] = { ProggyCleanFont.LvTex2D.SRV };
     ID3D11SamplerState* DefaultSampler[] = { DX_DefaultSamplerState };
     ID3D11ShaderResourceView* TestTextureSRV[] = { LvTestTexture.SRV };
@@ -257,11 +261,6 @@ void DrawDebugDemo()
     if (bDrawSphere)
     {
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-        static float RotationX = 0.0f;
-        static float RotationY = 0.0f;
-        static constexpr float RotSpeed = (1.0f / 60.0f) / 10.0f;
-        RotationX += RotSpeed;
-        RotationY += RotSpeed * 0.5f;
         m4f SphereWorld = m4f::Scale(4.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(-25.0f, -10.0f, 0.0f);
         GlobalGFXContext.UpdateShaderWorld(&SphereWorld);
         GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
@@ -273,27 +272,23 @@ void DrawDebugDemo()
     if (bDrawOBJTests)
     {
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-        static float RotationX = 0.0f;
-        static float RotationY = 0.0f;
-        static constexpr float RotSpeed = (1.0f / 60.0f) / 25.0f;
-        RotationX += RotSpeed;
-        RotationY += RotSpeed * 0.5f;
         m4f PyramidWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+10.0f, 0.0f, 0.0f);
         GlobalGFXContext.UpdateShaderWorld(&PyramidWorld);
         GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
         GlobalGFXContext.SetShaderConstantBuffers_WVP();
         DrawMesh(DX_ImmContext, DrawStateColor, MeshStateOBJPyramid);
+
+        m4f CylinderWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+5.0f, +5.0f, 0.0f);
+        GlobalGFXContext.UpdateShaderWorld(&CylinderWorld);
+        GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
+        GlobalGFXContext.SetShaderConstantBuffers_WVP();
+        DrawMesh(DX_ImmContext, DrawStateColor, MeshStateOBJCylinder);
     }
 
     if (bDrawCube)
     {
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
 
-        static float RotationX = 0.0f;
-        static float RotationY = 0.0f;
-        static constexpr float RotSpeed = (1.0f / 60.0f) / 10.0f;
-        RotationX += RotSpeed;
-        RotationY += RotSpeed * 0.5f;
         m4f CubeWorld = m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
         GlobalGFXContext.UpdateShaderWorld(&CubeWorld);
         GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
@@ -322,13 +317,6 @@ void DrawDebugDemo()
         constexpr int NumInstVoxels = 12;
         constexpr float VoxelStoneHedgeSize = 5.0f;
         constexpr float MaxScale = 1.0f;
-
-        static float RotationX = 0.0f;
-        static float RotationY = 0.0f;
-        static constexpr float RotSpeed = (1.0f / 60.0f) / 10.0f;
-
-        RotationX += RotSpeed;
-        RotationY += RotSpeed;
 
         for (int Idx = 0; Idx < NumInstVoxels; Idx++)
         {
@@ -878,6 +866,7 @@ void Graphics::Init()
     if (bTestOBJLoading)
     {
         MeshStateOBJPyramid = LoadMeshOBJ("Assets/simple-pyramid-test.obj");
+        MeshStateOBJCylinder = LoadMeshOBJ("Assets/simple-cylinder-test.obj");
     }
     
 }
