@@ -29,8 +29,7 @@ ID3D11DepthStencilState* DX_Draw2DDepthStencilState = nullptr;
 ID3D11BlendState* DX_DefaultBlendState = nullptr;
 ID3D11BlendState* DX_AlphaBlendState = nullptr;
 
-DrawStateT Prototype_DrawStateColorNormal;
-
+DrawStateT DrawStateColorNormal;
 DrawStateT DrawStateColor;
 DrawStateT DrawStateUnicolor;
 DrawStateT DrawStateTexture;
@@ -314,7 +313,7 @@ void DrawDebugDemo()
         GlobalGFXContext.UpdateShaderWorld(&SphereWorld);
         GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
         GlobalGFXContext.SetShaderConstantBuffers_WVP();
-        DrawMesh(DX_ImmContext, DrawStateColor, MeshStateSphere);
+        DrawMesh(DX_ImmContext, DrawStateColorNormal, MeshStateSphere);
     }
 
     static bool bDrawOBJTests= true;
@@ -733,6 +732,7 @@ void Graphics::Init()
         {
             "ENABLE_VERTEX_COLOR", "1",
             "ENABLE_VERTEX_TEXTURE", "0",
+            "ENABLE_VERTEX_NORMAL", "0",
             "ENABLE_WVP_TRANSFORM", "1",
             "ENABLE_UNICOLOR", "0",
             nullptr, nullptr
@@ -747,10 +747,31 @@ void Graphics::Init()
     }
 
     {
+        const D3D_SHADER_MACRO DefinesVxColorNormal[] =
+        {
+            "ENABLE_VERTEX_COLOR", "1",
+            "ENABLE_VERTEX_TEXTURE", "0",
+            "ENABLE_VERTEX_NORMAL", "1",
+            "ENABLE_WVP_TRANSFORM", "1",
+            "ENABLE_UNICOLOR", "0",
+            nullptr, nullptr
+        };
+        D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
+        {
+            { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        };
+
+        DrawStateColorNormal = CreateDrawState(DX_Device, BaseShaderFilename, DefinesVxColorNormal, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
+    }
+
+    {
         const D3D_SHADER_MACRO DefinesVxUnicolor[] =
         {
             "ENABLE_VERTEX_COLOR", "0",
             "ENABLE_VERTEX_TEXTURE", "0",
+            "ENABLE_VERTEX_NORMAL", "0",
             "ENABLE_WVP_TRANSFORM", "1",
             "ENABLE_UNICOLOR", "1",
             nullptr, nullptr
@@ -768,6 +789,7 @@ void Graphics::Init()
         {
             "ENABLE_VERTEX_COLOR", "0",
             "ENABLE_VERTEX_TEXTURE", "1",
+            "ENABLE_VERTEX_NORMAL", "0",
             "ENABLE_WVP_TRANSFORM", "1",
             "ENABLE_UNICOLOR", "0",
             nullptr, nullptr
@@ -1011,6 +1033,7 @@ void Graphics::Term()
     SafeRelease(DX_UnicolorBuffer);
     SafeRelease(DX_DefaultSamplerState);
 
+    SafeRelease(DrawStateColorNormal);
     SafeRelease(DrawStateColor);
     SafeRelease(DrawStateUnicolor);
     SafeRelease(DrawStateTexture);

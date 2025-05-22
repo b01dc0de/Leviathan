@@ -402,13 +402,13 @@ MeshStateT LoadMeshStateUnitSphere(int NumStrips)
     int NumTris = (NumStrips * (NumStrips - 1) * 2) + NumStrips * 2;
     int NumInds = NumTris * 3;
 
-    VxColor* Vertices_Sphere = new VxColor[NumVerts];
+    VxColorNormal* Vertices_Sphere = new VxColorNormal[NumVerts];
     unsigned int* Indices_Sphere = new unsigned int[NumInds];
 
     static constexpr unsigned int NorthPoleVx = 0;
     static constexpr unsigned int SouthPoleVx = 1;
-    Vertices_Sphere[NorthPoleVx] = { {0.0f, +1.0f, 0.0f, Default_W}, Default_vColor };
-    Vertices_Sphere[SouthPoleVx] = { {0.0f, -1.0f, 0.0f, Default_W}, Default_vColor };
+    Vertices_Sphere[NorthPoleVx] = { {0.0f, +1.0f, 0.0f, Default_W}, Default_vColor, { 0.0f, +1.0f, 0.0f} };
+    Vertices_Sphere[SouthPoleVx] = { {0.0f, -1.0f, 0.0f, Default_W}, Default_vColor, { 0.0f, -1.0f, 0.0f} };
 
     // Init sphere vertices
     int VxIdx = 2;
@@ -422,7 +422,8 @@ MeshStateT LoadMeshStateUnitSphere(int NumStrips)
             float Angle = (float)StripIdx / NumStrips * fTAU;
             float X = cosf(Angle) * WidthAtLat;
             float Z = sinf(-Angle) * WidthAtLat;
-            Vertices_Sphere[VxIdx++] = { {X, Y, Z, Default_W}, Default_vColor };
+            //v3f Normal = Norm({ X, Y, Z });
+            Vertices_Sphere[VxIdx++] = { {X, Y, Z, Default_W}, Default_vColor, {X, Y, Z} };
         }
     }
 
@@ -488,7 +489,7 @@ MeshStateT LoadMeshStateUnitSphere(int NumStrips)
 
     MeshStateT SphereMeshState = CreateMeshState(
         Graphics::Device(),
-        sizeof(VxColor),
+        sizeof(VxColorNormal),
         NumVerts,
         Vertices_Sphere,
         NumInds,

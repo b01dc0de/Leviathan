@@ -18,6 +18,13 @@ struct VxColor
     v4f Col;
 };
 
+struct VxColorNormal
+{
+    v4f Pos;
+    v4f Col;
+    v3f Normal;
+};
+
 struct VxTexture
 {
     v4f Pos;

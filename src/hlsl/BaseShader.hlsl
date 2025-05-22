@@ -91,11 +91,7 @@ VS_OUTPUT VSMain(VS_INPUT Input)
     Output.TexUV = Input.TexUV;
 #endif // ENABLE_VERTEX_TEXTURE
 #if ENABLE_VERTEX_NORMAL
-    float4 Normal = float4(Input.Normal, 1.0);
-    Normal = mul(Normal, World);
-    Normal = mul(Normal, View);
-    Normal = mul(Normal, Proj);
-    Output.Normal = Input.Normal.xyz;
+    Output.Normal = mul(float4(Input.Normal, 0.0), World).xyz;
 #endif // ENABLE_VERTEX_NORMAL
 #if ENABLE_UNICOLOR
     Output.Unicolor = Unicolor;
