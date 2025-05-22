@@ -26,21 +26,18 @@ struct ParsedOBJ
 
 MeshStateT CreateMeshStateFromOBJ(ParsedOBJ& OBJ)
 {
-    static constexpr v4f DefaultColor{ 53.0f / 255.0f, 239.0f / 255.0f, 105.0f / 255.0f, 1.0f };
-
     ASSERT(OBJ.Vertices.Num > 0 && OBJ.Faces.Num > 0);
     if (OBJ.Vertices.Num == 0 || OBJ.Faces.Num == 0) { return MeshStateT{}; }
 
     // TODO(CKA): Implement support for texture (+ normal!) vertices
     int NumVerts = OBJ.Vertices.Num;
     int NumInds = OBJ.NumPrimitives * 3;
-    VxColor* Verts = new VxColor[NumVerts];
+    VxMin* Verts = new VxMin[NumVerts];
     unsigned int* Inds = new unsigned int[NumInds];
 
     for (int vIdx = 0; vIdx < OBJ.Vertices.Num; vIdx++)
     {
         Verts[vIdx].Pos = OBJ.Vertices[vIdx];
-        Verts[vIdx].Col = DefaultColor;
     }
     int IndIdx = 0;
     for (int fIdx = 0; fIdx < OBJ.Faces.Num; fIdx++)
@@ -60,7 +57,7 @@ MeshStateT CreateMeshStateFromOBJ(ParsedOBJ& OBJ)
     MeshStateT Result = CreateMeshState
     (
         Graphics::Device(),
-        sizeof(VxColor), // TODO: Support multiple vertex types
+        sizeof(VxMin), // TODO: Support multiple vertex types
         NumVerts,
         Verts,
         NumInds,
@@ -123,13 +120,22 @@ MeshStateT ParseOBJFile(byte* Contents, size_t Size)
                 while (!bError && (NewFace.NumVerts < FaceIndices::MaxVerts) && (ReadIdx < Size && *DigitBegin && *DigitBegin != '\n' && *DigitBegin != '\r'))
                 {
                     int NewIndex = strtol(DigitBegin, &AfterDigit, 10);
-                    if (NewIndex > 0)
+
+                    if (NewIndex > 0 && AfterDigit)
                     {
                         NewFace.vIdx[NewFace.NumVerts++] = NewIndex - 1;
+                        if (*AfterDigit == '/') { 
+                            do { AfterDigit++; }
+                            while (*AfterDigit && *AfterDigit != ' ' && *AfterDigit != '\n' && *AfterDigit != '\r');
+                        }
+                        DigitBegin = AfterDigit;
+                        AfterDigit = nullptr;
                     }
-                    else { ASSERT(NewIndex > 0); bError = true; }
-                    if (!AfterDigit) { bError = true; }
-                    else { DigitBegin = AfterDigit; AfterDigit = nullptr; }
+                    else
+                    {
+                        bError = true;
+                        ASSERT(false);
+                    }
                 }
 
                 if (NewFace.NumVerts > 2) { OBJ.NumPrimitives += NewFace.NumVerts - 2; }

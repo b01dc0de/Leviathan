@@ -56,6 +56,7 @@ MeshStateT MeshStateCircle;
 MeshStateT MeshStateSphere;
 MeshStateT MeshStateOBJPyramid;
 MeshStateT MeshStateOBJCylinder;
+MeshStateT MeshStateOBJTorus;
 MeshInstStateT MeshInstStateRect;
 MeshInstStateT MeshInstStateRectRotation;
 MeshInstStateT MeshInstStateVoxelColor;
@@ -256,13 +257,11 @@ void DrawDebugDemo()
 
         m4f TriangleWorld = m4f::Scale(128.0f, 128.0f, 1.0f) * m4f::Trans(+256.0f, -256.0f, 0.0f);
         GlobalGFXContext.UpdateShaderWorld(&TriangleWorld);
-
         DrawMesh(DX_ImmContext, DrawStateColor, MeshStateTriangle);
 
         m4f CircleWorld = m4f::Scale(64.0f, 64.0f, 1.0f) * m4f::Trans(+384.0f, -256.0f, 0.0f);
         GlobalGFXContext.UpdateShaderWorld(&CircleWorld);
         DrawMesh(DX_ImmContext, DrawStateColor, MeshStateCircle);
-
     }
 
     if (bDrawTexQuad)
@@ -316,18 +315,32 @@ void DrawDebugDemo()
     static bool bDrawOBJTests= true;
     if (bDrawOBJTests)
     {
+        v4f DefaultColor{ 53.0f / 255.0f, 239.0f / 255.0f, 105.0f / 255.0f, 1.0f };
+
+        ID3D11Buffer* CBuffers[] = { DX_WorldBuffer, DX_ViewProjBuffer, DX_UnicolorBuffer };
+        SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(CBuffers), CBuffers, 0);
+
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
         m4f PyramidWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+10.0f, 0.0f, 0.0f);
+        v4f PyramidColor{ 243.0f / 255.0f, 178.0f / 255.0f, 14.0f / 255.0f, 1.0f };
         GlobalGFXContext.UpdateShaderWorld(&PyramidWorld);
         GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
-        GlobalGFXContext.SetShaderConstantBuffers_WVP();
-        DrawMesh(DX_ImmContext, DrawStateColor, MeshStateOBJPyramid);
+        UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &PyramidColor, sizeof(v4f));
+        DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateOBJPyramid);
 
         m4f CylinderWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+5.0f, +5.0f, 0.0f);
+        v4f CylinderColor{ 219.0f / 255.0f, 26.0f / 255.0f, 27.0f / 255.0f, 1.0f };
         GlobalGFXContext.UpdateShaderWorld(&CylinderWorld);
         GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
-        GlobalGFXContext.SetShaderConstantBuffers_WVP();
-        DrawMesh(DX_ImmContext, DrawStateColor, MeshStateOBJCylinder);
+        UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &CylinderColor, sizeof(v4f));
+        DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateOBJCylinder);
+
+        m4f TorusWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+5.0f, 0.0f, -5.0f);
+        GlobalGFXContext.UpdateShaderWorld(&TorusWorld);
+        v4f TorusColor{ 85.0f / 255.0f, 35.0f / 255.0f, 106.0f / 255.0f, 1.0f };
+        GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
+        UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &TorusColor, sizeof(v4f));
+        DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateOBJTorus);
     }
 
     if (bDrawCube)
@@ -952,8 +965,8 @@ void Graphics::Init()
     {
         MeshStateOBJPyramid = LoadMeshOBJ("Assets/simple-pyramid-test.obj");
         MeshStateOBJCylinder = LoadMeshOBJ("Assets/simple-cylinder-test.obj");
+        MeshStateOBJTorus = LoadMeshOBJ("Assets/torus-test.obj");
     }
-    
 }
 
 void Graphics::Term()
@@ -971,6 +984,7 @@ void Graphics::Term()
     SafeRelease(MeshStateSphere);
     SafeRelease(MeshStateOBJPyramid);
     SafeRelease(MeshStateOBJCylinder);
+    SafeRelease(MeshStateOBJTorus);
     SafeRelease(MeshInstStateRect);
     SafeRelease(MeshInstStateRectRotation);
     SafeRelease(MeshInstStateVoxelColor);
