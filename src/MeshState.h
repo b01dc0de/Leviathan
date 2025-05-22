@@ -79,6 +79,7 @@ MeshInstStateT CreateMeshInstState
 MeshStateT LoadMeshStateTriangle();
 MeshStateT LoadMeshStateRect();
 MeshStateT LoadMeshStateCube();
+MeshStateT LoadMeshStateCubeMin();
 MeshStateT LoadMeshStateCubeFacesColor();
 MeshStateT LoadMeshStateCubeFacesTex();
 MeshStateT LoadMeshStateUnitCircle(int NumPoints = 16);

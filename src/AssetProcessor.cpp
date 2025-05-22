@@ -3,6 +3,9 @@
 namespace Leviathan
 {
 
+namespace MeshOBJ
+{
+
 struct FaceIndices
 {
     static constexpr int MaxVerts = 4;
@@ -158,6 +161,8 @@ MeshStateT ParseOBJFile(byte* Contents, size_t Size)
     return Result;
 }
 
+}
+
 MeshStateT LoadMeshOBJ(const char* FileName)
 {
     FileContentsT OBJContents = LoadFileContents(FileName, true);
@@ -165,7 +170,7 @@ MeshStateT LoadMeshOBJ(const char* FileName)
 
     if (OBJContents.Size > 0 && OBJContents.Contents)
     {
-        Result = ParseOBJFile(OBJContents.Contents, OBJContents.Size);
+        Result = MeshOBJ::ParseOBJFile(OBJContents.Contents, OBJContents.Size);
 
         delete[] OBJContents.Contents;
     }

@@ -301,6 +301,18 @@ MeshStateT LoadMeshStateCube()
         Indices_Cube
     );
 }
+MeshStateT LoadMeshStateCubeMin()
+{
+    return CreateMeshState
+    (
+        Graphics::Device(),
+        sizeof(VxMin),
+        sizeof(Vertices_CubeMin),
+        Vertices_CubeMin,
+        ARRAY_SIZE(Indices_Cube),
+        Indices_Cube
+    );
+}
 MeshStateT LoadMeshStateCubeFacesTex()
 {
     return CreateMeshState

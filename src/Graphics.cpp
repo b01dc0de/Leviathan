@@ -30,6 +30,7 @@ ID3D11BlendState* DX_DefaultBlendState = nullptr;
 ID3D11BlendState* DX_AlphaBlendState = nullptr;
 
 DrawStateT DrawStateColor;
+DrawStateT DrawStateUnicolor;
 DrawStateT DrawStateTexture;
 DrawStateT DrawStateInstRectColor;
 DrawStateT DrawStateInstRectTexture;
@@ -41,10 +42,13 @@ ID3D11Buffer* DX_WorldBuffer = nullptr;
 ID3D11Buffer* DX_ViewProjBuffer = nullptr;
 const int WBufferSlot = 0;
 const int VPBufferSlot = 1;
+ID3D11Buffer* DX_UnicolorBuffer = nullptr;
+const int UnicolorBufferSlot = 2;
 ID3D11SamplerState* DX_DefaultSamplerState = nullptr;
 
 MeshStateT MeshStateTriangle;
 MeshStateT MeshStateCube;
+MeshStateT MeshStateCubeMin;
 MeshStateT MeshStateCubeFacesColor;
 MeshStateT MeshStateCubeFacesTex;
 MeshStateT MeshStateRect;
@@ -76,51 +80,6 @@ LvFont ProggyCleanFont;
 
 #define DX_UUID_HELPER(Type, Ptr) __uuidof(Type), (void**)&Ptr
 
-struct SpriteTransform
-{
-    v2f Scale{ 1.0f, 1.0f };
-    v2f Pos{ 0.0f, 0.0f };
-    float RotAngle = 0.0f;
-};
-
-const float TestInstRectSize = 50.0f;
-const float RightRectX = (float)AppWidth - TestInstRectSize;
-const float BottomRectY = (float)AppHeight - TestInstRectSize;
-InstRectTextureData InstRectTextureDataArray[] =
-{
-    { {0.0f, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.0f, 0.0f, 0.5f, 0.5f} },
-    { {RightRectX, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.5f, 0.0f, 0.5f, 0.5f} },
-    { {0.0f, 0.0f, TestInstRectSize, TestInstRectSize}, { 0.0f, 0.5f, 0.5f, 0.5f } },
-    { {RightRectX, 0.0f, TestInstRectSize, TestInstRectSize}, {0.5f, 0.5f, 0.5f, 0.5f} }
-};
-
-float HalfWidth = (float)AppWidth / 2.0f;
-float HalfHeight = (float)AppHeight / 2.0f;
-LineF InstData_LinePos[]
-{
-    {0.0f, 0.0f, AppWidth, AppHeight},
-    {0.0f, AppHeight, AppWidth, 0.0f},
-    {HalfWidth, 0.0f, HalfWidth, AppHeight},
-    {0.0f, HalfHeight, AppWidth, HalfHeight},
-};
-fColor InstData_LineColors[]
-{
-    {1.0f, 0.0f, 0.0f, 1.0f},
-    {0.0f, 1.0f, 0.0f, 1.0f},
-    {0.0f, 0.0f, 1.0f, 1.0f},
-    {1.0f, 1.0f, 1.0f, 1.0f}
-};
-VxMin Vertices_PlatonicLine[] =
-{
-    {0.0f, 0.0f, +0.5f, 1.0f},
-    {1.0f, 1.0f, +0.5f, 1.0f}
-};
-
-m4f GetMatrix(const SpriteTransform& InSprTrans)
-{
-    return m4f::Scale(InSprTrans.Scale.X, InSprTrans.Scale.Y, 1.0f) * m4f::RotAxisZ(InSprTrans.RotAngle) * m4f::Trans(InSprTrans.Pos.X, InSprTrans.Pos.Y, 0.0f);
-}
-
 void LvGFXContext::SetShaderConstantBuffers_WVP()
 {
     SetShaderConstantBuffers(ImmContext, ARRAY_SIZE(World_ViewProjBuffers), World_ViewProjBuffers);
@@ -137,14 +96,18 @@ void LvGFXContext::UpdateShaderViewProj(Camera* CameraData)
     UpdateShaderResource(ImmContext, ViewProjBuffer, CameraData, sizeof(Camera));
 }
 
+void DrawDebugAxis();
 void DrawDebugDemo();
 void DrawBatch2D(BatchDrawCmds& Draw2D, ID3D11ShaderResourceView* TextureSRV, bool bClear = false);
 void DrawBatch3D(BatchDrawCmds& Draw3D, bool bClear = false);
 
-m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
+static float HalfWidth = (float)AppWidth / 2.0f;
+static float HalfHeight = (float)AppHeight / 2.0f;
+static m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
 constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
 void Graphics::Draw()
 {
+    static bool bDrawDebugAxis = true;
     static bool bDrawGame = true;
     static bool bForceDrawDebugDemo = true;
     static bool bDrawUI = true;
@@ -165,6 +128,11 @@ void Graphics::Draw()
     constexpr float fClearDepth = 1.0f;
     DX_ImmContext->ClearRenderTargetView(DX_RenderTargetView, &ClearColor.X);
     DX_ImmContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, fClearDepth, 0);
+
+    if (bDrawDebugAxis)
+    {
+        DrawDebugAxis();
+    }
 
     ID3D11Buffer* World_ViewProjBuffers[] = { DX_WorldBuffer, DX_ViewProjBuffer };
     ID3D11SamplerState* DefaultSampler[] = { DX_DefaultSamplerState };
@@ -189,6 +157,51 @@ void Graphics::Draw()
     UINT SyncInterval = 0, PresentFlags = 0;
     DXGI_PRESENT_PARAMETERS PresentParams = {};
     DXGI_SwapChain1->Present1(SyncInterval, PresentFlags, &PresentParams);
+}
+
+void DrawDebugAxis()
+{
+    DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+    GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
+
+    ID3D11Buffer* World_ViewProj_Unicolor_Buffers[] = { DX_WorldBuffer, DX_ViewProjBuffer, DX_UnicolorBuffer };
+    SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(World_ViewProj_Unicolor_Buffers), World_ViewProj_Unicolor_Buffers);
+    GlobalGFXContext.SetShaderConstantBuffers_WVP();
+
+    static constexpr float Length = 1000.0f;
+    static constexpr float MinSize = 0.1f;
+
+    auto UpdateUnicolor = [](v4f* UnicolorData) -> void
+    {
+        UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, UnicolorData, sizeof(m4f));
+    };
+
+    v4f Red{ 1.0f, 0.0f, 0.0f, 1.0f };
+    v4f Green{ 0.0f, 1.0f, 0.0f, 1.0f };
+    v4f Blue{ 0.0f, 0.0f, 1.0f, 1.0f };
+    // X-axis
+    {
+        m4f CubeWorld = m4f::Scale(Length, MinSize, MinSize) * m4f::Trans(Length / 2.0f, 0.0f, 0.0f);
+        GlobalGFXContext.UpdateShaderWorld(&CubeWorld);
+        UpdateUnicolor(&Red);
+        DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateCubeMin);
+    }
+
+    // Y-axis
+    {
+        m4f CubeWorld = m4f::Scale(MinSize, Length, MinSize) * m4f::Trans(0.0f, Length / 2.0f, 0.0f);
+        GlobalGFXContext.UpdateShaderWorld(&CubeWorld);
+        UpdateUnicolor(&Green);
+        DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateCubeMin);
+    }
+
+    // Z-axis
+    {
+        m4f CubeWorld = m4f::Scale(MinSize, MinSize, Length) * m4f::Trans(0.0f, 0.0f, Length / 2.0f);
+        GlobalGFXContext.UpdateShaderWorld(&CubeWorld);
+        UpdateUnicolor(&Blue);
+        DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateCubeMin);
+    }
 }
 
 void DrawDebugDemo()
@@ -244,6 +257,17 @@ void DrawDebugDemo()
 
     if (bDrawInstRects)
     {
+        const float TestInstRectSize = 50.0f;
+        const float RightRectX = (float)AppWidth - TestInstRectSize;
+        const float BottomRectY = (float)AppHeight - TestInstRectSize;
+        InstRectTextureData InstRectTextureDataArray[] =
+        {
+            { {0.0f, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.0f, 0.0f, 0.5f, 0.5f} },
+            { {RightRectX, BottomRectY, TestInstRectSize, TestInstRectSize}, {0.5f, 0.0f, 0.5f, 0.5f} },
+            { {0.0f, 0.0f, TestInstRectSize, TestInstRectSize}, { 0.0f, 0.5f, 0.5f, 0.5f } },
+            { {RightRectX, 0.0f, TestInstRectSize, TestInstRectSize}, {0.5f, 0.5f, 0.5f, 0.5f} }
+        };
+
         DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
         GlobalGFXContext.UpdateShaderWorld(&DefaultSpriteWorld);
         SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
@@ -332,6 +356,21 @@ void DrawDebugDemo()
 
     if (bDrawInstLines)
     {
+        LineF InstData_LinePos[]
+        {
+            {0.0f, 0.0f, AppWidth, AppHeight},
+            {0.0f, AppHeight, AppWidth, 0.0f},
+            {HalfWidth, 0.0f, HalfWidth, AppHeight},
+            {0.0f, HalfHeight, AppWidth, HalfHeight},
+        };
+        fColor InstData_LineColors[]
+        {
+            {1.0f, 0.0f, 0.0f, 1.0f},
+            {0.0f, 1.0f, 0.0f, 1.0f},
+            {0.0f, 0.0f, 1.0f, 1.0f},
+            {1.0f, 1.0f, 1.0f, 1.0f}
+        };
+
         ASSERT(ARRAY_SIZE(InstData_LinePos) == ARRAY_SIZE(InstData_LineColors));
         for (int Idx = 0; Idx < ARRAY_SIZE(InstData_LinePos); Idx++)
         {
@@ -662,6 +701,23 @@ void Graphics::Init()
     }
 
     {
+        const D3D_SHADER_MACRO DefinesVxUnicolor[] =
+        {
+            "ENABLE_VERTEX_COLOR", "0",
+            "ENABLE_VERTEX_TEXTURE", "0",
+            "ENABLE_WVP_TRANSFORM", "1",
+            "ENABLE_UNICOLOR", "1",
+            nullptr, nullptr
+        };
+        D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
+        {
+            { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        };
+
+        DrawStateUnicolor = CreateDrawState(DX_Device, BaseShaderFilename, DefinesVxUnicolor, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
+    }
+
+    {
         const D3D_SHADER_MACRO DefinesVxTexture[] =
         {
             "ENABLE_VERTEX_COLOR", "0",
@@ -805,8 +861,16 @@ void Graphics::Init()
     ViewProjBufferDesc.CPUAccessFlags = 0;
     DX_CHECK(DX_Device->CreateBuffer(&ViewProjBufferDesc, nullptr, &DX_ViewProjBuffer));
 
+    D3D11_BUFFER_DESC UnicolorBufferDesc = {};
+    UnicolorBufferDesc.ByteWidth = sizeof(v4f);
+    UnicolorBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+    UnicolorBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    UnicolorBufferDesc.CPUAccessFlags = 0;
+    DX_CHECK(DX_Device->CreateBuffer(&UnicolorBufferDesc, nullptr, &DX_UnicolorBuffer));
+
     MeshStateTriangle = LoadMeshStateTriangle();
     MeshStateCube = LoadMeshStateCube();
+    MeshStateCubeMin = LoadMeshStateCubeMin();
     MeshStateCubeFacesColor = LoadMeshStateCubeFacesColor();
     MeshStateCubeFacesTex = LoadMeshStateCubeFacesTex();
 
@@ -878,6 +942,7 @@ void Graphics::Term()
 
     SafeRelease(MeshStateTriangle);
     SafeRelease(MeshStateCube);
+    SafeRelease(MeshStateCubeMin);
     SafeRelease(MeshStateCubeFacesColor);
     SafeRelease(MeshStateCubeFacesTex);
     SafeRelease(MeshStateRect);
@@ -894,9 +959,11 @@ void Graphics::Term()
 
     SafeRelease(DX_WorldBuffer);
     SafeRelease(DX_ViewProjBuffer);
+    SafeRelease(DX_UnicolorBuffer);
     SafeRelease(DX_DefaultSamplerState);
 
     SafeRelease(DrawStateColor);
+    SafeRelease(DrawStateUnicolor);
     SafeRelease(DrawStateTexture);
     SafeRelease(DrawStateInstRectColor);
     SafeRelease(DrawStateInstRectTexture);
