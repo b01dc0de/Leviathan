@@ -147,7 +147,7 @@ MeshStateT ParseOBJFile(byte* Contents, size_t Size)
         }
 
         // Read to next line
-        while (Contents[ReadIdx] != '\n') { ReadIdx++; } ReadIdx++;
+        while (ReadIdx < Size && Contents[ReadIdx] && Contents[ReadIdx] != '\n') { ReadIdx++; } ReadIdx++;
     }
 
     MeshStateT Result{};
