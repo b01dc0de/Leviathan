@@ -321,21 +321,21 @@ void DrawDebugDemo()
         SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(CBuffers), CBuffers, 0);
 
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-        m4f PyramidWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+10.0f, 0.0f, 0.0f);
+        m4f PyramidWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+10.0f, 0.0f, -5.0f);
         v4f PyramidColor{ 243.0f / 255.0f, 178.0f / 255.0f, 14.0f / 255.0f, 1.0f };
         GlobalGFXContext.UpdateShaderWorld(&PyramidWorld);
         GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
         UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &PyramidColor, sizeof(v4f));
         DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateOBJPyramid);
 
-        m4f CylinderWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+5.0f, +5.0f, 0.0f);
+        m4f CylinderWorld = m4f::Scale(4.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+10.0f, 0.0f, -10.0f);
         v4f CylinderColor{ 219.0f / 255.0f, 26.0f / 255.0f, 27.0f / 255.0f, 1.0f };
         GlobalGFXContext.UpdateShaderWorld(&CylinderWorld);
         GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
         UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &CylinderColor, sizeof(v4f));
         DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateOBJCylinder);
 
-        m4f TorusWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+5.0f, 0.0f, -5.0f);
+        m4f TorusWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+7.5f, 0.0f, -7.5f);
         GlobalGFXContext.UpdateShaderWorld(&TorusWorld);
         v4f TorusColor{ 85.0f / 255.0f, 35.0f / 255.0f, 106.0f / 255.0f, 1.0f };
         GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
@@ -963,8 +963,8 @@ void Graphics::Init()
     constexpr bool bTestOBJLoading = true;
     if (bTestOBJLoading)
     {
-        MeshStateOBJPyramid = LoadMeshOBJ("Assets/simple-pyramid-test.obj");
-        MeshStateOBJCylinder = LoadMeshOBJ("Assets/simple-cylinder-test.obj");
+        MeshStateOBJPyramid = LoadMeshOBJ("Assets/pyramid-test.obj");
+        MeshStateOBJCylinder = LoadMeshOBJ("Assets/cylinder-test.obj");
         MeshStateOBJTorus = LoadMeshOBJ("Assets/torus-test.obj");
     }
 }
