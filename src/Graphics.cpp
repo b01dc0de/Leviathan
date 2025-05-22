@@ -29,6 +29,8 @@ ID3D11DepthStencilState* DX_Draw2DDepthStencilState = nullptr;
 ID3D11BlendState* DX_DefaultBlendState = nullptr;
 ID3D11BlendState* DX_AlphaBlendState = nullptr;
 
+DrawStateT Prototype_DrawStateColorNormal;
+
 DrawStateT DrawStateColor;
 DrawStateT DrawStateUnicolor;
 DrawStateT DrawStateTexture;
@@ -57,6 +59,7 @@ MeshStateT MeshStateSphere;
 MeshStateT MeshStateOBJPyramid;
 MeshStateT MeshStateOBJCylinder;
 MeshStateT MeshStateOBJTorus;
+MeshStateT MeshStateOBJSimpleShapes;
 MeshInstStateT MeshInstStateRect;
 MeshInstStateT MeshInstStateRectRotation;
 MeshInstStateT MeshInstStateVoxelColor;
@@ -109,7 +112,7 @@ constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
 void Graphics::Draw()
 {
     static bool bDrawDebugAxes = true;
-    static bool bDrawGame = true;
+    static bool bDrawGame = false;
     static bool bForceDrawDebugDemo = true;
     static bool bDrawUI = true;
     static bool bEnableWireframeRaster = false;
@@ -343,6 +346,13 @@ void DrawDebugDemo()
         GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
         UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &TorusColor, sizeof(v4f));
         DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateOBJTorus);
+
+        m4f SimpleShapesWorld = m4f::Scale(4.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
+        GlobalGFXContext.UpdateShaderWorld(&SimpleShapesWorld);
+        v4f SimpleShapesColor{ 62.0f / 255.0f, 200.0f / 255.0f, 176.0f / 255.0f, 1.0f };
+        GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
+        UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &SimpleShapesColor, sizeof(v4f));
+        DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateOBJSimpleShapes);
     }
 
     if (bDrawCube)
@@ -968,6 +978,7 @@ void Graphics::Init()
         MeshStateOBJPyramid = LoadMeshOBJ("Assets/pyramid-test.obj");
         MeshStateOBJCylinder = LoadMeshOBJ("Assets/cylinder-test.obj");
         MeshStateOBJTorus = LoadMeshOBJ("Assets/torus-test.obj");
+        MeshStateOBJSimpleShapes = LoadMeshOBJ("Assets/simple-shapes-test.obj");
     }
 }
 
@@ -987,6 +998,7 @@ void Graphics::Term()
     SafeRelease(MeshStateOBJPyramid);
     SafeRelease(MeshStateOBJCylinder);
     SafeRelease(MeshStateOBJTorus);
+    SafeRelease(MeshStateOBJSimpleShapes);
     SafeRelease(MeshInstStateRect);
     SafeRelease(MeshInstStateRectRotation);
     SafeRelease(MeshInstStateVoxelColor);
