@@ -1,5 +1,5 @@
 # Made in Blockbench 4.12.4
-mtllib torus.mtl
+mtllib torus-test.mtl
 
 o torus
 v 0.13397459621556132 0.12940952255126037 0.49999999999999994
