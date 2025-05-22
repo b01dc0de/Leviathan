@@ -96,7 +96,7 @@ void LvGFXContext::UpdateShaderViewProj(Camera* CameraData)
     UpdateShaderResource(ImmContext, ViewProjBuffer, CameraData, sizeof(Camera));
 }
 
-void DrawDebugAxis();
+void DrawDebugAxes();
 void DrawDebugDemo();
 void DrawBatch2D(BatchDrawCmds& Draw2D, ID3D11ShaderResourceView* TextureSRV, bool bClear = false);
 void DrawBatch3D(BatchDrawCmds& Draw3D, bool bClear = false);
@@ -107,7 +107,7 @@ static m4f DefaultSpriteWorld = m4f::Trans(-HalfWidth, -HalfHeight, 0.0f);
 constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
 void Graphics::Draw()
 {
-    static bool bDrawDebugAxis = true;
+    static bool bDrawDebugAxes = true;
     static bool bDrawGame = true;
     static bool bForceDrawDebugDemo = true;
     static bool bDrawUI = true;
@@ -129,9 +129,9 @@ void Graphics::Draw()
     DX_ImmContext->ClearRenderTargetView(DX_RenderTargetView, &ClearColor.X);
     DX_ImmContext->ClearDepthStencilView(DX_DepthStencilView, D3D11_CLEAR_DEPTH, fClearDepth, 0);
 
-    if (bDrawDebugAxis)
+    if (bDrawDebugAxes)
     {
-        DrawDebugAxis();
+        DrawDebugAxes();
     }
 
     ID3D11Buffer* World_ViewProjBuffers[] = { DX_WorldBuffer, DX_ViewProjBuffer };
@@ -159,7 +159,7 @@ void Graphics::Draw()
     DXGI_SwapChain1->Present1(SyncInterval, PresentFlags, &PresentParams);
 }
 
-void DrawDebugAxis()
+void DrawDebugAxes()
 {
     DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
     GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
@@ -169,7 +169,7 @@ void DrawDebugAxis()
     GlobalGFXContext.SetShaderConstantBuffers_WVP();
 
     static constexpr float Length = 1000.0f;
-    static constexpr float MinSize = 0.1f;
+    static constexpr float MinSize = 0.02f;
 
     auto UpdateUnicolor = [](v4f* UnicolorData) -> void
     {
@@ -179,27 +179,45 @@ void DrawDebugAxis()
     v4f Red{ 1.0f, 0.0f, 0.0f, 1.0f };
     v4f Green{ 0.0f, 1.0f, 0.0f, 1.0f };
     v4f Blue{ 0.0f, 0.0f, 1.0f, 1.0f };
+    v4f Cyan{ 0.0f, 1.0f, 1.0f, 1.0f };
+    v4f Magenta{ 1.0f, 0.0f, 1.0f, 1.0f };
+    v4f Yellow{ 1.0f, 1.0f, 0.0f, 1.0f };
     // X-axis
     {
-        m4f CubeWorld = m4f::Scale(Length, MinSize, MinSize) * m4f::Trans(Length / 2.0f, 0.0f, 0.0f);
+        m4f CubeWorld = m4f::Scale(Length * 0.5f, MinSize, MinSize) * m4f::Trans(Length * 0.5f, 0.0f, 0.0f);
         GlobalGFXContext.UpdateShaderWorld(&CubeWorld);
         UpdateUnicolor(&Red);
+        DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateCubeMin);
+
+        CubeWorld = m4f::Scale(Length * 0.5f, MinSize, MinSize) * m4f::Trans(Length * -0.5f, 0.0f, 0.0f);
+        GlobalGFXContext.UpdateShaderWorld(&CubeWorld);
+        UpdateUnicolor(&Cyan);
         DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateCubeMin);
     }
 
     // Y-axis
     {
-        m4f CubeWorld = m4f::Scale(MinSize, Length, MinSize) * m4f::Trans(0.0f, Length / 2.0f, 0.0f);
+        m4f CubeWorld = m4f::Scale(MinSize, Length * 0.5f, MinSize) * m4f::Trans(0.0f, Length * 0.5f, 0.0f);
         GlobalGFXContext.UpdateShaderWorld(&CubeWorld);
         UpdateUnicolor(&Green);
+        DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateCubeMin);
+
+        CubeWorld = m4f::Scale(MinSize, Length * 0.5f, MinSize) * m4f::Trans(0.0f, Length * -0.5f, 0.0f);
+        GlobalGFXContext.UpdateShaderWorld(&CubeWorld);
+        UpdateUnicolor(&Magenta);
         DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateCubeMin);
     }
 
     // Z-axis
     {
-        m4f CubeWorld = m4f::Scale(MinSize, MinSize, Length) * m4f::Trans(0.0f, 0.0f, Length / 2.0f);
+        m4f CubeWorld = m4f::Scale(MinSize, MinSize, Length * 0.5f) * m4f::Trans(0.0f, 0.0f, Length * 0.5f);
         GlobalGFXContext.UpdateShaderWorld(&CubeWorld);
         UpdateUnicolor(&Blue);
+        DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateCubeMin);
+
+        CubeWorld = m4f::Scale(MinSize, MinSize, Length * 0.5f) * m4f::Trans(0.0f, 0.0f, Length * -0.5f);
+        GlobalGFXContext.UpdateShaderWorld(&CubeWorld);
+        UpdateUnicolor(&Yellow);
         DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateCubeMin);
     }
 }
