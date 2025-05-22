@@ -10,6 +10,9 @@
 #ifndef ENABLE_VERTEX_TEXTURE
     #define ENABLE_VERTEX_TEXTURE (0)
 #endif // ENABLE_VERTEX_TEXTURE
+#ifndef ENABLE_VERTEX_NORMAL
+    #define ENABLE_VERTEX_NORMAL (0)
+#endif // ENABLE_VERTEX_NORMAL
 #ifndef ENABLE_WVP_TRANSFORM
     #define ENABLE_WVP_TRANSFORM (0)
 #endif // ENABLE_WVP_TRANSFORM
@@ -49,6 +52,10 @@ struct VS_INPUT
 #if ENABLE_VERTEX_TEXTURE
     float2 TexUV : TEXCOORD;
 #endif // ENABLE_VERTEX_TEXTURE
+#if ENABLE_VERTEX_NORMAL
+    float3 Normal : NORMAL;
+#endif // ENABLE_VERTEX_NORMAL
+
 };
 
 struct VS_OUTPUT
@@ -60,6 +67,9 @@ struct VS_OUTPUT
 #if ENABLE_VERTEX_TEXTURE
     float2 TexUV : TEXCOORD;
 #endif // ENABLE_VERTEX_TEXTURE
+#if ENABLE_VERTEX_NORMAL
+    float3 Normal : NORMAL;
+#endif // ENABLE_VERTEX_NORMAL
 #if ENABLE_UNICOLOR
     float4 Unicolor : COLOR;
 #endif // ENABLE_UNICOLOR
@@ -80,6 +90,13 @@ VS_OUTPUT VSMain(VS_INPUT Input)
 #if ENABLE_VERTEX_TEXTURE
     Output.TexUV = Input.TexUV;
 #endif // ENABLE_VERTEX_TEXTURE
+#if ENABLE_VERTEX_NORMAL
+    float4 Normal = float4(Input.Normal, 1.0);
+    Normal = mul(Normal, World);
+    Normal = mul(Normal, View);
+    Normal = mul(Normal, Proj);
+    Output.Normal = Input.Normal.xyz;
+#endif // ENABLE_VERTEX_NORMAL
 #if ENABLE_UNICOLOR
     Output.Unicolor = Unicolor;
 #endif // ENABLE_UNICOLOR
@@ -88,6 +105,10 @@ VS_OUTPUT VSMain(VS_INPUT Input)
 
 float4 PSMain(VS_OUTPUT Input) : SV_Target
 {
+#if ENABLE_VERTEX_NORMAL
+    return float4(Input.Normal, 1.0);
+#else // ENABLE_VERTEX_NORMAL
+#endif // ENABLE_VERTEX_NORMAL
 #if ENABLE_VERTEX_COLOR
     return Input.RGBA;
 #endif // ENABLE_VERTEX_COLOR
