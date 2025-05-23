@@ -69,6 +69,42 @@ MeshStateT CreateMeshStateFromOBJ(ParsedOBJ& OBJ)
     return Result;
 }
 
+// TODO(CKA): Make this more robust (w.r.t. NumFloats)
+bool ParseFloatArgs(byte* Contents, size_t Size, int ReadIdx, v4f& OutVx, int NumFloatsExpected)
+{
+    ASSERT(0 < NumFloatsExpected && NumFloatsExpected <= 4);
+
+    bool bError = false;
+
+    char* BeginFloat = (char*)Contents + ReadIdx + 1;
+    char* CharAfter = nullptr;
+
+    for (int FloatIdx = 0; !bError && FloatIdx < NumFloatsExpected; FloatIdx++)
+    {
+        float ParsedValue = strtof(BeginFloat, &CharAfter);
+        if (CharAfter && CharAfter > BeginFloat)
+        {
+            switch (FloatIdx)
+            {
+                case 0: { OutVx.X = ParsedValue; } break;
+                case 1: { OutVx.Y = ParsedValue; } break;
+                case 2: { OutVx.Z = ParsedValue; } break;
+                case 3: { OutVx.W = ParsedValue; } break;
+                default: { ASSERT(false); bError = true; break; }
+            }
+            BeginFloat = CharAfter;
+            CharAfter = nullptr;
+        }
+        else
+        {
+            ASSERT(false);
+            bError = true;
+        }
+    }
+
+    return bError;
+}
+
 MeshStateT ParseOBJFile(byte* Contents, size_t Size)
 {
     ParsedOBJ OBJ;
@@ -87,45 +123,32 @@ MeshStateT ParseOBJFile(byte* Contents, size_t Size)
     {
         switch (Contents[ReadIdx])
         {
-            case 'm':
-            case 'o':
-            case 'u': break;
             case 'v':
             {
-                if (Contents[ReadIdx + 1] == 't') { break; } // vertex texture
-                if (Contents[ReadIdx + 1] == 'n') { break; } // vertex normal
-                else if (Contents[ReadIdx + 1] == ' ') { } // vertex position
-                else
+                if (Contents[ReadIdx + 1] == ' ') // vertex position
                 {
-                    // not vertex position data
-                    ASSERT(false);
-                    bError = true;
+                    v4f NewVx{ 0.0f, 0.0f, 0.0f, 1.0f };
+                    bError = ParseFloatArgs(Contents, Size, ReadIdx, NewVx, 3);
+                    if (!bError) { OBJ.Vertices.Add(NewVx); }
                 }
+                else if (Contents[ReadIdx + 1] == 't') // vertex texture
+                {
+                    ReadIdx++;
+                    v4f NewVx{ 0.0f, 0.0f, 0.0f, 0.0f };
+                    bError = ParseFloatArgs(Contents, Size, ReadIdx, NewVx, 2);
+                    if (!bError) { OBJ.TexUVs.Add(v2f{ NewVx.X, NewVx.Y }); }
+                }
+                else if (Contents[ReadIdx + 1] == 'n') // vertex normal
+                {
+                    ReadIdx++;
+                    v4f NewVx{ 0.0f, 0.0f, 0.0f, 0.0f };
+                    bError = ParseFloatArgs(Contents, Size, ReadIdx, NewVx, 3);
+                    if (!bError) { OBJ.Normals.Add(v3f{ NewVx.X, NewVx.Y, NewVx.Z }); }
+                }
+                else { bError = true; } // not vertex position/texture/normal data
 
-                v4f NewVx{ 0.0f, 0.0f, 0.0f, 1.0f };
-                {
-                    char* BeginFloat = (char*)Contents + ReadIdx + 1;
-                    char* CharAfter = nullptr;
-                    NewVx.X = strtof(BeginFloat, &CharAfter);
-                    if (CharAfter && CharAfter > BeginFloat)
-                    {
-                        BeginFloat = CharAfter;
-                        CharAfter = nullptr;
-                        NewVx.Y = strtof(BeginFloat, &CharAfter);
-                        if (CharAfter && CharAfter > BeginFloat)
-                        {
-                            BeginFloat = CharAfter;
-                            CharAfter = nullptr;
-                            NewVx.Z = strtof(BeginFloat, &CharAfter);
-                        }
-                        else { bError = true; }
-                    }
-                    else { bError = true; }
-                }
-                if (!bError)
-                {
-                    OBJ.Vertices.Add(NewVx);
-                }
+                ASSERT(!bError);
+
             } break;
             case 'f':
             {
@@ -182,6 +205,10 @@ MeshStateT ParseOBJFile(byte* Contents, size_t Size)
                 }
                 else { bError = true; }
             } break;
+            // TODO(CKA): Implement
+            case 'm':
+            case 'o':
+            case 'u': break;
         }
 
         // Read to next line
