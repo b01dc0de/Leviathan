@@ -12,6 +12,12 @@ struct VxMin
     v4f Pos;
 };
 
+struct VxMinNormal
+{
+    v4f Pos;
+    v3f Normal;
+};
+
 struct VxColor
 {
     v4f Pos;

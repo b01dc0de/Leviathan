@@ -29,9 +29,10 @@ ID3D11DepthStencilState* DX_Draw2DDepthStencilState = nullptr;
 ID3D11BlendState* DX_DefaultBlendState = nullptr;
 ID3D11BlendState* DX_AlphaBlendState = nullptr;
 
-DrawStateT DrawStateColorNormal;
 DrawStateT DrawStateColor;
+DrawStateT DrawStateColorNormal;
 DrawStateT DrawStateUnicolor;
+DrawStateT DrawStateUnicolorNormal;
 DrawStateT DrawStateTexture;
 DrawStateT DrawStateInstRectColor;
 DrawStateT DrawStateInstRectTexture;
@@ -323,35 +324,32 @@ void DrawDebugDemo()
 
         ID3D11Buffer* CBuffers[] = { DX_WorldBuffer, DX_ViewProjBuffer, DX_UnicolorBuffer };
         SetShaderConstantBuffers(DX_ImmContext, ARRAY_SIZE(CBuffers), CBuffers, 0);
-
         DX_ImmContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+        GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
+
         m4f PyramidWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+10.0f, 0.0f, -5.0f);
         v4f PyramidColor{ 243.0f / 255.0f, 178.0f / 255.0f, 14.0f / 255.0f, 1.0f };
         GlobalGFXContext.UpdateShaderWorld(&PyramidWorld);
-        GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
         UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &PyramidColor, sizeof(v4f));
-        DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateOBJPyramid);
+        DrawMesh(DX_ImmContext, DrawStateUnicolorNormal, MeshStateOBJPyramid);
 
         m4f CylinderWorld = m4f::Scale(4.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+10.0f, 0.0f, -10.0f);
         v4f CylinderColor{ 219.0f / 255.0f, 26.0f / 255.0f, 27.0f / 255.0f, 1.0f };
         GlobalGFXContext.UpdateShaderWorld(&CylinderWorld);
-        GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
         UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &CylinderColor, sizeof(v4f));
-        DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateOBJCylinder);
+        DrawMesh(DX_ImmContext, DrawStateUnicolorNormal, MeshStateOBJCylinder);
 
         m4f TorusWorld = m4f::Scale(2.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+7.5f, 0.0f, -7.5f);
         GlobalGFXContext.UpdateShaderWorld(&TorusWorld);
         v4f TorusColor{ 85.0f / 255.0f, 35.0f / 255.0f, 106.0f / 255.0f, 1.0f };
-        GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
         UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &TorusColor, sizeof(v4f));
-        DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateOBJTorus);
+        DrawMesh(DX_ImmContext, DrawStateUnicolorNormal, MeshStateOBJTorus);
 
         m4f SimpleShapesWorld = m4f::Scale(4.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
         GlobalGFXContext.UpdateShaderWorld(&SimpleShapesWorld);
         v4f SimpleShapesColor{ 62.0f / 255.0f, 200.0f / 255.0f, 176.0f / 255.0f, 1.0f };
-        GlobalGFXContext.UpdateShaderViewProj(&GameCamera);
         UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &SimpleShapesColor, sizeof(v4f));
-        DrawMesh(DX_ImmContext, DrawStateUnicolor, MeshStateOBJSimpleShapes);
+        DrawMesh(DX_ImmContext, DrawStateUnicolorNormal, MeshStateOBJSimpleShapes);
     }
 
     if (bDrawCube)
@@ -785,6 +783,26 @@ void Graphics::Init()
     }
 
     {
+
+        const D3D_SHADER_MACRO DefinesVxUnicolorNormal[] =
+        {
+            "ENABLE_VERTEX_COLOR", "0",
+            "ENABLE_VERTEX_TEXTURE", "0",
+            "ENABLE_VERTEX_NORMAL", "1",
+            "ENABLE_WVP_TRANSFORM", "1",
+            "ENABLE_UNICOLOR", "1",
+            nullptr, nullptr
+        };
+        D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
+        {
+            { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        };
+
+        DrawStateUnicolorNormal = CreateDrawState(DX_Device, BaseShaderFilename, DefinesVxUnicolorNormal, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
+    }
+
+    {
         const D3D_SHADER_MACRO DefinesVxTexture[] =
         {
             "ENABLE_VERTEX_COLOR", "0",
@@ -1033,9 +1051,10 @@ void Graphics::Term()
     SafeRelease(DX_UnicolorBuffer);
     SafeRelease(DX_DefaultSamplerState);
 
-    SafeRelease(DrawStateColorNormal);
     SafeRelease(DrawStateColor);
+    SafeRelease(DrawStateColorNormal);
     SafeRelease(DrawStateUnicolor);
+    SafeRelease(DrawStateUnicolorNormal);
     SafeRelease(DrawStateTexture);
     SafeRelease(DrawStateInstRectColor);
     SafeRelease(DrawStateInstRectTexture);
