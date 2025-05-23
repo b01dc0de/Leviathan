@@ -179,8 +179,8 @@ void UpdateGodCamera(Camera& Camera)
 
     bool bMoveLeft = KeyboardState::GetKey(LV_KEY_A, true);
     bool bMoveRight = KeyboardState::GetKey(LV_KEY_D, true);
-    bool bMoveUp = KeyboardState::GetKey(LV_KEY_Q, true);
-    bool bMoveDown = KeyboardState::GetKey(LV_KEY_E, true);
+    bool bMoveUp = KeyboardState::GetKey(LV_KEY_E, true);
+    bool bMoveDown = KeyboardState::GetKey(LV_KEY_Q, true);
     bool bMoveForward = KeyboardState::GetKey(LV_KEY_W, true);
     bool bMoveBackward = KeyboardState::GetKey(LV_KEY_S, true);
 
@@ -268,7 +268,7 @@ void DrawDebugDemo()
     static bool bDrawCube = false;
     static bool bDrawInstVoxels = false;
     static bool bDrawText = false;
-    static bool bDrawTextSheet = true;
+    static bool bDrawTextSheet = false;
     static bool bDrawInstRotationDemo = false;
 
     static float RotationX = 0.0f;
@@ -428,6 +428,8 @@ void DrawDebugDemo()
         }
         DrawBatch3D(DrawBatch, true);
     }
+
+    GlobalGFXContext.UpdateShaderViewProj(&OrthoCamera);
 
     if (bDrawInstLines)
     {
