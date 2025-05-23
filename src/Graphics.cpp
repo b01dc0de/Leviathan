@@ -169,8 +169,8 @@ void UpdateGodCamera(Camera& Camera)
 {
     static v3f Pos{ 5.0f, 10.0f, 10.0f };
     static v3f LookAt{ 0.0f, 0.0f, 0.0f };
-    static constexpr float MoveSpeed = 1.0f / 90.0f;
-    static constexpr float RotateSpeed = 1.0f / 2500.0f;
+    static constexpr float MoveSpeed = 25.0f;
+    static constexpr float RotateSpeed = 2.5f;
 
     v3f LookDir = LookAt - Pos;
     v3f AbsoluteUp{ 0.0f, 1.0f, 0.0f };
@@ -188,10 +188,11 @@ void UpdateGodCamera(Camera& Camera)
         bool bMoveForward = KeyboardState::GetKey(LV_KEY_W, true);
         bool bMoveBackward = KeyboardState::GetKey(LV_KEY_S, true);
 
-        if (bMoveLeft != bMoveRight) { Pos = Pos + (vRight * (bMoveRight ? +MoveSpeed : -MoveSpeed)); }
-        if (bMoveUp != bMoveDown) { Pos = Pos + (vUp * (bMoveUp ? +MoveSpeed : -MoveSpeed)); }
-        if (bMoveForward != bMoveBackward) { Pos = Pos + (vForward * (bMoveForward ? +MoveSpeed : -MoveSpeed)); }
+        float AdjSpeed = MoveSpeed * Clock::DeltaTime();
 
+        if (bMoveLeft != bMoveRight) { Pos = Pos + (vRight * (bMoveRight ? +AdjSpeed: -AdjSpeed)); }
+        if (bMoveUp != bMoveDown) { Pos = Pos + (vUp * (bMoveUp ? +AdjSpeed: -AdjSpeed)); }
+        if (bMoveForward != bMoveBackward) { Pos = Pos + (vForward * (bMoveForward ? +AdjSpeed: -AdjSpeed)); }
     }
 
     // Update angle
@@ -201,16 +202,18 @@ void UpdateGodCamera(Camera& Camera)
         bool bRotateUp = KeyboardState::GetKey(LV_KEY_ARROW_UP, true);
         bool bRotateDown = KeyboardState::GetKey(LV_KEY_ARROW_DOWN, true);
 
+        float AdjSpeed = RotateSpeed * Clock::DeltaTime();
+
         if (bRotateLeft != bRotateRight)
         {
             v4f TmpForward{ vForward.X, vForward.Y, vForward.Z };
-            TmpForward = m4f::RotAxis(vUp, bRotateLeft ? -RotateSpeed : +RotateSpeed) * TmpForward;
+            TmpForward = m4f::RotAxis(vUp, bRotateLeft ? -AdjSpeed: +AdjSpeed) * TmpForward;
             vForward = v3f{ TmpForward.X, TmpForward.Y, TmpForward.Z };
         }
         if (bRotateUp != bRotateDown)
         {
             v4f TmpForward{ vForward.X, vForward.Y, vForward.Z };
-            TmpForward = m4f::RotAxis(vRight, bRotateUp ? -RotateSpeed : +RotateSpeed) * TmpForward;
+            TmpForward = m4f::RotAxis(vRight, bRotateUp ? -AdjSpeed: +AdjSpeed) * TmpForward;
             vForward = v3f{ TmpForward.X, TmpForward.Y, TmpForward.Z };
         }
     }
