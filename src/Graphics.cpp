@@ -169,6 +169,8 @@ void UpdateGodCamera(Camera& Camera)
 {
     static v3f Pos{ 5.0f, 10.0f, 10.0f };
     static v3f LookAt{ 0.0f, 0.0f, 0.0f };
+    static constexpr float MoveSpeed = 1.0f / 90.0f;
+    static constexpr float RotateSpeed = 1.0f / 2500.0f;
 
     v3f LookDir = LookAt - Pos;
     v3f AbsoluteUp{ 0.0f, 1.0f, 0.0f };
@@ -177,21 +179,43 @@ void UpdateGodCamera(Camera& Camera)
     v3f vRight = Norm(Cross(vForward, AbsoluteUp));
     v3f vUp = Norm(Cross(vRight, vForward));
 
-    bool bMoveLeft = KeyboardState::GetKey(LV_KEY_A, true);
-    bool bMoveRight = KeyboardState::GetKey(LV_KEY_D, true);
-    bool bMoveUp = KeyboardState::GetKey(LV_KEY_E, true);
-    bool bMoveDown = KeyboardState::GetKey(LV_KEY_Q, true);
-    bool bMoveForward = KeyboardState::GetKey(LV_KEY_W, true);
-    bool bMoveBackward = KeyboardState::GetKey(LV_KEY_S, true);
+    // Update position
+    {
+        bool bMoveLeft = KeyboardState::GetKey(LV_KEY_A, true);
+        bool bMoveRight = KeyboardState::GetKey(LV_KEY_D, true);
+        bool bMoveUp = KeyboardState::GetKey(LV_KEY_E, true);
+        bool bMoveDown = KeyboardState::GetKey(LV_KEY_Q, true);
+        bool bMoveForward = KeyboardState::GetKey(LV_KEY_W, true);
+        bool bMoveBackward = KeyboardState::GetKey(LV_KEY_S, true);
 
-    float Speed = 1.0f / 50.0f;
+        if (bMoveLeft != bMoveRight) { Pos = Pos + (vRight * (bMoveRight ? +MoveSpeed : -MoveSpeed)); }
+        if (bMoveUp != bMoveDown) { Pos = Pos + (vUp * (bMoveUp ? +MoveSpeed : -MoveSpeed)); }
+        if (bMoveForward != bMoveBackward) { Pos = Pos + (vForward * (bMoveForward ? +MoveSpeed : -MoveSpeed)); }
 
-    if (bMoveLeft != bMoveRight) { Pos = Pos + (vRight * (bMoveRight ? +Speed : -Speed)); }
-    if (bMoveUp != bMoveDown) { Pos = Pos + (vUp * (bMoveUp ? +Speed : -Speed)); }
-    if (bMoveForward != bMoveBackward) { Pos = Pos + (vForward * (bMoveForward ? +Speed : -Speed)); }
+    }
+
+    // Update angle
+    {
+        bool bRotateLeft = KeyboardState::GetKey(LV_KEY_ARROW_LEFT, true);
+        bool bRotateRight = KeyboardState::GetKey(LV_KEY_ARROW_RIGHT, true);
+        bool bRotateUp = KeyboardState::GetKey(LV_KEY_ARROW_UP, true);
+        bool bRotateDown = KeyboardState::GetKey(LV_KEY_ARROW_DOWN, true);
+
+        if (bRotateLeft != bRotateRight)
+        {
+            v4f TmpForward{ vForward.X, vForward.Y, vForward.Z };
+            TmpForward = m4f::RotAxis(vUp, bRotateLeft ? -RotateSpeed : +RotateSpeed) * TmpForward;
+            vForward = v3f{ TmpForward.X, TmpForward.Y, TmpForward.Z };
+        }
+        if (bRotateUp != bRotateDown)
+        {
+            v4f TmpForward{ vForward.X, vForward.Y, vForward.Z };
+            TmpForward = m4f::RotAxis(vRight, bRotateUp ? -RotateSpeed : +RotateSpeed) * TmpForward;
+            vForward = v3f{ TmpForward.X, TmpForward.Y, TmpForward.Z };
+        }
+    }
 
     LookAt = Pos + vForward;
-
     Camera.Persp(Pos, LookAt);
 }
 
