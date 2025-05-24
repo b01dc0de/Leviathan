@@ -34,6 +34,7 @@ DrawStateT DrawStateColorNormal;
 DrawStateT DrawStateUnicolor;
 DrawStateT DrawStateUnicolorNormal;
 DrawStateT DrawStateTexture;
+DrawStateT DrawStateTextureNormal;
 DrawStateT DrawStateInstRectColor;
 DrawStateT DrawStateInstRectTexture;
 DrawStateT DrawStateInstRectColorRotation;
@@ -66,6 +67,7 @@ MeshInstStateT MeshInstStateRectRotation;
 MeshInstStateT MeshInstStateVoxelColor;
 
 LvSpriteSheet BulletLimboSpriteSheet;
+LvTexture2D LvPawnTexture;
 
 LvTexture2D LvDebugTexture;
 LvTexture2D LvTestTexture;
@@ -306,6 +308,7 @@ void DrawDebugDemo()
     float DT = Clock::DeltaTime();
     RotationX = Clock::Time();
     RotationY = Clock::Time() * 0.5f;
+    // TODO(CKA): Why doesn't the following work? is there something going wrong with static initialization here?
     //RotationX += RotSpeed * DT;
     //RotationY += RotSpeed * DT * 0.5f;
 
@@ -412,10 +415,12 @@ void DrawDebugDemo()
         DrawMesh(DX_ImmContext, DrawStateUnicolorNormal, MeshStateOBJSimpleShapes);
 
         m4f PawnWorld = m4f::Scale(3.0f) * m4f::RotAxisY(RotationY * 2.0f) * m4f::Trans(+5.0f, 0.0f, -5.0f);
+        SetShaderConstantBuffers(DX_ImmContext, 2, CBuffers, 0);
         GlobalGFXContext.UpdateShaderWorld(&PawnWorld);
-        v4f PawnColor{ 197.0f / 255.0f, 27.0f / 255.0f, 177.0f / 255.0f, 1.0f };
-        UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &PawnColor, sizeof(v4f));
-        DrawMesh(DX_ImmContext, DrawStateUnicolorNormal, MeshStateOBJPawn);
+        //v4f PawnColor{ 197.0f / 255.0f, 27.0f / 255.0f, 177.0f / 255.0f, 1.0f };
+        //UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &PawnColor, sizeof(v4f));
+        SetShaderResourceViews(DX_ImmContext, 1, &LvPawnTexture.SRV);
+        DrawMesh(DX_ImmContext, DrawStateTextureNormal, MeshStateOBJPawn);
     }
 
     if (bDrawCube)
@@ -889,6 +894,26 @@ void Graphics::Init()
         DrawStateTexture = CreateDrawState(DX_Device, BaseShaderFilename, DefinesVxTexture, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
     }
 
+    {
+        const D3D_SHADER_MACRO DefinesVxTextureNormal[] =
+        {
+            "ENABLE_VERTEX_COLOR", "0",
+            "ENABLE_VERTEX_TEXTURE", "1",
+            "ENABLE_VERTEX_NORMAL", "1",
+            "ENABLE_WVP_TRANSFORM", "1",
+            "ENABLE_UNICOLOR", "0",
+            nullptr, nullptr
+        };
+        D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
+        {
+            { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        };
+
+        DrawStateTextureNormal = CreateDrawState(DX_Device, BaseShaderFilename, DefinesVxTextureNormal, InputLayoutDesc, ARRAY_SIZE(InputLayoutDesc));
+    }
+
     const wchar_t* InstRectShaderFilename = L"src/hlsl/InstRectShader.hlsl";
     { // InstRectColor
         const D3D_SHADER_MACRO DefinesInst[] =
@@ -1057,6 +1082,7 @@ void Graphics::Init()
         GetDebugImage(DebugImage);
         LvDebugTexture = LoadTextureFromImage(DebugImage, DX_Device);
         LvTestTexture = LoadTextureBMP("Assets/TestTexture.bmp", DX_Device);
+
         SafeRelease(DebugImage);
     }
 
@@ -1071,6 +1097,13 @@ void Graphics::Init()
     OrthoCamera.Ortho((float)AppWidth, (float)AppHeight, -2.0f);
 
     BulletLimboSpriteSheet = LoadSpriteSheet("Assets/Sprites/BulletLimbo_SpriteSheet.bmp", DX_Device, 1, 3);
+    LvPawnTexture = LoadTextureBMP("Assets/test/pawn-texture.bmp", DX_Device);
+
+    MeshStateOBJPyramid = LoadMeshOBJ("Assets/pyramid-test.obj");
+    MeshStateOBJCylinder = LoadMeshOBJ("Assets/cylinder-test.obj");
+    MeshStateOBJTorus = LoadMeshOBJ("Assets/torus-test.obj");
+    MeshStateOBJSimpleShapes = LoadMeshOBJ("Assets/simple-shapes-test.obj");
+    MeshStateOBJPawn = LoadMeshOBJ("Assets/test/pawn.obj", true);
 
     GlobalGFXContext = {
         DX_ImmContext,
@@ -1080,17 +1113,13 @@ void Graphics::Init()
         &DrawStateColor
     };
 
-    MeshStateOBJPyramid = LoadMeshOBJ("Assets/pyramid-test.obj");
-    MeshStateOBJCylinder = LoadMeshOBJ("Assets/cylinder-test.obj");
-    MeshStateOBJTorus = LoadMeshOBJ("Assets/torus-test.obj");
-    MeshStateOBJSimpleShapes = LoadMeshOBJ("Assets/simple-shapes-test.obj");
-    MeshStateOBJPawn = LoadMeshOBJ("Assets/test/pawn.obj");
 }
 
 void Graphics::Term()
 {
     SafeRelease(BulletLimboSpriteSheet);
     SafeRelease(ProggyCleanFont);
+    SafeRelease(LvPawnTexture);
 
     SafeRelease(MeshStateTriangle);
     SafeRelease(MeshStateCube);

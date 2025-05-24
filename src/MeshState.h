@@ -37,6 +37,13 @@ struct VxTexture
     v2f TexUV;
 };
 
+struct VxTextureNormal
+{
+    v4f Pos;
+    v2f TexUV;
+    v3f Normal;
+};
+
 struct MeshStateT
 {
     size_t VertexSize = 0;

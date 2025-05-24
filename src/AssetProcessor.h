@@ -6,7 +6,7 @@
 namespace Leviathan
 {
 
-MeshStateT LoadMeshOBJ(const char* FileName);
+MeshStateT LoadMeshOBJ(const char* FileName, bool bUseUVs = false, bool bUseNormals = true);
 
 }
 

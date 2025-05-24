@@ -230,7 +230,11 @@ struct ObjParseContext
                     if (CharsRead == 0) { bError = true; break; }
                     else { ReadIdx += CharsRead; }
                 }
-                if (!bError) { TexUVs.Add(v2f{UV[0], UV[1]}); }
+                if (!bError)
+                {
+                    UV[1] = 1.0f - UV[1];
+                    TexUVs.Add(v2f{UV[0], UV[1]});
+                }
             } break;
             case ObjEntryType::VertexNormal:
             {
@@ -282,18 +286,84 @@ struct ObjParseContext
         // Read until new line (or end)
         while (ReadIdx < Size && Contents[ReadIdx++] != '\n') { }
     }
-    MeshStateT ConstructMesh()
+    MeshStateT ConstructMesh(bool bUseUVs, bool bUseNormals)
     {
         ASSERT(Vertices.Num > 0 && Faces.Num > 0);
         if (Vertices.Num == 0 || Faces.Num == 0) { return MeshStateT{}; }
 
-        static constexpr bool bSupportNormals = true;
-        static constexpr bool bSupportTexcoords = false;
+        static constexpr bool bEnableTexcoordSupport = true;
+        static constexpr bool bEnableNormalSupport = true;
 
         MeshStateT Result{};
 
-        if (bSupportNormals && bSupportTexcoords) { ASSERT(false); } // TODO
-        else if (bSupportNormals && Normals.Num > 0)
+        bool bTexcoords = bEnableTexcoordSupport && bUseUVs && (0 < TexUVs.Num);
+        bool bNormals = bEnableNormalSupport && bUseNormals && (0 < Normals.Num);
+        if (bTexcoords && bNormals)
+        {
+            size_t VxSize = sizeof(VxTextureNormal);
+            size_t NumVerts = Faces.Num * 3;
+            VxTextureNormal* VxData = new VxTextureNormal[NumVerts];
+
+            int vIdx = 0;
+            for (int fIdx = 0; fIdx < Faces.Num; fIdx++)
+            {
+                VxData[vIdx + 0].Pos = Vertices[Faces[fIdx].v0.pIdx];
+                VxData[vIdx + 0].TexUV = TexUVs[Faces[fIdx].v0.tIdx];
+                VxData[vIdx + 0].Normal = Normals[Faces[fIdx].v0.nIdx];
+
+                VxData[vIdx + 1].Pos = Vertices[Faces[fIdx].v1.pIdx];
+                VxData[vIdx + 1].TexUV = TexUVs[Faces[fIdx].v1.tIdx];
+                VxData[vIdx + 1].Normal = Normals[Faces[fIdx].v1.nIdx];
+
+                VxData[vIdx + 2].Pos = Vertices[Faces[fIdx].v2.pIdx];
+                VxData[vIdx + 2].TexUV = TexUVs[Faces[fIdx].v2.tIdx];
+                VxData[vIdx + 2].Normal = Normals[Faces[fIdx].v2.nIdx];
+
+                vIdx += 3;
+            }
+
+            ASSERT(vIdx == NumVerts);
+            Result = CreateMeshState
+            (
+                Graphics::Device(),
+                VxSize, NumVerts, VxData,
+                0, nullptr
+            );
+
+            delete[] VxData;
+        }
+        else if (bTexcoords)
+        { 
+            size_t VxSize = sizeof(VxTexture);
+            size_t NumVerts = Faces.Num * 3;
+            VxTexture* VxData = new VxTexture[NumVerts];
+
+            int vIdx = 0;
+            for (int fIdx = 0; fIdx < Faces.Num; fIdx++)
+            {
+                VxData[vIdx + 0].Pos = Vertices[Faces[fIdx].v0.pIdx];
+                VxData[vIdx + 0].TexUV = TexUVs[Faces[fIdx].v0.tIdx];
+
+                VxData[vIdx + 1].Pos = Vertices[Faces[fIdx].v1.pIdx];
+                VxData[vIdx + 1].TexUV = TexUVs[Faces[fIdx].v1.tIdx];
+
+                VxData[vIdx + 2].Pos = Vertices[Faces[fIdx].v2.pIdx];
+                VxData[vIdx + 2].TexUV = TexUVs[Faces[fIdx].v2.tIdx];
+
+                vIdx += 3;
+            }
+
+            ASSERT(vIdx == NumVerts);
+            Result = CreateMeshState
+            (
+                Graphics::Device(),
+                VxSize, NumVerts, VxData,
+                0, nullptr
+            );
+
+            delete[] VxData;
+        }
+        else if (bNormals)
         {
             size_t VxSize = sizeof(VxMinNormal);
             size_t NumVerts = Faces.Num * 3;
@@ -324,7 +394,6 @@ struct ObjParseContext
 
             delete[] VxData;
         }
-        else if (bSupportTexcoords) { ASSERT(false); } // TODO
         else
         {
             size_t VxSize = sizeof(VxMin);
@@ -364,7 +433,7 @@ struct ObjParseContext
 
 }
 
-MeshStateT LoadMeshOBJ(const char* FileName)
+MeshStateT LoadMeshOBJ(const char* FileName, bool bUseUVs, bool bUseNormals)
 {
     FileContentsT ObjContents = LoadFileContents(FileName, true);
     MeshStateT Result{};
@@ -375,7 +444,7 @@ MeshStateT LoadMeshOBJ(const char* FileName)
         ParseContext.Parse();
         if (!ParseContext.bError)
         {
-            Result = ParseContext.ConstructMesh();
+            Result = ParseContext.ConstructMesh(bUseUVs, bUseNormals);
         }
 
         delete[] ObjContents.Contents;
