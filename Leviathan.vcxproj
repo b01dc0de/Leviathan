@@ -115,7 +115,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\AssetProcessor.cpp" />
+    <ClCompile Include="src\AssetProcessor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\BatchDraw.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
     </ClCompile>

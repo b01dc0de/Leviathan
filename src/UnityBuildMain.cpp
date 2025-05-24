@@ -5,6 +5,7 @@
 #endif // ifndef UNITY_BUILD
 
 #if BUILD_UNITY
+    #include "AssetProcessor.cpp"
     #include "BatchDraw.cpp"
     #include "Camera.cpp"
     #include "Clock.cpp"
