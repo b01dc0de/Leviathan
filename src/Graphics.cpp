@@ -289,11 +289,12 @@ void DrawDebugAxes()
 void DrawDebugDemo()
 {
     static bool bDrawInstLines = false;
-    static bool bDrawShapes = true;
+    static bool bDrawShapes = false;
     static bool bDrawTexQuad = false;
     static bool bDrawInstRects = false;
     static bool bDrawSphere = true;
     static bool bDrawCube = false;
+    static bool bDrawOBJTests = true;
     static bool bDrawInstVoxels = false;
     static bool bDrawText = false;
     static bool bDrawTextSheet = false;
@@ -377,7 +378,6 @@ void DrawDebugDemo()
         DrawMesh(DX_ImmContext, DrawStateColorNormal, MeshStateSphere);
     }
 
-    static bool bDrawOBJTests= true;
     if (bDrawOBJTests)
     {
         v4f DefaultColor{ 53.0f / 255.0f, 239.0f / 255.0f, 105.0f / 255.0f, 1.0f };
@@ -1080,15 +1080,11 @@ void Graphics::Init()
         &DrawStateColor
     };
 
-    constexpr bool bTestOBJLoading = true;
-    if (bTestOBJLoading)
-    {
-        MeshStateOBJPyramid = LoadMeshOBJ("Assets/pyramid-test.obj");
-        MeshStateOBJCylinder = LoadMeshOBJ("Assets/cylinder-test.obj");
-        MeshStateOBJTorus = LoadMeshOBJ("Assets/torus-test.obj");
-        MeshStateOBJSimpleShapes = LoadMeshOBJ("Assets/simple-shapes-test.obj");
-        MeshStateOBJPawn = LoadMeshOBJ("Assets/test/pawn.obj");
-    }
+    MeshStateOBJPyramid = LoadMeshOBJ("Assets/pyramid-test.obj");
+    MeshStateOBJCylinder = LoadMeshOBJ("Assets/cylinder-test.obj");
+    MeshStateOBJTorus = LoadMeshOBJ("Assets/torus-test.obj");
+    MeshStateOBJSimpleShapes = LoadMeshOBJ("Assets/simple-shapes-test.obj");
+    MeshStateOBJPawn = LoadMeshOBJ("Assets/test/pawn.obj");
 }
 
 void Graphics::Term()

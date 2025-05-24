@@ -9,13 +9,6 @@ namespace Leviathan
 
 bool UserInterface::bDrawUI = true;
 
-namespace UserInterfaceState
-{
-
-}
-
-using namespace UserInterfaceState;
-
 bool bVisualizeInput = false;
 bool bDrawPerfGraph = false;
 
