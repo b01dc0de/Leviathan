@@ -60,6 +60,7 @@ MeshStateT MeshStateOBJPyramid;
 MeshStateT MeshStateOBJCylinder;
 MeshStateT MeshStateOBJTorus;
 MeshStateT MeshStateOBJSimpleShapes;
+MeshStateT MeshStateOBJPawn;
 MeshInstStateT MeshInstStateRect;
 MeshInstStateT MeshInstStateRectRotation;
 MeshInstStateT MeshInstStateVoxelColor;
@@ -409,6 +410,12 @@ void DrawDebugDemo()
         v4f SimpleShapesColor{ 62.0f / 255.0f, 200.0f / 255.0f, 176.0f / 255.0f, 1.0f };
         UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &SimpleShapesColor, sizeof(v4f));
         DrawMesh(DX_ImmContext, DrawStateUnicolorNormal, MeshStateOBJSimpleShapes);
+
+        m4f PawnWorld = m4f::Scale(3.0f) * m4f::RotAxisY(RotationY * 2.0f) * m4f::Trans(+5.0f, 0.0f, -5.0f);
+        GlobalGFXContext.UpdateShaderWorld(&PawnWorld);
+        v4f PawnColor{ 197.0f / 255.0f, 27.0f / 255.0f, 177.0f / 255.0f, 1.0f };
+        UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &PawnColor, sizeof(v4f));
+        DrawMesh(DX_ImmContext, DrawStateUnicolorNormal, MeshStateOBJPawn);
     }
 
     if (bDrawCube)
@@ -1080,6 +1087,7 @@ void Graphics::Init()
         MeshStateOBJCylinder = LoadMeshOBJ("Assets/cylinder-test.obj");
         MeshStateOBJTorus = LoadMeshOBJ("Assets/torus-test.obj");
         MeshStateOBJSimpleShapes = LoadMeshOBJ("Assets/simple-shapes-test.obj");
+        MeshStateOBJPawn = LoadMeshOBJ("Assets/test/pawn.obj");
     }
 }
 
@@ -1100,6 +1108,7 @@ void Graphics::Term()
     SafeRelease(MeshStateOBJCylinder);
     SafeRelease(MeshStateOBJTorus);
     SafeRelease(MeshStateOBJSimpleShapes);
+    SafeRelease(MeshStateOBJPawn);
     SafeRelease(MeshInstStateRect);
     SafeRelease(MeshInstStateRectRotation);
     SafeRelease(MeshInstStateVoxelColor);
