@@ -3,30 +3,7 @@
 namespace Leviathan
 {
 
-VxColor Vertices_Triangle[] =
-{
-    { {+0.0f, +0.5f, +0.5f, 1.0f}, {0.0f, 1.0f, 1.0f, 1.0f} },
-    { {-0.5f, -0.5f, +0.5f, 1.0f}, {1.0f, 0.0f, 1.0f, 1.0f} },
-    { {+0.5f, -0.5f, +0.5f, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f} },
-};
-unsigned int Indices_Triangle[] =
-{
-    0, 1, 2
-};
-
 constexpr float fUnit = 1.0f;
-VxColor Vertices_Cube[] =
-{
-    {{-fUnit, +fUnit, +fUnit, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f}}, // 0
-    {{+fUnit, +fUnit, +fUnit, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f}}, // 1
-    {{-fUnit, -fUnit, +fUnit, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f}}, // 2
-    {{+fUnit, -fUnit, +fUnit, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // 3
-
-    {{-fUnit, +fUnit, -fUnit, 1.0f}, {0.0f, 1.0f, 1.0f, 1.0f}}, // 4
-    {{+fUnit, +fUnit, -fUnit, 1.0f}, {1.0f, 0.0f, 1.0f, 1.0f}}, // 5
-    {{-fUnit, -fUnit, -fUnit, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f}}, // 6
-    {{+fUnit, -fUnit, -fUnit, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}}, // 7
-};
 VxMin Vertices_CubeMin[] =
 {
     {-fUnit, +fUnit, +fUnit, 1.0f}, // 0
@@ -99,39 +76,6 @@ VxColor Vertices_CubeFacesColor[] =
     { {+fUnit, -fUnit, +fUnit, 1.0f}, Color_Red }, // 3
     { {+fUnit, -fUnit, -fUnit, 1.0f}, Color_Red }, // 7
 };
-VxTexture Vertices_CubeFacesTex[] =
-{
-    // Front: 0, 2, 1, 3
-    { {-fUnit, +fUnit, +fUnit, 1.0f}, {0.0f, 0.0f} }, // 0
-    { {+fUnit, +fUnit, +fUnit, 1.0f}, {1.0f, 0.0f} }, // 1
-    { {-fUnit, -fUnit, +fUnit, 1.0f}, {0.0f, 1.0f} }, // 2
-    { {+fUnit, -fUnit, +fUnit, 1.0f}, {1.0f, 1.0f} }, // 3
-    // Back: 5, 7, 4, 6
-    { {+fUnit, +fUnit, -fUnit, 1.0f}, {0.0f, 0.0f} }, // 5
-    { {-fUnit, +fUnit, -fUnit, 1.0f}, {1.0f, 0.0f} }, // 4
-    { {+fUnit, -fUnit, -fUnit, 1.0f}, {0.0f, 1.0f} }, // 7
-    { {-fUnit, -fUnit, -fUnit, 1.0f}, {1.0f, 1.0f} }, // 6
-    // Top: 4, 0, 5, 1
-    { {-fUnit, +fUnit, -fUnit, 1.0f}, {0.0f, 0.0f} }, // 4
-    { {+fUnit, +fUnit, -fUnit, 1.0f}, {1.0f, 0.0f} }, // 5
-    { {-fUnit, +fUnit, +fUnit, 1.0f}, {0.0f, 1.0f} }, // 0
-    { {+fUnit, +fUnit, +fUnit, 1.0f}, {1.0f, 1.0f} }, // 1
-    // Bottom: 2, 6, 3, 7
-    { {-fUnit, -fUnit, +fUnit, 1.0f}, {0.0f, 0.0f} }, // 2
-    { {+fUnit, -fUnit, +fUnit, 1.0f}, {1.0f, 0.0f} }, // 3
-    { {-fUnit, -fUnit, -fUnit, 1.0f}, {0.0f, 1.0f} }, // 6
-    { {+fUnit, -fUnit, -fUnit, 1.0f}, {1.0f, 1.0f} }, // 7
-    // Left: 4, 6, 0, 2
-    { {-fUnit, +fUnit, -fUnit, 1.0f}, {0.0f, 0.0f} }, // 4
-    { {-fUnit, +fUnit, +fUnit, 1.0f}, {1.0f, 0.0f} }, // 0
-    { {-fUnit, -fUnit, -fUnit, 1.0f}, {0.0f, 1.0f} }, // 6
-    { {-fUnit, -fUnit, +fUnit, 1.0f}, {1.0f, 1.0f} }, // 2
-    // Right: 1, 3, 5, 7
-    { {+fUnit, +fUnit, +fUnit, 1.0f}, {0.0f, 0.0f} }, // 1
-    { {+fUnit, +fUnit, -fUnit, 1.0f}, {1.0f, 0.0f} }, // 5
-    { {+fUnit, -fUnit, +fUnit, 1.0f}, {0.0f, 1.0f} }, // 3
-    { {+fUnit, -fUnit, -fUnit, 1.0f}, {1.0f, 1.0f} }, // 7
-};
 unsigned int Indices_CubeFaces[] =
 {
     // Front
@@ -154,27 +98,6 @@ unsigned int Indices_CubeFaces[] =
     1 + 20, 2 + 20, 3 + 20,
 };
 
-VxTexture Vertices_Rect[] =
-{
-    { {-0.5f, +0.5f, +0.5f, +1.0f}, { 0.0f, 0.0f } },
-    { {+0.5f, +0.5f, +0.5f, +1.0f}, { 1.0f, 0.0f } },
-    { {-0.5f, -0.5f, +0.5f, +1.0f}, { 0.0f, 1.0f } },
-    { {+0.5f, -0.5f, +0.5f, +1.0f}, { 1.0f, 1.0f } },
-};
-VxMin Vertices_PlatonicRect[] =
-{
-    { { 0.0f, 1.0f, +0.5f, +1.0f } },
-    { { 1.0f, 1.0f, +0.5f, +1.0f } },
-    { { 0.0f, 0.0f, +0.5f, +1.0f } },
-    { { 1.0f, 0.0f, +0.5f, +1.0f } },
-};
-VxMin Vertices_RotationRect[] =
-{
-    {-0.5f, +0.5f, +0.5f, +1.0f},
-    {+0.5f, +0.5f, +0.5f, +1.0f},
-    {-0.5f, -0.5f, +0.5f, +1.0f},
-    {+0.5f, -0.5f, +0.5f, +1.0f},
-};
 unsigned int Indices_Rect[] =
 {
     0, 2, 1,
@@ -267,6 +190,17 @@ MeshInstStateT CreateMeshInstState
 
 MeshStateT LoadMeshStateTriangle()
 {
+    VxColor Vertices_Triangle[] =
+    {
+        { {+0.0f, +0.5f, +0.5f, 1.0f}, {0.0f, 1.0f, 1.0f, 1.0f} },
+        { {-0.5f, -0.5f, +0.5f, 1.0f}, {1.0f, 0.0f, 1.0f, 1.0f} },
+        { {+0.5f, -0.5f, +0.5f, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f} },
+    };
+    unsigned int Indices_Triangle[] =
+    {
+        0, 1, 2
+    };
+
     return CreateMeshState
     (
         Graphics::Device(),
@@ -279,6 +213,14 @@ MeshStateT LoadMeshStateTriangle()
 }
 MeshStateT LoadMeshStateRect()
 {
+    VxTexture Vertices_Rect[] =
+    {
+        { {-0.5f, +0.5f, +0.5f, +1.0f}, { 0.0f, 0.0f } },
+        { {+0.5f, +0.5f, +0.5f, +1.0f}, { 1.0f, 0.0f } },
+        { {-0.5f, -0.5f, +0.5f, +1.0f}, { 0.0f, 1.0f } },
+        { {+0.5f, -0.5f, +0.5f, +1.0f}, { 1.0f, 1.0f } },
+    };
+
     return CreateMeshState
     (
         Graphics::Device(),
@@ -291,6 +233,18 @@ MeshStateT LoadMeshStateRect()
 }
 MeshStateT LoadMeshStateCube()
 {
+    VxColor Vertices_Cube[] =
+    {
+        {{-fUnit, +fUnit, +fUnit, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f}}, // 0
+        {{+fUnit, +fUnit, +fUnit, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f}}, // 1
+        {{-fUnit, -fUnit, +fUnit, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f}}, // 2
+        {{+fUnit, -fUnit, +fUnit, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // 3
+
+        {{-fUnit, +fUnit, -fUnit, 1.0f}, {0.0f, 1.0f, 1.0f, 1.0f}}, // 4
+        {{+fUnit, +fUnit, -fUnit, 1.0f}, {1.0f, 0.0f, 1.0f, 1.0f}}, // 5
+        {{-fUnit, -fUnit, -fUnit, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f}}, // 6
+        {{+fUnit, -fUnit, -fUnit, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}}, // 7
+    };
     return CreateMeshState
     (
         Graphics::Device(),
@@ -315,6 +269,40 @@ MeshStateT LoadMeshStateCubeMin()
 }
 MeshStateT LoadMeshStateCubeFacesTex()
 {
+    VxTexture Vertices_CubeFacesTex[] =
+    {
+        // Front: 0, 2, 1, 3
+        { {-fUnit, +fUnit, +fUnit, 1.0f}, {0.0f, 0.0f} }, // 0
+        { {+fUnit, +fUnit, +fUnit, 1.0f}, {1.0f, 0.0f} }, // 1
+        { {-fUnit, -fUnit, +fUnit, 1.0f}, {0.0f, 1.0f} }, // 2
+        { {+fUnit, -fUnit, +fUnit, 1.0f}, {1.0f, 1.0f} }, // 3
+        // Back: 5, 7, 4, 6
+        { {+fUnit, +fUnit, -fUnit, 1.0f}, {0.0f, 0.0f} }, // 5
+        { {-fUnit, +fUnit, -fUnit, 1.0f}, {1.0f, 0.0f} }, // 4
+        { {+fUnit, -fUnit, -fUnit, 1.0f}, {0.0f, 1.0f} }, // 7
+        { {-fUnit, -fUnit, -fUnit, 1.0f}, {1.0f, 1.0f} }, // 6
+        // Top: 4, 0, 5, 1
+        { {-fUnit, +fUnit, -fUnit, 1.0f}, {0.0f, 0.0f} }, // 4
+        { {+fUnit, +fUnit, -fUnit, 1.0f}, {1.0f, 0.0f} }, // 5
+        { {-fUnit, +fUnit, +fUnit, 1.0f}, {0.0f, 1.0f} }, // 0
+        { {+fUnit, +fUnit, +fUnit, 1.0f}, {1.0f, 1.0f} }, // 1
+        // Bottom: 2, 6, 3, 7
+        { {-fUnit, -fUnit, +fUnit, 1.0f}, {0.0f, 0.0f} }, // 2
+        { {+fUnit, -fUnit, +fUnit, 1.0f}, {1.0f, 0.0f} }, // 3
+        { {-fUnit, -fUnit, -fUnit, 1.0f}, {0.0f, 1.0f} }, // 6
+        { {+fUnit, -fUnit, -fUnit, 1.0f}, {1.0f, 1.0f} }, // 7
+        // Left: 4, 6, 0, 2
+        { {-fUnit, +fUnit, -fUnit, 1.0f}, {0.0f, 0.0f} }, // 4
+        { {-fUnit, +fUnit, +fUnit, 1.0f}, {1.0f, 0.0f} }, // 0
+        { {-fUnit, -fUnit, -fUnit, 1.0f}, {0.0f, 1.0f} }, // 6
+        { {-fUnit, -fUnit, +fUnit, 1.0f}, {1.0f, 1.0f} }, // 2
+        // Right: 1, 3, 5, 7
+        { {+fUnit, +fUnit, +fUnit, 1.0f}, {0.0f, 0.0f} }, // 1
+        { {+fUnit, +fUnit, -fUnit, 1.0f}, {1.0f, 0.0f} }, // 5
+        { {+fUnit, -fUnit, +fUnit, 1.0f}, {0.0f, 1.0f} }, // 3
+        { {+fUnit, -fUnit, -fUnit, 1.0f}, {1.0f, 1.0f} }, // 7
+    };
+
     return CreateMeshState
     (
         Graphics::Device(),
@@ -531,6 +519,13 @@ MeshInstStateT LoadMeshInstStateVoxel()
 
 MeshInstStateT LoadMeshInstStateRect()
 {
+    VxMin Vertices_PlatonicRect[] =
+    {
+        { { 0.0f, 1.0f, +0.5f, +1.0f } },
+        { { 1.0f, 1.0f, +0.5f, +1.0f } },
+        { { 0.0f, 0.0f, +0.5f, +1.0f } },
+        { { 1.0f, 0.0f, +0.5f, +1.0f } },
+    };
     return CreateMeshInstState
     (
         Graphics::Device(),
@@ -546,6 +541,14 @@ MeshInstStateT LoadMeshInstStateRect()
 
 MeshInstStateT LoadMeshInstStateRectRotation()
 {
+    VxMin Vertices_RotationRect[] =
+    {
+        {-0.5f, +0.5f, +0.5f, +1.0f},
+        {+0.5f, +0.5f, +0.5f, +1.0f},
+        {-0.5f, -0.5f, +0.5f, +1.0f},
+        {+0.5f, -0.5f, +0.5f, +1.0f},
+    };
+
     return CreateMeshInstState
     (
         Graphics::Device(),

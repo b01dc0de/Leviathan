@@ -28,6 +28,7 @@ ID3D11DepthStencilState* DX_DefaultDepthStencilState = nullptr;
 ID3D11DepthStencilState* DX_Draw2DDepthStencilState = nullptr;
 ID3D11BlendState* DX_DefaultBlendState = nullptr;
 ID3D11BlendState* DX_AlphaBlendState = nullptr;
+D3D_FEATURE_LEVEL UsedFeatureLevel;
 
 DrawStateT DrawStateColor;
 DrawStateT DrawStateColorNormal;
@@ -72,10 +73,7 @@ LvTexture2D LvPawnTexture;
 LvTexture2D LvDebugTexture;
 LvTexture2D LvTestTexture;
 
-D3D_FEATURE_LEVEL UsedFeatureLevel;
-
 LvGFXContext GlobalGFXContext;
-
 
 Camera OrthoCamera;
 Camera GameCamera;
@@ -1081,9 +1079,9 @@ void Graphics::Init()
         ImageT DebugImage = {};
         GetDebugImage(DebugImage);
         LvDebugTexture = LoadTextureFromImage(DebugImage, DX_Device);
-        LvTestTexture = LoadTextureBMP("Assets/TestTexture.bmp", DX_Device);
-
         SafeRelease(DebugImage);
+
+        LvTestTexture = LoadTextureBMP("Assets/TestTexture.bmp", DX_Device);
     }
 
     ProggyCleanFont.Init(DX_Device, "Assets/Fonts/ProggyClean_36pt.bmp");
@@ -1093,7 +1091,6 @@ void Graphics::Init()
     v3f CameraPos{ 5.0f, 10.0f, 10.0f };
     v3f CameraLookAt{ 0.0f, 0.0f, 0.0f };
     GameCamera.Persp(CameraPos, CameraLookAt);
-
     OrthoCamera.Ortho((float)AppWidth, (float)AppHeight, -2.0f);
 
     BulletLimboSpriteSheet = LoadSpriteSheet("Assets/Sprites/BulletLimbo_SpriteSheet.bmp", DX_Device, 1, 3);
@@ -1112,7 +1109,6 @@ void Graphics::Init()
         &DrawBatch,
         &DrawStateColor
     };
-
 }
 
 void Graphics::Term()
