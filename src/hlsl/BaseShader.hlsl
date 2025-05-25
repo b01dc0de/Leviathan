@@ -105,7 +105,9 @@ VS_OUTPUT VSMain(VS_INPUT Input)
 float4 SimpleShading(float4 InColor, float3 Normal)
 {
     float ShadowIntensity = 0.75;
-    float LightCoeff = dot(normalize(Normal), float3(0, 1, 0)) * 0.5 + 0.5;
+    //float3 SunDirection = float3(0, 1, 0);
+    float3 SunDirection = normalize(float3(1, 4, 1));
+    float LightCoeff = dot(normalize(Normal), SunDirection) * 0.5 + 0.5;
     return lerp(InColor * (1 - ShadowIntensity), InColor, float4(LightCoeff.xxx, 1));
 }
 

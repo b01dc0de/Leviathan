@@ -20,7 +20,7 @@ struct PerFaceData
     FaceVertex v2;
 };
 
-enum struct ObjEntryType
+enum struct ObjStatementType
 {
     None,
     Comment,
@@ -71,47 +71,48 @@ struct ObjParseContext
     void Parse()
     {
         ASSERT(!bError && Contents && ReadIdx < Size);
+        ASSERT(Vertices.Num == 0 && TexUVs.Num == 0 && Normals.Num == 0 && Faces.Num == 0);
         while (!bError && Contents && Contents[ReadIdx] && ReadIdx < Size)
         {
-            ObjEntryType Type = ReadEntryType();
-            ReadEntryArgs(Type);
+            ObjStatementType Type = ReadStatementType();
+            ReadStatementArgs(Type);
         }
     }
-    ObjEntryType ReadEntryType()
+    ObjStatementType ReadStatementType()
     {
         ASSERT(!bError && Contents && ReadIdx < Size);
 
-        ObjEntryType Result = ObjEntryType::None;
+        ObjStatementType Result = ObjStatementType::None;
         size_t CharsRead = 0;
 
         switch (Contents[ReadIdx])
         {
-            case '#': { Result = ObjEntryType::Comment; CharsRead = 1; } break;
+            case '#': { Result = ObjStatementType::Comment; CharsRead = 1; } break;
             case 'm':
             {
                 if (TryMatchString("mtllib", 6, Contents + ReadIdx))
                 {
-                    Result = ObjEntryType::MtlLib;
+                    Result = ObjStatementType::MtlLib;
                     CharsRead = 6;
                 }
             } break;
-            case 'o': { Result = ObjEntryType::ObjDecl; CharsRead = 1; } break;
+            case 'o': { Result = ObjStatementType::ObjDecl; CharsRead = 1; } break;
             case 'v': 
             {
                 ASSERT(ReadIdx + 1 < Size);
                 if (Contents[ReadIdx + 1] == ' ')
                 {
-                    Result = ObjEntryType::VertexPosition;
+                    Result = ObjStatementType::VertexPosition;
                     CharsRead = 1;
                 }
                 else if (Contents[ReadIdx + 1] == 't')
                 {
-                    Result = ObjEntryType::VertexTexcoord;
+                    Result = ObjStatementType::VertexTexcoord;
                     CharsRead = 2;
                 }
                 else if (Contents[ReadIdx + 1] == 'n')
                 {
-                    Result = ObjEntryType::VertexNormal;
+                    Result = ObjStatementType::VertexNormal;
                     CharsRead = 2;
                 }
             } break;
@@ -119,13 +120,13 @@ struct ObjParseContext
             {
                 if (TryMatchString("usemtl", 6, Contents + ReadIdx))
                 {
-                    Result = ObjEntryType::UseMtl;
+                    Result = ObjStatementType::UseMtl;
                     CharsRead = 6;
                 }
             } break;
             case 'f':
             {
-                Result = ObjEntryType::Face;
+                Result = ObjStatementType::Face;
                 CharsRead = 1;
             } break;
         }
@@ -198,18 +199,18 @@ struct ObjParseContext
 
         return CharsRead;
     }
-    void ReadEntryArgs(ObjEntryType Type)
+    void ReadStatementArgs(ObjStatementType Type)
     {
         ASSERT(!bError && Contents && ReadIdx < Size);
-        ASSERT(Type == ObjEntryType::None || Type == ObjEntryType::Comment || Contents[ReadIdx] == ' ');
+        ASSERT(Type == ObjStatementType::None || Type == ObjStatementType::Comment || Contents[ReadIdx] == ' ');
 
         switch (Type)
         {
-            case ObjEntryType::None:
-            case ObjEntryType::Comment: { } break;
-            case ObjEntryType::MtlLib: { } break;
-            case ObjEntryType::ObjDecl: { } break;
-            case ObjEntryType::VertexPosition:
+            case ObjStatementType::None:
+            case ObjStatementType::Comment: { } break;
+            case ObjStatementType::MtlLib: { } break;
+            case ObjStatementType::ObjDecl: { } break;
+            case ObjStatementType::VertexPosition:
             {
                 float Pos[] = { 0.0f, 0.0f, 0.0f, 1.0f };
                 // TODO(CKA): Support reading optional W value if present
@@ -221,7 +222,7 @@ struct ObjParseContext
                 }
                 if (!bError) { Vertices.Add(v4f{Pos[0], Pos[1], Pos[2], Pos[3]}); }
             } break;
-            case ObjEntryType::VertexTexcoord:
+            case ObjStatementType::VertexTexcoord:
             {
                 float UV[] = { 0.0f, 0.0f };
                 for (int FloatIdx = 0; FloatIdx < ARRAY_SIZE(UV); FloatIdx++)
@@ -236,7 +237,7 @@ struct ObjParseContext
                     TexUVs.Add(v2f{UV[0], UV[1]});
                 }
             } break;
-            case ObjEntryType::VertexNormal:
+            case ObjStatementType::VertexNormal:
             {
                 float Normal[] = { 0.0f, 0.0f, 0.0f };
                 for (int FloatIdx = 0; FloatIdx < 3; FloatIdx++)
@@ -247,8 +248,8 @@ struct ObjParseContext
                 }
                 if (!bError) { Normals.Add(v3f{Normal[0], Normal[1], Normal[2]}); }
             } break;
-            case ObjEntryType::UseMtl: { } break;
-            case ObjEntryType::Face:
+            case ObjStatementType::UseMtl: { } break;
+            case ObjStatementType::Face:
             {
                 CurrFace.Empty();
                 while (ReadIdx < Size && Contents[ReadIdx] == ' ')
@@ -442,6 +443,7 @@ MeshStateT LoadMeshOBJ(const char* FileName, bool bUseUVs, bool bUseNormals)
     {
         MeshFormatObj::ObjParseContext ParseContext{ObjContents};
         ParseContext.Parse();
+        ASSERT(!ParseContext.bError);
         if (!ParseContext.bError)
         {
             Result = ParseContext.ConstructMesh(bUseUVs, bUseNormals);
