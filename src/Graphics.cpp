@@ -1096,10 +1096,10 @@ void Graphics::Init()
     BulletLimboSpriteSheet = LoadSpriteSheet("Assets/Sprites/BulletLimbo_SpriteSheet.bmp", DX_Device, 1, 3);
     LvPawnTexture = LoadTextureBMP("Assets/test/pawn-texture.bmp", DX_Device);
 
-    MeshStateOBJPyramid = LoadMeshOBJ("Assets/pyramid-test.obj");
-    MeshStateOBJCylinder = LoadMeshOBJ("Assets/cylinder-test.obj");
-    MeshStateOBJTorus = LoadMeshOBJ("Assets/torus-test.obj");
-    MeshStateOBJSimpleShapes = LoadMeshOBJ("Assets/simple-shapes-test.obj");
+    MeshStateOBJPyramid = LoadMeshOBJ("Assets/Test/pyramid.obj");
+    MeshStateOBJCylinder = LoadMeshOBJ("Assets/Test/cylinder.obj");
+    MeshStateOBJTorus = LoadMeshOBJ("Assets/Test/torus.obj");
+    MeshStateOBJSimpleShapes = LoadMeshOBJ("Assets/Test/simple-shapes.obj");
     MeshStateOBJPawn = LoadMeshOBJ("Assets/test/pawn.obj", true);
 
     static bool bTestPNGLoading = true;
