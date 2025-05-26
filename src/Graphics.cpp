@@ -1102,6 +1102,13 @@ void Graphics::Init()
     MeshStateOBJSimpleShapes = LoadMeshOBJ("Assets/simple-shapes-test.obj");
     MeshStateOBJPawn = LoadMeshOBJ("Assets/test/pawn.obj", true);
 
+    static bool bTestPNGLoading = true;
+    if (bTestPNGLoading)
+    {
+        ImageT PngTest{};
+        LoadPNGFile("Assets/test.png", PngTest);
+    }
+
     GlobalGFXContext = {
         DX_ImmContext,
         { DX_WorldBuffer, DX_ViewProjBuffer},
