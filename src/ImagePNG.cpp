@@ -3,6 +3,132 @@
 namespace Leviathan
 {
 
+u32 SwapEndiannessU32(u32 Value)
+{
+    u32 Result = ((Value & 0x000000FF) << 24) | ((Value & 0x0000FF00) << 8) |
+        ((Value & 0x00FF0000) >> 8) | ((Value & 0xFF000000) >> 24);
+    return Result;
+}
+
+namespace Zlib
+{
+
+struct BitReader
+{
+    size_t ByteIdx;
+    size_t NextBit;
+
+    Array<byte>& Stream;
+
+    BitReader(Array<byte>& InStream)
+        : Stream(InStream)
+    {
+        ByteIdx = 0;
+        NextBit = 0;
+    }
+    byte Read(int Count)
+    {
+        byte Result = 0;
+        ASSERT(Count <= 8);
+        ASSERT(NextBit != 8);
+        for (int BitIdx = 0; BitIdx < Count; BitIdx++)
+        {
+            byte StreamByte = Stream[ByteIdx];
+            Result |= ((StreamByte & (1 << NextBit)) >> (NextBit)) << BitIdx;
+            if (++NextBit == 8)
+            {
+                ByteIdx++;
+                NextBit = 0;
+                ASSERT(ByteIdx < Stream.Num);
+            }
+        }
+        return Result;
+    }
+    void AdvanceBytes(int Count)
+    {
+        ByteIdx += Count;
+        ASSERT(ByteIdx <= Stream.Num);
+    }
+};
+
+void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
+{
+    ASSERT(InStream.Num > 0);
+    ASSERT(OutStream.Num == 0);
+
+    BitReader BR{ InStream };
+
+    // RFC 1950
+    byte CompressionMethod = BR.Read(4);
+    byte CompressionInfo = BR.Read(4);
+    ASSERT(CompressionMethod == 8);
+    ASSERT(CompressionInfo < 8);
+    byte FlagsCheckBits = BR.Read(5);
+    bool bPresetDictionary = BR.Read(1);
+    byte CompressionLevel = BR.Read(2);
+    ASSERT((InStream.Data[0] * 256 + InStream.Data[1]) % 31 == 0);
+    ASSERT(!bPresetDictionary);
+    // NOTE: CompressionLevel == 0 -> fastest, 1 -> fast, 2 -> default, 3 -> maximum / slowest
+
+    // Decompress zlib data stream
+    // RFC 1951
+    bool bFinal = false;
+    while (!bFinal && BR.ByteIdx < InStream.Num)
+    {
+        // Read compressed block
+        bFinal = BR.Read(1);
+        byte BlockType = BR.Read(2);
+        ASSERT(BlockType != 3); // Reserved / invalid BTYPE
+        if (BlockType == 0) // No compression
+        {
+            u16 LEN = *(u16*)(InStream.Data + BR.ByteIdx + 1);
+            u16 NLEN = *(u16*)(InStream.Data + BR.ByteIdx + 3);
+            OutStream.Add(InStream.Data + BR.ByteIdx + 5, LEN);
+            BR.AdvanceBytes(5 + LEN);
+        }
+        else
+        {
+            if (BlockType == 1) // Compressed (w/ fixed Huffman codes)
+            {
+                // TODO(CKA): Implement
+                break;
+            }
+            else if (BlockType == 2) // Compressed (w/ dynamic Huffman codes)
+            {
+                byte HLIT = BR.Read(5);
+                byte HDIST = BR.Read(5);
+                byte HCLEN = BR.Read(4);
+
+                int AdjHLIT = HLIT + 257;
+                int AdjHDIST = HDIST + 1;
+                int AdjHCLEN = HCLEN + 4;
+
+                static constexpr byte CodeLengthLUT[] = { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15 };
+                byte* CodeLengthAlphabet = new byte[ARRAY_SIZE(CodeLengthLUT)];
+                for (int Idx = 0; Idx < ARRAY_SIZE(CodeLengthLUT); Idx++)
+                {
+                    byte CodeLength = 0;
+                    if (Idx < AdjHCLEN) { CodeLength = BR.Read(3); }
+
+                    int AlphabetIdx = CodeLengthLUT[Idx];
+                    ASSERT(AlphabetIdx < ARRAY_SIZE(CodeLengthLUT));
+                    CodeLengthAlphabet[AlphabetIdx] = CodeLength;
+                }
+
+                break;
+            }
+            else { ASSERT(false); }
+        }
+
+        ASSERT(BR.ByteIdx <= (InStream.Num - 4));
+        u32 CRC = SwapEndiannessU32(*(u32*)(InStream.Data + BR.ByteIdx));
+        BR.AdvanceBytes(4);
+        if (bFinal) { ASSERT(BR.ByteIdx == InStream.Num); }
+    }
+}
+
+}
+
 namespace PNG
 {
 
@@ -110,12 +236,6 @@ struct ParseContext
             }
         }
         return bValidSig;
-    }
-    u32 SwapEndiannessU32(u32 Value)
-    {
-        u32 Result = ((Value & 0x000000FF) << 24) | ((Value & 0x0000FF00) << 8) |
-            ((Value & 0x00FF0000) >> 8) | ((Value & 0xFF000000) >> 24);
-        return Result;
     }
     void ReadChunk(Chunk& NewChunk)
     {
@@ -257,77 +377,6 @@ struct ParseContext
         bError |= ReadIdx != Size || !bReadHeader || !bReadEnd || ImageData.Num == 0;
         ASSERT(!bError);
     }
-    void DecompressImageData(Array<byte>& ImageData, Array<byte>& OutStream)
-    {
-        ASSERT(ImageData.Num > 0);
-        ASSERT(OutStream.Num == 0);
-        // RFC 1950
-        byte zlib_CompressionMethod = ImageData[0] & 0x0F;
-        byte zlib_CompressionInfo = (ImageData[0] & 0xF0) >> 4;
-        ASSERT(zlib_CompressionMethod == 8);
-        ASSERT(zlib_CompressionInfo < 8);
-        byte zlib_FlagsCheckBits = ImageData.Data[1] & 0x1F;
-        bool zlib_bPresetDictionary = ImageData.Data[1] & 0x20;
-        byte zlib_CompressionLevel = (ImageData.Data[1] & 0xC0) >> 6;
-        ASSERT((ImageData.Data[0] * 256 + ImageData.Data[1]) % 31 == 0);
-        ASSERT(!zlib_bPresetDictionary);
-        // NOTE: zlib_CompressionLevel ==
-        //      0 -> Compressor used fastest algorithm
-        //      1 -> Compressor used fast algorithm
-        //      2 -> Compressor used default algorithm
-        //      3 -> Compressor used maximum compression, slowest algorithm
-
-        // Decompress zlib data stream
-        // RFC 1951
-        int ByteReadIdx = 2;
-        bool bFinal = false;
-        while (!bFinal && ByteReadIdx < ImageData.Num)
-        {
-            // Read compressed block
-            byte BlockHeaderByte = ImageData.Data[ByteReadIdx];
-            bFinal = ImageData.Data[ByteReadIdx] & 0x01;
-            byte BlockType = (ImageData.Data[ByteReadIdx] & 0x06) >> 1;
-            ASSERT(BlockType != 3); // Reserved / invalid BTYPE
-            if (BlockType == 0) // No compression
-            {
-                u16 LEN = *(u16*)(ImageData.Data + ByteReadIdx + 1);
-                u16 NLEN = *(u16*)(ImageData.Data + ByteReadIdx + 3);
-                ASSERT((ByteReadIdx + LEN + 5) <= ImageData.Num);
-                OutStream.Add(ImageData.Data + ByteReadIdx + 5, LEN);
-                ByteReadIdx += 5 + LEN;
-            }
-            else if (BlockType == 1) // Compressed (w/ fixed Huffman codes)
-            {
-                // TODO(CKA): Implement
-                break;
-            }
-            else if (BlockType == 2) // Compressed (w/ dynamic Huffman codes)
-            {
-                byte HLIT = (ImageData[ByteReadIdx] & 0xF8) >> 3;
-                byte HDIST = (ImageData[ByteReadIdx + 1] & 0x1F);
-                byte HCLEN = ((ImageData[ByteReadIdx + 1] & 0xE0) >> 1) |
-                    ((ImageData[ByteReadIdx + 2] & 0x01) << 3);
-
-                ByteReadIdx += 2;
-                int NextBit = 1;
-
-                int NumCodeLengthCodes = (HCLEN + 4);
-                int NumLiteralLengthCodes = HLIT + 257;
-                int NumDistLengthCodes = HDIST + 1;
-
-                // TODO(CKA): Draw the owl
-                break;
-            }
-            else { ASSERT(false); }
-
-            u32 CRC = SwapEndiannessU32(*(u32*)(ImageData.Data + ByteReadIdx));
-            ByteReadIdx += 4;
-            if (bFinal)
-            {
-                ASSERT(ByteReadIdx == ImageData.Num);
-            }
-        }
-    }
     byte PaethPredictor(byte A, byte B, byte C)
     {
         byte P = A + B - C;
@@ -338,7 +387,7 @@ struct ParseContext
         else if (PB <= PC) { return B; }
         else { return C; }
     }
-    void ReconstructImageData(Array<byte>& DecompressedStream, Array<byte>& UnfilteredStream)
+    void ReconstructImageData(Array<byte>& DecompressedStream, Array<byte>& ReconStream)
     {
         size_t SamplesPerPixel = 0;
         ColorFormat ColorType = GetColorType(Header.ColorType);
@@ -366,13 +415,12 @@ struct ParseContext
                 byte X = DecompressedStream[StreamIdx];
                 if (ActiveFilterMethod != 0)
                 {
-                    // TODO(CKA): These calculations need to be adjusted for different bit depths / samples per pixel / etc
                     bool bLeftColumnPx = (StreamIdx % BytesPerScanline) < (SamplesPerPixel + 1);
                     bool bTopRowPx = (StreamIdx / BytesPerScanline) == 0;
                     int CurrRow = (StreamIdx / BytesPerScanline);
-                    byte A = bLeftColumnPx ? 0 : UnfilteredStream[StreamIdx - SamplesPerPixel - CurrRow - 1];
-                    byte B = bTopRowPx ? 0 : UnfilteredStream[StreamIdx - BytesPerReconScanline - CurrRow - 1];
-                    byte C = (bLeftColumnPx || bTopRowPx) ? 0 : UnfilteredStream[StreamIdx - BytesPerReconScanline - SamplesPerPixel - CurrRow - 1];
+                    byte A = bLeftColumnPx ? 0 : ReconStream[StreamIdx - SamplesPerPixel - CurrRow - 1];
+                    byte B = bTopRowPx ? 0 : ReconStream[StreamIdx - BytesPerReconScanline - CurrRow - 1];
+                    byte C = (bLeftColumnPx || bTopRowPx) ? 0 : ReconStream[StreamIdx - BytesPerReconScanline - SamplesPerPixel - CurrRow - 1];
 
                     switch (ActiveFilterMethod)
                     {
@@ -383,7 +431,7 @@ struct ParseContext
                         default: { ASSERT(false); } break;
                     }
                 }
-                UnfilteredStream.Add(X);
+                ReconStream.Add(X);
             }
         }
     }
@@ -406,7 +454,7 @@ struct ParseContext
             ASSERT(!bAdam7Interlace);
 
             Array<byte> DecompressedStream;
-            DecompressImageData(ImageData, DecompressedStream);
+            Zlib::Decompress(ImageData, DecompressedStream);
             ASSERT(DecompressedStream.Num > 0);
 
             OutImage.Width = Header.Width;
@@ -415,10 +463,10 @@ struct ParseContext
             OutImage.PxBufferSize = sizeof(RGBA32) * OutImage.PxCount;
             OutImage.PxBuffer = new RGBA32[OutImage.PxCount];
 
-            Array<byte> UnfilteredStream;
-            ReconstructImageData(DecompressedStream, UnfilteredStream);
+            Array<byte> ReconStream;
+            ReconstructImageData(DecompressedStream, ReconStream);
 
-            ASSERT(UnfilteredStream.Num > 0);
+            ASSERT(ReconStream.Num > 0);
             switch (ColorType)
             {
                 case ColorFormat::TruecolorAlpha:
@@ -434,16 +482,30 @@ struct ParseContext
                     size_t StreamIdx = 0;
                     for (size_t PxIdx = 0; PxIdx < OutImage.PxCount; PxIdx++)
                     {
-                        OutImage.PxBuffer[PxIdx] =
+                        if (Header.BitDepth == 8)
                         {
-                            UnfilteredStream[StreamIdx + 0],
-                            UnfilteredStream[StreamIdx + 1],
-                            UnfilteredStream[StreamIdx + 2],
-                            255
-                        };
-                        StreamIdx += 3;
+                            OutImage.PxBuffer[PxIdx] =
+                            {
+                                ReconStream[StreamIdx + 0],
+                                ReconStream[StreamIdx + 1],
+                                ReconStream[StreamIdx + 2],
+                                255
+                            };
+                            StreamIdx += 3;
+                        }
+                        else if (Header.BitDepth == 16)
+                        {
+                            // TODO(CKA): Test this
+                            // NOTE(CKA): We're losing some color resolution here
+                            byte R = ReconStream[StreamIdx];
+                            byte G = ReconStream[StreamIdx + 2];
+                            byte B = ReconStream[StreamIdx + 4];
+                            OutImage.PxBuffer[PxIdx] = { R, G, B, 255 };
+                            StreamIdx += 6;
+                        }
+                        else { ASSERT(false); }
                     }
-                    ASSERT(StreamIdx == UnfilteredStream.Num);
+                    ASSERT(StreamIdx == ReconStream.Num);
                 } break;
                 case ColorFormat::Grayscale:
                 {

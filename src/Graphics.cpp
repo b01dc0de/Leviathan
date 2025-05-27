@@ -1111,9 +1111,9 @@ void Graphics::Init()
         //LoadPNGFile("Assets/test.png", PNGTest);
         //LoadPNGFile("Assets/unique.png", PNGTest);
         LoadPNGFile("Assets/unique-gimp-test-cnone.png", PNGTest);
-        LvTestPNG = LoadTextureFromImage(PNGTest, DX_Device);
         //LoadPNGFile("Assets/unique-gimp-test-cmax.png", PNGTest);
 
+        LvTestPNG = LoadTextureFromImage(PNGTest, DX_Device);
     }
 
     GlobalGFXContext = {
