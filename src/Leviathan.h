@@ -70,6 +70,7 @@ extern HWND AppWindow;
 #include "Clock.h"
 #include "Engine.h"
 #include "Graphics.h"
+#include "Image.h"
 #include "Input.h"
 #include "Math.h"
 

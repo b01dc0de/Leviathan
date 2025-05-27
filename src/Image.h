@@ -23,10 +23,11 @@ struct ImageT
 
 void GetDebugImage(ImageT& OutImage);
 void LoadBMPFile(const char* Filename, ImageT& OutImage);
-void LoadPNGFile(const char* Filename, ImageT& OutImage);
 void SafeRelease(ImageT& Image);
 
 }
+
+#include "ImagePNG.h"
 
 #endif // LEVIATHAN_IMAGE_H
 

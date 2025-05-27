@@ -163,6 +163,7 @@
     <ClCompile Include="src\Image.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\ImagePNG.cpp" />
     <ClCompile Include="src\Input.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Unity|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -211,6 +212,7 @@
     <ClInclude Include="src\Game\Tetris.h" />
     <ClInclude Include="src\Graphics.h" />
     <ClInclude Include="src\Image.h" />
+    <ClInclude Include="src\ImagePNG.h" />
     <ClInclude Include="src\Input.h" />
     <ClInclude Include="src\InputVisualizer.h" />
     <ClInclude Include="src\Leviathan.h" />
