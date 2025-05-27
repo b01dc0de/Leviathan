@@ -69,6 +69,7 @@ MeshInstStateT MeshInstStateVoxelColor;
 
 LvSpriteSheet BulletLimboSpriteSheet;
 LvTexture2D LvPawnTexture;
+LvTexture2D LvTestPNG;
 
 LvTexture2D LvDebugTexture;
 LvTexture2D LvTestTexture;
@@ -290,7 +291,7 @@ void DrawDebugDemo()
 {
     static bool bDrawInstLines = false;
     static bool bDrawShapes = false;
-    static bool bDrawTexQuad = false;
+    static bool bDrawTexQuad = true;
     static bool bDrawInstRects = false;
     static bool bDrawSphere = true;
     static bool bDrawCube = false;
@@ -336,7 +337,8 @@ void DrawDebugDemo()
         DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
         m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(+256.0f, +256.0f, 0.0f);
         GlobalGFXContext.UpdateShaderWorld(&TexQuadWorld);
-        SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
+        //SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
+        SetShaderResourceViews(DX_ImmContext, 1, &LvTestPNG.SRV);
 
         DrawMesh(DX_ImmContext, DrawStateTexture, MeshStateRect);
     }
@@ -1109,6 +1111,7 @@ void Graphics::Init()
         //LoadPNGFile("Assets/test.png", PNGTest);
         //LoadPNGFile("Assets/unique.png", PNGTest);
         LoadPNGFile("Assets/unique-gimp-test-cnone.png", PNGTest);
+        LvTestPNG = LoadTextureFromImage(PNGTest, DX_Device);
         //LoadPNGFile("Assets/unique-gimp-test-cmax.png", PNGTest);
 
     }

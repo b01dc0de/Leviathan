@@ -162,6 +162,16 @@ struct PNGChunk
     u32 CRC = 0;
 };
 
+enum struct PNGColorType
+{
+    Invalid,
+    TruecolorAlpha,
+    GrayscaleAlpha,
+    Truecolor,
+    Grayscale,
+    PaletteIndexed
+};
+
 struct PNGChunkDataIHDR
 {
     u32 Width;
@@ -198,7 +208,7 @@ struct PNGParseContext
     PNGChunkDataIHDR HeaderChunk;
     PNGChunkDataPLTE PaletteChunk;
 
-    Array<PNGChunk> ImageDataChunks;
+    Array<byte> ImageData;
     static constexpr byte FileSignature[] = { 137, 80, 78, 71, 13, 10, 26, 10 };
 
     PNGParseContext(FileContentsT& InFileContents, ImageT& OutImage)
@@ -264,9 +274,10 @@ struct PNGParseContext
                 memcpy(NewChunk.Data, Contents + ReadIdx, NewChunk.Length);
                 ReadIdx += NewChunk.Length;
             }
-            NewChunk.CRC = *(u32*)(Contents + ReadIdx);
+            NewChunk.CRC = SwapEndiannessU32(*(u32*)(Contents + ReadIdx));
             ReadIdx += sizeof(u32);
 
+            // TODO(CKA): Verify CRC
         }
     }
     PNGChunkType GetChunkType(PNGChunk& InChunk)
@@ -279,6 +290,19 @@ struct PNGParseContext
         for (int ChunkIdx = 0; ChunkIdx < ARRAY_SIZE(ChunkTypeLiterals); ChunkIdx++)
         {
             if (InChunk.Type == *(u32*)ChunkTypeLiterals[ChunkIdx]) { Result = ChunkTypeValues[ChunkIdx]; break; }
+        }
+        return Result;
+    }
+    PNGColorType GetColorType(byte ColorType)
+    {
+        PNGColorType Result = PNGColorType::Invalid;
+        switch (ColorType)
+        {
+            case 0: { Result = PNGColorType::Grayscale; } break;
+            case 2: { Result = PNGColorType::Truecolor; } break;
+            case 3: { Result = PNGColorType::PaletteIndexed; } break;
+            case 4: { Result = PNGColorType::GrayscaleAlpha; } break;
+            case 6: { Result = PNGColorType::TruecolorAlpha; } break;
         }
         return Result;
     }
@@ -311,10 +335,10 @@ struct PNGParseContext
             {
                 ASSERT(PaletteChunk.Entries == nullptr);
                 // Palette chunk must come before any IDAT chunks
-                ASSERT(ImageDataChunks.Num == 0);
+                ASSERT(ImageData.Num == 0);
                 bool bValidPaletteSize = InChunk.Length % 3 == 0;
                 ASSERT(bValidPaletteSize);
-                if (bReadHeader && ImageDataChunks.Num == 0 && PaletteChunk.Entries == nullptr && bValidPaletteSize)
+                if (bReadHeader && ImageData.Num == 0 && PaletteChunk.Entries == nullptr && bValidPaletteSize)
                 {
                     PaletteChunk.Entries = (PaletteEntry*)InChunk.Data;
                     PaletteChunk.NumEntries = InChunk.Length / 3;
@@ -333,17 +357,17 @@ struct PNGParseContext
             } break;
             case PNGChunkType::IDAT:
             {
-                ASSERT(ImageDataChunks.Num == 0 || bReadingImageData);
-                if (ImageDataChunks.Num == 0) { bReadingImageData = true; }
+                ASSERT(ImageData.Num == 0 || bReadingImageData);
+                if (ImageData.Num == 0) { bReadingImageData = true; }
                 if (bReadHeader && bReadingImageData)
                 {
-                    ImageDataChunks.Add(InChunk);
+                    ImageData.Add(InChunk.Data, InChunk.Length);
                 }
                 else
                 {
                     bError = true;
-                    delete[] InChunk.Data;
                 }
+                delete[] InChunk.Data;
             } break;
             default:
             {
@@ -354,7 +378,7 @@ struct PNGParseContext
     }
     void Parse()
     {
-        ASSERT(Contents && Size > 0 && ReadIdx == 0 && ImageDataChunks.Num == 0);
+        ASSERT(Contents && Size > 0 && ReadIdx == 0 && ImageData.Num == 0);
         bool bValidSignature = CheckSignature();
         bError = !bValidSignature;
         if (bValidSignature)
@@ -367,87 +391,102 @@ struct PNGParseContext
                 HandleChunk(NewChunk);
             }
         }
-        bError |= ReadIdx != Size || !bReadHeader || !bReadEnd || ImageDataChunks.Num == 0;
+        bError |= ReadIdx != Size || !bReadHeader || !bReadEnd || ImageData.Num == 0;
         ASSERT(!bError);
+    }
+    void DecompressImageData(Array<byte>& ImageData, Array<byte>& OutStream)
+    {
+        ASSERT(ImageData.Num > 0);
+        ASSERT(OutStream.Num == 0);
+        // RFC 1950
+        byte zlib_CompressionMethod = ImageData[0] & 0x0F;
+        byte zlib_CompressionInfo = (ImageData[0] & 0xF0) >> 4;
+        ASSERT(zlib_CompressionMethod == 8);
+        ASSERT(zlib_CompressionInfo < 8);
+        byte zlib_FlagsCheckBits = ImageData.Data[1] & 0x1F;
+        bool zlib_bPresetDictionary = ImageData.Data[1] & 0x20;
+        byte zlib_CompressionLevel = (ImageData.Data[1] & 0xC0) >> 6;
+        ASSERT((ImageData.Data[0] * 256 + ImageData.Data[1]) % 31 == 0);
+        ASSERT(!zlib_bPresetDictionary);
+        // NOTE: zlib_CompressionLevel ==
+        //      0 -> Compressor used fastest algorithm
+        //      1 -> Compressor used fast algorithm
+        //      2 -> Compressor used default algorithm
+        //      3 -> Compressor used maximum compression, slowest algorithm
+
+        // Decompress zlib data stream
+        // RFC 1951
+        int ByteReadIdx = 2;
+        bool bFinal = false;
+        while (!bFinal && ByteReadIdx < ImageData.Num)
+        {
+            // Read compressed block
+            byte BlockHeaderByte = ImageData.Data[ByteReadIdx];
+            bFinal = ImageData.Data[ByteReadIdx] & 0x01;
+            byte BlockType = (ImageData.Data[ByteReadIdx] & 0x06) >> 1;
+            ASSERT(BlockType != 3); // Reserved / invalid BTYPE
+            if (BlockType == 0) // No compression
+            {
+                // TODO(CKA): Actually test this code path with uncompressed PNG image data
+                u16 LEN = *(u16*)(ImageData.Data + ByteReadIdx + 1);
+                u16 NLEN = *(u16*)(ImageData.Data + ByteReadIdx + 3);
+                ASSERT((ByteReadIdx + LEN + 5) <= ImageData.Num);
+                OutStream.Add(ImageData.Data + ByteReadIdx + 5, LEN);
+                ByteReadIdx += 5 + LEN;
+            }
+            else if (BlockType == 1) // Compressed (w/ fixed Huffman codes)
+            {
+                // TODO(CKA): Implement
+                break;
+            }
+            else if (BlockType == 2) // Compressed (w/ dynamic Huffman codes)
+            {
+                byte HLIT = (ImageData[ByteReadIdx] & 0xF8) >> 3;
+                byte HDIST = (ImageData[ByteReadIdx + 1] & 0x1F);
+                byte HCLEN = ((ImageData[ByteReadIdx + 1] & 0xE0) >> 1) |
+                    ((ImageData[ByteReadIdx + 2] & 0x01) << 3);
+
+                ByteReadIdx += 2;
+                int NextBit = 1;
+
+                int NumCodeLengthCodes = (HCLEN + 4);
+                int NumLiteralLengthCodes = HLIT + 257;
+                int NumDistLengthCodes = HDIST + 1;
+
+                // TODO(CKA): Draw the owl
+                break;
+            }
+            else { ASSERT(false); }
+
+            u32 CRC = SwapEndiannessU32(*(u32*)(ImageData.Data + ByteReadIdx));
+            ByteReadIdx += 4;
+            if (bFinal)
+            {
+                ASSERT(ByteReadIdx == ImageData.Num);
+            }
+        }
     }
     void ConstructImage(ImageT& OutImage)
     {
-        ASSERT(bReadHeader && bReadEnd && ImageDataChunks.Num > 0);
+        ASSERT(bReadHeader && bReadEnd && ImageData.Num > 0);
         ASSERT(OutImage.PxBuffer == nullptr);
-        
-        if (ImageDataChunks.Num > 0)
+
+        if (ImageData.Num > 0)
         {
-            bool bGrayscale = HeaderChunk.ColorType == 0;
-            bool bPalette = HeaderChunk.ColorType & 1;
-            bool bColorUsed = HeaderChunk.ColorType & 2;
-            bool bAlphaChannel = HeaderChunk.ColorType & 4;
-            ASSERT(HeaderChunk.ColorType != 2 || (HeaderChunk.BitDepth == 8 || HeaderChunk.BitDepth == 16));
-            ASSERT(HeaderChunk.ColorType != 3 || (HeaderChunk.BitDepth == 1 || HeaderChunk.BitDepth == 2 || HeaderChunk.BitDepth == 4 || HeaderChunk.BitDepth == 8));
-            ASSERT(!bAlphaChannel || (HeaderChunk.BitDepth == 8 || HeaderChunk.BitDepth == 16));
+            PNGColorType ColorType = GetColorType(HeaderChunk.ColorType);
+            ASSERT(ColorType != PNGColorType::Invalid);
+            ASSERT(ColorType != PNGColorType::Truecolor || (HeaderChunk.BitDepth == 8 || HeaderChunk.BitDepth == 16));
+            ASSERT(ColorType != PNGColorType::PaletteIndexed || (HeaderChunk.BitDepth == 1 || HeaderChunk.BitDepth == 2 || HeaderChunk.BitDepth == 4 || HeaderChunk.BitDepth == 8));
+            ASSERT(!(ColorType == PNGColorType::GrayscaleAlpha || ColorType == PNGColorType::TruecolorAlpha) || (HeaderChunk.BitDepth == 8 || HeaderChunk.BitDepth == 16));
             ASSERT(HeaderChunk.CompressionMethod == 0);
             ASSERT(HeaderChunk.FilterMethod == 0);
             ASSERT(HeaderChunk.InterlaceMethod == 0 || HeaderChunk.InterlaceMethod == 1);
             bool bAdam7Interlace = HeaderChunk.InterlaceMethod == 1;
+            ASSERT(!bAdam7Interlace);
 
-            // TODO(CKA): Assume here that the first two bytes aren't split across two ImageDataChunks
-            //      If that isn't true, then the PNG we're reading was encoded in a very dumb way
-            // RFC 1950
-            byte zlib_CompressionMethod = ImageDataChunks[0].Data[0] & 0x0F;
-            byte zlib_CompressionInfo = (ImageDataChunks[0].Data[0] & 0xF0) >> 4;
-            ASSERT(zlib_CompressionMethod == 8);
-            ASSERT(zlib_CompressionInfo < 8);
-            byte zlib_FlagsCheckBits = ImageDataChunks[0].Data[1] & 0x1F;
-            bool zlib_bPresetDictionary = ImageDataChunks[0].Data[1] & 0x20;
-            byte zlib_CompressionLevel = (ImageDataChunks[0].Data[1] & 0xC0) >> 6;
-            ASSERT((ImageDataChunks[0].Data[0] * 256 + ImageDataChunks[0].Data[1]) % 31 == 0);
-            ASSERT(!zlib_bPresetDictionary);
-            // NOTE: zlib_CompressionLevel ==
-            //      0 -> Compressor used fastest algorithm
-            //      1 -> Compressor used fast algorithm
-            //      2 -> Compressor used default algorithm
-            //      3 -> Compressor used maximum compression, slowest algorithm
-
-            return;
-            // TODO:
-
-            size_t ImageDataReadIdx = 2;
             Array<byte> DecompressedStream;
-            // Decompress zlib data stream
-            // RFC 1951
-            for (int ChunkIdx = 0; ChunkIdx < ImageDataChunks.Num; ChunkIdx++)
-            {
-                size_t CurrChunkReadIdx = ChunkIdx == 0 ? ImageDataReadIdx : 0;
-                PNGChunk& CurrChunk = ImageDataChunks[ChunkIdx];
-                while (CurrChunkReadIdx < CurrChunk.Length)
-                {
-                    // Read compressed block
-                    bool bFinal = CurrChunk.Data[CurrChunkReadIdx] & 0x01;
-                    byte BlockType = (CurrChunk.Data[CurrChunkReadIdx] & 0x06) >> 1;
-                    ASSERT(BlockType != 3); // Reserved / invalid BTYPE
-                    switch (BlockType)
-                    {
-                        case 0: // No compression
-                        {
-                            // TODO(CKA): Actually test this code path with uncompressed PNG image data
-                            byte BlockLen = CurrChunk.Data[CurrChunkReadIdx + 1];
-                            byte BlockNlen = CurrChunk.Data[CurrChunkReadIdx + 2];
-                            ASSERT((CurrChunkReadIdx + BlockLen + 3) <= CurrChunk.Length);
-                            for (int BlockByteIdx = 0; BlockByteIdx < BlockLen; BlockByteIdx++)
-                            {
-                                DecompressedStream.Add(CurrChunk.Data[CurrChunkReadIdx + 3 + BlockByteIdx]);
-                            }
-                        } break;
-                        case 1: // Compressed (w/ fixed Huffman codes)
-                        {
-                        } break;
-                        case 2: // Compressed (w/ dynamic Huffman codes)
-                        {
-                        } break;
-                    }
-                }
-            }
-
-            // 
+            DecompressImageData(ImageData, DecompressedStream);
+            ASSERT(DecompressedStream.Num > 0);
 
             OutImage.Width = HeaderChunk.Width;
             OutImage.Height = HeaderChunk.Height;
@@ -455,6 +494,95 @@ struct PNGParseContext
             OutImage.PxBufferSize = sizeof(RGBA32) * OutImage.PxCount;
             OutImage.PxBuffer = new RGBA32[OutImage.PxCount];
 
+            Array<byte> UnfilteredStream;
+            size_t SamplesPerPixel = 0;
+            if (ColorType == PNGColorType::Grayscale) { SamplesPerPixel = 1; }
+            else if (ColorType == PNGColorType::Truecolor) { SamplesPerPixel = 3; }
+            else if (ColorType == PNGColorType::PaletteIndexed) { SamplesPerPixel = 1; }
+            else if (ColorType == PNGColorType::GrayscaleAlpha) { SamplesPerPixel = 2; }
+            else if (ColorType == PNGColorType::TruecolorAlpha) { SamplesPerPixel = 4; }
+            size_t BitsPerPixel = HeaderChunk.BitDepth * SamplesPerPixel;
+            size_t BytesPerScanline = 1 + (OutImage.Width * BitsPerPixel / 8);
+            int ActiveFilterMethod = 0;
+            for (size_t StreamIdx = 0; StreamIdx < DecompressedStream.Num; StreamIdx++)
+            {
+                bool bScanlineBegin = StreamIdx % BytesPerScanline == 0;
+                if (bScanlineBegin)
+                {
+                    ActiveFilterMethod = DecompressedStream[StreamIdx];
+                }
+                else
+                {
+                    // TODO(CKA): These calculations are off
+                    //      They need to be adjusted for different bit depths / samples per pixel / etc
+                    bool bLeftColumnPx = StreamIdx % BytesPerScanline == 1;
+                    bool bTopRowPx = StreamIdx / BytesPerScanline == 0;
+                    byte X = DecompressedStream[StreamIdx];
+                    byte A = bLeftColumnPx ? 0 : DecompressedStream[StreamIdx - 1];
+                    byte B = bTopRowPx ? 0 : DecompressedStream[StreamIdx - BytesPerScanline];
+                    byte C = (bLeftColumnPx || bTopRowPx) ? 0 : DecompressedStream[StreamIdx - BytesPerScanline - 1];
+
+                    switch (ActiveFilterMethod)
+                    {
+                        case 0: { } break; // None
+                        case 1: { X = X + A; } break; // Sub
+                        case 2: { X = X + B; } break; // Up
+                        case 3: { X = X + ((A + B) / 2); } break; // Average
+                        case 4: // Paeth
+                        {
+                            auto PaethPredictor = [](byte A, byte B, byte C) -> byte
+                            {
+                                byte P = A + B - C;
+                                byte PA = Abs(P - A);
+                                byte PB = Abs(P - B);
+                                byte PC = Abs(P - C);
+                                if (PA <= PB && PA <= PC) { return A; }
+                                else if (PB <= PC) { return B; }
+                                else { return C; }
+                            };
+                            X = X + PaethPredictor(A, B, C);
+                        } break;
+                        default: { ASSERT(false); } break;
+                    }
+                    UnfilteredStream.Add(X);
+                }
+            }
+            ASSERT(UnfilteredStream.Num > 0);
+            switch (ColorType)
+            {
+                case PNGColorType::TruecolorAlpha:
+                {
+                    ASSERT(false);
+                } break;
+                case PNGColorType::GrayscaleAlpha:
+                {
+                    ASSERT(false);
+                } break;
+                case PNGColorType::Truecolor:
+                {
+                    size_t StreamIdx = 0;
+                    for (size_t PxIdx = 0; PxIdx < OutImage.PxCount; PxIdx++)
+                    {
+                        OutImage.PxBuffer[PxIdx] =
+                        {
+                            UnfilteredStream[StreamIdx + 0],
+                            UnfilteredStream[StreamIdx + 1],
+                            UnfilteredStream[StreamIdx + 2],
+                            255
+                        };
+                        StreamIdx += 3;
+                    }
+                    ASSERT(StreamIdx == UnfilteredStream.Num);
+                } break;
+                case PNGColorType::Grayscale:
+                {
+                    ASSERT(false);
+                } break;
+                case PNGColorType::PaletteIndexed:
+                {
+                    ASSERT(false);
+                } break;
+            }
         }
     }
     void CleanUp()
@@ -463,11 +591,6 @@ struct PNGParseContext
         {
             byte* PaletteChunkData = (byte*)PaletteChunk.Entries;
             delete[] PaletteChunkData;
-        }
-        for (int ChunkIdx = 0; ChunkIdx < ImageDataChunks.Num; ChunkIdx++)
-        {
-            PNGChunk& IDATChunk = ImageDataChunks[ChunkIdx];
-            if (IDATChunk.Length > 0 && IDATChunk.Data) { delete[] IDATChunk.Data; }
         }
     }
 };
