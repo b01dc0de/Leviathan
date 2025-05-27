@@ -1105,8 +1105,12 @@ void Graphics::Init()
     static bool bTestPNGLoading = true;
     if (bTestPNGLoading)
     {
-        ImageT PngTest{};
-        LoadPNGFile("Assets/test.png", PngTest);
+        ImageT PNGTest{};
+        //LoadPNGFile("Assets/test.png", PNGTest);
+        //LoadPNGFile("Assets/unique.png", PNGTest);
+        LoadPNGFile("Assets/unique-gimp-test-cnone.png", PNGTest);
+        //LoadPNGFile("Assets/unique-gimp-test-cmax.png", PNGTest);
+
     }
 
     GlobalGFXContext = {
