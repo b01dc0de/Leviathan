@@ -92,10 +92,9 @@ struct Array
         {
             Inc(NewNum);
         }
-        for (int ItemIdx = 0; ItemIdx < NumItems; ItemIdx++)
-        {
-            Data[Num++] = Items[ItemIdx];
-        }
+        //for (int ItemIdx = 0; ItemIdx < NumItems; ItemIdx++) { Data[Num++] = Items[ItemIdx]; }
+        memcpy_s(Data + Num, (Capacity - Num) * sizeof(T), Items, NumItems * sizeof(T));
+        Num = NewNum;
         return Num - 1;
     }
     void Remove(int Idx)
