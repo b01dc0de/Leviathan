@@ -92,39 +92,6 @@ void CountLengths(int* List, int Num, int* OutCountList)
     for (int Idx = 0; Idx < Num; Idx++) { OutCountList[List[Idx]]++; }
 }
 
-void ConstructAlphabetCounted(int* bl_count, int MAX_BITS, HAEntry** OutEntries)
-{
-    // Step 2 - Find numerical value of smallest code for each code length
-    int* next_code = new int[MAX_BITS + 1];
-    int code = 0;
-    bl_count[0] = 0;
-    next_code[0] = 0;
-    for (int bits = 1; bits <= MAX_BITS; bits++)
-    {
-        code = (code + bl_count[bits - 1]) << 1;
-        next_code[bits] = code;
-    }
-
-    // Step 3 - Assign numerical values to all codes
-    int max_code = MAX_BITS;
-    HAEntry* Alphabet = new HAEntry[max_code];
-    for (int n = 0; n < max_code; n++)
-    {
-        int Len = List[n];
-        if (Len != 0)
-        {
-            Alphabet[n] = HAEntry{ Len, next_code[Len] };
-            next_code[Len]++;
-        }
-    }
-
-    ASSERT(OutEntries);
-    *OutEntries = Alphabet;
-
-    delete[] bl_count;
-    delete[] next_code;
-}
-
 void ConstructAlphabet(int* List, int Num, HAEntry** OutEntries)
 {
     // RFC 1951 - 3.2.2
@@ -218,8 +185,10 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
                 int AdjHDIST = HDIST + 1;
                 int AdjHCLEN = HCLEN + 4;
 
-                static constexpr byte CodeLengthLUT[] = { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15 };
-                byte CodeLengthAlphabet[ARRAY_SIZE(CodeLengthLUT)];
+                //static constexpr byte CodeLengthLUT[] = { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15 };
+                //byte CodeLengthAlphabet[ARRAY_SIZE(CodeLengthLUT)];
+                static constexpr int CodeLengthLUT[] = { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15 };
+                int CodeLengthAlphabet[ARRAY_SIZE(CodeLengthLUT)];
                 for (int Idx = 0; Idx < ARRAY_SIZE(CodeLengthLUT); Idx++)
                 {
                     byte CodeLength = 0;
@@ -230,7 +199,7 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
                     CodeLengthAlphabet[AlphabetIdx] = CodeLength;
                 }
 
-                bool bRunTest = true;
+                bool bRunTest = false;
                 if (bRunTest)
                 {
                     int BitLengths[] = { 3, 3, 3, 3, 3, 2, 4, 4 };
