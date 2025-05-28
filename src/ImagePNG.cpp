@@ -51,6 +51,121 @@ struct BitReader
     }
 };
 
+struct HAEntry
+{
+    int Length;
+    int Code;
+};
+
+struct HuffmanAlphabet
+{
+    static constexpr int Num = 288;
+    HAEntry Entries[Num];
+};
+
+void ConstructFixedAlphabet(HuffmanAlphabet* Out)
+{
+    for (int LitValue = 0; LitValue <= 287; LitValue++)
+    {
+        if (LitValue < 144) { Out->Entries[LitValue] = HAEntry{ 8, 0b00110000 + LitValue }; }
+        else if (LitValue < 256) { Out->Entries[LitValue] = HAEntry{ 9, 0b110010000 + (LitValue - 144) }; }
+        else if (LitValue < 280) { Out->Entries[LitValue] = HAEntry{ 7, 0b0000000 + (LitValue - 256) }; }
+        else { Out->Entries[LitValue] = HAEntry{ 8, 0b11000000 + (LitValue - 280) }; }
+    }
+}
+
+int FindMaxLength(int* List, int Num)
+{
+    int Result = 0;
+    for (int Idx = 0; Idx < Num; Idx++)
+    {
+        if (Result < List[Idx])
+        {
+            Result = List[Idx];
+        }
+    }
+    return Result;
+}
+
+void CountLengths(int* List, int Num, int* OutCountList)
+{
+    for (int Idx = 0; Idx < Num; Idx++) { OutCountList[List[Idx]]++; }
+}
+
+void ConstructAlphabetCounted(int* bl_count, int MAX_BITS, HAEntry** OutEntries)
+{
+    // Step 2 - Find numerical value of smallest code for each code length
+    int* next_code = new int[MAX_BITS + 1];
+    int code = 0;
+    bl_count[0] = 0;
+    next_code[0] = 0;
+    for (int bits = 1; bits <= MAX_BITS; bits++)
+    {
+        code = (code + bl_count[bits - 1]) << 1;
+        next_code[bits] = code;
+    }
+
+    // Step 3 - Assign numerical values to all codes
+    int max_code = MAX_BITS;
+    HAEntry* Alphabet = new HAEntry[max_code];
+    for (int n = 0; n < max_code; n++)
+    {
+        int Len = List[n];
+        if (Len != 0)
+        {
+            Alphabet[n] = HAEntry{ Len, next_code[Len] };
+            next_code[Len]++;
+        }
+    }
+
+    ASSERT(OutEntries);
+    *OutEntries = Alphabet;
+
+    delete[] bl_count;
+    delete[] next_code;
+}
+
+void ConstructAlphabet(int* List, int Num, HAEntry** OutEntries)
+{
+    // RFC 1951 - 3.2.2
+    int MAX_BITS = FindMaxLength(List, Num);
+
+    // Step 1 - Count number of codes for each code length
+    int* bl_count = new int[MAX_BITS + 1];
+    ZeroMemory(bl_count, sizeof(int) * (MAX_BITS + 1));
+    CountLengths(List, Num, bl_count);
+
+    // Step 2 - Find numerical value of smallest code for each code length
+    int* next_code = new int[MAX_BITS + 1];
+    int code = 0;
+    bl_count[0] = 0;
+    next_code[0] = 0;
+    for (int bits = 1; bits <= MAX_BITS; bits++)
+    {
+        code = (code + bl_count[bits - 1]) << 1;
+        next_code[bits] = code;
+    }
+
+    // Step 3 - Assign numerical vlaues to all codes
+    int max_code = Num;
+    HAEntry* Alphabet = new HAEntry[max_code];
+    for (int n = 0; n < max_code; n++)
+    {
+        int Len = List[n];
+        if (Len != 0)
+        {
+            Alphabet[n] = HAEntry{ Len, next_code[Len] };
+            next_code[Len]++;
+        }
+    }
+
+    ASSERT(OutEntries);
+    *OutEntries = Alphabet;
+
+    delete[] bl_count;
+    delete[] next_code;
+}
+
 void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
 {
     ASSERT(InStream.Num > 0);
@@ -88,10 +203,10 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
         }
         else
         {
+            HuffmanAlphabet A;
             if (BlockType == 1) // Compressed (w/ fixed Huffman codes)
             {
-                // TODO(CKA): Implement
-                break;
+                ConstructFixedAlphabet(&A);
             }
             else if (BlockType == 2) // Compressed (w/ dynamic Huffman codes)
             {
@@ -104,7 +219,7 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
                 int AdjHCLEN = HCLEN + 4;
 
                 static constexpr byte CodeLengthLUT[] = { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15 };
-                byte* CodeLengthAlphabet = new byte[ARRAY_SIZE(CodeLengthLUT)];
+                byte CodeLengthAlphabet[ARRAY_SIZE(CodeLengthLUT)];
                 for (int Idx = 0; Idx < ARRAY_SIZE(CodeLengthLUT); Idx++)
                 {
                     byte CodeLength = 0;
@@ -113,6 +228,60 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
                     int AlphabetIdx = CodeLengthLUT[Idx];
                     ASSERT(AlphabetIdx < ARRAY_SIZE(CodeLengthLUT));
                     CodeLengthAlphabet[AlphabetIdx] = CodeLength;
+                }
+
+                bool bRunTest = true;
+                if (bRunTest)
+                {
+                    int BitLengths[] = { 3, 3, 3, 3, 3, 2, 4, 4 };
+
+                    HAEntry* Alphabet = nullptr;
+                    ConstructAlphabet(BitLengths, ARRAY_SIZE(BitLengths), &Alphabet);
+
+                    DebugBreak();
+                }
+                // RFC 1951 - Page 8
+                bool bRunExample = false;
+                if (bRunExample)
+                {
+                    int BitLengths[] = { 3, 3, 3, 3, 3, 2, 4, 4 };
+                    int MAX_BITS = FindMaxLength(BitLengths, ARRAY_SIZE(BitLengths));
+
+                    // Step 1 - Count number of codes for each code length
+                    int* bl_count = new int[MAX_BITS + 1];
+                    ZeroMemory(bl_count, sizeof(int) * (MAX_BITS + 1));
+                    for (int Idx = 0; Idx < ARRAY_SIZE(BitLengths); Idx++)
+                    {
+                        bl_count[BitLengths[Idx]]++;
+                    }
+
+                    // Step 2 - Find numerical value of smallest code for each code length
+                    int* next_code = new int[MAX_BITS + 1];
+                    int code = 0;
+                    bl_count[0] = 0;
+                    next_code[0] = 0;
+                    for (int bits = 1; bits <= MAX_BITS; bits++)
+                    {
+                        code = (code + bl_count[bits - 1]) << 1;
+                        next_code[bits] = code;
+                    }
+
+                    // Step 3 - Assign numerical vlaues to all codes
+                    int max_code = ARRAY_SIZE(BitLengths);
+                    HAEntry* Alphabet = new HAEntry[max_code];
+                    for (int n = 0; n < max_code; n++)
+                    {
+                        int Len = BitLengths[n];
+                        if (Len != 0)
+                        {
+                            Alphabet[n] = HAEntry{ Len, next_code[Len] };
+                            next_code[Len]++;
+                        }
+                    }
+
+                    delete[] bl_count;
+                    delete[] next_code;
+                    delete[] Alphabet;
                 }
 
                 break;
