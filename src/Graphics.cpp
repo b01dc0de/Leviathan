@@ -1110,7 +1110,7 @@ void Graphics::Init()
     MeshStateOBJSimpleShapes = LoadMeshOBJ("Assets/Test/simple-shapes.obj");
     MeshStateOBJPawn = LoadMeshOBJ("Assets/test/pawn.obj", true);
 
-    static bool bTestPNGLoading = false;
+    static bool bTestPNGLoading = true;
     if (bTestPNGLoading)
     {
         ImageT PNGTest{};
