@@ -198,6 +198,11 @@ void UpdateGodCamera(Camera& Camera)
     }
 
     // Update angle
+    static constexpr float DistFromAbsolute = fPI / 24.0f;
+    static constexpr float MaxVertical = fPI * +0.5f - DistFromAbsolute;
+    static constexpr float MinVertical = fPI * -0.5f;// +DistFromAbsolute;
+    static float HorizontalAngle = atan2f(-vForward.Z, vForward.X);
+    static float VerticalAngle = asinf(vForward.Y);
     {
         bool bRotateLeft = KeyboardState::GetKey(LV_KEY_ARROW_LEFT, true);
         bool bRotateRight = KeyboardState::GetKey(LV_KEY_ARROW_RIGHT, true);
@@ -208,16 +213,17 @@ void UpdateGodCamera(Camera& Camera)
 
         if (bRotateLeft != bRotateRight)
         {
-            v4f TmpForward{ vForward.X, vForward.Y, vForward.Z };
-            TmpForward = m4f::RotAxis(vUp, bRotateLeft ? -AdjSpeed: +AdjSpeed) * TmpForward;
-            vForward = v3f{ TmpForward.X, TmpForward.Y, TmpForward.Z };
+            HorizontalAngle += bRotateLeft ? +AdjSpeed : -AdjSpeed;
         }
         if (bRotateUp != bRotateDown)
         {
-            v4f TmpForward{ vForward.X, vForward.Y, vForward.Z };
-            TmpForward = m4f::RotAxis(vRight, bRotateUp ? -AdjSpeed: +AdjSpeed) * TmpForward;
-            vForward = v3f{ TmpForward.X, TmpForward.Y, TmpForward.Z };
+            VerticalAngle += bRotateUp ? +AdjSpeed : -AdjSpeed;
+            VerticalAngle = Clamp(VerticalAngle, MinVertical, MaxVertical);
         }
+
+        float MaxY = sinf(MaxVertical);
+        float MinY = sinf(MinVertical);
+        vForward = Norm(v3f{cosf(HorizontalAngle), sinf(VerticalAngle), -sinf(HorizontalAngle)});
     }
 
     LookAt = Pos + vForward;
@@ -291,7 +297,7 @@ void DrawDebugDemo()
 {
     static bool bDrawInstLines = false;
     static bool bDrawShapes = false;
-    static bool bDrawTexQuad = true;
+    static bool bDrawTexQuad = false;
     static bool bDrawInstRects = false;
     static bool bDrawSphere = true;
     static bool bDrawCube = false;
@@ -1104,7 +1110,7 @@ void Graphics::Init()
     MeshStateOBJSimpleShapes = LoadMeshOBJ("Assets/Test/simple-shapes.obj");
     MeshStateOBJPawn = LoadMeshOBJ("Assets/test/pawn.obj", true);
 
-    static bool bTestPNGLoading = true;
+    static bool bTestPNGLoading = false;
     if (bTestPNGLoading)
     {
         ImageT PNGTest{};
