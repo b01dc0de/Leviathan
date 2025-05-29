@@ -139,6 +139,7 @@ int Abs(int A);
 float Min(float A, float B);
 float Max(float A, float B);
 float Abs(float A);
+float Clamp(float V, float A, float B);
 
 template <typename T> T Min(T A, T B)
 {

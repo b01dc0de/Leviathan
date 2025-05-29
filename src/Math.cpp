@@ -515,6 +515,12 @@ float Abs(float A)
 {
     return A < 0 ? -A : A;
 }
+float Clamp(float V, float A, float B)
+{
+    if (V < A) { return A; }
+    else if (V > B) { return B; }
+    else { return V; }
+}
 
 }
 
