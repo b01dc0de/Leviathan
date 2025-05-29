@@ -3,6 +3,17 @@
 namespace Leviathan
 {
 
+void Outf(const char* Fmt, ...)
+{
+    constexpr size_t MsgBufferSize = 1024;
+    char MsgBuffer[MsgBufferSize];
+    va_list args;
+    va_start(args, Fmt);
+    vsprintf_s(MsgBuffer, MsgBufferSize, Fmt, args);
+    va_end(args);
+    OutputDebugStringA(MsgBuffer);
+}
+
 FileContentsT LoadFileContents(const char* Filename, bool bNullTerm)
 {
     FileContentsT Result = {};

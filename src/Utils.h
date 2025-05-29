@@ -6,6 +6,8 @@
 namespace Leviathan
 {
 
+void Outf(const char* Fmt, ...);
+
 struct fColor
 {
     float R = 0.0f;
