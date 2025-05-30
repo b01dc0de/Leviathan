@@ -27,7 +27,7 @@ int FindMaxLength(int* List, int Num)
 
 void CountLengths(int* List, int Num, int* OutCountList)
 {
-    ASSERT(List, Num, OutCountList)
+    ASSERT(List && Num && OutCountList)
     for (int Idx = 0; Idx < Num; Idx++) { OutCountList[List[Idx]]++; }
 }
 
@@ -145,6 +145,33 @@ static void ConstructAlphabet(int* List, int Num, AlphabetEntry* AlphabetEntries
     delete[] next_code;
 }
 
+bool IsSortedByLength(Array<AlphabetEntry>& Entries)
+{
+    bool bResult = true;
+    for (int Idx = 1; Idx < Entries.Num; Idx++)
+    {
+        if (Entries[Idx - 1].Length > Entries[Idx].Length) { bResult = false; break; }
+    }
+    return bResult;
+}
+
+void SortByLength(Array<AlphabetEntry>& Entries)
+{
+    // NOTE: Dumb bubble-sort
+    while (!IsSortedByLength(Entries))
+    {
+        for (int Idx = 1; Idx < Entries.Num; Idx++)
+        {
+            if (Entries[Idx - 1].Length > Entries[Idx].Length)
+            {
+                AlphabetEntry Tmp = Entries[Idx - 1];
+                Entries[Idx - 1] = Entries[Idx];
+                Entries[Idx] = Tmp;
+            }
+        }
+    }
+}
+
 void DebugPrint(Array<AlphabetEntry>& Entries)
 {
     Outf("Symbol Length   Code\n");
@@ -161,33 +188,6 @@ struct CodeLengthAlphabet
     int MinBitLength = 0;
     int MaxBitLength = 0;
     Array<AlphabetEntry> Entries;
-
-    bool IsSortedByLength()
-    {
-        bool bResult = true;
-        for (int Idx = 1; Idx < Entries.Num; Idx++)
-        {
-            if (Entries[Idx - 1].Length > Entries[Idx].Length) { bResult = false; break; }
-        }
-        return bResult;
-    }
-
-    void SortByLength()
-    {
-        // NOTE: Dumb bubble-sort
-        while (!IsSortedByLength())
-        {
-            for (int Idx = 1; Idx < Entries.Num; Idx++)
-            {
-                if (Entries[Idx - 1].Length > Entries[Idx].Length)
-                {
-                    AlphabetEntry Tmp = Entries[Idx - 1];
-                    Entries[Idx - 1] = Entries[Idx];
-                    Entries[Idx] = Tmp;
-                }
-            }
-        }
-    };
 
     void Construct(BitReader& BR, int HCLEN)
     {
@@ -219,7 +219,7 @@ struct CodeLengthAlphabet
         }
         ASSERT(MinBitLength > 0 && MaxBitLength > 0);
 
-        SortByLength();
+        SortByLength(Entries);
 
         bool bDebugPrint = true;
         if (bDebugPrint)
@@ -233,7 +233,7 @@ struct CodeLengthAlphabet
     {
         ASSERT(CodeLengthSequence.Num == 0);
         // NOTE(CKA): My current implementation requires Entries to be sorted by length:
-        ASSERT(IsSortedByLength()); 
+        ASSERT(IsSortedByLength(Entries)); 
 
         int Idx = 0;
         while (Idx < NumCodeLengths)
@@ -248,7 +248,6 @@ struct CodeLengthAlphabet
                 {
                     ASSERT(CurrEntry.Length > CurrBits); // BitLengths must be in ascending order
                     int NumBitsToRead = CurrEntry.Length - CurrBits;
-                    ASSERT(NumBitsToRead == 1); // TODO: Make htis work
                     // NOTE(CKA): From the spec (RFC 1951 - 3.1.1)
                     // "Huffman codes are packed starting with the most-significant bit of the code."
                     NextValue = (NextValue << NumBitsToRead) | BR.Read_Most(NumBitsToRead);
@@ -358,15 +357,15 @@ struct CodeLengthAlphabet
 
 struct DeflateAlphabet
 {
-    int NumLitEntries = 0;
-    int NumDistEntries = 0;
-    Array<AlphabetEntry> Entries;
+    static constexpr int EndOfBlock = 256;
+    Array<AlphabetEntry> LitEntries;
+    Array<AlphabetEntry> DistEntries;
 
     void ConstructDefaultFixedAlphabet()
     {
-        ASSERT(Entries.Num == 0);
+        ASSERT(LitEntries.Num == 0);
         constexpr int NumSymbolValues = 288; // Symbol values [0] - [287]
-        Entries.Reserve(NumSymbolValues);
+        LitEntries.Reserve(NumSymbolValues);
         for (int Idx = 0; Idx < NumSymbolValues; Idx++)
         {
             AlphabetEntry NewEntry{ Idx, 0, 0 };
@@ -375,38 +374,118 @@ struct DeflateAlphabet
             else if (Idx <= 279) { NewEntry.Length = 7; NewEntry.Code = 0b0000000 + (Idx - 256); }
             else if (Idx <= 287) { NewEntry.Length = 8; NewEntry.Code = 0b11000000 + (Idx - 280); }
             else { ASSERT(false); }
-            Entries.Add(NewEntry);
+            if (Idx <= EndOfBlock)
+            {
+                LitEntries.Add(NewEntry);
+            }
+            else
+            {
+                DistEntries.Add(NewEntry);
+            }
         }
     }
 
-    void ConstructDecoderAlphabet(int* CodeLengthSequence, int NumCodeLengths)
+    void ConstructLitDistAlphabets(int* CodeLengthSequence, int NumCodeLengths, int NumLitLengths, int NumDistLengths)
     {
         ASSERT(CodeLengthSequence);
         ASSERT(NumCodeLengths > 1);
-        ASSERT(Entries.Num == 0);
+        ASSERT(NumCodeLengths == NumLitLengths + NumDistLengths);
+        ASSERT(LitEntries.Num == 0 && DistEntries.Num == 0);
 
-        AlphabetEntry* TmpAlphabet = new AlphabetEntry[NumCodeLengths];
-        ConstructAlphabet(CodeLengthSequence, NumCodeLengths, TmpAlphabet, NumCodeLengths);
+        AlphabetEntry* TmpLitAlphabet = new AlphabetEntry[NumLitLengths];
+        ConstructAlphabet(CodeLengthSequence, NumLitLengths, TmpLitAlphabet, NumLitLengths);
 
-        for (int Idx = 0; Idx < NumCodeLengths; Idx++)
+        AlphabetEntry* TmpDistAlphabet = new AlphabetEntry[NumDistLengths];
+        ConstructAlphabet(CodeLengthSequence + NumLitLengths, NumDistLengths, TmpDistAlphabet, NumDistLengths);
+
+        for (int Idx = 0; Idx < NumLitLengths; Idx++)
         {
-            if (TmpAlphabet[Idx].Length != 0) { Entries.Add(TmpAlphabet[Idx]); }
+            if (TmpLitAlphabet[Idx].Length != 0) { LitEntries.Add(TmpLitAlphabet[Idx]); }
         }
+
+        for (int Idx = 0; Idx < NumDistLengths; Idx++)
+        {
+            if (TmpDistAlphabet[Idx].Length != 0) { DistEntries.Add(TmpDistAlphabet[Idx]); }
+        }
+
+        SortByLength(LitEntries);
+        SortByLength(DistEntries);
 
         bool bDebugPrint = true;
         if (bDebugPrint)
         {
-            Outf("Decoder Alphabet:\n");
-            DebugPrint(Entries);
+            Outf("Decoder Alphabet / Literal Entries:\n");
+            DebugPrint(LitEntries);
+
+            Outf("Decoder Alphabet / Distance Entries:\n");
+            DebugPrint(DistEntries);
         }
 
-        delete[] TmpAlphabet;
+        delete[] TmpLitAlphabet;
+        delete[] TmpDistAlphabet;
     }
 
-    int DecodeSymbol(BitReader& BR)
+    enum struct SymbolType { Invalid, Literal, Distance };
+    struct ParsedSymbol
     {
-        DebugBreak();
-        return 0;
+        SymbolType Type = SymbolType::Invalid;
+        bool bValid = false;
+        int EntryIdx = -1;
+        int Value = -1;
+    };
+    ParsedSymbol DecodeSymbol(BitReader& BR)
+    {
+        ParsedSymbol Result;
+        int CurrBits = 0;
+        int CurrValue = 0;
+        bool bFoundMatch = false;
+        for (int EntryIdx = 0; !bFoundMatch && EntryIdx < LitEntries.Num; EntryIdx++)
+        {
+            AlphabetEntry& CurrEntry = LitEntries[EntryIdx];
+
+            if (CurrEntry.Length != CurrBits)
+            {
+                ASSERT(CurrEntry.Length > CurrBits); // BitLengths must be in ascending order
+                int NumBitsToRead = CurrEntry.Length - CurrBits;
+                CurrValue = (CurrValue << NumBitsToRead) | BR.Read_Most(NumBitsToRead);
+                CurrBits += NumBitsToRead;
+            }
+
+            ASSERT(CurrEntry.Length == CurrBits);
+            if (CurrEntry.Code == CurrValue)
+            {
+                bFoundMatch = true;
+                Result.Type = SymbolType::Literal;
+                Result.bValid = true;
+                Result.EntryIdx = EntryIdx;
+                Result.Value = CurrValue;
+            }
+        }
+        /*
+        for (int EntryIdx = 0; !bFoundMatch && EntryIdx < DistEntries.Num; EntryIdx++)
+        {
+            AlphabetEntry& CurrEntry = DistEntries[EntryIdx];
+
+            if (CurrEntry.Length != CurrBits)
+            {
+                ASSERT(CurrEntry.Length > CurrBits); // BitLengths must be in ascending order
+                int NumBitsToRead = CurrEntry.Length - CurrBits;
+                CurrValue = (CurrValue << NumBitsToRead) | BR.Read_Most(NumBitsToRead);
+                CurrBits += NumBitsToRead;
+            }
+
+            ASSERT(CurrEntry.Length == CurrBits);
+            if (CurrEntry.Code == CurrValue)
+            {
+                bFoundMatch = true;
+                Result.Type = SymbolType::Literal;
+                Result.bValid = true;
+                Result.EntryIdx = EntryIdx;
+                Result.Value = CurrValue;
+            }
+        }
+        */
+        return Result;
     }
     void Decode(BitReader& BR, Array<byte>& OutStream)
     {
@@ -414,7 +493,31 @@ struct DeflateAlphabet
         bool bEnd = false;
         while (!bError && !bEnd && BR.ByteIdx < BR.Stream.Num)
         {
-            int Symbol = DecodeSymbol(BR);
+            ParsedSymbol Symbol = DecodeSymbol(BR);
+            if (Symbol.bValid)
+            {
+                if (Symbol.Value < EndOfBlock)
+                {
+                    OutStream.Add(Symbol.Value);
+                }
+                else
+                {
+                    if (Symbol.Value == EndOfBlock)
+                    {
+                        bEnd = true;
+                    }
+                    else if (Symbol.Value > EndOfBlock)
+                    {
+                        // TODO: Decode dist/length pair here
+                        DebugBreak();
+                    }
+                }
+            }
+            else
+            {
+                ASSERT(false);
+                bError = true;
+            }
         }
     }
 };
@@ -475,8 +578,10 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
                 Array<int> CodeLengthSequence{ NumCodeLengths };
                 CLA.DecodeCodeLengthSequence(BR, NumCodeLengths, CodeLengthSequence);
 
-                DecodeAlphabet.ConstructDecoderAlphabet(CodeLengthSequence.Data, CodeLengthSequence.Num);
+                DecodeAlphabet.ConstructLitDistAlphabets(CodeLengthSequence.Data, CodeLengthSequence.Num, HLIT, HDIST);
             }
+
+            DebugBreak();
             DecodeAlphabet.Decode(BR, OutStream);
 
             DebugBreak();
