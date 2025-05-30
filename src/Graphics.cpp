@@ -297,7 +297,7 @@ void DrawDebugDemo()
 {
     static bool bDrawInstLines = false;
     static bool bDrawShapes = false;
-    static bool bDrawTexQuad = false;
+    static bool bDrawTexQuad = true;
     static bool bDrawInstRects = false;
     static bool bDrawSphere = true;
     static bool bDrawCube = false;

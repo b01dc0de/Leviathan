@@ -405,7 +405,12 @@ struct DeflateAlphabet
 
         for (int Idx = 0; Idx < NumDistLengths; Idx++)
         {
-            if (TmpDistAlphabet[Idx].Length != 0) { DistEntries.Add(TmpDistAlphabet[Idx]); }
+            if (TmpDistAlphabet[Idx].Length != 0)
+            {
+                AlphabetEntry AdjEntry{ TmpDistAlphabet[Idx] };
+                AdjEntry.SymbolValue = Idx + EndOfBlock + 1;
+                DistEntries.Add(AdjEntry);
+            }
         }
 
         SortByLength(LitEntries);
@@ -455,12 +460,10 @@ struct DeflateAlphabet
             if (CurrEntry.Code == CurrValue)
             {
                 bFoundMatch = true;
-                Result.Type = SymbolType::Literal;
-                Result.bValid = true;
-                Result.EntryIdx = EntryIdx;
-                Result.Value = CurrValue;
+                Result = { SymbolType::Literal, true, EntryIdx, CurrEntry.SymbolValue };
             }
         }
+        ASSERT(bFoundMatch);
         /*
         for (int EntryIdx = 0; !bFoundMatch && EntryIdx < DistEntries.Num; EntryIdx++)
         {
@@ -491,13 +494,21 @@ struct DeflateAlphabet
     {
         bool bError = false;
         bool bEnd = false;
+        Outf("Decode: BEGIN - ByteIdx: %d\tNextBit: %d\n", BR.ByteIdx, BR.NextBit);
         while (!bError && !bEnd && BR.ByteIdx < BR.Stream.Num)
         {
+            int CachedByteIdx = BR.ByteIdx;
+            int CachedBitIdx = BR.NextBit;
             ParsedSymbol Symbol = DecodeSymbol(BR);
             if (Symbol.bValid)
             {
                 if (Symbol.Value < EndOfBlock)
                 {
+                    Outf("Decode[%d]: Read %d bits matched code %d with literal symbol %d\n",
+                        OutStream.Num,
+                        BR.NextBit - CachedBitIdx < 0 ? BR.NextBit - CachedBitIdx + 8 : BR.NextBit - CachedBitIdx,
+                        LitEntries[Symbol.EntryIdx].Code,
+                        Symbol.Value);
                     OutStream.Add(Symbol.Value);
                 }
                 else
@@ -581,10 +592,7 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
                 DecodeAlphabet.ConstructLitDistAlphabets(CodeLengthSequence.Data, CodeLengthSequence.Num, HLIT, HDIST);
             }
 
-            DebugBreak();
             DecodeAlphabet.Decode(BR, OutStream);
-
-            DebugBreak();
         }
 
         ASSERT(BR.ByteIdx <= (InStream.Num - 4));
