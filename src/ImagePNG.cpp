@@ -48,28 +48,44 @@ struct BitReader
         NextBit = 0;
     }
     // NOTE: This interpets the first bit as _MOST_ significant bit
-    byte Read(int Count)
+    byte Read_Most(int Count)
     {
         byte Result = 0;
         ASSERT(Count <= 8);
         ASSERT(NextBit != 8);
+        byte StreamByte = Stream[ByteIdx] >> NextBit;
         for (int BitIdx = 0; BitIdx < Count; BitIdx++)
         {
-            byte StreamByte = Stream[ByteIdx];
-            Result |= ((StreamByte & (1 << NextBit)) >> NextBit) << BitIdx;
+            Result |= (StreamByte & 1) << (Count - 1 - BitIdx);
+            StreamByte = StreamByte >> 1;
             if (++NextBit == 8)
             {
                 ByteIdx++;
                 NextBit = 0;
                 ASSERT(ByteIdx < Stream.Num);
+                StreamByte = Stream[ByteIdx];
             }
         }
         return Result;
     }
     byte Read_Least(int Count)
     {
-        // TODO(CKA):
-        byte Result = 0xFFFFFFFF;
+        byte Result = 0;
+        ASSERT(Count <= 8);
+        ASSERT(NextBit != 8);
+        byte StreamByte = Stream[ByteIdx] >> NextBit;
+        for (int BitIdx = 0; BitIdx < Count; BitIdx++)
+        {
+            Result |= (StreamByte & 1) << BitIdx;
+            StreamByte = StreamByte >> 1;
+            if (++NextBit == 8)
+            {
+                ByteIdx++;
+                NextBit = 0;
+                ASSERT(ByteIdx < Stream.Num);
+                StreamByte = Stream[ByteIdx];
+            }
+        }
         return Result;
     }
     void AdvanceBytes(int Count)
@@ -113,7 +129,7 @@ struct CodeLengthsAlphabet
         for (int Idx = 0; Idx < Size; Idx++)
         {
             byte CodeLength = 0;
-            if (Idx < HCLEN) { CodeLength = BR.Read(3); }
+            if (Idx < HCLEN) { CodeLength = BR.Read_Least(3); }
             int AlphabetIdx = LUT[Idx];
             ASSERT(AlphabetIdx < Size);
             OrderedCodeLengths[AlphabetIdx] = CodeLength;
@@ -154,7 +170,7 @@ struct CodeLengthsAlphabet
         while (Idx < NumCodeLengths)
         {
             int CurrBits = MinBitLength;
-            byte NextValue = BR.Read(CurrBits);
+            byte NextValue = BR.Read_Most(CurrBits);
             bool bFoundMatch = false;
             for (int EntryIdx = 0; EntryIdx < Entries.Num; EntryIdx++)
             {
@@ -163,9 +179,10 @@ struct CodeLengthsAlphabet
                 {
                     ASSERT(CurrEntry.Length > CurrBits); // BitLengths must be in ascending order
                     int NumBitsToRead = CurrEntry.Length - CurrBits;
+                    ASSERT(NumBitsToRead == 1); // TODO: Make htis work
                     // NOTE(CKA): From the spec (RFC 1951 - 3.1.1)
                     // "Huffman codes are packed starting with the most-significant bit of the code."
-                    NextValue = (NextValue << NumBitsToRead) | BR.Read(NumBitsToRead);
+                    NextValue = (NextValue << NumBitsToRead) | BR.Read_Least(NumBitsToRead);
                     CurrBits += NumBitsToRead;
                 }
 
@@ -355,13 +372,13 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
     BitReader BR{ InStream };
 
     // RFC 1950
-    byte CompressionMethod = BR.Read(4);
-    byte CompressionInfo = BR.Read(4);
+    byte CompressionMethod = BR.Read_Least(4);
+    byte CompressionInfo = BR.Read_Least(4);
     ASSERT(CompressionMethod == 8);
     ASSERT(CompressionInfo < 8);
-    byte FlagsCheckBits = BR.Read(5);
-    bool bPresetDictionary = BR.Read(1);
-    byte CompressionLevel = BR.Read(2);
+    byte FlagsCheckBits = BR.Read_Least(5);
+    bool bPresetDictionary = BR.Read_Least(1);
+    byte CompressionLevel = BR.Read_Least(2);
     ASSERT((InStream.Data[0] * 256 + InStream.Data[1]) % 31 == 0);
     ASSERT(!bPresetDictionary);
     // NOTE: CompressionLevel == 0 -> fastest, 1 -> fast, 2 -> default, 3 -> maximum / slowest
@@ -372,8 +389,8 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
     while (!bFinal && BR.ByteIdx < InStream.Num)
     {
         // Read compressed block
-        bFinal = BR.Read(1);
-        byte BlockType = BR.Read(2);
+        bFinal = BR.Read_Least(1);
+        byte BlockType = BR.Read_Least(2);
         ASSERT(BlockType != 3); // Reserved / invalid BTYPE
         if (BlockType == 0) // No compression
         {
@@ -390,9 +407,10 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
             }
             else if (BlockType == 2) // Compressed (w/ dynamic Huffman codes)
             {
-                int HLIT = BR.Read(5) + 257;
-                int HDIST = BR.Read(5) + 1;
-                int HCLEN = BR.Read(4) + 4;
+                constexpr int MaxCode = 285;
+                int HLIT = BR.Read_Least(5) + 257;
+                int HDIST = BR.Read_Least(5) + 1;
+                int HCLEN = BR.Read_Least(4) + 4;
 
                 CodeLengthsAlphabet CLA;
                 CLA.Construct(BR, HCLEN);
