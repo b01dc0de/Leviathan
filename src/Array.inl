@@ -88,13 +88,21 @@ struct Array
     int Add(const T* Items, int NumItems)
     {
         int NewNum = Num + NumItems;
-        if (NewNum > Capacity)
-        {
-            Inc(NewNum);
-        }
+        if (NewNum > Capacity) { Inc(NewNum); }
         //for (int ItemIdx = 0; ItemIdx < NumItems; ItemIdx++) { Data[Num++] = Items[ItemIdx]; }
         memcpy_s(Data + Num, (Capacity - Num) * sizeof(T), Items, NumItems * sizeof(T));
         Num = NewNum;
+        return Num - 1;
+    }
+    int AddCount(const T& Item, int NumItems)
+    {
+        int NewNum = Num + NumItems;
+        if (NewNum > Capacity) { Inc(NewNum); }
+        for (int Idx = 0; Idx < NumItems; Idx++)
+        {
+            Data[Num++] = Item;
+        }
+        ASSERT(Num == NewNum);
         return Num - 1;
     }
     void Remove(int Idx)
