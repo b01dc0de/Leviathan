@@ -365,7 +365,8 @@ struct DeflateAlphabet
     {
         ASSERT(LitEntries.Num == 0);
         constexpr int NumSymbolValues = 288; // Symbol values [0] - [287]
-        LitEntries.Reserve(NumSymbolValues);
+        LitEntries.Reserve(EndOfBlock);
+        DistEntries.Reserve(NumSymbolValues - EndOfBlock);
         for (int Idx = 0; Idx < NumSymbolValues; Idx++)
         {
             AlphabetEntry NewEntry{ Idx, 0, 0 };
@@ -374,17 +375,20 @@ struct DeflateAlphabet
             else if (Idx <= 279) { NewEntry.Length = 7; NewEntry.Code = 0b0000000 + (Idx - 256); }
             else if (Idx <= 287) { NewEntry.Length = 8; NewEntry.Code = 0b11000000 + (Idx - 280); }
             else { ASSERT(false); }
-            if (Idx <= EndOfBlock)
-            {
-                LitEntries.Add(NewEntry);
-            }
-            else
-            {
-                DistEntries.Add(NewEntry);
-            }
+            LitEntries.Add(NewEntry);
         }
         SortByLength(LitEntries);
         SortByLength(DistEntries);
+
+        bool bDebugPrint = true;
+        if (bDebugPrint)
+        {
+            Outf("Fixed Decoder Alphabet / Literal Entries:\n");
+            DebugPrint(LitEntries);
+
+            Outf("Fixed Decoder Alphabet / Distance Entries:\n");
+            DebugPrint(DistEntries);
+        }
     }
 
     void ConstructLitDistAlphabets(int* CodeLengthSequence, int NumCodeLengths, int NumLitLengths, int NumDistLengths)
@@ -529,10 +533,19 @@ struct DeflateAlphabet
 
         int Result = LengthEntry.BaseLength;
         ASSERT(Result > 0);
+        int ExtraLength = 0;
         if (LengthEntry.ExtraBits)
         {
-            //Result + BR.Read_Least(LengthEntry.ExtraBits);
-            Result + BR.Read_Most(LengthEntry.ExtraBits);
+            ExtraLength = BR.Read_Most(LengthEntry.ExtraBits);
+            //ExtraLength = BR.Read_Least(LengthEntry.ExtraBits);
+            Result = Result + ExtraLength;
+        }
+        static bool bDebugPrint = true;
+        if (bDebugPrint)
+        {
+            Outf("\tCalculated length for symbol %d: %d (%d + %d) - %d extra bits\n",
+                Symbol.Value, Result, LengthEntry.BaseLength,
+                ExtraLength, LengthEntry.ExtraBits );
         }
         return Result;
     }
@@ -542,9 +555,6 @@ struct DeflateAlphabet
         ASSERT(Symbol.bValid);
         ASSERT(Symbol.EntryIdx < DistEntries.Num);
         ASSERT(Symbol.Value > EndOfBlock);
-
-        int DistanceCode = BR.Read_Most(5);
-        ASSERT(0 <= DistanceCode && DistanceCode <= 29);
 
         struct DistanceBits { int ExtraBits; int BaseDistance; };
         static constexpr DistanceBits DistanceLUT[] =
@@ -566,11 +576,24 @@ struct DeflateAlphabet
             { 13, 16385 }, /* 28 */ { 13, 24577 }, /* 29 */
         };
 
+        int DistanceCode = BR.Read_Most(5);
+        ASSERT(0 <= DistanceCode && DistanceCode < ARRAY_SIZE(DistanceLUT));
         DistanceBits DistEntry = DistanceLUT[DistanceCode];
         int Result = DistEntry.BaseDistance;
+        int ExtraDistance = 0;
         if (DistEntry.ExtraBits)
         {
-            Result = Result + BR.Read_Most(DistEntry.ExtraBits);
+            ExtraDistance = BR.Read_Most(DistEntry.ExtraBits);;
+            //ExtraDistance = BR.Read_Least(DistEntry.ExtraBits);;
+            Result = Result + ExtraDistance;
+        }
+        static bool bDebugPrint = true;
+        if (bDebugPrint)
+        {
+            Outf("\tCalculated distance for symbol %d: %d (%d + %d) - %d extra bits\n",
+                DistanceCode, Result,
+                DistEntry.BaseDistance, ExtraDistance,
+                DistEntry.ExtraBits);
         }
         return Result;
     }
@@ -585,14 +608,25 @@ struct DeflateAlphabet
         int Distance = ParseDistance(BR, Symbol);
 
         int StartIdx = OutStream.Num - Distance;
-        int EndIdx = StartIdx + Length;
+        int EndIdx = StartIdx + Length - 1;
         ASSERT(0 <= StartIdx && StartIdx < OutStream.Num);
-        //ASSERT(0 < EndIdx && EndIdx < OutStream.Num);
         int NumBytesCopied = 0;
-        for (int Idx = StartIdx; Idx < EndIdx; Idx++)
+        for (int Idx = StartIdx; Idx <= EndIdx; Idx++)
         {
-            OutStream.Add(OutStream[Idx]);
+            byte ValueToCopy = OutStream[Idx];
+            OutStream.Add(ValueToCopy);
             NumBytesCopied++;
+        }
+        static bool bDebugPrint = true;
+        if (bDebugPrint)
+        {
+            Outf("\tCopying %d bytes from [%d] to [%d]\n\t",
+                NumBytesCopied, StartIdx, EndIdx);
+            for (int Idx = StartIdx; Idx <= EndIdx; Idx++)
+            {
+                Outf("0x%02X ", OutStream[Idx]);
+            }
+            Outf("\n");
         }
         ASSERT(NumBytesCopied == Length);
     }
@@ -601,24 +635,28 @@ struct DeflateAlphabet
         bool bError = false;
         bool bEnd = false;
         Outf("Decode: BEGIN - ByteIdx: %d\tNextBit: %d\n", BR.ByteIdx, BR.NextBit);
+        size_t NumLitCodes = 0;
+        size_t NumDistCodes = 0;
         while (!bError && !bEnd && BR.ByteIdx < BR.Stream.Num)
         {
             int CachedByteIdx = BR.ByteIdx;
             int CachedBitIdx = BR.NextBit;
             ParsedSymbol Symbol = DecodeSymbol(BR);
+            int NumBitsRead = (BR.NextBit - CachedBitIdx) + ((BR.ByteIdx - CachedByteIdx) * 8);
             ASSERT(Symbol.bValid);
             if (!Symbol.bValid) { bError = true; break; }
 
-            int NumBitsRead = (BR.NextBit < CachedBitIdx) ? (BR.NextBit - CachedBitIdx + 8) : (BR.NextBit - CachedBitIdx);
-            Outf("Decode[%d]: Read %d bits matched code %d with symbol %d\n",
+            Outf("Decode[%d]: Read %d bits matched code %d with %s symbol %d\n",
                 OutStream.Num,
                 NumBitsRead,
-                LitEntries[Symbol.EntryIdx].Code,
+                Symbol.Type == SymbolType::Literal ? LitEntries[Symbol.EntryIdx].Code : DistEntries[Symbol.EntryIdx].Code,
+                Symbol.Type == SymbolType::Literal ? "literal" : "distance",
                 Symbol.Value);
 
             if (Symbol.Value < EndOfBlock)
             {
                 OutStream.Add(Symbol.Value);
+                NumLitCodes++;
             }
             else if (Symbol.Value == EndOfBlock)
             {
@@ -627,8 +665,15 @@ struct DeflateAlphabet
             else if (Symbol.Value > EndOfBlock)
             {
                 ParseAndCopyLengthDistance(BR, OutStream, Symbol);
+                NumDistCodes++;
             }
             else { ASSERT(false); bError = true; break; }
+        }
+        static bool bDebugPrint = true;
+        if (bDebugPrint)
+        {
+            Outf("Decoded %d literal codes, %d distance codes (+ 1 EoB) => %d bytes\n",
+                NumLitCodes, NumDistCodes, OutStream.Num);
         }
     }
 };
@@ -696,13 +741,9 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
         }
 
         // Advance to next whole byte for CRC
-        if (BR.NextBit != 0)
-        {
-            BR.NextBit = 0;
-            BR.ByteIdx++;
-        }
+        if (BR.NextBit != 0) { BR.NextBit = 0; BR.ByteIdx++; }
 
-        ASSERT(BR.ByteIdx <= (InStream.Num - 4));
+        ASSERT(BR.ByteIdx == (InStream.Num - 4));
         u32 CRC = SwapEndiannessU32(*(u32*)(InStream.Data + BR.ByteIdx));
         BR.AdvanceBytes(4);
         if (bFinal) { ASSERT(BR.ByteIdx == InStream.Num); }
