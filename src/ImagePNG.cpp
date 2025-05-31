@@ -34,6 +34,8 @@ void CountLengths(int* List, int Num, int* OutCountList)
 namespace Zlib
 {
 
+static constexpr bool bEnableDebugPrint = false;
+
 struct BitReader
 {
     size_t ByteIdx;
@@ -48,10 +50,10 @@ struct BitReader
         NextBit = 0;
     }
     // NOTE: This interpets the first bit as _MOST_ significant bit
-    byte Read_Most(int Count)
+    u32 Read_Most(int Count)
     {
-        byte Result = 0;
-        ASSERT(Count <= 8);
+        u32 Result = 0;
+        ASSERT(Count <= 32);
         ASSERT(NextBit != 8);
         byte StreamByte = Stream[ByteIdx] >> NextBit;
         for (int BitIdx = 0; BitIdx < Count; BitIdx++)
@@ -69,10 +71,10 @@ struct BitReader
         return Result;
     }
     // NOTE: This interpets the first bit as _LEAST_ significant bit
-    byte Read_Least(int Count)
+    u32 Read_Least(int Count)
     {
-        byte Result = 0;
-        ASSERT(Count <= 8);
+        u32 Result = 0;
+        ASSERT(Count <= 32);
         ASSERT(NextBit != 8);
         byte StreamByte = Stream[ByteIdx] >> NextBit;
         for (int BitIdx = 0; BitIdx < Count; BitIdx++)
@@ -83,8 +85,11 @@ struct BitReader
             {
                 ByteIdx++;
                 NextBit = 0;
-                ASSERT(ByteIdx < Stream.Num);
-                StreamByte = Stream[ByteIdx];
+                if ((BitIdx + 1) < Count)
+                {
+                    ASSERT(ByteIdx < Stream.Num);
+                    StreamByte = Stream[ByteIdx];
+                }
             }
         }
         return Result;
@@ -221,8 +226,7 @@ struct CodeLengthAlphabet
 
         SortByLength(Entries);
 
-        bool bDebugPrint = true;
-        if (bDebugPrint)
+        if (bEnableDebugPrint)
         {
             Outf("CodeLengths Alphabet:\n");
             DebugPrint(Entries);
@@ -321,8 +325,7 @@ struct CodeLengthAlphabet
         }
         ASSERT(Idx == NumCodeLengths && CodeLengthSequence.Num == NumCodeLengths);
 
-        static bool bDebugPrint = true;
-        if (bDebugPrint)
+        if (bEnableDebugPrint)
         {
             int SequenceIdx = 0;
             Outf("(Decoded) Code Length Sequence:\n");
@@ -380,8 +383,7 @@ struct DeflateAlphabet
         }
         SortByLength(LitEntries);
 
-        bool bDebugPrint = true;
-        if (bDebugPrint)
+        if (bEnableDebugPrint)
         {
             Outf("Fixed Decoder Alphabet / Literal Entries:\n");
             DebugPrint(LitEntries);
@@ -415,8 +417,7 @@ struct DeflateAlphabet
         SortByLength(LitEntries);
         SortByLength(DistEntries);
 
-        bool bDebugPrint = true;
-        if (bDebugPrint)
+        if (bEnableDebugPrint)
         {
             Outf("Decoder Alphabet / Literal Entries:\n");
             DebugPrint(LitEntries);
@@ -499,8 +500,7 @@ struct DeflateAlphabet
             ExtraLength = BR.Read_Least(LengthEntry.ExtraBits);
             Result = Result + ExtraLength;
         }
-        static bool bDebugPrint = true;
-        if (bDebugPrint)
+        if (bEnableDebugPrint)
         {
             Outf("\tCalculated length for symbol %d: %d (%d + %d) - %d extra bits\n",
                 Symbol.Value, Result, LengthEntry.BaseLength,
@@ -573,8 +573,7 @@ struct DeflateAlphabet
             ExtraDistance = BR.Read_Least(DistEntry.ExtraBits);
             Result = Result + ExtraDistance;
         }
-        static bool bDebugPrint = true;
-        if (bDebugPrint)
+        if (bEnableDebugPrint)
         {
             Outf("\tCalculated distance for symbol %d: %d (%d + %d) - %d extra bits\n",
                 DistCode, Result,
@@ -602,16 +601,19 @@ struct DeflateAlphabet
             OutStream.Add(ValueToCopy);
             NumBytesCopied++;
         }
-        static bool bDebugPrint = true;
-        if (bDebugPrint)
+        if (bEnableDebugPrint)
         {
             Outf("\tCopying %d bytes from [%d] to [%d]\n\t",
                 NumBytesCopied, StartIdx, EndIdx);
-            for (int Idx = StartIdx; Idx <= EndIdx; Idx++)
+            static constexpr bool bDebugPrintCopyString = bEnableDebugPrint && false;
+            if (bDebugPrintCopyString)
             {
-                Outf("0x%02X ", OutStream[Idx]);
+                for (int Idx = StartIdx; Idx <= EndIdx; Idx++)
+                {
+                    Outf("0x%02X ", OutStream[Idx]);
+                }
+                Outf("\n");
             }
-            Outf("\n");
         }
         ASSERT(NumBytesCopied == Length);
     }
@@ -631,9 +633,12 @@ struct DeflateAlphabet
             ASSERT(Symbol.bValid);
             if (!Symbol.bValid) { bError = true; break; }
 
-            Outf("Decode[%d]: Read %d bits matched code %d with literal symbol %d\n",
-                OutStream.Num, NumBitsRead,
-                LitEntries[Symbol.EntryIdx].Code, Symbol.Value);
+            if (bEnableDebugPrint)
+            {
+                Outf("Decode[%d]: Read %d bits matched code %d with literal symbol %d\n",
+                    OutStream.Num, NumBitsRead,
+                    LitEntries[Symbol.EntryIdx].Code, Symbol.Value);
+            }
 
             if (Symbol.Value < EndOfBlock)
             {
@@ -651,8 +656,7 @@ struct DeflateAlphabet
             }
             else { ASSERT(false); bError = true; break; }
         }
-        static bool bDebugPrint = true;
-        if (bDebugPrint)
+        if (bEnableDebugPrint)
         {
             Outf("Decoded %d literal codes, %d distance codes (+ 1 EoB) => %d bytes\n",
                 NumLitCodes, NumDistCodes, OutStream.Num);
@@ -665,6 +669,7 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
     ASSERT(InStream.Num > 0);
     ASSERT(OutStream.Num == 0);
 
+    OutStream.Reserve(InStream.Num * 4);
     BitReader BR{ InStream };
 
     // RFC 1950
@@ -722,13 +727,13 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
             DecodeAlphabet.Decode(BR, OutStream);
         }
 
-        // Advance to next whole byte for CRC
-        if (BR.NextBit != 0) { BR.NextBit = 0; BR.ByteIdx++; }
-
-        ASSERT(BR.ByteIdx == (InStream.Num - 4));
-        u32 CRC = SwapEndiannessU32(*(u32*)(InStream.Data + BR.ByteIdx));
-        BR.AdvanceBytes(4);
-        if (bFinal) { ASSERT(BR.ByteIdx == InStream.Num); }
+        if (bFinal)
+        {
+            // TODO: Verify the CRC(?)
+            if (BR.NextBit != 0) { BR.ByteIdx++; BR.NextBit = 0; }
+            u32 CRC = SwapEndiannessU32(BR.Read_Least(32));
+            ASSERT(BR.ByteIdx == InStream.Num);
+        }
     }
 }
 
@@ -865,7 +870,6 @@ struct ParseContext
             NewChunk.CRC = SwapEndiannessU32(*(u32*)(Contents + ReadIdx));
             ReadIdx += sizeof(u32);
             // TODO(CKA): Verify CRC
-
         }
     }
     ChunkType GetChunkType(Chunk& InChunk)
