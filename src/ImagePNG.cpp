@@ -358,16 +358,17 @@ struct CodeLengthAlphabet
 struct DeflateAlphabet
 {
     static constexpr int EndOfBlock = 256;
+    static constexpr int NumLiteralCodes = 288; // Symbol values [0] - [287]
+    static constexpr int NumDistanceCodes = 32; // Symbol values [0] - [31]
     Array<AlphabetEntry> LitEntries;
     Array<AlphabetEntry> DistEntries;
 
     void ConstructDefaultFixedAlphabet()
     {
         ASSERT(LitEntries.Num == 0);
-        constexpr int NumSymbolValues = 288; // Symbol values [0] - [287]
-        LitEntries.Reserve(EndOfBlock);
-        DistEntries.Reserve(NumSymbolValues - EndOfBlock);
-        for (int Idx = 0; Idx < NumSymbolValues; Idx++)
+        LitEntries.Reserve(NumLiteralCodes);
+        DistEntries.Reserve(NumDistanceCodes);
+        for (int Idx = 0; Idx < NumLiteralCodes; Idx++)
         {
             AlphabetEntry NewEntry{ Idx, 0, 0 };
             if (Idx <= 143) { NewEntry.Length = 8; NewEntry.Code = 0b110000 + Idx; }
@@ -378,16 +379,12 @@ struct DeflateAlphabet
             LitEntries.Add(NewEntry);
         }
         SortByLength(LitEntries);
-        SortByLength(DistEntries);
 
         bool bDebugPrint = true;
         if (bDebugPrint)
         {
             Outf("Fixed Decoder Alphabet / Literal Entries:\n");
             DebugPrint(LitEntries);
-
-            Outf("Fixed Decoder Alphabet / Distance Entries:\n");
-            DebugPrint(DistEntries);
         }
     }
 
@@ -398,25 +395,21 @@ struct DeflateAlphabet
         ASSERT(NumCodeLengths == NumLitLengths + NumDistLengths);
         ASSERT(LitEntries.Num == 0 && DistEntries.Num == 0);
 
-        AlphabetEntry* TmpLitAlphabet = new AlphabetEntry[NumLitLengths];
+        ASSERT(NumLitLengths <= NumLiteralCodes);
+        AlphabetEntry TmpLitAlphabet[NumLiteralCodes] = {};
         ConstructAlphabet(CodeLengthSequence, NumLitLengths, TmpLitAlphabet, NumLitLengths);
 
-        AlphabetEntry* TmpDistAlphabet = new AlphabetEntry[NumDistLengths];
+        ASSERT(NumDistanceCodes <= NumDistanceCodes);
+        AlphabetEntry TmpDistAlphabet[NumDistanceCodes] = {};
         ConstructAlphabet(CodeLengthSequence + NumLitLengths, NumDistLengths, TmpDistAlphabet, NumDistLengths);
 
         for (int Idx = 0; Idx < NumLitLengths; Idx++)
         {
             if (TmpLitAlphabet[Idx].Length != 0) { LitEntries.Add(TmpLitAlphabet[Idx]); }
         }
-
         for (int Idx = 0; Idx < NumDistLengths; Idx++)
         {
-            if (TmpDistAlphabet[Idx].Length != 0)
-            {
-                AlphabetEntry AdjEntry{ TmpDistAlphabet[Idx] };
-                AdjEntry.SymbolValue = Idx + EndOfBlock + 1;
-                DistEntries.Add(AdjEntry);
-            }
+            if (TmpDistAlphabet[Idx].Length != 0) { DistEntries.Add(TmpDistAlphabet[Idx]); }
         }
 
         SortByLength(LitEntries);
@@ -431,26 +424,19 @@ struct DeflateAlphabet
             Outf("Decoder Alphabet / Distance Entries:\n");
             DebugPrint(DistEntries);
         }
-
-        delete[] TmpLitAlphabet;
-        delete[] TmpDistAlphabet;
     }
 
-    enum struct SymbolType { Invalid, Literal, Distance };
     struct ParsedSymbol
     {
-        SymbolType Type = SymbolType::Invalid;
         bool bValid = false;
         int EntryIdx = -1;
         int Value = -1;
     };
     ParsedSymbol DecodeSymbol(BitReader& BR)
     {
-        size_t CachedByteIdx = BR.ByteIdx;
-        size_t CachedNextBit = BR.NextBit;
-
         ParsedSymbol Result;
-        int CurrBits = 0; int CurrValue = 0;
+        int CurrBits = 0;
+        int CurrValue = 0;
         bool bFoundMatch = false;
         for (int EntryIdx = 0; !bFoundMatch && EntryIdx < LitEntries.Num; EntryIdx++)
         {
@@ -468,33 +454,7 @@ struct DeflateAlphabet
             if (CurrEntry.Code == CurrValue)
             {
                 bFoundMatch = true;
-                Result = { SymbolType::Literal, true, EntryIdx, CurrEntry.SymbolValue };
-            }
-        }
-        if (!bFoundMatch)
-        {
-            BR.ByteIdx = CachedByteIdx;
-            BR.NextBit = CachedNextBit;
-            CurrBits = 0;
-            CurrValue = 0;
-        }
-        for (int EntryIdx = 0; !bFoundMatch && EntryIdx < DistEntries.Num; EntryIdx++)
-        {
-            AlphabetEntry& CurrEntry = DistEntries[EntryIdx];
-
-            if (CurrEntry.Length != CurrBits)
-            {
-                ASSERT(CurrEntry.Length > CurrBits);
-                int NumBitsToRead = CurrEntry.Length - CurrBits;
-                CurrValue = (CurrValue << NumBitsToRead) | BR.Read_Most(NumBitsToRead);
-                CurrBits += NumBitsToRead;
-            }
-
-            ASSERT(CurrEntry.Length == CurrBits);
-            if (CurrEntry.Code == CurrValue)
-            {
-                bFoundMatch = true;
-                Result = { SymbolType::Distance, true, EntryIdx, CurrEntry.SymbolValue };
+                Result = { true, EntryIdx, CurrEntry.SymbolValue };
             }
         }
         ASSERT(bFoundMatch);
@@ -502,9 +462,8 @@ struct DeflateAlphabet
     }
     int ParseLength(BitReader& BR, ParsedSymbol Symbol)
     {
-        ASSERT(Symbol.Type == SymbolType::Distance);
         ASSERT(Symbol.bValid);
-        ASSERT(Symbol.EntryIdx < DistEntries.Num);
+        ASSERT(Symbol.EntryIdx < LitEntries.Num);
         ASSERT(Symbol.Value > EndOfBlock);
 
         struct LengthBits { int ExtraBits; int BaseLength; };
@@ -527,7 +486,8 @@ struct DeflateAlphabet
             { 0, 258 } /* 285 */
         };
 
-        int LUTIdx = Symbol.Value - 257;
+        constexpr int FirstLengthCode = 257;
+        int LUTIdx = Symbol.Value - FirstLengthCode;
         ASSERT(0 <= LUTIdx && LUTIdx < ARRAY_SIZE(LengthSymbolLUT));
         LengthBits LengthEntry = LengthSymbolLUT[LUTIdx];
 
@@ -536,8 +496,7 @@ struct DeflateAlphabet
         int ExtraLength = 0;
         if (LengthEntry.ExtraBits)
         {
-            ExtraLength = BR.Read_Most(LengthEntry.ExtraBits);
-            //ExtraLength = BR.Read_Least(LengthEntry.ExtraBits);
+            ExtraLength = BR.Read_Least(LengthEntry.ExtraBits);
             Result = Result + ExtraLength;
         }
         static bool bDebugPrint = true;
@@ -549,12 +508,42 @@ struct DeflateAlphabet
         }
         return Result;
     }
-    int ParseDistance(BitReader& BR, ParsedSymbol Symbol)
+    int ParseDistance(BitReader& BR)
     {
-        ASSERT(Symbol.Type == SymbolType::Distance);
-        ASSERT(Symbol.bValid);
-        ASSERT(Symbol.EntryIdx < DistEntries.Num);
-        ASSERT(Symbol.Value > EndOfBlock);
+        bool bFoundMatch = false;
+        int DistCode = -1;
+        // NOTE: This is handled differently between fixed / dynamic alphabets
+        if (DistEntries.Num)
+        {
+            int CurrBits = 0;
+            int CurrValue = 0;
+            for (int EntryIdx = 0; EntryIdx < DistEntries.Num; EntryIdx++)
+            {
+                AlphabetEntry& CurrEntry = DistEntries[EntryIdx];
+
+                if (CurrEntry.Length != CurrBits)
+                {
+                    ASSERT(CurrEntry.Length > CurrBits); // BitLengths must be in ascending order
+                    int NumBitsToRead = CurrEntry.Length - CurrBits;
+                    CurrValue = (CurrValue << NumBitsToRead) | BR.Read_Most(NumBitsToRead);
+                    CurrBits += NumBitsToRead;
+                }
+
+                ASSERT(CurrEntry.Length == CurrBits);
+                if (CurrEntry.Code == CurrValue)
+                {
+                    DistCode = CurrEntry.SymbolValue;
+                    bFoundMatch = true;
+                    break;
+                }
+            }
+            ASSERT(bFoundMatch);
+        }
+        else
+        {
+            DistCode = BR.Read_Most(5);
+        }
+        ASSERT(DistCode != -1);
 
         struct DistanceBits { int ExtraBits; int BaseDistance; };
         static constexpr DistanceBits DistanceLUT[] =
@@ -575,23 +564,20 @@ struct DeflateAlphabet
             { 12, 8193 }, /* 26 */ { 12, 12289 }, /* 27 */
             { 13, 16385 }, /* 28 */ { 13, 24577 }, /* 29 */
         };
-
-        int DistanceCode = BR.Read_Most(5);
-        ASSERT(0 <= DistanceCode && DistanceCode < ARRAY_SIZE(DistanceLUT));
-        DistanceBits DistEntry = DistanceLUT[DistanceCode];
+        ASSERT(0 <= DistCode && DistCode < ARRAY_SIZE(DistanceLUT));
+        DistanceBits DistEntry = DistanceLUT[DistCode];
         int Result = DistEntry.BaseDistance;
         int ExtraDistance = 0;
         if (DistEntry.ExtraBits)
         {
-            ExtraDistance = BR.Read_Most(DistEntry.ExtraBits);;
-            //ExtraDistance = BR.Read_Least(DistEntry.ExtraBits);;
+            ExtraDistance = BR.Read_Least(DistEntry.ExtraBits);
             Result = Result + ExtraDistance;
         }
         static bool bDebugPrint = true;
         if (bDebugPrint)
         {
             Outf("\tCalculated distance for symbol %d: %d (%d + %d) - %d extra bits\n",
-                DistanceCode, Result,
+                DistCode, Result,
                 DistEntry.BaseDistance, ExtraDistance,
                 DistEntry.ExtraBits);
         }
@@ -599,13 +585,12 @@ struct DeflateAlphabet
     }
     void ParseAndCopyLengthDistance(BitReader& BR, Array<byte>& OutStream, ParsedSymbol Symbol)
     {
-        ASSERT(Symbol.Type == SymbolType::Distance);
         ASSERT(Symbol.bValid);
-        ASSERT(Symbol.EntryIdx < DistEntries.Num);
+        ASSERT(Symbol.EntryIdx < LitEntries.Num);
         ASSERT(Symbol.Value > EndOfBlock);
 
         int Length = ParseLength(BR, Symbol);
-        int Distance = ParseDistance(BR, Symbol);
+        int Distance = ParseDistance(BR);
 
         int StartIdx = OutStream.Num - Distance;
         int EndIdx = StartIdx + Length - 1;
@@ -646,12 +631,9 @@ struct DeflateAlphabet
             ASSERT(Symbol.bValid);
             if (!Symbol.bValid) { bError = true; break; }
 
-            Outf("Decode[%d]: Read %d bits matched code %d with %s symbol %d\n",
-                OutStream.Num,
-                NumBitsRead,
-                Symbol.Type == SymbolType::Literal ? LitEntries[Symbol.EntryIdx].Code : DistEntries[Symbol.EntryIdx].Code,
-                Symbol.Type == SymbolType::Literal ? "literal" : "distance",
-                Symbol.Value);
+            Outf("Decode[%d]: Read %d bits matched code %d with literal symbol %d\n",
+                OutStream.Num, NumBitsRead,
+                LitEntries[Symbol.EntryIdx].Code, Symbol.Value);
 
             if (Symbol.Value < EndOfBlock)
             {
