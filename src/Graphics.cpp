@@ -170,7 +170,7 @@ void Graphics::Draw()
 
 void UpdateGodCamera(Camera& Camera)
 {
-    static v3f Pos{ 10.0f, 15.0f, 25.0f };
+    static v3f Pos{ 0.0f, 20.0f, 25.0f };
     static v3f LookAt{ 0.0f, 0.0f, 0.0f };
     static constexpr float MoveSpeed = 25.0f;
     static constexpr float RotateSpeed = 2.5f;
