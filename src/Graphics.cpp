@@ -115,9 +115,9 @@ constexpr UINT DefaultSampleMask = 0xFFFFFFFF;
 void Graphics::Draw()
 {
     static bool bEnableGodCamera = true;
-    static bool bDrawDebugAxes = true;
-    static bool bDrawGame = false;
-    static bool bForceDrawDebugDemo = true;
+    static bool bDrawDebugAxes = false;
+    static bool bDrawGame = true;
+    static bool bForceDrawDebugDemo = false;
     static bool bDrawUI = true;
     static bool bEnableWireframeRaster = false;
 
@@ -170,7 +170,7 @@ void Graphics::Draw()
 
 void UpdateGodCamera(Camera& Camera)
 {
-    static v3f Pos{ 5.0f, 10.0f, 10.0f };
+    static v3f Pos{ 10.0f, 15.0f, 25.0f };
     static v3f LookAt{ 0.0f, 0.0f, 0.0f };
     static constexpr float MoveSpeed = 25.0f;
     static constexpr float RotateSpeed = 2.5f;
@@ -201,7 +201,7 @@ void UpdateGodCamera(Camera& Camera)
     // Update angle
     static constexpr float DistFromAbsolute = fPI / 24.0f;
     static constexpr float MaxVertical = fPI * +0.5f - DistFromAbsolute;
-    static constexpr float MinVertical = fPI * -0.5f;// +DistFromAbsolute;
+    static constexpr float MinVertical = fPI * -0.5f +DistFromAbsolute;
     static float HorizontalAngle = atan2f(-vForward.Z, vForward.X);
     static float VerticalAngle = asinf(vForward.Y);
     {
@@ -222,8 +222,6 @@ void UpdateGodCamera(Camera& Camera)
             VerticalAngle = Clamp(VerticalAngle, MinVertical, MaxVertical);
         }
 
-        float MaxY = sinf(MaxVertical);
-        float MinY = sinf(MinVertical);
         vForward = Norm(v3f{cosf(HorizontalAngle), sinf(VerticalAngle), -sinf(HorizontalAngle)});
     }
 
@@ -418,7 +416,7 @@ void DrawDebugDemo()
         UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &TorusColor, sizeof(v4f));
         DrawMesh(DX_ImmContext, DrawStateUnicolorNormal, MeshStateOBJTorus);
 
-        m4f SimpleShapesWorld = m4f::Scale(4.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY);
+        m4f SimpleShapesWorld = m4f::Scale(4.0f) * m4f::RotAxisX(RotationX) * m4f::RotAxisY(RotationY) * m4f::Trans(+10.0f, 0.0f, -20.0f);
         GlobalGFXContext.UpdateShaderWorld(&SimpleShapesWorld);
         v4f SimpleShapesColor{ 62.0f / 255.0f, 200.0f / 255.0f, 176.0f / 255.0f, 1.0f };
         UpdateShaderResource(DX_ImmContext, DX_UnicolorBuffer, &SimpleShapesColor, sizeof(v4f));
@@ -1133,7 +1131,8 @@ void Graphics::Init()
         { DX_WorldBuffer, DX_ViewProjBuffer},
         &GameCamera,
         &DrawBatch,
-        &DrawStateColor
+        &DrawStateColor,
+        &DrawStateColorNormal
     };
 }
 

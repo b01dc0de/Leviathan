@@ -31,7 +31,7 @@ struct v4f
     float X = 0.0f;
     float Y = 0.0f;
     float Z = 0.0f;
-    float W = 0.0f;
+    float W = 1.0f;
 };
 
 struct m2f

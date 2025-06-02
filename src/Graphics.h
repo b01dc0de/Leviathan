@@ -31,6 +31,7 @@ struct LvGFXContext
     BatchDrawCmds* DrawBatch;
 
     DrawStateT* DrawStateColor;
+    DrawStateT* DrawStateColorNormal;
 
     void SetShaderConstantBuffers_WVP();
     void UpdateShaderWorld(m4f* WorldData);
