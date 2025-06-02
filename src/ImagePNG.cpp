@@ -621,9 +621,12 @@ struct DeflateAlphabet
     {
         bool bError = false;
         bool bEnd = false;
-        Outf("Decode: BEGIN - ByteIdx: %d\tNextBit: %d\n", BR.ByteIdx, BR.NextBit);
         size_t NumLitCodes = 0;
         size_t NumDistCodes = 0;
+        if (bEnableDebugPrint)
+        {
+            Outf("Decode: BEGIN - ByteIdx: %d\tNextBit: %d\n", BR.ByteIdx, BR.NextBit);
+        }
         while (!bError && !bEnd && BR.ByteIdx < BR.Stream.Num)
         {
             int CachedByteIdx = BR.ByteIdx;
@@ -686,6 +689,7 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
 
     // Decompress zlib data stream
     // RFC 1951
+    size_t NumBlocks = 0;
     bool bFinal = false;
     while (!bFinal && BR.ByteIdx < InStream.Num)
     {
@@ -726,6 +730,7 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
 
             DecodeAlphabet.Decode(BR, OutStream);
         }
+        NumBlocks++;
 
         if (bFinal)
         {
@@ -1078,14 +1083,8 @@ struct ParseContext
             ASSERT(ReconStream.Num > 0);
             switch (ColorType)
             {
-                case ColorFormat::TruecolorAlpha:
-                {
-                    ASSERT(false);
-                } break;
-                case ColorFormat::GrayscaleAlpha:
-                {
-                    ASSERT(false);
-                } break;
+                case ColorFormat::TruecolorAlpha: { ASSERT(false); } break;
+                case ColorFormat::GrayscaleAlpha: { ASSERT(false); } break;
                 case ColorFormat::Truecolor:
                 {
                     size_t StreamIdx = 0;
@@ -1116,14 +1115,9 @@ struct ParseContext
                     }
                     ASSERT(StreamIdx == ReconStream.Num);
                 } break;
-                case ColorFormat::Grayscale:
-                {
-                    ASSERT(false);
-                } break;
-                case ColorFormat::PaletteIndexed:
-                {
-                    ASSERT(false);
-                } break;
+                case ColorFormat::Grayscale: { ASSERT(false); } break;
+                case ColorFormat::PaletteIndexed: { ASSERT(false); } break;
+                default: { ASSERT(false); } break;
             }
         }
     }

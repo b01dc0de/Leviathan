@@ -341,7 +341,10 @@ void DrawDebugDemo()
     if (bDrawTexQuad)
     {
         DX_ImmContext->OMSetBlendState(DX_AlphaBlendState, nullptr, 0xFFFFFFFF);
-        m4f TexQuadWorld = m4f::Scale(100.0f, 100.0f, 1.0f) * m4f::Trans(+256.0f, +256.0f, 0.0f);
+        ASSERT(LvTestPNG.Height && LvTestPNG.Width);
+        float TexAspectRatio = (float)LvTestPNG.Height / (float)LvTestPNG.Width;
+        float Size = 150.0f;
+        m4f TexQuadWorld = m4f::Scale(Size, Size*TexAspectRatio, 1.0f) * m4f::Trans(+256.0f, 0.0f, 0.0f);
         GlobalGFXContext.UpdateShaderWorld(&TexQuadWorld);
         //SetShaderResourceViews(DX_ImmContext, ARRAY_SIZE(TestTextureSRV), TestTextureSRV);
         SetShaderResourceViews(DX_ImmContext, 1, &LvTestPNG.SRV);
@@ -1120,6 +1123,8 @@ void Graphics::Init()
         LoadPNGFile("Assets/unique-gimp-test-cmax.png", PNGTest);
 
         LvTestPNG = LoadTextureFromImage(PNGTest, DX_Device);
+
+        SafeRelease(PNGTest);
     }
 
     GlobalGFXContext = {
@@ -1136,6 +1141,7 @@ void Graphics::Term()
     SafeRelease(BulletLimboSpriteSheet);
     SafeRelease(ProggyCleanFont);
     SafeRelease(LvPawnTexture);
+    SafeRelease(LvTestPNG);
 
     SafeRelease(MeshStateTriangle);
     SafeRelease(MeshStateCube);
@@ -1167,6 +1173,7 @@ void Graphics::Term()
     SafeRelease(DrawStateUnicolor);
     SafeRelease(DrawStateUnicolorNormal);
     SafeRelease(DrawStateTexture);
+    SafeRelease(DrawStateTextureNormal);
     SafeRelease(DrawStateInstRectColor);
     SafeRelease(DrawStateInstRectTexture);
     SafeRelease(DrawStateInstRectColorRotation);
