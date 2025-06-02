@@ -9,7 +9,7 @@ float AspectRatio = (float)AppWidth / (float)AppHeight;
 bool bAppRunning = true;
 HWND AppWindow = nullptr;
 
-}
+} // namespace Leviathan
 
 int WinMain
 (

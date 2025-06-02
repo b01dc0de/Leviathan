@@ -14,9 +14,9 @@ void Draw(LvGFXContext& GFXContext);
 void Init();
 void Term();
 
-}
+} // namespace BulletLimbo
 
-}
+} // namespace Game
 
 #endif // GAME_BULLETLIMBO_H
 

@@ -13,7 +13,7 @@ struct Clock
     static void Init();
 };
 
-}
+} // namespace Leviathan
 
 #endif // LEVIATHAN_CLOCK_H
 

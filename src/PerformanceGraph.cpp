@@ -21,7 +21,8 @@ int LastSampleIdx = 0;
 void Init();
 void Tick();
 void Draw(BatchDrawCmds& Draw2D, v2f Origin, float Scale);
-}
+
+} // namespace PerformanceGraph
 
 void PerformanceGraph::Init()
 {
@@ -115,5 +116,5 @@ void PerformanceGraph::Draw(BatchDrawCmds& Draw2D)
     Draw(Draw2D, Origin, Scale);
 }
 
-}
+} // namespace Leviathan
 

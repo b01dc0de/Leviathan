@@ -14,8 +14,8 @@ void Draw(LvGFXContext& GFXContext);
 void Init();
 void Term();
 
-}
+} // namespace SpeedCube
 
-}
+} // namespace Game
 
 #endif // GAME_SPEEDCUBE_H

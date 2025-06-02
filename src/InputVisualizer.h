@@ -14,7 +14,7 @@ struct InputVisualizer
     static void DrawGamepads(BatchDrawCmds& Draw2D);
 };
 
-}
+} // namespace Leviathan
 
 #endif // LEVIATHAN_INPUTVISUALIZER_H
 

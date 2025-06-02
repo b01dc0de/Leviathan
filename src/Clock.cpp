@@ -7,6 +7,7 @@ using TimeT = __int64;
 
 namespace ClockState
 {
+
 TimeT _Epoch = 0;
 TimeT _Freq = 0;
 double _FreqD = 0.0;
@@ -16,7 +17,8 @@ TimeT _LastDelta = 0;
 
 double CurrTime = 0.0;
 double LastDelta = 0.0;
-}
+
+} // namespace ClockState
 
 using namespace ClockState;
 
@@ -63,5 +65,5 @@ void Clock::Init()
     _CurrTime = _Epoch;
 }
 
-}
+} // namespace Leviathan
 

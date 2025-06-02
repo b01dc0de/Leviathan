@@ -87,7 +87,7 @@ struct BatchDrawCmds
     void AddVoxel(v4f Pos_, v4f Color_, float Scale_);
 };
 
-}
+} // namespace Leviathan
 
 using Leviathan::BatchDrawCmds;
 

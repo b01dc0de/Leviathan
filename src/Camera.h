@@ -14,7 +14,7 @@ struct Camera
     void Persp(const v3f& InPos, const v3f& InLookAt);
 };
 
-}
+} // namespace Leviathan
 
 #endif // LEVIATHAN_CAMERA_H
 

@@ -202,7 +202,7 @@ fColor CellColors[BLOCKTYPE_COUNT] =
     Norm8Bit(250, 163, 100), // BLOCK_L / ORANGE
 };
 
-}
+} // inline namespace Colors
 
 static constexpr BlockType PieceList[NumPieces] = { BLOCK_I, BLOCK_O, BLOCK_T, BLOCK_S, BLOCK_Z, BLOCK_J, BLOCK_L };
 struct PieceBag
@@ -785,7 +785,7 @@ void Tetrion::Update()
     }
 }
 
-}
+} // inline namespace TetrisState
 
 void Tetrion::DrawGrid(BatchDrawCmds& Draw2D)
 {
@@ -862,7 +862,7 @@ void Term()
 
 }
 
-}
+} // namespace Tetris
 
-}
+} // namespace Game
 

@@ -6,7 +6,7 @@ namespace Leviathan
 
 void LoadPNGFile(const char* Filename, ImageT& OutImage);
 
-}
+} // namespace Leviathan
 
 #endif // LEVIATHAN_IMAGEPNG_H
 

@@ -6,15 +6,17 @@
 namespace Game
 {
 
-    namespace GridSnake
-    {
-        void Update();
-        void Draw(LvGFXContext& GFXContext);
-        void Init();
-        void Term();
-    }
+namespace GridSnake
+{
 
-}
+void Update();
+void Draw(LvGFXContext& GFXContext);
+void Init();
+void Term();
+
+} // namespace GridSnake
+
+} // namespace Game
 
 #endif // GAME_TETRIS_H
 

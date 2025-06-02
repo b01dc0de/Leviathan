@@ -187,7 +187,7 @@ struct RawInputHandler
     static void Win32_DeviceChange(WPARAM wParam, LPARAM lParam);
 };
 
-}
+} // namespace Leviathan
 
 #endif // LEVIATHAN_INPUT_H
 

@@ -14,9 +14,9 @@ void Draw(LvGFXContext& GFXContext);
 void Init();
 void Term();
 
-}
+} // namespace Tetris
 
-}
+} // namespace Game
 
 #endif // GAME_TETRIS_H
 

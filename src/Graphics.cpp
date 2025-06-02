@@ -82,6 +82,7 @@ BatchDrawCmds DrawBatch;
 LvFont ProggyCleanFont;
 
 }
+// inline namespace GraphicsState
 
 #define DX_UUID_HELPER(Type, Ptr) __uuidof(Type), (void**)&Ptr
 
@@ -1216,5 +1217,5 @@ ID3D11DeviceContext* Context()
     return DX_ImmContext;
 }
 
-}
+} // namespace Leviathan
 

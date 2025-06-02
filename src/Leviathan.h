@@ -51,7 +51,7 @@ extern float AspectRatio;
 extern bool bAppRunning;
 extern HWND AppWindow;
 
-}
+} // namespace Leviathan
 
 
 #define LV_UNUSED(Var) (void)Var

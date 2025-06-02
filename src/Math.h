@@ -150,7 +150,7 @@ template <typename T> T Max(T A, T B)
     return B > A ? B : A;
 }
 
-}
+} // namespace Leviathan
 
 #endif // LEVIATHAN_MATH_H
 

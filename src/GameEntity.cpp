@@ -76,5 +76,5 @@ void EntityManager::Term()
     Entities.Empty();
 }
 
-}
+} // namespace Leviathan
 

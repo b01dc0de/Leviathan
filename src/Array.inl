@@ -183,7 +183,7 @@ struct Array
     }
 };
 
-}
+} // namespace Leviathan
 
 #endif // LEVIATHAN_ARRAY_INL
 

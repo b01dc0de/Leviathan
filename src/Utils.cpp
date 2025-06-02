@@ -70,5 +70,5 @@ int GetRandomInRange(int Min, int Max)
     return Distrib(MersenneTwisterEng);
 }
 
-}
+} // namespace Leviathan
 

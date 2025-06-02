@@ -563,4 +563,4 @@ MeshInstStateT LoadMeshInstStateRectRotation()
     );
 }
 
-}
+} // namespace Leviathan

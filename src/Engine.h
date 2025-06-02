@@ -15,7 +15,7 @@ extern unsigned int FrameNumber;
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd);
 
-}
+} // namespace Leviathan
 
 #endif // LEVIATHAN_ENGINE_H
 

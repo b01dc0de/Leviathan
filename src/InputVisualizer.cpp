@@ -446,5 +446,5 @@ void InputVisualizer::DrawGamepads(BatchDrawCmds& Draw2D)
     }
 }
 
-}
+} // namespace Leviathan
 

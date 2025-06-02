@@ -50,5 +50,5 @@ void UserInterface::Draw(BatchDrawCmds& Draw2D, LvFont& InFont)
     }
 }
 
-}
+} // namespace Leviathan
 

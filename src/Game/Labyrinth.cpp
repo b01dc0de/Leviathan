@@ -2,6 +2,7 @@
 
 namespace Game
 {
+
     void Labyrinth::Update()
     {
 
@@ -21,4 +22,6 @@ namespace Game
     {
 
     }
-}
+
+} // namespace Game
+

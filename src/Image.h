@@ -25,7 +25,7 @@ void GetDebugImage(ImageT& OutImage);
 void LoadBMPFile(const char* Filename, ImageT& OutImage);
 void SafeRelease(ImageT& Image);
 
-}
+} // namespace Leviathan
 
 #include "ImagePNG.h"
 

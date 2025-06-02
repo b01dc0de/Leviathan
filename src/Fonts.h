@@ -22,7 +22,7 @@ struct LvFont
 
 void SafeRelease(LvFont& InFont);
 
-}
+} // namespace Leviathan
 
 #endif // LEVIATHAN_FONTS_H
 

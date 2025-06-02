@@ -39,7 +39,7 @@ struct LvGFXContext
 
 inline void SafeRelease(IUnknown* Ptr) { if (Ptr) { Ptr->Release(); Ptr = nullptr; } }
 
-}
+} // namespace Leviathan
 
 using Leviathan::LvGFXContext;
 

@@ -2,6 +2,7 @@
 
 namespace Game
 {
+
 using namespace Leviathan;
 
 namespace BulletLimboState
@@ -23,7 +24,7 @@ void Draw(BatchDrawCmds& Draw2D);
 void Init();
 void Term();
 
-}
+} // namespace BulletLimboState
 
 struct BulletData
 {
@@ -136,5 +137,5 @@ void BulletLimbo::Draw(LvGFXContext& GFXContext)
 void BulletLimbo::Init() { BulletLimboState::Init(); }
 void BulletLimbo::Term() { BulletLimboState::Term(); }
 
-}
+} // namespace Game
 

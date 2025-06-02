@@ -434,5 +434,5 @@ void SafeRelease(LvSpriteSheet& InSpriteSheet)
     }
 }
 
-}
+} // namespace Leviathan
 

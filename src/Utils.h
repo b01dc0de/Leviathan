@@ -36,7 +36,7 @@ FileContentsT LoadFileContents(const char* Filename, bool bNullTerm = false);
 
 int GetRandomInRange(int Min, int Max);
 
-}
+} // namespace Leviathan
 
 #endif // LEVIATHAN_UTILS_H
 

@@ -12,7 +12,7 @@ struct UserInterface
     static void Draw(BatchDrawCmds& Draw2D, LvFont& InFont);
 };
 
-}
+} // namespace Leviathan
 
 #endif // LEVIATHAN_USERINTERFACE_H
 

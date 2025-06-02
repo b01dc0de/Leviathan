@@ -97,5 +97,5 @@ void BatchDrawCmds::AddVoxel(v4f Pos_, v4f Color_, float Scale_)
     ColorVoxelCmds.Add(InstVoxelColorData{ Pos_, Color_, Scale_ });
 }
 
-}
+} // namespace Leviathan
 

@@ -432,7 +432,7 @@ struct ObjParseContext
 
 };
 
-}
+} // namespace MeshFormatObj
 
 MeshStateT LoadMeshOBJ(const char* FileName, bool bUseUVs, bool bUseNormals)
 {
@@ -455,4 +455,4 @@ MeshStateT LoadMeshOBJ(const char* FileName, bool bUseUVs, bool bUseNormals)
     return Result;
 }
 
-}
+} // namespace Leviathan

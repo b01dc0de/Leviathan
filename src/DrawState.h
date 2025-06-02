@@ -81,7 +81,7 @@ void SafeRelease(DrawStateT& InDrawState);
 void SafeRelease(LvTexture2D& InLvTex2D);
 void SafeRelease(LvSpriteSheet& InSpriteSheet);
 
-}
+} // namespace Leviathan
 
 #endif // LEVIATHAN_DRAWSTATE_H
 

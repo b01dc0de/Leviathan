@@ -108,7 +108,7 @@ MeshInstStateT LoadMeshInstStateVoxel();
 MeshInstStateT LoadMeshInstStateRect();
 MeshInstStateT LoadMeshInstStateRectRotation();
 
-}
+} // namespace Leviathan
 
 #endif // LEVIATHAN_MESHSTATE_H
 

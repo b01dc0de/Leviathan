@@ -522,5 +522,5 @@ float Clamp(float V, float A, float B)
     else { return V; }
 }
 
-}
+} // namespace Leviathan
 

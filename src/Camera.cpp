@@ -50,5 +50,5 @@ void Camera::Persp(const v3f& InPos, const v3f& InLookAt)
     }
 }
 
-}
+} // namespace Leviathan
 

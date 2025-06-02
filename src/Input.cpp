@@ -683,5 +683,5 @@ void RawInputHandler::Win32_DeviceChange(WPARAM wParam, LPARAM lParam)
 {
 }
 
-}
+} // namespace Leviathan
 

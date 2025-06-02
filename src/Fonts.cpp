@@ -55,5 +55,5 @@ void SafeRelease(LvFont& InFont)
     InFont.Term();
 }
 
-}
+} // namespace Leviathan
 

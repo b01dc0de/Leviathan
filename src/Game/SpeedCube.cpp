@@ -419,7 +419,8 @@ CubePieces TheCube;
 void LoadSpeedCubeMesh();
 
 bool FaceIsExternal(int PieceIdx, int FaceIdx);
-}
+
+} // namespace SpeedCubeState
 
 void SpeedCubeState::LoadSpeedCubeMesh()
 {
@@ -771,5 +772,5 @@ const char* SpeedCubeState::GetIDName(int ID)
     return "ERROR";
 }
 
-}
+} // namespace Game
 

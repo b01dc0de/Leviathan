@@ -742,7 +742,7 @@ void Decompress(Array<byte>& InStream, Array<byte>& OutStream)
     }
 }
 
-}
+} // namespace Zlib
 
 namespace PNG
 {
@@ -1131,7 +1131,7 @@ struct ParseContext
     }
 };
 
-}
+} // namespace PNG
 
 void LoadPNGFile(const char* Filename, ImageT& OutImage)
 {
@@ -1145,4 +1145,4 @@ void LoadPNGFile(const char* Filename, ImageT& OutImage)
     }
 }
 
-}
+} // namespace Leviathan
